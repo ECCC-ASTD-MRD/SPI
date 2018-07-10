@@ -69,8 +69,8 @@ proc APViz::Window { } {
 	set Data(MacroCategories) $APViz::Data(Operational,Folders)
       }
       
-      if {[info exists APViz::Data(APViz,Folders)]} {
-	set Data(Folders) $APViz::Data(APViz,Folders)
+      if {[info exists APViz::Data(Config,Folders)]} {
+	set Data(Folders) $APViz::Data(Config,Folders)
       }
 
       TabFrame::Create .apviz.tab 1 ""
@@ -83,9 +83,8 @@ proc APViz::Window { } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params . 1 }
-         button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised
-         button $Data(Tab).head.refresh -image ZOOMBACK -bd 1 -relief flat -overrelief raised
-         pack $Data(Tab).head.mode $Data(Tab).head.param $Data(Tab).head.save $Data(Tab).head.refresh -side left -padx 2
+         button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
+         pack $Data(Tab).head.mode $Data(Tab).head.param $Data(Tab).head.save -side left -padx 2
       pack $Data(Tab).head -side top -fill x
       
       # PanedWindow pour ajuster taille de chaque section
@@ -152,10 +151,72 @@ proc APViz::Window { } {
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
       Bubble::Create $Data(Tab).head.param $Bubble(Param)
       Bubble::Create $Data(Tab).head.save $Bubble(Save)
-      Bubble::Create $Data(Tab).head.refresh $Bubble(Refresh)
       
       bind $Data(Tab).opt.type.lst <ButtonRelease> "APViz::UpdateRange"
    }
    raise  .apviz
+}
+
+proc APViz::SaveAsWindow { } {
+  global GDefs
+  
+  variable Param
+  variable Lbl
+  variable Data
+  
+  APViz::DeleteWidget .saveAsBox
+  
+  toplevel .saveAsBox
+  wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
+  wm transient .saveAsBox $Data(Frame)
+  wm geom      .saveAsBox 400x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+  
+  .saveAsBox configure -cursor left_ptr
+  
+  set Param(Frame) ""
+  
+  TabFrame::Create .saveAsBox.tab 1 ""
+  pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5
+  
+  wm title .saveAsBox "SaveAs"
+  set Param(Frame) [TabFrame::Add .saveAsBox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
+
+  labelframe $Param(Frame).config -text "Configurations"
+  pack $Param(Frame).config -side top -fill x -padx 5 -ipady 2 -anchor n
+
+  frame $Param(Frame).config.folder
+    label $Param(Frame).config.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
+    button $Param(Frame).config.folder.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+	-command { APViz::FilePathDefine [FileBox::Create .saveAsBox $APViz::Param(Path) Save $APViz::Param(Formats) $APViz::Param(FileName)] }
+    entry $Param(Frame).config.folder.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FullName)
+    $Param(Frame).config.folder.name xview moveto 1
+    pack $Param(Frame).config.folder.lbl -side left 
+    pack $Param(Frame).config.folder.name -side left -fill both -expand True
+    pack $Param(Frame).config.folder.sel -side left -fill y
+  pack $Param(Frame).config.folder -side top -fill x -expand True
+  
+  set comment {
+  frame $Param(Frame).config.file
+    label $Param(Frame).config.file.lbl -text [lindex $Lbl(FileName) $GDefs(Lang)] -width 12 -anchor w
+    entry $Param(Frame).config.file.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FileName)
+    $Param(Frame).config.file.name xview moveto 1
+    pack $Param(Frame).config.file.lbl -side left 
+    pack $Param(Frame).config.file.name -side left -fill both -expand True
+  pack $Param(Frame).config.file -side top -fill x -expand True
+
+  bind  $Param(Frame).config.file.name <KeyRelease> { PrintBox::FilePathDefine $PrintBox::Param(FullName) }
+  }
+  
+  frame .saveAsBox.par -relief raised -bd 1
+  pack .saveAsBox.par -side top -padx 5 -fill x
+
+  frame .saveAsBox.command
+    button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile"
+    button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
+    pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
+  pack .saveAsBox.command -side top -fill x -pady 5 -padx 5
+
+  raise .saveAsBox
+  grab .saveAsBox
 }
 

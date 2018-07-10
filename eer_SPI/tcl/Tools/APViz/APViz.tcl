@@ -473,7 +473,9 @@ proc APViz::Source { Path Widget } {
 	    incr no
 	  }
 	  $Widget.add.menu add separator
-	  $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
+	  #$Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
+	  set fdg "$GDefs(Dir)/tcl/Tools/APViz/Config/Operational/Verifications/test.tcl"
+	  $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::GenerateConfigFile $fdg"
 	
 	pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
 	
@@ -1445,8 +1447,9 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
   
   set selected [lindex $Lst $Index]
   #TODO: Change filepath if needed
-  set filepath "$GDefs(Dir)/tcl/Tools/APViz/APViz/${Data(Folder)}/$Dir/$selected.tcl"
+  set filepath "$GDefs(Dir)/tcl/Tools/APViz/Config/${Data(Folder)}/$Dir/$selected.tcl"
   APViz::Source $filepath $Data(Tab)
+  set Data(ConfigPath) $filepath
 }
 
 #----------------------------------------------------------------------------
@@ -1514,7 +1517,7 @@ proc APViz::FetchConfigFiles { } {
   global GDefs
   variable Data
   
-  set dir APViz
+  set dir Config
   set path $GDefs(Dir)/tcl/Tools/APViz/
   
   APViz::FetchFiles $path $dir
@@ -1594,14 +1597,24 @@ proc APViz::FetchDates { Product Model Src } {
       }
     }
   }
+  
+  set dateList [lreplace [lsort $dateList] 0 0]
+  
   if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
     ComboBox::DelAll $Data(DateCBWidget)
     ComboBox::AddList $Data(DateCBWidget) $dateList
-    puts "UPDATING CB"
   }
   
-  set Value(Dates) [lsort $dateList]
+  set Value(Dates) $dateList
 }
+
+proc APViz::FilePathDefine { Path } {
+  variable Param
+  set Param(Path)     [file dirname $Path]
+  set Param(Filename) [file tail $Path]
+  set Param(FullName) $Path
+}
+
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::GetLevelType>
@@ -1743,6 +1756,66 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
     set Data(LayerIDs) [lreplace $IDList $Index $Index ${dataType}$Index]
   }
 }
+
+proc APViz::SaveConfigFile { } {
+  puts "Generating config file"
+}
+
+
+proc APViz::GenerateConfigFile { Path } {
+  variable Data
+  
+  if {$Data(CurrentProduct) ne ""} {
+    variable $Data(CurrentProduct)::Value
+    variable $Data(CurrentProduct)::RowID
+    #----- Parcourir les ROWID, si >= 0, ajouter au fichier
+    set fileContent {}		; #Each element is a line in the file 
+    
+    set filename [file tail $Path]
+    puts "PATH: $Path"
+    set fileID [open $Path w]
+    
+    #TODO: fetch all current data
+    #----- Geography section
+    #----- Colormap creation
+    #----- Variable Style Configs     -> what to do when several vars of same type?
+    #----- Ranges
+    set origFileID [open $Data(ConfigPath) r]
+    set origFileData [read $origFileID]
+    close $origFileID
+    
+    set origData [split $origFileData "\n"]
+    set layersIndex [lsearch -exact $origData "set Layers \{"]
+    
+    #TEMPO: copy all settings before layers
+    for {set i 0} {$i < $layersIndex} {incr i} {
+      lappend fileContent [lindex $origData $i]
+      puts $fileID [lindex $origData $i]
+    }
+    
+    puts $fileID "set Layers \{"
+    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {$RowID(Layer$i) >= 0} {
+	#----- Ajouter Layer
+	set checked 	[expr {$Value(Toggle,$i)?True:False}]
+	set model 	$Value(Models,$i)
+	set var		$Value(Vars,$i)
+	set lev		$Value(Levels,$i)
+	set run		$Value(Runs,$i)
+	set hour	$Value(Hours,$i)
+	set src		$Value(Sources,$i)
+	
+	set layer "\t$checked:$model:$var:$lev:$hour:-:$run:$src"
+	puts $fileID $layer
+      }
+    }
+    puts $fileID "\}"
+    
+    close $fileID
+  }
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::SelectFolder>
@@ -1946,6 +2019,7 @@ proc APViz::UpdateAvailableDates { Product } {
   
   if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
     puts "Updating dates   || old date: [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]"
+    #----- Afficher message
     .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
     APViz::FetchDates $Product $model $src
     after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
@@ -1953,12 +2027,13 @@ proc APViz::UpdateAvailableDates { Product } {
   
   if {$Value(Date) ne $lastModifiedDate} {
     set Value(Date) $lastModifiedDate
+    #----- Afficher message
     .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
     after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
     APViz::InitializeVars $Product
   }
   
-  set Data(AutoUpdateEventID) [after [expr {1000*30}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 3hrs
+  set Data(AutoUpdateEventID) [after [expr {1000*60*60*5}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 5hrs
   
   puts "FINISHED CHECKING"
 }
