@@ -148,7 +148,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       strtrim(stnid,' ');
       loc=NULL;
       if (!multi || strcmp(previd,stnid)!=0)
-         loc=TMetLoc_FindWithCoord(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID,&multi);
+         loc=TMetLoc_FindWithCoordIndex(Obs,NULL,stnid,(blat-9000.0)/100.0,blon/100.0,hgt-400,MET_TYPEID,&multi);
+
 
       strcpy(previd,stnid);
       // Insert station in list if not already done

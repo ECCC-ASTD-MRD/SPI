@@ -1212,6 +1212,8 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
    MetModel_Create(Interp,Name);
    obs->Model = MetModel_Get(Name);
 
+   Tcl_InitHashTable(&obs->LocationCoordIndex, TCL_STRING_KEYS);
+
    return(TCL_OK);
 }
 
@@ -1477,6 +1479,36 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
    return(loc);
 }
 
+static int hash_loc_coord(double Lat, double Lon, double Elev, char *Key)
+{
+   snprintf(Key, 64, "%d,%d,%d", (int)Lat, (int)Lon, (int)Elev);
+   return TCL_OK;
+}
+
+TMetLoc *TMetLoc_FindWithCoordIndex(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
+   (void) From;
+   (void) Id;
+   (void) Type;
+   (void) Multi;
+
+   TMetLoc *loc = NULL;
+
+   char loc_key[64];
+   hash_loc_coord(Lat, Lon, Elev, loc_key);
+
+   Tcl_HashEntry *entryPtr;
+   if((entryPtr = Tcl_FindHashEntry(&Obs->LocationCoordIndex, loc_key)) != NULL)
+      loc = (TMetLoc *) Tcl_GetHashValue(entryPtr);
+
+   /*
+    * TODO See with JP about what else to check for to emulate behavior of
+    * TMetLoc_FindWithCoord, maybe put the Id in the hash string.
+    */
+
+   return loc;
+}
+
+
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
    TMetLoc *loc;
 
@@ -1543,6 +1575,15 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    } else {
       loc->Next=NULL;
    }
+
+   char loc_key[64];
+   hash_loc_coord(Lat, Lon, Elev, loc_key);
+   int new;
+   Tcl_HashEntry *entryPtr = Tcl_CreateHashEntry(&Obs->LocationCoordIndex, loc_key, &new);
+   if(!new){
+      DBG_PRINT("There is already a hash entry with loc_key=%s\n", loc_key);
+   }
+   Tcl_SetHashValue(entryPtr, loc);
 
    return(loc);
 }
