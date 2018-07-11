@@ -38,6 +38,7 @@
 #include <math.h>
 // #define PHIL_DEBUG
 #include "debug.h"
+#include "tclMetObs_SQLite.h"
 
 static BUFR_Tables *BUFRTable=NULL;
 
@@ -1855,11 +1856,22 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
 }
 
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Codes) {
+/*
+ * Is the parameter time_t Min like the minimum timestep or something?
+ * It is called dt in MetObs_LoadBURP() so maybe it's some kind of precision or
+ * something.
+ */
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,
+      time_t Min, time_t Time,
+      int Fam, int Type, int SType,
+      int Ne, int Nv, int Nt,
+      float *Data, int *Marker,
+      EntryTableB **Codes
+){
 
    TMetElemData *ptr,*data=NULL;
 
-   data=(TMetElemData*)malloc(sizeof(TMetElemData));
+   data = (TMetElemData*) malloc(sizeof(*data));
 
    data->Ne=Ne;
    data->Nv=Nv;
@@ -1870,27 +1882,33 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Ty
    data->Time=Time;
 
    if (Data) {
-      data->Data=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
-      memcpy(data->Data,Data,data->Ne*data->Nv*data->Nt*sizeof(float));
+      const size_t nb_data = Ne * Nv * Nt;
+      const size_t nb_bytes = nb_data * sizeof(float);
+      data->Data=(float*) malloc(nb_bytes);
+      memcpy(data->Data, Data, nb_bytes);
    } else {
       data->Data=NULL;
    }
 
    if (Marker) {
-      data->Marker=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
-      memcpy(data->Marker,Marker,data->Ne*data->Nv*data->Nt*sizeof(int));
+      const size_t nb_marker = Ne * Nv * Nt;
+      const size_t nb_bytes = nb_marker * sizeof(int);
+      data->Marker=(int*) malloc(nb_bytes);
+      memcpy(data->Marker, Marker, nb_bytes);
    } else {
       data->Marker=NULL;
    }
 
    if (Codes) {
-      data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
-      memcpy(data->Code,Codes,data->Ne*sizeof(EntryTableB*));
+      const size_t nb_codes = data->Ne;
+      const size_t nb_bytes = nb_codes * sizeof(EntryTableB*);
+      data->Code = (EntryTableB**) malloc(nb_bytes);
+      memcpy(data->Code,Codes,nb_bytes);
    } else {
       data->Code=NULL;
    }
 
-   if (!(ptr=TMetElem_Add(Loc,data,Time))) {
+   if (!(ptr = TMetElem_Add(Loc,data,Time))) {
       TMetElemData_Free(data);
       free(data);
    } else {
@@ -1960,6 +1978,11 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 #ifdef HAVE_RMN
    type=f77name(wkoffit)(File,strlen(File));
 #endif
+   if(strstr(File,".sqlite") != NULL){
+      type = MET_SQLITE;
+   } else if (strstr(File, ".other") != NULL){
+     type = MET_SQLITE;
+   }
 
    App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
 
@@ -1967,6 +1990,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       case MET_BURP: res=MetObs_LoadBURP(Interp,File,Obs);  break;
       case MET_BUFR: res=MetObs_LoadBUFR(Interp,File,Obs); break;
 //Not recognized      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
+      case MET_SQLITE: res=MetObs_LoadSQLite(Interp,File,Obs); break;
       case MET_OTHER: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
                   res=MetObs_LoadASCII(Interp,File,Obs);
                }

@@ -54,6 +54,7 @@
 
 #define MET_BURP     6
 #define MET_BUFR     8
+#define MET_SQLITE   10
 #define MET_OTHER   -1
 
 #define fgetskip(BYTES,LEN,STREAM)   BYTES[0]='\0';while (fgets(BYTES,LEN,STREAM) && BYTES[0]=='#')
@@ -97,6 +98,7 @@ typedef struct TMetElem {
 typedef struct TMetLoc {
 
    char    *Id;                   // Identificateur
+   long long unsigned int id_rapport;
    char    *No;                   // Numero
    char     Tag[16];              // Tag unique
    char   **Info;                 // Autres informations
