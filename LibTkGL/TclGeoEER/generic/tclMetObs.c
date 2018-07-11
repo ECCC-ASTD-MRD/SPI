@@ -34,7 +34,10 @@
 #include "App.h"
 #include "tclMetObs.h"
 #include "Projection.h"
+#include "tclMetObs_Test.h"
 #include <math.h>
+// #define PHIL_DEBUG
+#include "debug.h"
 
 static BUFR_Tables *BUFRTable=NULL;
 
@@ -118,16 +121,22 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
+static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *CONST Objv[]);
 static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
+   FUNCBEGIN
+   (void) clientData;  // Squelch warning about unused parameter.
    TMetObs    *obs;
 
    int         idx,c,n;
-   static CONST char *sopt[] = { "create","read","write","free","define","stats","is","all","wipe","table",NULL };
-   enum               opt { CREATE,READ,WRITE,FREE,DEFINE,STATS,IS,ALL,WIPE,TABLE };
+   static CONST char *sopt[] = { "create","read","write","free","define","stats","is","all","wipe","table", "test",NULL };
+   enum               opt { CREATE,READ,WRITE,FREE,DEFINE,STATS,IS,ALL,WIPE,TABLE,TEST };
 
    Tcl_ResetResult(Interp);
+
+   for(int j = 0; j < Objc; ++j){
+      SVAL(Tcl_GetString(Objv[j]));
+   }
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
@@ -139,6 +148,9 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    }
 
    switch ((enum opt)idx) {
+      case TEST:
+         return MetObs_Test(Interp, Objc-2, Objv+2);
+         break;
       case CREATE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id [files]");
@@ -1177,7 +1189,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
+int MetObs_Create(Tcl_Interp *Interp,char *Name) {
 
    TMetObs *obs;
 
@@ -3317,6 +3329,91 @@ int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {
       TMetElemData_Free(ref);
    }
    return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_Test>
+ * Creation     : Mai 2018 Philippe Carphin
+ *
+ * But          : Permettre des tests par TCL
+ *
+ * Parametres    :
+ *   <interp>    : Interpreteur Tcl
+ *   <Objc>      : Nombre d'arguments
+ *   <Objv>      : Pointeur sur la liste des arguments (word)
+ *
+ * Retour       : Code de retour standard TCL
+ *
+ * Remarques : This test command is invoked in TCL the following way:
+ *    metobs test arg1 arg2 ... if we are in this function, it means that
+ *    Objv[0] ~ metobs
+ *    Objv[1] ~ test
+ *
+ *    Furthermore,
+ *    Objv[2] should contain a test subcommand and
+ *    Objv[3] should contain a name to be used as a key in the TCL hashmaps when
+ *    creating or looking up a TMetObs instance.
+ *
+ *    I wanted to put this in a separate file but it uses functions that are
+ *    static in this file.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
+{
+   /*
+    * Read the arguments of the command and determine the subcommand
+    */
+   const char *test_subcommands[] = {"create_test_obs", "show", "sql", NULL};
+   enum TestSubcommand              { CREATE_TEST_OBS,    SHOW,   SQL      };
+
+   enum TestSubcommand test_subcommand;
+   int rc = Tcl_GetIndexFromObj(
+         Interp,
+         Objv[0],
+         test_subcommands,
+         "metobs test subcommand",
+         TCL_EXACT,
+         (int *)&test_subcommand
+   ); if (rc != TCL_OK) return rc;
+
+   char * name = NULL;
+   if( Objc > 1 ){
+      name = Tcl_GetString(Objv[1]);
+   }
+
+   /*
+    * Dispatch to handler functions
+    */
+   TMetObs *obs = NULL;
+   switch(test_subcommand){
+      case CREATE_TEST_OBS:
+         MetObs_Create(Interp, strdup(name));
+         obs = MetObs_Get(name);
+         MetObsTest_FillTestObs(obs);
+         break;
+      case SHOW:
+         obs = MetObs_Get(name);
+         if(obs == NULL){
+            printf("No obs with name=%s found\n", name);
+         } else {
+            MetObs_ShowObs(obs);
+         }
+         break;
+      case SQL:
+         if(name == NULL){
+            name = "acars.sqlite";
+         }
+         MetObs_Create(Interp, "sql_test");
+         obs = MetObs_Get("sql_test");
+         MetObs_LoadSQLite(Interp, name, obs);
+//         MetObs_ShowObs(obs);
+         DBG_PRINT("Number of locations is %d\n", MetObs_CountLoc(obs));
+
+         break;
+   }
+
+   FUNCEND
+   return TCL_OK;
 }
 
 #endif
