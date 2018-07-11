@@ -8,7 +8,7 @@
  * Fichier      : tclMetObs.c
  * Creation     : Avril 2006 - J.P. Gauthier
  *
- * Description  : Fichier d'entete du module Obs.
+ * Description  : Fichier d'implémentation du module Obs.
  *
  * Remarques    :
  *
