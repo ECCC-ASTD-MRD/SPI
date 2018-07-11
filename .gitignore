@@ -44,3 +44,4 @@ callgrind.out.*
 #----- Emacs files
 .projectfile
 spi.html
+*.d

@@ -262,7 +262,7 @@ TEA_ADD_HEADERS([generic/Data_Calc.h
 
 TEA_ADD_INCLUDES([-Igeneric])
 TEA_ADD_LIBS([-lc -lexpat -lGL -lGLU -ltk8.6 -L${TCL_BIN_DIR}/TkglCanvas8.6 -lTkglCanvas8.6])
-TEA_ADD_CFLAGS([])
+TEA_ADD_CFLAGS([-g -MMD])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([])
 

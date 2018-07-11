@@ -357,6 +357,7 @@ clean:
 	-test -z "$(BINARIES)" || rm -f $(BINARIES)
 	-rm -f *.$(OBJEXT) core *.core
 	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-rm -f *.d
 
 distclean: clean
 	-rm -f $(CONFIG_CLEAN_FILES)
@@ -479,3 +480,4 @@ y.tab.h: $(GRAMMAR).y
 y.tab.c: $(GRAMMAR).y
 	$(YACC) $(YACCFLAGS) $(GRAMMAR).y
 
+-include *.d
