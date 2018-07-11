@@ -1079,7 +1079,11 @@ proc APViz::AssignVariable { Product Index } {
 	  catch { 
 	    eval fstdfield configure $fieldID $Params(${var}$lev) 
 	  }
-	}      
+	} elseif { [info exist Params(${var}$hour)] } {
+	  catch { 
+	    eval fstdfield configure $fieldID $Params(${var}$hour) 
+	  }
+	}    
 	
 	fstdfield configure $fieldID -active $Value(Toggle,$Index)
 	AttributeColor $var $fieldID							; # Changer la couleur si la variable a deja ete assignee
@@ -1582,6 +1586,7 @@ proc APViz::FetchDates { Product Model Src } {
   variable DataSrc
   variable ${Product}::Value
   
+  puts "FETCHING DATES"
   if {$Src eq "BURP"} {
     set path $DataSrc(OBS,$Model)/
   } else {
@@ -1601,6 +1606,7 @@ proc APViz::FetchDates { Product Model Src } {
   }
   
   set dateList [lreplace [lsort $dateList] 0 0]
+  puts "New dates: $dateList"
   
   if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
     ComboBox::DelAll $Data(DateCBWidget)
@@ -1660,22 +1666,43 @@ proc APViz::GenerateConfigFile { Path } {
     puts "PATH: $Path"
     set fileID [open $Path w]
     
-    #TODO: fetch all current data
-    #----- Geography section
-    #----- Colormap creation
-    #----- Variable Style Configs     -> what to do when several vars of same type?
-    #----- Ranges
+    #----- Get data from original config file
     set origFileID [open $Data(ConfigPath) r]
     set origFileData [read $origFileID]
     close $origFileID
     
     set origData [split $origFileData "\n"]
-    set layersIndex [lsearch -exact $origData "set Layers \{"]
+
+    set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
+    set rangesIndex [lsearch -glob $origData "*Range*"]
+    set layersIndex [lsearch -exact $origData "set Layers \{"] 
     
+    #TODO: fetch all current data
     #TEMPO: copy all settings before layers
     for {set i 0} {$i < $layersIndex} {incr i} {
-      lappend fileContent [lindex $origData $i]
       puts $fileID \t[lindex $origData $i]
+    }
+    
+    #----- Geography section
+    #----- Colormap creation
+ 
+    #----- COPY TIL VARCONFIGS
+    set comment { 
+    APViz::WriteConfigSection $fileID $origData 0 $varConfigsIndex
+    #----- Variable Style Configs     -> what to do when several vars of same type?
+    if {$Data(SaveVariables)} {
+      set configLst [APViz::GetVariableConfigs $Data(CurrentProduct)]
+      foreach config $configLst {
+	puts $fileID $config
+      }
+    } else {
+      APViz::WriteConfigSection $fileID $varConfigsIndex 0 $rangesIndex
+    }
+    
+    #----- Ranges
+    #----- COPY Ranges section
+    puts "copying Range section: From $rangesIndex to $layersIndex" 
+    APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
     }
     
     puts $fileID "set Layers \{"
@@ -1704,6 +1731,48 @@ proc APViz::GenerateConfigFile { Path } {
     close $fileID
     
     APViz::UpdateProductInterface
+  }
+}
+
+proc APViz::GetVariableConfigs { Product } {
+  variable Data
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  
+  set configLst {}
+  
+  #----- return a list of configs
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if {[set rowID $RowID(Layer$i)] >= 0} {
+      set var	$Value(Vars,$i)
+      set hour	$Value(Hours,$i)
+      set ID [lindex $Data(LayerIDs) $rowID]
+      
+      set comment {
+      if {[fstdfield is $ID]} {
+	set command fstdfield
+      } else {
+	set command metobs
+      }
+      }
+      
+      set colorMap [fstdfield configure $ID -colormap]
+      set renderContour [fstdfield configure $ID -rendercontour]
+      set mapAll [fstdfield configure $ID -mapall]
+      set intervalMode [fstdfield configure $ID -intervalmode]
+      
+      #set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
+      set params "set Params(${var}$hour) \"-colormap $colorMap -font XFont12 -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
+      lappend configLst $params
+      puts $params
+    }
+  }
+  return $configLst
+}
+
+proc APViz::WriteConfigSection { FileID DataSource StartIndex EndIndex } { 
+  for {set i $StartIndex} {$i < $EndIndex} {incr i} {
+    puts $FileID [lindex $DataSource $i]
   }
 }
 
@@ -1751,10 +1820,14 @@ proc APViz::GetLevelType { Source } {
 
 proc APViz::InitializeVars { Product } {
   variable ${Product}::Value
+  variable ${Product}::RowID
   variable Data
   
+  puts "INITIALIZING VARS"
   for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
-    APViz::AssignVariable $Product $idx
+    if {$RowID(Layer$idx) >= 0} {
+      APViz::AssignVariable $Product $idx
+    }	
   }
 }
 
@@ -1995,7 +2068,7 @@ proc APViz::TranslateExpression { Product Expr } {
 
 proc APViz::UpdateProductInterface { } { 
   variable Data
-  puts "UPDATING INTERFACE"
+  
   #----- Mise a jour des listes
   APViz::FetchConfigFiles
   APViz::MacroCategory
@@ -2044,7 +2117,8 @@ proc APViz::UpdateRange { } {
 proc APViz::ValidateDate { Product Date } {
   variable Lbl
   variable ${Product}::Value
-
+  
+  puts "Looking for $Date in $Value(Dates)"
   set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
   
   if {!$result} {
@@ -2111,6 +2185,7 @@ proc APViz::UpdateAvailableDates { Product } {
   }
   
   if {$Value(Date) ne $lastModifiedDate} {
+    puts "Changing last modified date   ---   $Value(Date) to $lastModifiedDate"
     set Value(Date) $lastModifiedDate
     #----- Afficher message
     .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
@@ -2118,7 +2193,7 @@ proc APViz::UpdateAvailableDates { Product } {
     APViz::InitializeVars $Product
   }
   
-  set Data(AutoUpdateEventID) [after [expr {1000*60*60*5}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 5hrs
+  set Data(AutoUpdateEventID) [after [expr {1000*60*60*5}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 5hrs:1000*60*60*5
   
   puts "FINISHED CHECKING"
 }
