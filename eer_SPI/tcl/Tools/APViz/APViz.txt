@@ -57,4 +57,5 @@ namespace eval APViz {
    set Bubble(Save)		{ "Enregistrer sous" "Save As" }
    set Bubble(SaveRange)	{ "Les rangées non sélectionnées conserveront leur valeur exacte dans le nouveau fichier de configuration." \
 				  "Unchecked rows with keep their exact value in the new configuration files." }
+   set Bubble(BlockDate)	{ "Bloquer la mise à jour automatique de la date sélectionnée" "Block the automatic update of the selected date"}
 }

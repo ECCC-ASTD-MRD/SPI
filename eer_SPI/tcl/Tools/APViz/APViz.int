@@ -178,7 +178,7 @@ proc APViz::SaveAsWindow { } {
   toplevel .saveAsBox
   wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
   wm transient .saveAsBox $Data(Frame)
-  wm geom      .saveAsBox 425x300+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+  wm geom      .saveAsBox 425x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
   
   .saveAsBox configure -cursor left_ptr
   
@@ -208,32 +208,7 @@ proc APViz::SaveAsWindow { } {
     pack $Param(Frame).config.folder.sel -side left -fill y
   pack $Param(Frame).config.folder -side top -fill x -expand True
   
-  
   set comment {
-  labelframe $Param(Frame).ranges -text "Ranges grid"
-  pack $Param(Frame).ranges -side top -fill x -padx 5 -ipady 2 -anchor n
-
-  frame $Param(Frame).ranges.grid
-  grid $Param(Frame).ranges.grid 	-column 0 -row 0 -padx 0.25
-  
-  #----- Display rows
-  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-    if {$RowID(Layer$i) >= 0} {
-      set layer [lindex $Data(Layers) $Value(LayerType,$i)]
-      regsub \(True:|False:\) $layer "" desc
-      
-      checkbutton $Param(Frame).ranges.grid.check$i -variable Data(SaveRange,$i) -onvalue True -offvalue False
-      $Param(Frame).ranges.grid.check$i deselect
-      label $Param(Frame).ranges.grid.row$i -text "Row$RowID(Layer$i): "
-      label $Param(Frame).ranges.grid.lbl$i -text $desc
-      
-      grid $Param(Frame).ranges.grid.check$i	-column 0 -row [expr $RowID(Layer$i) + 1] -padx 0.25
-      grid $Param(Frame).ranges.grid.row$i 	-column 1 -row [expr $RowID(Layer$i) + 1] -padx 0.25
-      grid $Param(Frame).ranges.grid.lbl$i 	-column 2 -row [expr $RowID(Layer$i) + 1] -padx 0.25
-    }
-  }
-  }
-  
   labelframe $Param(Frame).rangesC -text "Ranges"
   pack $Param(Frame).rangesC -side top -fill x -padx 5 -ipady 2 -anchor n
   
@@ -262,20 +237,7 @@ proc APViz::SaveAsWindow { } {
       Bubble::Create $Param(Frame).rangesC.row$i $layerDesc
     }
   }
-  
-  labelframe $Param(Frame).configs -text "Configurations"
-  pack $Param(Frame).configs -side top -fill x -padx 5 -ipady 2 -anchor n
-  
-  set configList [list Projection Viewport Variables]
-  foreach item $configList {
-    set itemLow [string tolower $item]
-    frame $Param(Frame).configs.$itemLow
-      checkbutton $Param(Frame).configs.$itemLow.cb -variable APViz::Data(Save$item) -onvalue True -offvalue False
-      $Param(Frame).configs.$itemLow.cb deselect
-      label $Param(Frame).configs.$itemLow.lbl -text "Export current $item Configurations"
-      pack $Param(Frame).configs.$itemLow.cb $Param(Frame).configs.$itemLow.lbl -side left -fill x -expand True
-    pack $Param(Frame).configs.$itemLow -side top -anchor w
-  } 
+  }
   
   frame .saveAsBox.par -relief raised -bd 1
   pack .saveAsBox.par -side top -padx 5 -fill x

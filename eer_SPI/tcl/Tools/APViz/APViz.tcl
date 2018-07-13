@@ -446,19 +446,24 @@ proc APViz::Source { Path Widget } {
 	
 	#----- Configurable date
 	
-	
 	frame $Widget.range.dateConfig
-	label $Widget.range.dateConfig.lbl -text "Date: " -width 40 -anchor e 
+	label $Widget.range.dateConfig.lbl -text "Date: " -width 36 -anchor e 
 	ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars $Product"
 	set APViz::Data(DateCBWidget) $Widget.range.dateConfig.cb
 	set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
 	set APViz::${Product}::Value(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+	
+	checkbutton $Widget.range.dateConfig.dateLock -variable ::APViz::${Product}::Value(dateLock) -onvalue True -offvalue False \
+            -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) 
 
 	bind $Widget.range.dateConfig.cb.select <Return> "APViz::DateBinding $Product"
 	
 	grid $Widget.range.dateConfig 		-column 0 -row 0 -padx 1
 	grid $Widget.range.dateConfig.lbl 	-column 1 -row 0 -padx 1
 	grid $Widget.range.dateConfig.cb 	-column 2 -row 0 -padx 1
+	grid $Widget.range.dateConfig.dateLock 	-column 3 -row 0 -padx 1
+	
+	Bubble::Create $Widget.range.dateConfig.dateLock $APViz::Bubble(BlockDate)
 
 	::APViz::DeleteWidget $Widget.add	; # Liberer le widget
 	
@@ -1659,8 +1664,9 @@ proc APViz::GenerateConfigFile { Path } {
   if {$Data(CurrentProduct) ne ""} {
     variable $Data(CurrentProduct)::Value
     variable $Data(CurrentProduct)::RowID
-    #----- Parcourir les ROWID, si >= 0, ajouter au fichier
-    set fileContent {}		; #Each element is a line in the file 
+    
+    #----- Verify if colormaps have changed
+    set colormapLst [APViz::ManageColormaps $Data(CurrentProduct)]
     
     set filename [file tail $Path]
     puts "PATH: $Path"
@@ -1676,62 +1682,160 @@ proc APViz::GenerateConfigFile { Path } {
     set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
     set rangesIndex [lsearch -glob $origData "*Range*"]
     set layersIndex [lsearch -exact $origData "set Layers \{"] 
+    set colormapsIndex [lsearch -glob $origData "*rgba*"]
     
     #TODO: fetch all current data
     #TEMPO: copy all settings before layers
+    set comment {
     for {set i 0} {$i < $layersIndex} {incr i} {
       puts $fileID \t[lindex $origData $i]
     }
+    }
     
-    #----- Geography section
-    #----- Colormap creation
- 
     #----- COPY TIL VARCONFIGS
-    set comment { 
     APViz::WriteConfigSection $fileID $origData 0 $varConfigsIndex
+
     #----- Variable Style Configs     -> what to do when several vars of same type?
-    if {$Data(SaveVariables)} {
-      set configLst [APViz::GetVariableConfigs $Data(CurrentProduct)]
-      foreach config $configLst {
-	puts $fileID $config
-      }
-    } else {
-      APViz::WriteConfigSection $fileID $varConfigsIndex 0 $rangesIndex
+    set configLst [APViz::GetVariableConfigs $Data(CurrentProduct)]
+    foreach config $configLst {
+      puts $fileID $config
     }
     
     #----- Ranges
     #----- COPY Ranges section
     puts "copying Range section: From $rangesIndex to $layersIndex" 
     APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
-    }
     
     puts $fileID "set Layers \{"
     #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
     for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $RowID(Layer$i)] >= 0} {
-	if {$Data(SaveRangeC,$rowID)} {
-	  puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
-	} else {
-	  #----- Ajouter Layer
-	  set checked 	[expr {$Value(Toggle,$i)?True:False}]
-	  set model 	$Value(Models,$i)
-	  set var	$Value(Vars,$i)
-	  set lev	$Value(Levels,$i)
-	  set run	$Value(Runs,$i)
-	  set hour	$Value(Hours,$i)
-	  set src	$Value(Sources,$i)
-	  
-	  set layer "\t$checked:$model:$var:$lev:$hour:$run:$src"
-	  puts $fileID $layer
-	}
+	puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
       }
     }
     puts $fileID "\}"
+    
+    #----- Colormap creation
+    APViz::WriteConfigSection $fileID $origData [expr $colormapsIndex - 1] [llength $origData]
     
     close $fileID
     
     APViz::UpdateProductInterface
   }
+}
+
+proc APViz::WriteRangesConfigs { FileID DataSource } {
+  #GetDefaultValues
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if {[set rowID $RowID(Layer$i)] >= 0} {
+      #----- Ajouter Layer
+      set checked 	[expr {$Value(Toggle,$i)?True:False}]
+      set model 	$Value(Models,$i)
+      set var		$Value(Vars,$i)
+      set lev		$Value(Levels,$i)
+      set run		$Value(Runs,$i)
+      set hour	$Value(Hours,$i)
+      set src		$Value(Sources,$i)
+      
+      set layer "\t$checked:$model:$var:$lev:$hour:$run:$src"
+      puts $fileID $layer
+    }
+  }
+  
+  #----- Deplacer la valeur au debut de la liste
+  set rangeIndexes [lsearch -glob -all $DataSource "*Range(*)*"]
+  
+  foreach index $rangeIndexes {
+    puts "Treating "
+  }
+}
+
+proc APViz::ManageColormaps { Product } {
+  variable Data
+  variable DataSrc
+  variable ${Product}::Value
+  variable ${Product}::RowID
+  
+  set colorLst {}
+  
+  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+    if {[set rowID $RowID(Layer$i)] >= 0} {
+      set ID [lindex $Data(LayerIDs) $rowID]
+      if {[fstdfield is $ID]} {
+	set name [fstdfield configure $ID -colormap]
+	
+	#----- Get original
+	colormap create orig -file $DataSrc(Colormaps)/${name}.rgba
+	#----- Compare with original
+	puts "============= COMPARISON:   [APViz::CompareColormaps orig $name]"
+	
+	#----- If modified, create new colormap and save to Colormap folder with new name (AUTO generate new name)
+	#----- Create new name by adding nunmber or changing number at the end of the original name
+	#set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name\[0-9\]*.*]
+	set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name*.rgba]
+	puts "Derivatives for $name: $derivatives"
+	set comment {
+	set nbr 1
+	set newName $name$nbr
+	while {[lsearch -exact $derivates $newName.rgba] >= 0} {
+	  puts "New name $newName already exists"
+	  incr nbr
+	  set newName $name$nbr
+	}
+	
+	colormap write $newName $DataSrc(Colormaps)/$newName.rgba
+	puts "Creating new colormap $newName    ---   [colormap is $newName]"
+	
+	#----- Append name to the list
+	lappend $colorLst $newName 
+	
+	}
+	colormap free orig
+      }
+    }
+  }
+  
+  return $colorLst
+}
+
+proc APViz::CompareColormaps { ColormapA ColormapB } {
+
+  #----- Comparer A et B, retourner True si A = B
+  set params [list RGBAratio MMratio curve invertx inverty interp]
+  set comparisonResult True
+  
+  foreach param $params {
+    if {[regexp invert* $param]} {
+      set resultA [colormap configure $ColormapA -$param rgba]
+      set resultB [colormap configure $ColormapB -$param rgba]
+    } else {
+      set resultA [colormap configure $ColormapA -$param]
+      set resultB [colormap configure $ColormapB -$param]
+    }
+    #----- Compare results
+    if {![APViz::CompareLists $resultA $resultB]} {
+      return False
+    }
+  }
+  
+  return True
+}
+
+proc APViz::CompareLists { A B } {
+  puts "Comparing $A vs $B"
+  if {[llength $A] != [llength $B]} {
+    puts "NOT EQUAL LENGTHS"
+    return False
+  }
+  
+  foreach a $A b $B {
+    puts "Comparing $a and $b"
+    if {$a ne $b} {
+      puts "NOT EQUAL"
+      return False
+    }
+  }
+  return True
 }
 
 proc APViz::GetVariableConfigs { Product } {
@@ -1740,14 +1844,14 @@ proc APViz::GetVariableConfigs { Product } {
   variable ${Product}::RowID
   
   set configLst {}
-  
-  #----- return a list of configs
+
   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
     if {[set rowID $RowID(Layer$i)] >= 0} {
       set var	$Value(Vars,$i)
       set hour	$Value(Hours,$i)
       set ID [lindex $Data(LayerIDs) $rowID]
       
+      #---- TODO: GERER METOBS
       set comment {
       if {[fstdfield is $ID]} {
 	set command fstdfield
@@ -1756,13 +1860,15 @@ proc APViz::GetVariableConfigs { Product } {
       }
       }
       
-      set colorMap [fstdfield configure $ID -colormap]
+      #----- Recuperate field configurations
+      set colorMap 	[fstdfield configure $ID -colormap]
+      set color 	[fstdfield configure $ID -color]
       set renderContour [fstdfield configure $ID -rendercontour]
-      set mapAll [fstdfield configure $ID -mapall]
-      set intervalMode [fstdfield configure $ID -intervalmode]
+      set mapAll 	[fstdfield configure $ID -mapall]
+      set intervalMode 	[fstdfield configure $ID -intervalmode]
       
       #set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
-      set params "set Params(${var}$hour) \"-colormap $colorMap -font XFont12 -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
+      set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
       lappend configLst $params
       puts $params
     }
@@ -2117,11 +2223,11 @@ proc APViz::UpdateRange { } {
 proc APViz::ValidateDate { Product Date } {
   variable Lbl
   variable ${Product}::Value
-  
-  puts "Looking for $Date in $Value(Dates)"
+
   set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
   
   if {!$result} {
+    puts "Looking for $Date in $Value(Dates)   FAILED"
     ::Dialog::Info . $Lbl(WrongDate)
   }
   
@@ -2153,8 +2259,6 @@ proc APViz::UpdateAvailableDates { Product } {
   variable DataSrc
   variable Lbl
 
-  puts "UPDATE CHECK"
-  
   #----- Recuperer le premier index qui na pas ete supprime
   set i 0
   while {$RowID(Layer$i) == -1 } {
@@ -2174,7 +2278,7 @@ proc APViz::UpdateAvailableDates { Product } {
   #----- Verifier s'il y a eu des changements dans le dossier
   set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
   
-  puts "$lastModifiedDate"
+  puts "UPDATE CHECK $lastModifiedDate"
   
   if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
     puts "Updating dates   || old date: [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]"
@@ -2184,16 +2288,17 @@ proc APViz::UpdateAvailableDates { Product } {
     after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
   }
   
-  if {$Value(Date) ne $lastModifiedDate} {
+  if {!$Value(dateLock) && ($Value(Date) ne [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]])} {
     puts "Changing last modified date   ---   $Value(Date) to $lastModifiedDate"
-    set Value(Date) $lastModifiedDate
+    puts "Dates: $Value(Dates)"
+    set Value(Date) [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]
     #----- Afficher message
     .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
     after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
     APViz::InitializeVars $Product
   }
   
-  set Data(AutoUpdateEventID) [after [expr {1000*60*60*5}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 5hrs:1000*60*60*5
+  set Data(AutoUpdateEventID) [after [expr {1000*60*60}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 10min:1000*60*10
   
   puts "FINISHED CHECKING"
 }
