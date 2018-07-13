@@ -1822,14 +1822,14 @@ proc APViz::CompareColormaps { ColormapA ColormapB } {
 }
 
 proc APViz::CompareLists { A B } {
-  puts "Comparing $A vs $B"
+  #puts "Comparing $A vs $B"
   if {[llength $A] != [llength $B]} {
     puts "NOT EQUAL LENGTHS"
     return False
   }
   
   foreach a $A b $B {
-    puts "Comparing $a and $b"
+    #puts "Comparing $a and $b"
     if {$a ne $b} {
       puts "NOT EQUAL"
       return False
