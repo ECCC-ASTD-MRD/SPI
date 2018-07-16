@@ -1598,9 +1598,6 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    hash_loc_coord(Lat, Lon, Elev, loc_key);
    int new;
    Tcl_HashEntry *entryPtr = Tcl_CreateHashEntry(&Obs->LocationCoordIndex, loc_key, &new);
-   if(!new){
-      DBG_PRINT("There is already a hash entry with loc_key=%s\n", loc_key);
-   }
    Tcl_SetHashValue(entryPtr, loc);
 
    return(loc);
@@ -3435,8 +3432,6 @@ static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
          MetObs_Create(Interp, "sql_test");
          obs = MetObs_Get("sql_test");
          MetObs_LoadSQLite(Interp, name, obs);
-//         MetObs_ShowObs(obs);
-         DBG_PRINT("Number of locations is %d\n", MetObs_CountLoc(obs));
 
          break;
    }

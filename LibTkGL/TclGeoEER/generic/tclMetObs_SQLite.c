@@ -29,6 +29,7 @@
  *
  *=========================================================
  */
+#include "App.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,8 +38,6 @@
 #include "tclMetObs_Test.h"
 #include "sqlite3.h"
 #include "tclMetObs_SQLiteConfigParser.h"
-#define PHIL_DEBUG
-#include "debug.h"
 #include <inttypes.h>
 
 static const int INSTRUCTIONS_PER_CALL = 9000;
@@ -93,31 +92,32 @@ int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
    sqlite3_progress_handler(db, INSTRUCTIONS_PER_CALL, query_progress_callback, &nb_instr);
 
    if(get_obs_query(Filename)){
-      DBG_PRINT("Could not find the right query for your database based on the filename %s\n", Filename);
+      App_Log(ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
       retval = TCL_ERROR;
       goto out_close;
    }
 
    if(loop_over_join(Obs, db)){
-      DBG_PRINT("Something went wrong with loop_over_join()\n");
+      App_Log(ERROR, "Something went wrong with loop_over_join()\n");
       retval = TCL_ERROR;
       goto out_close;
    }
 
    if(set_obs_elements(Interp, Obs, db)){
-      DBG_PRINT("Somthing went wrong when setting Obs->Elems\n");
+      App_Log(ERROR, "Somthing went wrong when setting Obs->Elems\n");
       retval = TCL_ERROR;
       goto out_close;
    }
 
-out_close:
+ out_close:
    fputs("\33[2K", stderr);
    if(sqlite3_close(db) == SQLITE_BUSY){
-      DBG_PRINT("Couldn't close database connection\n");
+      App_Log(ERROR, "Couldn't close database connection\n");
       retval = TCL_ERROR;
    }
    return retval;
 }
+
 static int get_obs_query(const char *Filename)
 {
   char *key = NULL;
@@ -143,7 +143,7 @@ static int set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, sqlite3 *Db)
    int retval = TCL_ERROR;
    sqlite3_stmt *unique_elements;
    if(sqlite3_prepare_v2(Db, elem_query, -1, &unique_elements, NULL)){
-      DBG_PRINT("Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
+      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
       retval = TCL_ERROR;
       goto out;
    }
@@ -166,7 +166,7 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
    unsigned int code = atoi((const char *)sqlite3_column_text(Element, 0));
 
    if((eb = MetObs_BUFRFindTableCode(code)) == NULL){
-      DBG_PRINT("MetObs_BUFRFindTableCode(%u) failed\n", code);
+      App_Log(ERROR, "%s(): MetObs_BUFRFindTableCode(%u) failed\n", __func__, code);
       return TCL_ERROR;
    }
 
@@ -192,10 +192,10 @@ static int loop_over_join(TMetObs *Obs, sqlite3 *Db)
 {
    sqlite3_stmt *jro_stmt;
    int retval = TCL_OK;
-   DBG_PRINT("%s\n", obs_query);
+   App_Log(INFO, "MetObs_SQLite : Running query \n%s\n", obs_query);
 
    if(sqlite3_prepare_v2(Db, obs_query, -1, &jro_stmt, NULL)){
-     DBG_PRINT("Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
+      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
      retval = TCL_ERROR;
      goto out;
    }
@@ -209,7 +209,6 @@ static int loop_over_join(TMetObs *Obs, sqlite3 *Db)
    TMetLoc *current_loc = get_loc_join(Obs, jro_stmt);
    current_loc->id_rapport = sqlite3_column_int64(jro_stmt, SPI_ID_RAPPORT);
 
-   int nb_rows = 1;
    do {
      uint64_t id_rapport = sqlite3_column_int64(jro_stmt, SPI_ID_RAPPORT);
      if( current_loc->id_rapport != id_rapport){
@@ -221,9 +220,6 @@ static int loop_over_join(TMetObs *Obs, sqlite3 *Db)
        goto out;
      }
 
-     // if(nb_rows > 100000) { break; }
-     if(nb_rows % 50000 == 0){DBG_PRINT("nb_rows = %d\n", nb_rows);}
-     nb_rows++;
    } while(sqlite3_step(jro_stmt) != SQLITE_DONE);
 
 out:
@@ -337,11 +333,11 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
    const char *ebCodeStr = (const char *)sqlite3_column_text(Row, SPI_ELEMENT);
    unsigned int ebCode;
    if(sscanf(ebCodeStr, "%u", &ebCode) != 1){
-      DBG_PRINT( "ERROR sscanf could not convert elemnt code string %s to integer\n", ebCodeStr);
+      App_Log(ERROR, "could not convert elemnt code string %s to integer with sscanf\n", ebCodeStr);
       return TCL_ERROR;
    }
    if((eb = MetObs_BUFRFindTableCode(ebCode)) == NULL){
-      DBG_PRINT("Could not obtain EntryTableB* for ebCode=%u\n", ebCode);
+      App_Log(ERROR, "Could not obtain EntryTableB* for ebCode=%u\n", ebCode);
       return TCL_ERROR;
    }
    *Eb_out = eb;
