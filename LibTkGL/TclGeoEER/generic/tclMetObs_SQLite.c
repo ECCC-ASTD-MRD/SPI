@@ -110,7 +110,6 @@ int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
    }
 
  out_close:
-   fputs("\33[2K", stderr);
    if(sqlite3_close(db) == SQLITE_BUSY){
       App_Log(ERROR, "Couldn't close database connection\n");
       retval = TCL_ERROR;
@@ -350,19 +349,13 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
  */
 static int query_progress_callback(void *params)
 {
-   int *nb_instr = (int *) params;
-   *nb_instr += INSTRUCTIONS_PER_CALL;
-
    static int i = 0;
-   static int calls = 0;
-   static char spinner[] = "-\\|/";
-   static int spinner_chars = sizeof(spinner)/sizeof(char) - 1;
-   calls++;
-   i = (i+1) % spinner_chars;
-   char c = spinner[i];
-   fprintf(stderr,
-           "\r %c ===== progress_callback_calls : %d === dbvm Instructions: %d ====== %c       \r",
-           c, calls, *nb_instr, c
-   );
-   return 0;
+   static char spinner[] = {'-', '\\', '|', '/'};
+   fprintf(stderr, "\r %c\r", spinner[i++ % sizeof(spinner)]);
+   return 0; // This function could interact with the GUI, it could return -1 if
+             // the user presses a cancel button.  The function could check if
+             // the user has pressed a cancel button and return -1.  SQLite
+             // looks at the return value of this function to determine whether
+             // to continue or not.  I.E. if this function return non-zero, it
+             // makes SQLite abort.
 }
