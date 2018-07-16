@@ -55,6 +55,16 @@ enum SpiSQLiteElements {
 static const char *CONFIG_FILE = "/users/dor/afsm/pca/Documents/GitHub/SPI_PHIL/LibTkGL/TclGeoEER/MetObsTest/spi_queries.txt";
 static const char *obs_query = NULL;
 static const char *elem_query = NULL;
+// TODO Invent a struct that will act as an object for this file
+/* Something like
+struct SqliteHelper {
+    char *db_filename;
+    sqlite3 *db;
+    sqlite3_stmt *obs_query;
+    sqlite3_stmt *elem_query;
+}
+That way I can have an init method and an end method, or at least something so I
+can get rid of those two global variables up here */
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObs_LoadSQLite>
  * Creation     : Mai 2018 Philippe Carphin
@@ -73,10 +83,10 @@ static const char *elem_query = NULL;
  * Remarques :
  *
  *--------------------------------------------------------------------------------------------------------------*/
-static int loop_over_join(TMetObs *Obs, sqlite3 *Db);
+static int loop_over_observations(TMetObs *Obs, sqlite3 *Db);
 static int set_obs_elements(Tcl_Interp *Interp, TMetObs *obs, sqlite3 *Db);
 static int get_obs_query(const char *Filename);
-static int query_progress_callback(void *params);
+static int query_progress_callback(void *Params);
 int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
 {
    (void) Interp;
@@ -97,8 +107,8 @@ int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
       goto out_close;
    }
 
-   if(loop_over_join(Obs, db)){
-      App_Log(ERROR, "Something went wrong with loop_over_join()\n");
+   if(loop_over_observations(Obs, db)){
+      App_Log(ERROR, "Something went wrong with loop_over_observations()\n");
       retval = TCL_ERROR;
       goto out_close;
    }
@@ -178,69 +188,71 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
 }
 
 /*******************************************************************************
- * loop_over_join(TMetObs *obs, sqlite3 *db)
+ * loop_over(TMetObs *obs, sqlite3 *db)
  *
  * Iterate over all observations.  The data of each line in the natural join of
  * Rapport and Observation.
  * Since the observations are ordered by id_rapport, we can add consecutive
  * entries that have the same id_rapport to the same TMetLoc.
 *******************************************************************************/
-static TMetLoc *get_loc_join(TMetObs *Obs, sqlite3_stmt *Row);
-static int read_observation_join(TMetLoc *loc, sqlite3_stmt *Row);
-static int loop_over_join(TMetObs *Obs, sqlite3 *Db)
+static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row);
+static int read_observation(TMetLoc *loc, sqlite3_stmt *Row);
+static int loop_over_observations(TMetObs *Obs, sqlite3 *Db)
 {
-   sqlite3_stmt *jro_stmt;
+   sqlite3_stmt *stmt;
    int retval = TCL_OK;
    App_Log(INFO, "MetObs_SQLite : Running query \n%s\n", obs_query);
 
-   if(sqlite3_prepare_v2(Db, obs_query, -1, &jro_stmt, NULL)){
+   if(sqlite3_prepare_v2(Db, obs_query, -1, &stmt, NULL)){
       App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
      retval = TCL_ERROR;
      goto out;
    }
 
+   // TODO Move the checking of id_rapport to read_observation.
    /*
     * We have to read one row before the loop because the loop because the loop
     * has to check whether the next row has the same id_rapport as the
     * current_loc
     */
-   sqlite3_step(jro_stmt);
-   TMetLoc *current_loc = get_loc_join(Obs, jro_stmt);
-   current_loc->id_rapport = sqlite3_column_int64(jro_stmt, SPI_ID_RAPPORT);
+   sqlite3_step(stmt);
+   TMetLoc *current_loc = get_loc(Obs, stmt);
+   current_loc->id_rapport = sqlite3_column_int64(stmt, SPI_ID_RAPPORT);
 
    do {
-     uint64_t id_rapport = sqlite3_column_int64(jro_stmt, SPI_ID_RAPPORT);
+     uint64_t id_rapport = sqlite3_column_int64(stmt, SPI_ID_RAPPORT);
      if( current_loc->id_rapport != id_rapport){
-       current_loc = get_loc_join(Obs, jro_stmt);
+       current_loc = get_loc(Obs, stmt);
      }
 
-     if(read_observation_join(current_loc, jro_stmt) != TCL_OK){
+     if(read_observation(current_loc, stmt) != TCL_OK){
        retval = TCL_ERROR;
        goto out;
      }
 
-   } while(sqlite3_step(jro_stmt) != SQLITE_DONE);
+   } while(sqlite3_step(stmt) != SQLITE_DONE);
 
 out:
-   sqlite3_finalize(jro_stmt);
+   sqlite3_finalize(stmt);
    return retval;
 }
 
+
 /*******************************************************************************
- * get_loc_join(TMetObs *Obs, sqlite3_stmt *jro_stmt)
+ * get_loc(TMetObs *Obs, sqlite3_stmt *jro_stmt)
  *
  * Get a TMetLoc object corresponding to the current row of the table
  * Rapport NATURAL JOIN Observation
 *******************************************************************************/
-static double get_elev_join(sqlite3_stmt *Row);
-static TMetLoc *get_loc_join(TMetObs *Obs, sqlite3_stmt *Row)
+static double get_elev(sqlite3_stmt *Row);
+static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
 {
    TMetLoc *loc = NULL;
    const unsigned char *stnid = sqlite3_column_text(Row, SPI_ID_STN);
    uint64_t id_rapport = sqlite3_column_int64(Row, SPI_ID_RAPPORT);
    double lat = sqlite3_column_double(Row, SPI_LAT);
    double lon =  sqlite3_column_double(Row, SPI_LON);
-   double elev = get_elev_join(Row);
+   double elev = get_elev(Row);
 
    char multi; // La fonction le met a 0 ou 1 alors pourquoi c'est pas un int?
    loc = TMetLoc_FindWithCoordIndex(
@@ -276,7 +288,7 @@ static TMetLoc *get_loc_join(TMetObs *Obs, sqlite3_stmt *Row)
  * pointers: if the choice is made once per file, it doesn't make any sense to
  * check 6 conditions for each of the 1 000 000 rows of a table.
 *******************************************************************************/
-static double get_elev_join(sqlite3_stmt *Row)
+static double get_elev(sqlite3_stmt *Row)
 {
    // if( type is flight data )
    return sqlite3_column_double(Row, SPI_ELEV);
@@ -289,8 +301,9 @@ static double get_elev_join(sqlite3_stmt *Row)
  * supplied TMetLoc.
 *******************************************************************************/
 static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out);
-static int read_observation_join(TMetLoc *loc, sqlite3_stmt *Row)
+static int read_observation(TMetLoc *loc, sqlite3_stmt *Row)
 {
+   // TODO : See todo in loop_over_observations TMetLoc *loc = get_loc(Row);
    time_t dt = 0; // un genre de temps minimal
    time_t time = sqlite3_column_int64(Row, SPI_DATE_VALIDITE);
 
@@ -318,6 +331,7 @@ static int read_observation_join(TMetLoc *loc, sqlite3_stmt *Row)
       return TCL_ERROR;
    }
 
+   // TODO Add error handling here and with caller of this function.
    TMetElem_Insert(loc, dt, time, fam, type, stype, ne, nv, nt, fval, val, ebCodes);
   
    return TCL_OK;
@@ -332,7 +346,7 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
    const char *ebCodeStr = (const char *)sqlite3_column_text(Row, SPI_ELEMENT);
    unsigned int ebCode;
    if(sscanf(ebCodeStr, "%u", &ebCode) != 1){
-      App_Log(ERROR, "could not convert elemnt code string %s to integer with sscanf\n", ebCodeStr);
+      App_Log(ERROR, "could not convert element code string %s to integer with sscanf\n", ebCodeStr);
       return TCL_ERROR;
    }
    if((eb = MetObs_BUFRFindTableCode(ebCode)) == NULL){
@@ -347,7 +361,7 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
  * Callback that that will be run every INSTRUCTIONS_PER_CALL instructions of
  * the database virtual machine
  */
-static int query_progress_callback(void *params)
+static int query_progress_callback(void *Params)
 {
    static int i = 0;
    static char spinner[] = {'-', '\\', '|', '/'};
