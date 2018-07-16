@@ -1528,42 +1528,32 @@ TMetLoc *TMetLoc_FindWithCoordIndex(TMetObs *Obs,TMetLoc *From,char *Id,double L
 
 
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
-   TMetLoc *loc;
 
-   loc=From?From->Next:Obs->Loc;
-
-   while(loc) {
-      if (Type==MET_TYPENO) {
-         if (strcmp(loc->No,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
-      } else if (Type==MET_TYPEID) {
-         if (strcmp(loc->Id,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
-      } else {
-         if (strcmp(loc->Tag,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
+   TMetLoc *start=From?From->Next:Obs->Loc;
+   for(TMetLoc *loc = start; loc; loc = loc->Next){
+      char *cmp;
+      switch(Type){
+         case MET_TYPENO: cmp = loc->No; break;
+         case MET_TYPEID: cmp = loc->Id; break;
+         default: cmp = loc->Tag; break;
       }
-      loc=loc->Next;
+
+      if(strcmp(cmp, Id) != 0)
+         continue;
+
+      /*
+       * Id matches, now check coordinates
+       */
+      if (     (Lat==-999.0  || loc->Coord.Lat==Lat)
+            && (Lon==-999.0  || loc->Coord.Lon==Lon)
+            && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
+         *Multi=0; // We found a loc with the same Id and same Coordinates
+         return loc;
+      } else {
+         *Multi=1; // There is a loc with the same Id but different coordinates
+      }
    }
-   return(loc);
+   return NULL;
 }
 
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev) {
