@@ -973,8 +973,8 @@ proc APViz::Source { Path Widget } {
    
    set Data(CurrentProduct) $product
    ${product}::Load $Path $product $Widget
-      
-   APViz::UpdateAvailableDates $product
+   
+   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $product]	; # Update a chaque 10min:1000*60*10
    
    APViz::InitializeVars $product
 }
@@ -1608,6 +1608,12 @@ proc APViz::FetchDates { Product Model Src } {
 	lappend dateList $date
       }
     }
+    
+    #----- Speed up dateList construction, typically: containing 7 dates
+    if {[llength $dateList] > 6} {
+      puts "ALL DATES FOUND! : $dateList"
+      break
+    }
   }
   
   set dateList [lreplace [lsort $dateList] 0 0]
@@ -1785,11 +1791,11 @@ proc APViz::ManageColormaps { Product } {
 	  puts "Derivatives for $name: $derivatives"
 	  
 	  set nbr 1
-	  set newName ${name}_$nbr
+	  set newName ${name}$nbr
 	  while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
 	    puts "New name $newName already exists"
 	    incr nbr
-	    set newName ${name}_$nbr
+	    set newName ${name}$nbr
 	  }
 
 	  colormap create $newName
@@ -1902,8 +1908,7 @@ proc APViz::InitializeVars { Product } {
   variable ${Product}::Value
   variable ${Product}::RowID
   variable Data
-  
-  puts "INITIALIZING VARS"
+
   for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
     if {$RowID(Layer$idx) >= 0} {
       APViz::AssignVariable $Product $idx
