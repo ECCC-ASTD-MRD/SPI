@@ -2,7 +2,7 @@ all:
 	cd .. ; make
 
 install:
-	cd ../.. ; ./makeit -spi
+	cd .. ; make install
 
 reconf:
 	cd ../.. ; ./makeit -spi -reconf
