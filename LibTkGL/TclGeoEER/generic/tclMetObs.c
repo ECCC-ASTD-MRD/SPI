@@ -251,6 +251,11 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case WIPE:
          TclY_HashWipe(&MetObsTable,(TclY_HashFreeEntryDataFunc*)MetObs_Free);
          TclY_HashWipe(&MetRepTable,(TclY_HashFreeEntryDataFunc*)TMetElemData_Free);
+         break;
+
+      default:
+         fprintf(stderr, "%s(): Default case reached\n",__func__);
+         return TCL_ERROR;
    }
    return(TCL_OK);
 }
