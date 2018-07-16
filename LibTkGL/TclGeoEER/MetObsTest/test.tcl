@@ -16,11 +16,11 @@ metobs table -readmaster D /home/binops/afsi/sio/env_ubuntu-14.04-amd64-64/afsis
 metobs create ACARS
 metobs read ACARS /fs/cetus/fs2/ops/cmoe/afsr005/Data/SQLite/acars.sqlite
 
-puts "====== NOTE : The following test is supposed to fail because of those"
-puts "============= new undoucmented element codes.  Good thing the errors"
-puts "============= are well handled and reported :)"
+puts "TEST.TCL : ====== NOTE : The following test is supposed to fail because of those"
+puts "TEST.TCL : ============= new undoucmented element codes.  Good thing the errors"
+puts "TEST.TCL : ============= are well handled and reported :)"
 metobs create OTHEROBS
 metobs read OTHEROBS /users/dor/afsm/pca/Documents/GitHub/SPI_PHIL/LibTkGL/TclGeoEER/MetObsTest/sql.other
 # metobs test show sql_test
 
-puts done
+puts "TEST.TCL : done"
