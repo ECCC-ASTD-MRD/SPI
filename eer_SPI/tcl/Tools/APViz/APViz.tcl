@@ -1660,6 +1660,7 @@ proc APViz::FilePathDefine { Path } {
 
 proc APViz::GenerateConfigFile { Path } {
   variable Data
+  variable DataSrc
   
   if {$Data(CurrentProduct) ne ""} {
     variable $Data(CurrentProduct)::Value
@@ -1667,6 +1668,7 @@ proc APViz::GenerateConfigFile { Path } {
     
     #----- Verify if colormaps have changed
     set colormapLst [APViz::ManageColormaps $Data(CurrentProduct)]
+    puts "ColormapList: $colormapLst"
     
     set filename [file tail $Path]
     puts "PATH: $Path"
@@ -1696,13 +1698,14 @@ proc APViz::GenerateConfigFile { Path } {
     APViz::WriteConfigSection $fileID $origData 0 $varConfigsIndex
 
     #----- Variable Style Configs     -> what to do when several vars of same type?
-    set configLst [APViz::GetVariableConfigs $Data(CurrentProduct)]
+    set configLst [APViz::GetVariableConfigs $Data(CurrentProduct) $colormapLst]
     foreach config $configLst {
       puts $fileID $config
     }
     
     #----- Ranges
     #----- COPY Ranges section
+    #TODO DEFAULT VALUES
     puts "copying Range section: From $rangesIndex to $layersIndex" 
     APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
     
@@ -1718,12 +1721,23 @@ proc APViz::GenerateConfigFile { Path } {
     #----- Colormap creation
     APViz::WriteConfigSection $fileID $origData [expr $colormapsIndex - 1] [llength $origData]
     
+    #----- Include new colormap creations
+    foreach colorMap $colormapLst {
+      if {[lsearch -glob $origData "*$colorMap.rgba*"] < 0} {
+	#----- Insert new colormap creation
+	set colormapCreation "colormap create $colorMap -file $DataSrc(Colormaps)/${colorMap}.rgba"
+	puts "WRITE NEW LINE: $colormapCreation"
+	puts $fileID $colormapCreation
+      }
+    }
+    
     close $fileID
     
     APViz::UpdateProductInterface
   }
 }
 
+##### NOT USED RIGHT NOW
 proc APViz::WriteRangesConfigs { FileID DataSource } {
   #GetDefaultValues
   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -1762,35 +1776,34 @@ proc APViz::ManageColormaps { Product } {
     if {[set rowID $RowID(Layer$i)] >= 0} {
       set ID [lindex $Data(LayerIDs) $rowID]
       if {[fstdfield is $ID]} {
-	set name [fstdfield configure $ID -colormap]
+	set name [fstdfield configure $ID -colormap]	
+	puts "IS $name MODIFIED? [set isModified [colormap modified $name]]"
 	
-	#----- Get original
-	colormap create orig -file $DataSrc(Colormaps)/${name}.rgba
-	#----- Compare with original
-	puts "============= COMPARISON:   [APViz::CompareColormaps orig $name]"
-	
-	#----- If modified, create new colormap and save to Colormap folder with new name (AUTO generate new name)
-	#----- Create new name by adding nunmber or changing number at the end of the original name
-	#set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name\[0-9\]*.*]
-	set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name*.rgba]
-	puts "Derivatives for $name: $derivatives"
-	set comment {
-	set nbr 1
-	set newName $name$nbr
-	while {[lsearch -exact $derivates $newName.rgba] >= 0} {
-	  puts "New name $newName already exists"
-	  incr nbr
-	  set newName $name$nbr
+	if {$isModified} {
+	  #-----Create new name by adding nunmber or changing number at the end of the original name
+	  set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name*.rgba]
+	  puts "Derivatives for $name: $derivatives"
+	  
+	  set nbr 1
+	  set newName ${name}_$nbr
+	  while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
+	    puts "New name $newName already exists"
+	    incr nbr
+	    set newName ${name}_$nbr
+	  }
+
+	  colormap create $newName
+	  colormap copy $newName $name
+	  colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
+	  puts "Creating new colormap $newName    ---   [colormap is $newName]"
+	  
+	  #----- Append name to the list
+	  lappend colorLst $newName
+	  
+	  #TODO: Write new colormap in config to create
+	} else {
+	  lappend colorLst $name
 	}
-	
-	colormap write $newName $DataSrc(Colormaps)/$newName.rgba
-	puts "Creating new colormap $newName    ---   [colormap is $newName]"
-	
-	#----- Append name to the list
-	lappend $colorLst $newName 
-	
-	}
-	colormap free orig
       }
     }
   }
@@ -1798,47 +1811,7 @@ proc APViz::ManageColormaps { Product } {
   return $colorLst
 }
 
-proc APViz::CompareColormaps { ColormapA ColormapB } {
-
-  #----- Comparer A et B, retourner True si A = B
-  set params [list RGBAratio MMratio curve invertx inverty interp]
-  set comparisonResult True
-  
-  foreach param $params {
-    if {[regexp invert* $param]} {
-      set resultA [colormap configure $ColormapA -$param rgba]
-      set resultB [colormap configure $ColormapB -$param rgba]
-    } else {
-      set resultA [colormap configure $ColormapA -$param]
-      set resultB [colormap configure $ColormapB -$param]
-    }
-    #----- Compare results
-    if {![APViz::CompareLists $resultA $resultB]} {
-      return False
-    }
-  }
-  
-  return True
-}
-
-proc APViz::CompareLists { A B } {
-  #puts "Comparing $A vs $B"
-  if {[llength $A] != [llength $B]} {
-    puts "NOT EQUAL LENGTHS"
-    return False
-  }
-  
-  foreach a $A b $B {
-    #puts "Comparing $a and $b"
-    if {$a ne $b} {
-      puts "NOT EQUAL"
-      return False
-    }
-  }
-  return True
-}
-
-proc APViz::GetVariableConfigs { Product } {
+proc APViz::GetVariableConfigs { Product ColorMaps } {
   variable Data
   variable ${Product}::Value
   variable ${Product}::RowID
@@ -1861,7 +1834,8 @@ proc APViz::GetVariableConfigs { Product } {
       }
       
       #----- Recuperate field configurations
-      set colorMap 	[fstdfield configure $ID -colormap]
+      #set colorMap 	[fstdfield configure $ID -colormap]
+      set colorMap [lindex $ColorMaps $RowID(Layer$i)]
       set color 	[fstdfield configure $ID -color]
       set renderContour [fstdfield configure $ID -rendercontour]
       set mapAll 	[fstdfield configure $ID -mapall]
