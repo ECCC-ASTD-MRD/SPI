@@ -1,13 +1,62 @@
+/*=========================================================
+ * Environnement Canada
+ * Centre Meteorologique Canadien
+ * 2100 Trans-Canadienne
+ * Dorval, Quebec
+ *
+ * Projet       : Chargemetn de fichier SQLite
+ * Fichier      : tclMetObs_SQLiteConfigParser
+ * Creation     : 2018-07 - Philippe Carphin
+
+ * Description : La ce fichier regarde dans un fichier de
+ *               configurations pour obtenir des requêtes
+ *               SQL marquées par une clé. Ceci permet aux
+ *               utilisateurs de choisir la requête que
+ *               SPI va utiliser pour parcourir la BD.
+ *
+ *               Voir documentation pour les contraintes
+ *               que ces requêtes doivent respecter pour
+ *               être utilisables.
+ *
+ * Remarques : Ce module ne fait aucune validation des
+ *             requêtes.
+ *
+ * License : This library is free software; you can
+ *    redistribute it and/or modify it under the terms of
+ *    the GNU Lesser General Public License as published
+ *    by the Free Software Foundation, version 2.1 of the
+ *    License.
+ *
+ *    This library is distributed in the hope that it will
+ *    be useful, but WITHOUT ANY WARRANTY; without even
+ *    the implied warranty of MERCHANTABILITY or FITNESS
+ *    FOR A PARTICULAR PURPOSE. See the GNU Lesser General
+ *    Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser
+ *    General Public License along with this library; if
+ *    not, write to the Free Software Foundation, Inc., 59
+ *    Temple Place - Suite 330,
+ *
+ *=========================================================
+ */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
 
+/********************************************************************************
+ * Name        : Basic string manipulation functions for the parser
+ * Description : Used to handle whitespace, comments checking prefixes
+ *******************************************************************************/
 int starts_with(const char *line, const char *prefix);
 #define IS_WHITE(x) ((x) == ' ' || (x) == '\t' || (x) == '\n');
 int is_white(const char *line);
 int ignore_line(const char *line);
 
+/*
+ * Parser state and response
+ */
 struct SpiKeyValue {
    FILE *f;
    int   line;
@@ -16,17 +65,43 @@ struct SpiKeyValue {
    char *elem_query;
 };
 
+/********************************************************************************
+ * Name        : cpfgets(char *s, int n, struct SpiKeyValue *this)
+ * Description : Wrapper for doing fgets and incrementing the current line in
+ *               the parser state for error reporting.
+ * Arguments   : s : out param for the string read from the filename
+ *               n : max number of chars to read
+ *            this : Parser state
+ * Return      : Pointer to string read from file
+ * Remarks     : 
+ *******************************************************************************/
 static char *cpfgets(char *s, int n, struct SpiKeyValue *this)
 {
    this->line++;
    return fgets(s, n, this->f);
 }
 
-/********************************************************************************
- * Interface function for SPI schema interaction files.  Finds the correct
- * observation and element queries needed for SPI to load a database whose schema
- * is designated by the paramter key.
- ********************************************************************************/
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : MetObsSQLite_GetQueries(const char *Filename, const char *Key, char **ObsQueryOut, char **ElemQueryOut)
+ *
+ * Creation     : 2018-07 par Philippe Carphin
+ *
+ * But : Interface function for SPI schema interaction files. Finds the correct
+ *       observation and element queries needed for SPI to load a database whose
+ *       schema is designated by the paramter key.
+ *
+ * Parametres   :
+ *   <Filename> : The path to the config file to be parsed
+ *   <Key>      : The key to look for in the file
+ *<ObsQueryOut> : Out parameter for the observation query
+ *<ElemQueryOut>: Out parameter for the element query
+ *
+ * Retour       : Code d'erreur standard (0 succès, -1 échec)
+ *
+ * Remarques    : 
+ *
+ *--------------------------------------------------------------------------------------------------------------*/
+
 static int ParseFile(struct SpiKeyValue *this);
 int MetObsSQLite_GetQueries(const char *Filename, const char *Key, char **ObsQueryOut, char **ElemQueryOut)
 {
@@ -49,11 +124,18 @@ int MetObsSQLite_GetQueries(const char *Filename, const char *Key, char **ObsQue
 }
 
 /********************************************************************************
- * Drives the parsing of schemas across the loaded file.  Ignores all lines until
- * a line is found starting with '#BEGIN_SCHEMA xyz'.  It extracts the key and if
- * it matches, the function hands control to ParseSchema.  If the key doens't
- * match, then it continues till the next '#BEGIN_SCHEMA abc'.
- ********************************************************************************/
+ * Name        : ParseFile(struct SpiKeyValue *this)
+
+ * Description : Drives the parsing of schemas across the loaded file. Ignores
+ *               all lines until a line is found starting with '#BEGIN_SCHEMA
+ *               xyz'. It extracts the key and if it matches, the function hands
+ *               control to ParseSchema. If the key doens't match, then it
+ *               continues till the next '#BEGIN_SCHEMA abc'.
+ * Arguments   : this (the parser state)
+ * Return      : Standard error codes
+ * Remarks     : The only thing we are allowed to see in this state is
+ * #BEGIN_SCHEMA, anything else is an error.
+ *******************************************************************************/
 static int ParseSchema(struct SpiKeyValue *this);
 static int SkipSchema(struct SpiKeyValue *this);
 static int ParseFile(struct SpiKeyValue *this)
@@ -88,9 +170,13 @@ static int ParseFile(struct SpiKeyValue *this)
 }
 
 /********************************************************************************
- * Ignore everything until an #END_SCHEMA is found, look at what you're ignoring
- * a bit just to detect errors, in case there is a #BEGIN_SCHEMA
- ********************************************************************************/
+ * Name        : SkipSchema(struct SpiKeyValue *this)
+ * Description : Advance the parser past the next #END_SCHEMA token
+ * Arguments   : this (the parser state)
+ * Return      : Standard error codes
+ * Remarks : Ignores everything except #END_SCHEMA which signals that we're
+ *           done, and #BEGIN_SCHEMA which is an error.
+ *******************************************************************************/
 static int SkipSchema(struct SpiKeyValue *this)
 {
    char line[1024];
@@ -107,9 +193,14 @@ static int SkipSchema(struct SpiKeyValue *this)
 }
 
 /********************************************************************************
- * Parse a schema. Parse "#BEGIN_QUERY" blocks until an #END_SCHEMA is
- * encountered
- ********************************************************************************/
+ * Name        : ParseSchema(struct SpiKeyValue *this)
+ * Description : Parse the inside of a #BEGIN_SCHEMA ... #END_SCHEMA
+ * Arguments   : this (the parser state)
+ * Return      : standard error codes
+ * Remarks     : The only token allowed is #BEGIN_QUERY, which causes a change
+ *               to the ParseQuery state and #END_SCHEMA which causes an exit
+ *               from this state.
+ *******************************************************************************/
 static int ParseQuery(struct SpiKeyValue *this, const char *query_name);
 static int ParseSchema(struct SpiKeyValue *this)
 {
@@ -143,12 +234,21 @@ static int ParseSchema(struct SpiKeyValue *this)
 }
 
 /********************************************************************************
- *
- ********************************************************************************/
+ * Name        : ParseQuery(struct SpiKeyValue *this, const char *query_name)
+ * Description : Parse a query (basically accumulates all the text up to
+ *               #END_QUERY)
+ * Arguments   : this (parser state)
+ *               query_name (name parsed by ParseSchema when it saw the
+ *                          #BEGIN_QUERY line)
+ *                          It is used to decide where to put the query text in
+ *                          the parser's response fields
+ * Return      : standard error codes
+ * Remarks     : #END
+ *******************************************************************************/
 static int ParseQuery(struct SpiKeyValue *this, const char *query_name)
 {
    char line[1024];
-   char query_str[2048] = {0};
+   char query_str[4096] = {0};
    int query_start = this->line;
    while(cpfgets(line, sizeof(line), this)){
       if(ignore_line(line))
@@ -163,8 +263,11 @@ static int ParseQuery(struct SpiKeyValue *this, const char *query_name)
          return -1;
       }
 
-      size_t spc_lft = strlen(query_str) - sizeof(query_str);
-      strncat(query_str, line, spc_lft);
+      size_t space_left = sizeof(query_str) - strlen(query_str) - 1;
+      if(space_left < strlen(line)){
+         fprintf(stderr, "Your query is too long for %s()'s buffer of 4096 chars\n", __func__);
+      }
+      strncat(query_str, line, space_left);;
    }
 
    fprintf(stderr, "UNEXPECTED END OF FILE");
@@ -184,13 +287,14 @@ done:
 
 
 /********************************************************************************
- *
+ * Check if prefix is a prefix of line
  ********************************************************************************/
 int starts_with(const char *line, const char *prefix){
    return strncmp(line, prefix, strlen(prefix)) == 0;
 }
+
 /********************************************************************************
- *
+ * check if a line is only whitespace
  ********************************************************************************/
 int is_white(const char *line)
 {
@@ -205,7 +309,7 @@ int is_white(const char *line)
 }
 
 /********************************************************************************
- *
+ * Check if a line is to be ignored
  ********************************************************************************/
 int ignore_line(const char *line)
 {
