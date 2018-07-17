@@ -56,10 +56,12 @@ static const char *CONFIG_FILE = "/users/dor/afsm/pca/Documents/GitHub/SPI_PHIL/
 // TODO Invent a struct that will act as an object for this file
 //  Something like
 struct SqliteHelper {
-    char *db_filename;
-    sqlite3 *db;
-    char *obs_query;
-    char *elem_query;
+   char *db_filename;
+   sqlite3 *db;
+   char *obs_query;
+   char *elem_query;
+   sqlite3_stmt *obs_stmt;
+   sqlite3_stmt *elem_stmt;
 } sqlh;
 // That way I can have an init method and an end method, or at least something so I
 // can get rid of those two global variables up here */
@@ -81,54 +83,59 @@ struct SqliteHelper {
  * Remarques :
  *
  *--------------------------------------------------------------------------------------------------------------*/
+static int sqlite_helper_init(const char *Filename);
+static int sqlite_helper_finalize();
 static int loop_over_observations(TMetObs *Obs, sqlite3 *Db);
 static int set_obs_elements(Tcl_Interp *Interp, TMetObs *obs, sqlite3 *Db);
-static int get_obs_query(const char *Filename);
 static int query_progress_callback(void *Params);
 int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
 {
    (void) Interp;
    int retval = TCL_OK;
-   sqlite3 *db;
-   if(sqlite3_open(Filename, &db)){
-      fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+
+   if(sqlite_helper_init(Filename)){
       retval = TCL_ERROR;
       goto out_close;
    }
 
-   int nb_instr = 0;
-   sqlite3_progress_handler(db, INSTRUCTIONS_PER_CALL, query_progress_callback, &nb_instr);
-
-   if(get_obs_query(Filename)){
-      App_Log(ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
-      retval = TCL_ERROR;
-      goto out_close;
-   }
-
-   if(loop_over_observations(Obs, db)){
+   if(loop_over_observations(Obs, sqlh.db)){
       App_Log(ERROR, "Something went wrong with loop_over_observations()\n");
       retval = TCL_ERROR;
       goto out_close;
    }
 
-   if(set_obs_elements(Interp, Obs, db)){
+   if(set_obs_elements(Interp, Obs, sqlh.db)){
       App_Log(ERROR, "Somthing went wrong when setting Obs->Elems\n");
       retval = TCL_ERROR;
       goto out_close;
    }
 
  out_close:
-   if(sqlite3_close(db) == SQLITE_BUSY){
-      App_Log(ERROR, "Couldn't close database connection\n");
+   if(sqlite_helper_finalize()){
       retval = TCL_ERROR;
    }
    return retval;
 }
 
-static int get_obs_query(const char *Filename)
+static int sqlite_helper_finalize()
 {
-  char *key = NULL;
+   int retval = TCL_OK;
+   if(sqlite3_close(sqlh.db) == SQLITE_BUSY){
+      App_Log(ERROR, "Couldn't close database connection\n");
+      retval = TCL_ERROR;
+   }
+   sqlite3_finalize(sqlh.obs_stmt);
+   sqlite3_finalize(sqlh.elem_stmt);
+   free(sqlh.obs_query);
+   free(sqlh.elem_query);
+   free(sqlh.db_filename);
+   return retval;
+}
 
+static int sqlite_helper_init(const char *Filename)
+{
+   sqlh.db_filename = strdup(Filename);
+  char *key = NULL;
   if(strstr(Filename, "acars"))
     key = "acars";
   else if(strstr(Filename, "other"))
@@ -136,7 +143,32 @@ static int get_obs_query(const char *Filename)
   else if(strstr(Filename, "2018"))
     key = "other";
 
-  return MetObsSQLite_GetQueries(CONFIG_FILE, key,(char **)&(sqlh.obs_query), (char **)&(sqlh.elem_query));
+
+  if(sqlite3_open(Filename, &sqlh.db)){
+     fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(sqlh.db));
+     return TCL_ERROR;
+  }
+
+  int nb_instr = 0;
+  sqlite3_progress_handler(sqlh.db, INSTRUCTIONS_PER_CALL, query_progress_callback, &nb_instr);
+
+  if(MetObsSQLite_GetQueries(CONFIG_FILE, key,(char **)&(sqlh.obs_query), (char **)&(sqlh.elem_query))){
+     App_Log(ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
+     return TCL_ERROR;
+  }
+
+  if(sqlite3_prepare_v2(sqlh.db, sqlh.obs_query, -1, &sqlh.obs_stmt, NULL)){
+     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.obs_query, sqlite3_errmsg(sqlh.db));
+     return TCL_ERROR;
+  }
+
+  if(sqlite3_prepare_v2(sqlh.db, sqlh.elem_query, -1, &sqlh.elem_stmt, NULL)){
+     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.elem_query, sqlite3_errmsg(sqlh.db));
+     return TCL_ERROR;
+  }
+
+  return TCL_OK;
+
 }
 
 /*******************************************************************************
@@ -148,12 +180,7 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
 static int set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, sqlite3 *Db)
 {
    int retval = TCL_ERROR;
-   sqlite3_stmt *unique_elements;
-   if(sqlite3_prepare_v2(Db, sqlh.elem_query, -1, &unique_elements, NULL)){
-      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.elem_query, sqlite3_errmsg(Db));
-      retval = TCL_ERROR;
-      goto out;
-   }
+   sqlite3_stmt *unique_elements = sqlh.elem_stmt;
 
    while(sqlite3_step(unique_elements) != SQLITE_DONE){
       if(add_obs_element(Interp, Obs, unique_elements) != TCL_OK){
@@ -163,7 +190,6 @@ static int set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, sqlite3 *Db)
    retval = TCL_OK;
 
 out:
-   sqlite3_finalize(unique_elements);
    return retval;
 }
 
@@ -197,27 +223,15 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row);
 static int read_observation(TMetObs *Obs, sqlite3_stmt *Row);
 static int loop_over_observations(TMetObs *Obs, sqlite3 *Db)
 {
-   sqlite3_stmt *stmt;
-   int retval = TCL_OK;
-   App_Log(INFO, "MetObs_SQLite : Running query \n%s\n", sqlh.obs_query);
+   sqlite3_stmt *observations = sqlh.obs_stmt;
 
-   if(sqlite3_prepare_v2(Db, sqlh.obs_query, -1, &stmt, NULL)){
-      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.obs_query, sqlite3_errmsg(Db));
-     retval = TCL_ERROR;
-     goto out;
-   }
-
-   while(sqlite3_step(stmt) != SQLITE_DONE){
-     if(read_observation(Obs, stmt) != TCL_OK){
-       retval = TCL_ERROR;
-       goto out;
+   while(sqlite3_step(observations) != SQLITE_DONE){
+     if(read_observation(Obs, observations) != TCL_OK){
+       return TCL_ERROR;
      }
    }
 
-
-out:
-   sqlite3_finalize(stmt);
-   return retval;
+   return TCL_OK;
 }
 
 
