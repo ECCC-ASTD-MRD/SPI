@@ -9,7 +9,7 @@
   strftime("%s",date_validite) AS date_validite,
   valeur AS valeur,
   element AS element
-  FROM Rapport NATURAL JOIN Observation ORDER BY id_rapport;;
+  FROM Rapport NATURAL JOIN Observation;
 #END_QUERY
 #BEGIN_QUERY elem
 Aquarius, the age of aquarius
@@ -39,7 +39,7 @@ I'm just a poor boy nobody loves me
   strftime("%s",date_validite) as date_validite,
   valeur as valeur,
   element as element
-  FROM Rapport NATURAL JOIN Observation ORDER BY id_rapport;
+  FROM Rapport NATURAL JOIN Observation;
 #END_QUERY
 #BEGIN_QUERY elem
   SELECT DISTINCT element FROM Observation;
@@ -58,7 +58,7 @@ I'm just a poor boy nobody loves me
   strftime("%s",date_validite) AS date_validite,
   valeur AS valeur,
   element AS element
-  FROM Rapport NATURAL JOIN Observation ORDER BY id_rapport;
+  FROM Rapport NATURAL JOIN Observation;
 #END_QUERY
 #BEGIN_QUERY elem
   SELECT DISTINCT element FROM Observation;

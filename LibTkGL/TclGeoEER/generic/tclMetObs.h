@@ -98,7 +98,6 @@ typedef struct TMetElem {
 typedef struct TMetLoc {
 
    char    *Id;                   // Identificateur
-   long long unsigned int id_rapport;
    char    *No;                   // Numero
    char     Tag[16];              // Tag unique
    char   **Info;                 // Autres informations

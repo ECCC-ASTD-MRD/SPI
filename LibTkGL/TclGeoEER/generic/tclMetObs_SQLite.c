@@ -279,7 +279,6 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
 {
    TMetLoc *loc = NULL;
    const unsigned char *stnid = sqlite3_column_text(Row, SPI_ID_STN);
-   uint64_t id_rapport = sqlite3_column_int64(Row, SPI_ID_RAPPORT);
    double lat = sqlite3_column_double(Row, SPI_LAT);
    double lon =  sqlite3_column_double(Row, SPI_LON);
    double elev = sqlite3_column_double(Row, SPI_ELEV);
@@ -306,8 +305,6 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
             elev  // double Elev
       );
    }
-   // TODO Talk about this addition of id_rapport to the TMetLoc structure.
-   loc->id_rapport = id_rapport;
 
    return loc;
 }
