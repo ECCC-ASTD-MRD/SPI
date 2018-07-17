@@ -160,97 +160,97 @@ proc APViz::Window { } {
 }
 
 proc APViz::SaveAsWindow { } {
-  global GDefs
-  
-  variable Param
-  variable Lbl
-  variable Data
-  variable Bubble
-  
-  if {$Data(CurrentProduct) eq ""} {
-    ::Dialog::Info . $Lbl(SelectProduct)
-    return
-  }
-  
-  variable $Data(CurrentProduct)::Value
-  variable $Data(CurrentProduct)::RowID
-  
-  APViz::DeleteWidget .saveAsBox
-  
-  toplevel .saveAsBox
-  wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
-  wm transient .saveAsBox $Data(Frame)
-  wm geom      .saveAsBox 425x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
-  
-  .saveAsBox configure -cursor left_ptr
-  
-  set Param(Frame) ""
-  
-  #----- Set path according to user selections
-  set Param(Path) $Param(InitPath)$Data(Folder)/$Data(MacroCategory)/
-  set Param(FullName) $Param(Path)$Param(Filename)
-  
-  TabFrame::Create .saveAsBox.tab 1 ""
-  pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5
-  
-  wm title .saveAsBox "SaveAs"
-  set Param(Frame) [TabFrame::Add .saveAsBox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
+   global GDefs
 
-  labelframe $Param(Frame).config -text "Configurations"
-  pack $Param(Frame).config -side top -fill x -padx 5 -ipady 2 -anchor n
+   variable Param
+   variable Lbl
+   variable Data
+   variable Bubble
 
-  frame $Param(Frame).config.folder
-    label $Param(Frame).config.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
-    button $Param(Frame).config.folder.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-	-command { APViz::FilePathDefine [FileBox::Create .saveAsBox $APViz::Param(Path) Save $APViz::Param(Formats) $APViz::Param(Filename)] }
-    entry $Param(Frame).config.folder.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FullName)
-    $Param(Frame).config.folder.name xview moveto 1
-    pack $Param(Frame).config.folder.lbl -side left 
-    pack $Param(Frame).config.folder.name -side left -fill both -expand True
-    pack $Param(Frame).config.folder.sel -side left -fill y
-  pack $Param(Frame).config.folder -side top -fill x -expand True
-  
-  set comment {
-  labelframe $Param(Frame).rangesC -text "Ranges"
-  pack $Param(Frame).rangesC -side top -fill x -padx 5 -ipady 2 -anchor n
-  
-  label $Param(Frame).rangesC.desc -text [lindex $Lbl(RangeDesc) $GDefs(Lang)] -justify left -wraplength 410
-  pack $Param(Frame).rangesC.desc -side top -anchor w
-  
-  Bubble::Create $Param(Frame).rangesC.desc $Bubble(SaveRange) 40
-  
-  #----- Display rows (pack)
-  for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-    if {$RowID(Layer$i) >= 0} {
-      frame $Param(Frame).rangesC.row$i
-	set var		$Value(Vars,$i)
-	set lev		$Value(Levels,$i)
-	set layer "$var, $lev"
-	
-	set layerDesc [lindex $Data(Layers) $Value(LayerType,$i)]
-	regsub \(True:|False:\) $layerDesc "" layerDesc
-	
-	label $Param(Frame).rangesC.row$i.lbl -text "Row$i: $layer"
-	checkbutton $Param(Frame).rangesC.row$i.check -variable APViz::Data(SaveRangeC,$i) -onvalue True -offvalue False
-	$Param(Frame).rangesC.row$i.check deselect
+   if {$Data(CurrentProduct) eq ""} {
+      ::Dialog::Info . $Lbl(SelectProduct)
+      return
+   }
 
-	pack $Param(Frame).rangesC.row$i.check $Param(Frame).rangesC.row$i.lbl -side left -fill x -expand True
-      pack $Param(Frame).rangesC.row$i -side top -anchor w
-      Bubble::Create $Param(Frame).rangesC.row$i $layerDesc
-    }
-  }
-  }
-  
-  frame .saveAsBox.par -relief raised -bd 1
-  pack .saveAsBox.par -side top -padx 5 -fill x
+   variable $Data(CurrentProduct)::Value
+   variable $Data(CurrentProduct)::RowID
 
-  frame .saveAsBox.command
-    button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile ; APViz::DeleteWidget .saveAsBox"
-    button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
-    pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
-  pack .saveAsBox.command -side top -fill x -pady 5 -padx 5
+   APViz::DeleteWidget .saveAsBox
 
-  raise .saveAsBox
-  grab .saveAsBox
+   toplevel .saveAsBox
+   wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
+   wm transient .saveAsBox $Data(Frame)
+   wm geom      .saveAsBox 425x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+
+   .saveAsBox configure -cursor left_ptr
+
+   set Param(Frame) ""
+
+   #----- Set path according to user selections
+   set Param(Path) $Param(InitPath)$Data(Folder)/$Data(MacroCategory)/
+   set Param(FullName) $Param(Path)$Param(Filename)
+
+   TabFrame::Create .saveAsBox.tab 1 ""
+   pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5
+
+   wm title .saveAsBox "SaveAs"
+   set Param(Frame) [TabFrame::Add .saveAsBox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
+
+   labelframe $Param(Frame).config -text "Configurations"
+   pack $Param(Frame).config -side top -fill x -padx 5 -ipady 2 -anchor n
+
+   frame $Param(Frame).config.folder
+      label $Param(Frame).config.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
+      button $Param(Frame).config.folder.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+         -command { APViz::FilePathDefine [FileBox::Create .saveAsBox $APViz::Param(Path) Save $APViz::Param(Formats) $APViz::Param(Filename)] }
+      entry $Param(Frame).config.folder.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FullName)
+      $Param(Frame).config.folder.name xview moveto 1
+      pack $Param(Frame).config.folder.lbl -side left 
+      pack $Param(Frame).config.folder.name -side left -fill both -expand True
+      pack $Param(Frame).config.folder.sel -side left -fill y
+   pack $Param(Frame).config.folder -side top -fill x -expand True
+
+   set comment {
+   labelframe $Param(Frame).rangesC -text "Ranges"
+   pack $Param(Frame).rangesC -side top -fill x -padx 5 -ipady 2 -anchor n
+
+   label $Param(Frame).rangesC.desc -text [lindex $Lbl(RangeDesc) $GDefs(Lang)] -justify left -wraplength 410
+   pack $Param(Frame).rangesC.desc -side top -anchor w
+
+   Bubble::Create $Param(Frame).rangesC.desc $Bubble(SaveRange) 40
+
+   #----- Display rows (pack)
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {$RowID(Layer$i) >= 0} {
+         frame $Param(Frame).rangesC.row$i
+            set var		$Value(Vars,$i)
+            set lev		$Value(Levels,$i)
+            set layer "$var, $lev"
+            
+            set layerDesc [lindex $Data(Layers) $Value(LayerType,$i)]
+            regsub \(True:|False:\) $layerDesc "" layerDesc
+            
+            label $Param(Frame).rangesC.row$i.lbl -text "Row$i: $layer"
+            checkbutton $Param(Frame).rangesC.row$i.check -variable APViz::Data(SaveRangeC,$i) -onvalue True -offvalue False
+            $Param(Frame).rangesC.row$i.check deselect
+
+            pack $Param(Frame).rangesC.row$i.check $Param(Frame).rangesC.row$i.lbl -side left -fill x -expand True
+         pack $Param(Frame).rangesC.row$i -side top -anchor w
+         Bubble::Create $Param(Frame).rangesC.row$i $layerDesc
+      }
+   }
+   }
+
+   frame .saveAsBox.par -relief raised -bd 1
+   pack .saveAsBox.par -side top -padx 5 -fill x
+
+   frame .saveAsBox.command
+      button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile ; APViz::DeleteWidget .saveAsBox"
+      button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
+      pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
+   pack .saveAsBox.command -side top -fill x -pady 5 -padx 5
+
+   raise .saveAsBox
+   grab .saveAsBox
 }
 
