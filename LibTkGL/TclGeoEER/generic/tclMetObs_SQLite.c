@@ -70,14 +70,13 @@ struct SQLiteHelper {
  *
  * Parametres   :
  *    <obs>     : Objet TMetObs qui sera rempli avec les données de la BD
- *                L'objet TMetObs doit avoir été initialisé au préalable
- *                Pour l'instant, c'ets fait dans la fonction MetObs_
+ *                L'objet TMetObs doit avoir été initialisé au préalable.
  *
  *   <Filename> : Nom du fichier à ouvrir
  *
  * Retour       : Code d'erreur TCL
  *
- * Remarques :
+ * Remarques    :
  *
  *--------------------------------------------------------------------------------------------------------------*/
 static int sqlite_helper_init(struct SQLiteHelper *sqlh, const char *Filename);
@@ -115,25 +114,45 @@ int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
    return retval;
 }
 
-static int sqlite_helper_finalize(struct SQLiteHelper *sqlh)
+/********************************************************************************
+ * Name        : static int sqlite_helper_finalize(struct SQLiteHelper *sqlh)
+ * Description : Destroy database related objects
+ * Arguments   : this : the object to destroy.
+ * Return      : TCL error code
+ * Remarks     : The order is important here, the statements have to be
+ *               destroyed for us to be able to close the database connection.
+ *******************************************************************************/
+static int sqlite_helper_finalize(struct SQLiteHelper *this)
 {
    int retval = TCL_OK;
-   sqlite3_finalize(sqlh->obs_stmt);
-   sqlite3_finalize(sqlh->elem_stmt);
-   if(sqlite3_close(sqlh->db) == SQLITE_BUSY){
+   sqlite3_finalize(this->obs_stmt);
+   sqlite3_finalize(this->elem_stmt);
+   if(sqlite3_close(this->db) == SQLITE_BUSY){
       App_Log(ERROR, "Couldn't close database connection\n");
       retval = TCL_ERROR;
    }
-   free(sqlh->obs_query);
-   free(sqlh->elem_query);
-   free(sqlh->db_filename);
+   free(this->obs_query);
+   free(this->elem_query);
+   free(this->db_filename);
    return retval;
 }
 
+/********************************************************************************
+ * Name        : sqlite_helper_init(struct SQLiteHelper *this, const char *Filename)
+ * Description : Initialize database objects related to parsing weather database
+ * Arguments   : this : Object to initialize
+ *               Filename : Filename of the database file
+ * Return      : TCL error code
+ * Remarks     : The code to look at the filename is mock code, we haven't
+ *               figured out how different database types will be identified.
+ *               See MetObs_Cmd also, it was monkey patched (in 2018-07) to
+ *               dispatch to MetObs_LoadSQLite() based on the file containing
+ *               the string '.sqlite'.
+ *******************************************************************************/
 static int query_progress_callback(void *Params);
-static int sqlite_helper_init(struct SQLiteHelper *sqlh, const char *Filename)
+static int sqlite_helper_init(struct SQLiteHelper *this, const char *Filename)
 {
-   sqlh->db_filename = strdup(Filename);
+   this->db_filename = strdup(Filename);
   char *key = NULL;
   if(strstr(Filename, "acars"))
     key = "acars";
@@ -143,27 +162,26 @@ static int sqlite_helper_init(struct SQLiteHelper *sqlh, const char *Filename)
     key = "other";
 
 
-  if(sqlite3_open(Filename, &(sqlh->db))){
-     fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(sqlh->db));
+  if(sqlite3_open(Filename, &(this->db))){
+     fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(this->db));
      return TCL_ERROR;
   }
 
-  int nb_instr = 0;
-  sqlite3_progress_handler(sqlh->db, INSTRUCTIONS_PER_CALL, query_progress_callback, &nb_instr);
+  sqlite3_progress_handler(this->db, INSTRUCTIONS_PER_CALL, query_progress_callback, NULL);
 
-  sqlh->cfg_file = CONFIG_FILE;
-  if(MetObsSQLite_GetQueries(sqlh->cfg_file, key,(char **)&(sqlh->obs_query), (char **)&(sqlh->elem_query))){
+  this->cfg_file = (char *)CONFIG_FILE;
+  if(MetObsSQLite_GetQueries(this->cfg_file, key,(char **)&(this->obs_query), (char **)&(this->elem_query))){
      App_Log(ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
      return TCL_ERROR;
   }
 
-  if(sqlite3_prepare_v2(sqlh->db, sqlh->obs_query, -1, &sqlh->obs_stmt, NULL)){
-     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh->obs_query, sqlite3_errmsg(sqlh->db));
+  if(sqlite3_prepare_v2(this->db, this->obs_query, -1, &this->obs_stmt, NULL)){
+     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->obs_query, sqlite3_errmsg(this->db));
      return TCL_ERROR;
   }
 
-  if(sqlite3_prepare_v2(sqlh->db, sqlh->elem_query, -1, &sqlh->elem_stmt, NULL)){
-     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh->elem_query, sqlite3_errmsg(sqlh->db));
+  if(sqlite3_prepare_v2(this->db, this->elem_query, -1, &this->elem_stmt, NULL)){
+     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->elem_query, sqlite3_errmsg(this->db));
      return TCL_ERROR;
   }
 
@@ -171,10 +189,15 @@ static int sqlite_helper_init(struct SQLiteHelper *sqlh, const char *Filename)
 
 }
 
-/*******************************************************************************
- * set_obs_elements(Tcl_Interp *Interp, TMetObs *obs, sqlite3 *db)
- * Adds all element codes present in the file to Obs->Elems.
-*******************************************************************************/
+/********************************************************************************
+ * Name        : set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, struct SQLiteHelper *sqlh)
+ * Description : Iterate over the results of the element query
+ * Arguments   : Interp : The TCL interpreter
+ *             : Obs : The output obs for the elements
+ *             : sqlh : The SQLite helper struct.
+ * Remarks     : Since the elements get added in Obs->Elems which is a Tcl_Obj
+ *               by the Tcl interpreter needs to be passed down to it.
+ *******************************************************************************/
 static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Element);
 static int set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, struct SQLiteHelper *sqlh)
 {
@@ -192,6 +215,17 @@ out:
    return retval;
 }
 
+/********************************************************************************
+ * Name        : static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Element)
+ * Description : Add a result from the element query to Obs->Elems.
+ * Arguments   : Interp : The TCL interpreter
+ *             : Obs : The output obs for the elements
+ *             : Element : An sqlite_stmt taken as a current row
+ * Remarks     : The database contains an integer representing a BUFR code.
+ *               This is open to change because some codes are just strings
+ *               and/or cannot be mapped to a BUFR code.  See documentation
+ *               about ideas for dealing with this.
+ *******************************************************************************/
 static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Element)
 {
    EntryTableB *eb;
@@ -210,9 +244,14 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
    return TCL_OK;
 }
 
-/*******************************************************************************
- * loop_over(TMetObs *obs, sqlite3 *db)
- ********************************************************************************/
+/********************************************************************************
+ * Name        : loop_over_observations(TMetObs *Obs, struct SQLiteHelper *sqlh)
+ * Description : Drive the iteration over the rows of the query for weather data
+ * Arguments   : Obs : The TMetObs that will be populated by the data
+ *               sqlh : The database things
+ * Return      : TCL error code
+ * Remarks     : Isn't making small functions nice!
+ *******************************************************************************/
 static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row);
 static int read_observation(TMetObs *Obs, sqlite3_stmt *Row);
 static int loop_over_observations(TMetObs *Obs, struct SQLiteHelper *sqlh)
@@ -228,11 +267,14 @@ static int loop_over_observations(TMetObs *Obs, struct SQLiteHelper *sqlh)
    return TCL_OK;
 }
 
-
-/*******************************************************************************
- * 
+/********************************************************************************
+ * Name        : get_loc(TMetObs *Obs, sqlite3_stmt *Row)
+ * Description : Get appropriate location for the data in the row
+ * Arguments   : Obs : TMetObs whose TMetLocs we are going to search
+ *               Row : SQLite statement treated as a result row
+ * Return      : TMetLoc * loc : The location
+ * Remarks     : 
  *******************************************************************************/
-static double get_elev(sqlite3_stmt *Row);
 static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
 {
    TMetLoc *loc = NULL;
@@ -240,7 +282,7 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
    uint64_t id_rapport = sqlite3_column_int64(Row, SPI_ID_RAPPORT);
    double lat = sqlite3_column_double(Row, SPI_LAT);
    double lon =  sqlite3_column_double(Row, SPI_LON);
-   double elev = get_elev(Row);
+   double elev = sqlite3_column_double(Row, SPI_ELEV);
 
    char multi; // La fonction le met a 0 ou 1 alors pourquoi c'est pas un int?
    loc = TMetLoc_FindWithCoordIndex(
@@ -250,7 +292,7 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
          lat,  // double Lat,
          lon,  // double Lon,
          elev, // double Elev,
-         MET_TYPEID, //int Type, ???????????????????
+         MET_TYPEID, //int Type,
          &multi   // char *Multi
    );
 
@@ -258,7 +300,7 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
       loc = TMetLoc_New(
             Obs,  // TMetObs *Obs,
             (char *)stnid,   // char *Id,
-            NULL, // char *No, ?????????????????????
+            NULL, // char *No,
             lat,  // double Lat,
             lon,  // double Lon,
             elev  // double Elev
@@ -269,30 +311,27 @@ static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row)
 
    return loc;
 }
-/*******************************************************************************
- * Get the correct column from the table 
- * Rapport NATURAL JOIN Observation
- * We can have a bunch of small functions like this, and we can use function
- * pointers: if the choice is made once per file, it doesn't make any sense to
- * check 6 conditions for each of the 1 000 000 rows of a table.
-*******************************************************************************/
-static double get_elev(sqlite3_stmt *Row)
-{
-   // if( type is flight data )
-   return sqlite3_column_double(Row, SPI_ELEV);
-   // else if(type is something else)
-   // ...
-}
 
-/*******************************************************************************
- * Read the information from a row of Rapport NATURAL JOIN Observation into the
- * supplied TMetLoc.
-*******************************************************************************/
+/********************************************************************************
+ * Name        : read_observation(TMetObs *Obs, sqlite3_stmt *Row)
+ * Description : Read data from a result row into the TMetObs object.
+ * Arguments   : Obs : Where the data is inserted
+ *               Row : Data source (SQLite statement treated as a row)
+ * Return      : TCL error code
+ * Remarks     : For simplicity's sake, we only put one datum per TMetElemData
+ *               which is not efficient.  See documentation for ideas about
+ *               changing this.
+ *******************************************************************************/
 static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out);
 static int read_observation(TMetObs *Obs, sqlite3_stmt *Row)
 {
-   TMetLoc *loc = get_loc(Obs, Row);
-   // TODO : See todo in loop_over_observations TMetLoc *loc = get_loc(Row);
+   TMetLoc *loc;
+
+   if((loc = get_loc(Obs, Row)) == NULL){
+      App_Log(ERROR, "Could not find or create a TMetLoc matching Row's data\n");
+      return TCL_ERROR;
+   }
+
    time_t dt = 0; // un genre de temps minimal
    time_t time = sqlite3_column_int64(Row, SPI_DATE_VALIDITE);
 
@@ -320,15 +359,34 @@ static int read_observation(TMetObs *Obs, sqlite3_stmt *Row)
       return TCL_ERROR;
    }
 
-   // TODO Add error handling here and with caller of this function.
-   TMetElem_Insert(loc, dt, time, fam, type, stype, ne, nv, nt, fval, val, ebCodes);
-  
+   if(TMetElem_Insert(loc, dt, time, fam, type, stype, ne, nv, nt, fval, val, ebCodes) == NULL){
+      App_Log(DEBUG,
+              "No data inserted, possibly \"same data\" in %s()\n"
+              "     loc=%p\n"
+              "     time=%lu\n"
+              "     fval[0]=%f\n"
+              "     val[0]=%d\n",
+              __func__, loc, time, fval[0], val[0]);
+      // return TCL_ERROR;
+   }
+
    return TCL_OK;
 }
 
-/*******************************************************************************
- *
-*******************************************************************************/
+/********************************************************************************
+ * Name        : get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
+ * Description : Get an EntryTableB* corresponding to the row's Element
+ *               column.
+ * Arguments   : Row : An sqlite3_stmt treated as a row.
+ *               Eb_Out : Out param for the EntryTableB*.
+ * Return      : TCL error code
+ * Remarks     : This relies on the query providing element codes as strings.
+ *               If element codes are stored as ints, then the query will have
+ *               user a cast (https://stackoverflow.com/a/12419894/5795941) or
+ *               the other way around, queries could be made to produce integers
+ *               by possibly casting but in that case, this code would have to
+ *               be changed and all previous queries edited.
+ *******************************************************************************/
 static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
 {
    EntryTableB* eb;
@@ -346,26 +404,23 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
    return TCL_OK;
 }
 
-/*
- * Callback that that will be run every INSTRUCTIONS_PER_CALL instructions of
- * the database virtual machine
- */
+/********************************************************************************
+ * Name        : query_progress_callback(void *Params)
+ * Description : The most basic progress spinner in the world
+ * Arguments   : None
+ * Return      : 0 to continue, 1 to tell SQLite to abort what it's doing.
+ * Remarks     : As stated above, you can halt an SQLite operation by making
+ *               this function return non-zero. For example if a user presses a
+ *               cancel button. This will ONLY STOP SQLite but it WILL NOT stop
+ *               whatever you were doing with SQLite. I.E. if you halt SQLite
+ *               but keep doing sqlite3_column_text(so-and-so), you're not going
+ *               to be have a hard time finding out why you're getting
+ *               segfaults.
+ *******************************************************************************/
 static int query_progress_callback(void *Params)
 {
    static int i = 0;
    static char spinner[] = {'-', '\\', '|', '/'};
    fprintf(stderr, "\r %c\r", spinner[i++ % sizeof(spinner)]);
-   return 0; // This function could interact with the GUI, it could return -1 if
-             // the user presses a cancel button.  The function could check if
-             // the user has pressed a cancel button and return -1.  SQLite
-             // looks at the return value of this function to determine whether
-             // to continue or not.  I.E. if this function return non-zero, it
-             // makes SQLite abort.
-             // A WORD OF CAUTION : It's not clear when SQLite calls this, so if
-             // whatever logic you have checks some shared memory and notices
-             // that it should now return non-zero, then you have no idea where
-             // what you'll be doing after the stop.  An sqlite3_column_somthing
-             // could return NULL where that was impossible if this function
-             // always returns 0.  You could get NULL from a
-             // sqlite3_column_text() for a column marked NOT NULL.
+   return 0;
 }
