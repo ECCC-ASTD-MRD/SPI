@@ -1429,26 +1429,20 @@ proc APViz::CloseFiles { } {
 proc APViz::CreateColormaps { } {
    global env
    variable DataSrc
+   variable ::MapBox::Param
 
-   puts "Creating colormaps"
-
-   set path $DataSrc(Colormaps)/
+   set path $DataSrc(Colormaps)
    set colormapLst [glob -nocomplain -tails -path $path *.rgba]
-
-   set spiPath $env(HOME)/.spi/Colormap/
-   set spiColormaps [glob -nocomplain -tails -path $spiPath *.rgba]
 
    #----- Create colormaps
    foreach colormap $colormapLst {
       regsub .rgba $colormap "" colormapName
       colormap create $colormapName -file ${path}/$colormap
-      
-      #----- If not contained in spi colormap directory, save it there
-      if {[lsearch -exact $spiColormaps $colormap] < 0} {
-         puts "COLORMAP $colormap not found in spi. Creating file."
-         colormap write $colormapName ${spiPath}$colormap
-      }
    }
+   
+   #----- Add folder to MapBox paths
+   regsub /Colormap/ $path "" colormapPath
+   set Param(Paths) [concat $colormapPath $Param(Paths)]
 }
 
 #----------------------------------------------------------------------------
@@ -1811,9 +1805,7 @@ proc APViz::ManageColormaps { Product } {
                colormap create $newName
                colormap copy $newName $name
                colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
-               
-               #----- Saving in .spi directory as well
-               colormap write $newName $env(HOME)/.spi/Colormap/${newName}.rgba
+
                puts "Creating new colormap $newName    ---   [colormap is $newName]"
                
                #----- Append name to the list

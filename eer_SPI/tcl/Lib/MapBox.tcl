@@ -40,6 +40,7 @@ namespace eval MapBox {
    variable Lbl
    variable Msg
    variable Control
+   variable Param
    global env
 
    #----- Parametres de la palette de couleur associee au champs
@@ -150,6 +151,8 @@ namespace eval MapBox {
    catch {
       image create photo MAPBOXIMG -width 256 -height 20
    }
+   
+   set Param(Paths) 	$env(HOME)/.spi 
 }
 
 #-------------------------------------------------------------------------------
@@ -500,7 +503,8 @@ proc MapBox::Create { Parent Apply Map args } {
    variable Bubble
    variable Data
    variable Control
-
+   
+   puts "IN MAPBOX CREATE === Map: $Map"
    if { ![colormap is $Map] } {
       return
    }
@@ -717,11 +721,12 @@ proc MapBox::Delete { Widget } {
 proc MapBox::List { Widget } {
    global env
    variable Data
+   variable Param
 
    set Data(Maps) {}
    set maps       {}
    
-   set paths $env(HOME)/.spi  
+   set paths $Param(Paths) 
    if { [info exists env(SPI_TOOL)] } {
       set paths [concat [split $env(SPI_TOOL) :] $paths]
    }
