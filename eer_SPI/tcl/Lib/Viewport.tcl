@@ -127,6 +127,7 @@ namespace eval Viewport {
    set MapDef(Eckert_III)      { { PROJCS["World_Eckert_III",GEOGCS["GCS_WGS_1984",DATUM["WGS_1984",SPHEROID["WGS_1984",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_III"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","54013"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
    set MapDef(Eckert_V)        { { PROJCS["Sphere_Eckert_V",GEOGCS["GCS_Sphere",DATUM["Not_specified_based_on_Authalic_Sphere",SPHEROID["Sphere",6371000,0]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]],PROJECTION["Eckert_V"],PARAMETER["False_Easting",0],PARAMETER["False_Northing",0],PARAMETER["Central_Meridian",0],UNIT["Meter",1],AUTHORITY["EPSG","53011"]] } { WRAP PSEUDO } -18000000 18000000 -9000000 9000000 }
    set MapDef(HomolonsineTest) { { PROJCS["unnamed",GEOGCS["WGS 84",DATUM["unknown",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["degree",0.0174532925199433]],PROJECTION["Interrupted_Goode_Homolosine"]] } -22000000 22000000 -9000000 9000000 }
+   set MapDef(Canada_Atlas_Lambert) { { PROJCS["NAD83 / Canada Atlas Lambert",GEOGCS["NAD83",DATUM["North_American_Datum_1983",SPHEROID["GRS 1980",6378137,298.257222101,AUTHORITY["EPSG","7019"]],TOWGS84[0,0,0,0,0,0,0],AUTHORITY["EPSG","6269"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4269"]],PROJECTION["Lambert_Conformal_Conic_2SP"],PARAMETER["standard_parallel_1",49],PARAMETER["standard_parallel_2",77],PARAMETER["latitude_of_origin",49],PARAMETER["central_meridian",-95],PARAMETER["false_easting",0],PARAMETER["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","3978"]] } {WRAP} -4926566.525911789 5347437.183552671 -5396820.57509386 4623183.287829272 }
 
    set Map(Mode)        Zoom        ;#Mode de la souris (Zoom,Selection,Draw)
    set Map(X)           0           ;#Pixel en X
@@ -2034,12 +2035,14 @@ proc Viewport::ParamFrame { Frame Apply } {
       $Data(Frame).layer.ll.opt.menu add separator
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "  20 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 20.0 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "  10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 10.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   5 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 5.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   2 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 2.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   1 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 1.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.50 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.5 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   5 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  5.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   2 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  2.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   1 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  1.0 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.50 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.50 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.25 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.25 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.1 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.15 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.15 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.10 -command "$Apply configure -state normal"
+      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.05 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.05 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.01 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.01 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add separator
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 0/1" -variable Viewport::Map(CoordNum) -value 0 -command "$Apply configure -state normal"
