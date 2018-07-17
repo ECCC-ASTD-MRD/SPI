@@ -534,8 +534,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
    if (!CMap) {
       return(TCL_ERROR);
    }
-   
-   printf("CONFIGURE: %s ", CMap->Name);
 
    for(i=0;i<Objc;i++) {
 
@@ -545,7 +543,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
 
       switch ((enum opt)idx) {
          case FILE:
-	    printf("FILE ");
             if(Objc!=1) {
                if (CMap_Read(Interp,CMap,Tcl_GetString(Objv[++i]))==TCL_ERROR) {
                   return(TCL_ERROR);
@@ -562,7 +559,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(CMap->Ratio[3]));
                Tcl_SetObjResult(Interp,obj);
             } else {
-	       printf("RGBRATIO ");
 	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->Ratio[0]);
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->Ratio[1]);
@@ -578,7 +574,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(CMap->RatioMax));
                Tcl_SetObjResult(Interp,obj);
             } else {
-	       printf("MMRATIO ");
 	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->RatioMin);
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->RatioMax);
@@ -614,7 +609,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[index],-1));
                   }
                } else {
-		  printf("CURVE ");
 	          CMap->HasChanged++;
                   if (index==4) {
                      strncpy(CMap->Type[0],Tcl_GetString(Objv[++i]),16);
@@ -701,7 +695,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[index]));
                   }
                } else  {
-		  printf("INVERTX ");
 		  CMap->HasChanged++;
                   if (index==4) {
                      Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->InvertX[0]);
@@ -743,7 +736,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[index]));
                   }
                } else {
-		  printf("INVERTY ");
 		  CMap->HasChanged++;
                   if (index==4) {
                      Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->InvertY[0]);
@@ -906,7 +898,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->Interp));
             } else {
-	       printf("INTERP ");
 	       CMap->HasChanged++;
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->Interp);
                CMap_ControlDefine(CMap);
@@ -915,7 +906,6 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
       }
    }
    CMap_RatioDefine(CMap);
-   printf("=== Haschanged: %i \n", CMap->HasChanged);
 
    return(TCL_OK);
 }
@@ -950,8 +940,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
    if (!CMap) {
       return(TCL_ERROR);
    }
-   
-   printf("CONTROL: %s ", CMap->Name);
 
    for(i=0;i<Objc;i++) {
 
@@ -965,7 +953,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                Tcl_WrongNumArgs(Interp,1,Objv,"index [red green blue alpha]");
                return(TCL_ERROR);
             } else {
-	       printf("ADD ");
 	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
                if (index>=0 && index<CR_MAX) {
@@ -1041,7 +1028,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
             break;
 
          case DEL:
-	    printf("DEL ");
 	    CMap->HasChanged++;
             if (Objc==1) {
                memset(CMap->Control,0,4*CR_MAX);
@@ -1064,7 +1050,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                Tcl_WrongNumArgs(Interp,1,Objv,"to from");
                return(TCL_ERROR);
             }
-            printf("MOVE ");
             CMap->HasChanged++;
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
@@ -1083,7 +1068,6 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
    CMap_ControlDefine(CMap);
    CMap_CurveDefine(CMap);
    CMap_RatioDefine(CMap);
-   printf("=== Haschanged: %i \n", CMap->HasChanged);
 
    return(TCL_OK);
 }
@@ -1494,7 +1478,6 @@ int CMap_Write(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
    int  i;
 
    if (!CMap) {
-      printf("NOT A COLORMAP\n");
       return(TCL_ERROR);
    }
 

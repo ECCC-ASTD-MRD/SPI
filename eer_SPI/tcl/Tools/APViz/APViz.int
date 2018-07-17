@@ -155,6 +155,8 @@ proc APViz::Window { } {
       bind $Data(Tab).opt.type.lst <ButtonRelease> "APViz::UpdateRange"
    }
    raise  .apviz
+   
+   APViz::CreateColormaps
 }
 
 proc APViz::SaveAsWindow { } {

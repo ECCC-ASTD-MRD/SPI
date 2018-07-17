@@ -1427,6 +1427,31 @@ proc APViz::CloseFiles { } {
   set $Data(OpenedFiles) {}
 }
 
+proc APViz::CreateColormaps { } {
+  global env
+  variable DataSrc
+  
+  puts "Creating colormaps"
+  
+  set path $DataSrc(Colormaps)/
+  set colormapLst [glob -nocomplain -tails -path $path *.rgba]
+  
+  set spiPath $env(HOME)/.spi/Colormap/
+  set spiColormaps [glob -nocomplain -tails -path $spiPath *.rgba]
+
+  #----- Create colormaps
+  foreach colormap $colormapLst {
+    regsub .rgba $colormap "" colormapName
+    colormap create $colormapName -file ${path}/$colormap
+    
+    #----- If not contained in spi colormap directory, save it there
+    if {[lsearch -exact $spiColormaps $colormap] < 0} {
+      puts "COLORMAP $colormap not found in spi. Creating file."
+      colormap write $colormapName ${spiPath}$colormap
+    }
+  }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <APViz::CreateRangeInterface>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
@@ -1559,7 +1584,7 @@ proc APViz::FetchFiles { Path Name } {
   set fileList [glob -nocomplain -tails -path $Path *]
   
   foreach file $fileList {
-    if {[file isdirectory ${Path}$file]} {
+    if {[file isdirectory ${Path}$file] && ($file ne "Colormap")} {
       lappend Data($Name,Folders) $file
       
       #----- Appel recursif
@@ -1690,7 +1715,6 @@ proc APViz::GenerateConfigFile { Path } {
     set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
     set rangesIndex [lsearch -glob $origData "*Range*"]
     set layersIndex [lsearch -exact $origData "set Layers \{"] 
-    set colormapsIndex [lsearch -glob $origData "*rgba*"]
     
     #TODO: fetch all current data
     #TEMPO: copy all settings before layers
@@ -1723,19 +1747,6 @@ proc APViz::GenerateConfigFile { Path } {
       }
     }
     puts $fileID "\}"
-    
-    #----- Colormap creation
-    APViz::WriteConfigSection $fileID $origData [expr $colormapsIndex - 1] [llength $origData]
-    
-    #----- Include new colormap creations
-    foreach colorMap $colormapLst {
-      if {[lsearch -glob $origData "*$colorMap.rgba*"] < 0} {
-	#----- Insert new colormap creation
-	set colormapCreation "colormap create $colorMap -file $DataSrc(Colormaps)/${colorMap}.rgba"
-	puts "WRITE NEW LINE: $colormapCreation"
-	puts $fileID $colormapCreation
-      }
-    }
     
     close $fileID
     
@@ -1771,6 +1782,7 @@ proc APViz::WriteRangesConfigs { FileID DataSource } {
 }
 
 proc APViz::ManageColormaps { Product } {
+  global env
   variable Data
   variable DataSrc
   variable ${Product}::Value
@@ -1801,6 +1813,9 @@ proc APViz::ManageColormaps { Product } {
 	  colormap create $newName
 	  colormap copy $newName $name
 	  colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
+	  
+	  #----- Saving in .spi directory as well
+	  colormap write $newName $env(HOME)/.spi/Colormap/${newName}.rgba
 	  puts "Creating new colormap $newName    ---   [colormap is $newName]"
 	  
 	  #----- Append name to the list
@@ -1846,9 +1861,10 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
       set renderContour [fstdfield configure $ID -rendercontour]
       set mapAll 	[fstdfield configure $ID -mapall]
       set intervalMode 	[fstdfield configure $ID -intervalmode]
+      set width 	[fstdfield configure $ID -width]
       
       #set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
-      set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
+      set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
       lappend configLst $params
       puts $params
     }
