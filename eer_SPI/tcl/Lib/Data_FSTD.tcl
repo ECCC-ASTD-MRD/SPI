@@ -800,7 +800,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 proc FSTD::ParamGet { { Spec "" } } {
    variable Data
    variable Param
-
+   
    set spec $Spec
    if { $spec=="" } {
       set spec $Param(Spec)
@@ -1112,6 +1112,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       
       #----- Set a colormap if not done
       set map [dataspec configure $Spec -colormap]
+      
       if { $map=="" } {
          set map FLDMAP$Spec
       }

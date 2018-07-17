@@ -1062,7 +1062,7 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             if {[fstdfield is [lindex $Data(LayerIDs) $RowID(Layer$Index)]]} {
-               APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)					; # Enlever la variable courante du VP pour cette couche
+               APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)		; # Enlever la variable courante du VP pour cette couche
             }
             
             set levelType [ APViz::GetLevelType $src ]
@@ -1088,10 +1088,25 @@ proc APViz::AssignVariable { Product Index } {
                catch { 
                   eval fstdfield configure $fieldID $Params(${var}$hour) 
                }
-            }    
+            }
+            
+            #----- Si la colormap n'existe pas deja, creer la bonne colormap
+            set colormapName $var$Index
+            if {[lsearch -exact $Data(Colormaps) $colormapName] < 0} {
+               set configColormap [fstdfield configure $fieldID -colormap]
+               colormap create $colormapName
+               colormap copy $colormapName $configColormap
+               
+               #----- Ajouter dans la liste des colormaps pour retrouver l'original
+               puts "Creating new colormap id for pair : [list $colormapName $configColormap]"
+               lappend Data(ColormapPairs) [list $colormapName $configColormap]
+               lappend Data(Colormaps) $colormapName
+            }
+            
+            fstdfield configure $fieldID -colormap $colormapName
             
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
-            AttributeColor $var $fieldID							; # Changer la couleur si la variable a deja ete assignee
+            AttributeColor $var $fieldID						; # Changer la couleur si la variable a deja ete assignee
             
             #----- Assigner seulement si n'est pas assigne
             if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
@@ -1111,6 +1126,18 @@ proc APViz::AssignVariable { Product Index } {
       }
    } else {
       puts "Missing values"
+   }
+}
+
+proc APViz::GetInitialColormap { Colormap } {
+   variable Data
+   
+   foreach pair $Data(ColormapPairs) {
+      puts "Analyzing pair : $pair"
+      if {[lindex $pair 0] eq $Colormap} {
+         puts "Found corresponding colormap to $Colormap : [lindex $pair 1]"
+         return [lindex $pair 1]
+      }
    }
 }
 
@@ -1305,7 +1332,9 @@ proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
 # But      : 	Permet d'ajouter ou d'enlever une variable du Viewport  
 #
 # Parametres 	 :
-#	<Source> : Provenance des donnees
+#	<Product> : Le nom du produit selectionne (aussi le namespace) 
+#       <Index>   : Index de l'item choisi
+#       <IsCalc>  : Boolean indiquant s'il s'agit d'une couche de calcul
 #	
 # Retour:
 #
@@ -1425,6 +1454,20 @@ proc APViz::CloseFiles { } {
 
    set $Data(OpenedFiles) {}
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::CreateColormaps>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Creation des colormaps contenues dans le dossier de config
+#
+# Parametres :
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
 
 proc APViz::CreateColormaps { } {
    global env
@@ -1668,7 +1711,7 @@ proc APViz::FilePathDefine { Path } {
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::GenerateConfigFile>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
 # But      : Generer un fichier de configuration
 #
@@ -1773,6 +1816,21 @@ proc APViz::WriteRangesConfigs { FileID DataSource } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ManageColormaps>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Generer un fichier de configuration
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::ManageColormaps { Product } {
    global env
    variable Data
@@ -1789,31 +1847,29 @@ proc APViz::ManageColormaps { Product } {
             set name [fstdfield configure $ID -colormap]	
             puts "IS $name MODIFIED? [set isModified [colormap modified $name]]"
             
+            set initialColormap [APViz::GetInitialColormap $name]
+            
             if {$isModified} {
                #-----Create new name by adding nunmber or changing number at the end of the original name
                set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name*.rgba]
                puts "Derivatives for $name: $derivatives"
                
                set nbr 1
-               set newName ${name}$nbr
+               set newName ${initialColormap}$nbr
                while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
-                  puts "New name $newName already exists"
                   incr nbr
-                  set newName ${name}$nbr
+                  set newName ${initialColormap}$nbr
                }
 
                colormap create $newName
                colormap copy $newName $name
                colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
-
                puts "Creating new colormap $newName    ---   [colormap is $newName]"
                
                #----- Append name to the list
                lappend colorLst $newName
-               
-               #TODO: Write new colormap in config to create
             } else {
-               lappend colorLst $name
+               lappend colorLst $initialColormap
             }
          }
       }
@@ -1821,6 +1877,22 @@ proc APViz::ManageColormaps { Product } {
 
    return $colorLst
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::GetVariableConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Retourner une liste des configurations pour chaque variable
+#
+# Parametres    :
+#       <Product>   : Le nom du produit selectionne (aussi le namespace) 
+#       <ColorMaps> : Liste des colormaps associees aux variables
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::GetVariableConfigs { Product ColorMaps } {
    variable Data
@@ -1846,14 +1918,13 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          
          #----- Recuperate field configurations
          #set colorMap 	[fstdfield configure $ID -colormap]
-         set colorMap [lindex $ColorMaps $RowID(Layer$i)]
-         set color 	[fstdfield configure $ID -color]
-         set renderContour [fstdfield configure $ID -rendercontour]
-         set mapAll 	[fstdfield configure $ID -mapall]
+         set colorMap           [lindex $ColorMaps $RowID(Layer$i)]
+         set color 	        [fstdfield configure $ID -color]
+         set renderContour      [fstdfield configure $ID -rendercontour]
+         set mapAll 	        [fstdfield configure $ID -mapall]
          set intervalMode 	[fstdfield configure $ID -intervalmode]
-         set width 	[fstdfield configure $ID -width]
-         
-         #set Params(GZ) "-colormap CM0 -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
+         set width 	        [fstdfield configure $ID -width]
+
          set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
          lappend configLst $params
          puts $params
@@ -1861,6 +1932,24 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
    }
    return $configLst
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteConfigSection>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Retourner une liste des configurations pour chaque variable
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#       <DataSource> : Liste contenant le contenu du fichier de config source
+#       <StartIndex> : Index a partir duquel copier les lignes dans le nouveau fichier
+#       <EndIndex>   : Index de la derniere ligne a recopier dans le nouveau fichier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::WriteConfigSection { FileID DataSource StartIndex EndIndex } { 
    for {set i $StartIndex} {$i < $EndIndex} {incr i} {
@@ -1969,11 +2058,19 @@ proc APViz::ReinitializeVP { } {
          set Value(Formula,$i) ""
       }
    }
+   
+   puts "COLORMAPS: $Data(Colormaps)"
+   foreach colormap $Data(Colormaps) {
+      puts "FREEING $colormap"
+      colormap free $colormap
+   }
 
    set Data(LayerIDs) {}
    set Data(CalcIDs) {}
    set Data(CurrentProduct) ""
    set APViz::Data(Layers) {}
+   set Data(Colormaps) {}
+   set Data(ColormapPairs) {}
 
    puts "=================== DONE REINITIALIZING ======================="
 }
@@ -2071,7 +2168,6 @@ proc APViz::SelectFolder { } {
       ComboBox::AddList $Data(MacroCatDropdown) $Data($selectedFolder,Folders)
    }
 }
-
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::SetParam>

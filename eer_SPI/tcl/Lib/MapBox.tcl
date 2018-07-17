@@ -503,8 +503,7 @@ proc MapBox::Create { Parent Apply Map args } {
    variable Bubble
    variable Data
    variable Control
-   
-   puts "IN MAPBOX CREATE === Map: $Map"
+
    if { ![colormap is $Map] } {
       return
    }
