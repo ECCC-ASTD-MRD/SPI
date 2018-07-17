@@ -196,7 +196,7 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
  * entries that have the same id_rapport to the same TMetLoc.
 *******************************************************************************/
 static TMetLoc *get_loc(TMetObs *Obs, sqlite3_stmt *Row);
-static int read_observation(TMetLoc *loc, sqlite3_stmt *Row);
+static int read_observation(TMetObs *Obs, sqlite3_stmt *Row);
 static int loop_over_observations(TMetObs *Obs, sqlite3 *Db)
 {
    sqlite3_stmt *stmt;
@@ -209,28 +209,13 @@ static int loop_over_observations(TMetObs *Obs, sqlite3 *Db)
      goto out;
    }
 
-   // TODO Move the checking of id_rapport to read_observation.
-   /*
-    * We have to read one row before the loop because the loop because the loop
-    * has to check whether the next row has the same id_rapport as the
-    * current_loc
-    */
-   sqlite3_step(stmt);
-   TMetLoc *current_loc = get_loc(Obs, stmt);
-   current_loc->id_rapport = sqlite3_column_int64(stmt, SPI_ID_RAPPORT);
-
-   do {
-     uint64_t id_rapport = sqlite3_column_int64(stmt, SPI_ID_RAPPORT);
-     if( current_loc->id_rapport != id_rapport){
-       current_loc = get_loc(Obs, stmt);
-     }
-
-     if(read_observation(current_loc, stmt) != TCL_OK){
+   while(sqlite3_step(stmt) != SQLITE_DONE){
+     if(read_observation(Obs, stmt) != TCL_OK){
        retval = TCL_ERROR;
        goto out;
      }
+   }
 
-   } while(sqlite3_step(stmt) != SQLITE_DONE);
 
 out:
    sqlite3_finalize(stmt);
@@ -301,8 +286,9 @@ static double get_elev(sqlite3_stmt *Row)
  * supplied TMetLoc.
 *******************************************************************************/
 static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out);
-static int read_observation(TMetLoc *loc, sqlite3_stmt *Row)
+static int read_observation(TMetObs *Obs, sqlite3_stmt *Row)
 {
+   TMetLoc *loc = get_loc(Obs, Row);
    // TODO : See todo in loop_over_observations TMetLoc *loc = get_loc(Row);
    time_t dt = 0; // un genre de temps minimal
    time_t time = sqlite3_column_int64(Row, SPI_DATE_VALIDITE);
