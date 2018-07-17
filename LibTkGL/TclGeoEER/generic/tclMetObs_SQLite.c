@@ -53,18 +53,16 @@ enum SpiSQLiteElements {
 };
 
 static const char *CONFIG_FILE = "/users/dor/afsm/pca/Documents/GitHub/SPI_PHIL/LibTkGL/TclGeoEER/MetObsTest/spi_queries.txt";
-static const char *obs_query = NULL;
-static const char *elem_query = NULL;
 // TODO Invent a struct that will act as an object for this file
-/* Something like
+//  Something like
 struct SqliteHelper {
     char *db_filename;
     sqlite3 *db;
-    sqlite3_stmt *obs_query;
-    sqlite3_stmt *elem_query;
-}
-That way I can have an init method and an end method, or at least something so I
-can get rid of those two global variables up here */
+    char *obs_query;
+    char *elem_query;
+} sqlh;
+// That way I can have an init method and an end method, or at least something so I
+// can get rid of those two global variables up here */
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObs_LoadSQLite>
  * Creation     : Mai 2018 Philippe Carphin
@@ -138,7 +136,7 @@ static int get_obs_query(const char *Filename)
   else if(strstr(Filename, "2018"))
     key = "other";
 
-  return MetObsSQLite_GetQueries(CONFIG_FILE, key,(char **)&(obs_query), (char **)&elem_query);
+  return MetObsSQLite_GetQueries(CONFIG_FILE, key,(char **)&(sqlh.obs_query), (char **)&(sqlh.elem_query));
 }
 
 /*******************************************************************************
@@ -151,8 +149,8 @@ static int set_obs_elements(Tcl_Interp *Interp, TMetObs *Obs, sqlite3 *Db)
 {
    int retval = TCL_ERROR;
    sqlite3_stmt *unique_elements;
-   if(sqlite3_prepare_v2(Db, elem_query, -1, &unique_elements, NULL)){
-      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
+   if(sqlite3_prepare_v2(Db, sqlh.elem_query, -1, &unique_elements, NULL)){
+      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.elem_query, sqlite3_errmsg(Db));
       retval = TCL_ERROR;
       goto out;
    }
@@ -201,10 +199,10 @@ static int loop_over_observations(TMetObs *Obs, sqlite3 *Db)
 {
    sqlite3_stmt *stmt;
    int retval = TCL_OK;
-   App_Log(INFO, "MetObs_SQLite : Running query \n%s\n", obs_query);
+   App_Log(INFO, "MetObs_SQLite : Running query \n%s\n", sqlh.obs_query);
 
-   if(sqlite3_prepare_v2(Db, obs_query, -1, &stmt, NULL)){
-      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n",obs_query, sqlite3_errmsg(Db));
+   if(sqlite3_prepare_v2(Db, sqlh.obs_query, -1, &stmt, NULL)){
+      App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", sqlh.obs_query, sqlite3_errmsg(Db));
      retval = TCL_ERROR;
      goto out;
    }
@@ -358,4 +356,11 @@ static int query_progress_callback(void *Params)
              // looks at the return value of this function to determine whether
              // to continue or not.  I.E. if this function return non-zero, it
              // makes SQLite abort.
+             // A WORD OF CAUTION : It's not clear when SQLite calls this, so if
+             // whatever logic you have checks some shared memory and notices
+             // that it should now return non-zero, then you have no idea where
+             // what you'll be doing after the stop.  An sqlite3_column_somthing
+             // could return NULL where that was impossible if this function
+             // always returns 0.  You could get NULL from a
+             // sqlite3_column_text() for a column marked NOT NULL.
 }
