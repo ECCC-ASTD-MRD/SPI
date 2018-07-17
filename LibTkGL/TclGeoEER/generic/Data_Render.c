@@ -1506,7 +1506,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
    mask=Field->Spec->Mask && Field->Def->Mask;
-   
+  
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
@@ -1545,9 +1545,9 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
             /* Is the cell valid ??? */
             if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
-
+ 
                /*Check for mask value*/
-               if (mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
+               if (mask && (1 || !Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
                   glEnd();
                   glBegin(GL_QUADS);
                   continue;
@@ -1627,11 +1627,16 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          VAL2COL(c0,Field->Spec,v0);
          VAL2COL(c3,Field->Spec,v3);
 
+         if (mask) {
+            if (!Field->Def->Mask[idx0]) c0=-1;
+            if (!Field->Def->Mask[idx3]) c3=-1;
+         }
+
          /* Is the cell valid ??? */
          if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             /*Check for mask value*/
-            if (mask && !Field->Def->Mask[idx0] && !Field->Def->Mask[idx1] && !Field->Def->Mask[idx2] && !Field->Def->Mask[idx3]) {
+            if (Field->Spec->InterpDegree[0]!='N' && mask && (!Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
                glEnd();
                glBegin(GL_QUADS);
                continue;
