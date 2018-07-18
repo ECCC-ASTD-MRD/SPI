@@ -341,6 +341,7 @@ proc APViz::Source { Path Widget } {
    namespace eval $product {
       variable Layers
       variable Range
+      variable DefaultValues
       variable Label
       variable Value
       variable Params
@@ -440,8 +441,20 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.var 	-column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.lev 	-column 8 -row 0 -padx 0.2
          
-         CreateLayers $Product $Layers $Widget	; # Creation des couches
-
+         #----- Creation des couches         
+         if {[info exists DefaultValues]} {
+            puts "=========== LOAD DefaultValues $DefaultValues"
+            #----- Default values exist
+            if {[llength $Layers] eq [llength $DefaultValues]} {
+               puts "EQUAL LENGTHS OF: [llength $DefaultValues]"
+               CreateLayers $Product $Layers $Widget $DefaultValues
+            } else {
+               CreateLayers $Product $Layers $Widget
+            }
+         } else {
+            CreateLayers $Product $Layers $Widget
+         }
+         
          pack $Widget.range -side top -fill x -anchor nw
          
          #----- Configurable date
@@ -474,7 +487,7 @@ proc APViz::Source { Path Widget } {
          foreach layer $Layers {
             #----- Layer description
             regsub \(True:|False:\) $layer "" desc
-            $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True $no"
+            $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget {} True $no"
             lappend ::APViz::Data(Layers) $layer		; #save layer configs
             incr no
          }
@@ -508,7 +521,7 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox Width} {
+      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default} {
          variable Range
          variable Value
          
@@ -523,12 +536,18 @@ proc APViz::Source { Path Widget } {
                "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget False"
             }
             
-            set ranges [split $Range($rangeType)]
-            if { [lindex $ranges 0] ne "" } {
-               set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 0]
+            #----- Default Values
+            if {$Default eq ""} {
+               set ranges [split $Range($rangeType)]
+               if { [lindex $ranges 0] ne "" } {
+                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 0]
+               } else {
+                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]      ; # In case first elem in Ranges (after split)is a space
+               }
             } else {
-               set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]	; # In case first elem in Ranges (after split)is a space
+               set APViz::${Product}::Value($Options,$Index) $Default
             }
+
          } else {
             label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
@@ -543,26 +562,28 @@ proc APViz::Source { Path Widget } {
       #
       # But      : Creer une couche pour ajouter au viewport
       #
-      # Parametres 	       :
-      #		<Product>      : Produit a afficher (aussi le namespace)
-      #		<Layers>       : Information sur les ranges de la couche ayant la forme:
+      # Parametres 	        :
+      #		<Product>       : Produit a afficher (aussi le namespace)
+      #		<Layers>        : Information sur les ranges de la couche ayant la forme:
       #					On:Model:Var:Level:Hour:Interval:Run:Source
-      #		<Widget>       : Path vers le widget
-      #		<IsAddedLayer> : Boolean indiquant s'il s'agit d'une couche additionnelle
+      #         <DefaultValues> : Valeurs par defauts les layers
+      #		<Widget>        : Path vers le widget
+      #		<IsAddedLayer>  : Boolean indiquant s'il s'agit d'une couche additionnelle
       # Retour:
       #
       # Remarques : Lorsque la variable est entre <>, cela signifie que c'est un range
       #
       #-------------------------------------------------------------------------------
-      
-      proc CreateLayers { Product Layers Widget {IsAddedLayer False} {LayerType 0}} {
+
+      proc CreateLayers { Product Layers Widget { DefaultValues {} } {IsAddedLayer False} {LayerType 0}} {
          variable Value
          variable RowID
          
          set no $Value(NbLayers)
-         foreach layer $Layers {
+         foreach layer $Layers default $DefaultValues {
             #----- Extract layer parts
             lassign [split $layer :] toggle model var level hour run dataSrc
+            lassign [split $default :] defaultToggle defaultModel defaultVar defaultLevel defaultHour defaultRun defaultDataSrc
             
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -574,36 +595,35 @@ proc APViz::Source { Path Widget } {
             }
             
             # CreateRangeWidget { Product Style Path Index Options IsSpinBox }
-            CreateRangeWidget $Product $model 	$Widget.range.variableGrid.layer${no}_model 	$no Models true 5
-            CreateRangeWidget $Product $level	$Widget.range.variableGrid.layer${no}_level 	$no Levels true 5
-            CreateRangeWidget $Product $hour 	$Widget.range.variableGrid.layer${no}_hour 	$no Hours true 5
-            CreateRangeWidget $Product $run 	$Widget.range.variableGrid.layer${no}_run 	$no Runs true 5
-            set defaultVar [CreateRangeWidget $Product $var 	$Widget.range.variableGrid.layer${no}_var 	$no Vars false 5]
-            set defaultSrc [CreateRangeWidget $Product $dataSrc 	$Widget.range.variableGrid.layer${no}_dataSrc 	$no Sources false 5]
+            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
+            CreateRangeWidget $Product $level   $Widget.range.variableGrid.layer${no}_level     $no Levels true 5 $defaultLevel
+            CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 5 $defaultHour
+            CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 5 $defaultRun
+            set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false 5 $defaultVar]
+            set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false 5 $defaultDataSrc]
             
             #----- Definir le numero de tab a ouvrir dans la fenetre de configuration
-            set tab 1					; # 1: Tab Champs
+            set tab 1                                   ; # 1: Tab Champs
             if {[expr {"$defaultSrc" eq "BURP"}]} {
-               set tab 2					; # 2: Tab Observations
+               set tab 2                                ; # 2: Tab Observations
             }
             
-            button $Widget.range.variableGrid.layer${no}_delete 	-image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
-            button $Widget.range.variableGrid.layer${no}_param 	-image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
+            button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
+            button $Widget.range.variableGrid.layer${no}_param  -image PARAMS -bd 1 -relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
             
             set RowID(Layer$no) [expr $no - $RowID(LayerAdjustment)]
-            #label $Widget.range.variableGrid.layer${no}_rowID	-text $RowID(Layer$no)
             
-            #----- Place widgets in grid	
+            #----- Place widgets in grid        
             set itemList [list toggle model run hour dataSrc var level param delete]
             set colNb 0
             foreach item $itemList {
                if {($item eq "run") || ($item eq "hour")} {
-                  grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -columnspan 2 -padx 0.1
+                  grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -columnspan 2 -padx 0.1
                   incr colNb
                } else {
-                  grid $Widget.range.variableGrid.layer${no}_$item	-column $colNb -row [expr $no + 1] -padx 0.1
+                  grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
                }
-               set fieldIDTemp FLD$RowID(Layer$no)_$defaultVar
+               set fieldIDTemp FLD$RowID(Layer$no)_$defaultVariable
                Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
                incr colNb
             }
