@@ -74,5 +74,5 @@ namespace eval APViz {
    set Data(AutoUpdateEventID)	""
    set Data(Layers)		{}
    set Data(Colormaps)          {}
-   set Data(ColormapPairs)      {}
+   set Data(ColormapPairs)      {}      ; #Contient des paires {NewColormapID OriginalColormapID}
 }

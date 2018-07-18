@@ -1098,7 +1098,6 @@ proc APViz::AssignVariable { Product Index } {
                colormap copy $colormapName $configColormap
                
                #----- Ajouter dans la liste des colormaps pour retrouver l'original
-               puts "Creating new colormap id for pair : [list $colormapName $configColormap]"
                lappend Data(ColormapPairs) [list $colormapName $configColormap]
                lappend Data(Colormaps) $colormapName
             }
@@ -1126,18 +1125,6 @@ proc APViz::AssignVariable { Product Index } {
       }
    } else {
       puts "Missing values"
-   }
-}
-
-proc APViz::GetInitialColormap { Colormap } {
-   variable Data
-   
-   foreach pair $Data(ColormapPairs) {
-      puts "Analyzing pair : $pair"
-      if {[lindex $pair 0] eq $Colormap} {
-         puts "Found corresponding colormap to $Colormap : [lindex $pair 1]"
-         return [lindex $pair 1]
-      }
    }
 }
 
@@ -1651,7 +1638,6 @@ proc APViz::FetchDates { Product Model Src } {
    variable DataSrc
    variable ${Product}::Value
 
-   puts "FETCHING DATES"
    if {$Src eq "BURP"} {
       set path $DataSrc(OBS,$Model)/
    } else {
@@ -1671,13 +1657,11 @@ proc APViz::FetchDates { Product Model Src } {
       
       #----- Speed up dateList construction, typically: containing 7 dates
       if {[llength $dateList] > 6} {
-         puts "ALL DATES FOUND! : $dateList"
          break
       }
    }
 
    set dateList [lreplace [lsort $dateList] 0 0]
-   puts "New dates: $dateList"
 
    if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
       ComboBox::DelAll $Data(DateCBWidget)
@@ -1734,10 +1718,8 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Verify if colormaps have changed
       set colormapLst [APViz::ManageColormaps $Data(CurrentProduct)]
-      puts "ColormapList: $colormapLst"
       
       set filename [file tail $Path]
-      puts "PATH: $Path"
       set fileID [open $Path w]
       
       #----- Get data from original config file
@@ -1746,42 +1728,35 @@ proc APViz::GenerateConfigFile { Path } {
       close $origFileID
       
       set origData [split $origFileData "\n"]
-
-      set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
+      
+      #----- Get section indexes
+      set cameraConfigIndex [lsearch -glob $origData "*Params\(Cameras\)*"]
       set rangesIndex [lsearch -glob $origData "*Range*"]
       set layersIndex [lsearch -exact $origData "set Layers \{"] 
       
-      #TODO: fetch all current data
-      #TEMPO: copy all settings before layers
-      set comment {
-      for {set i 0} {$i < $layersIndex} {incr i} {
-      puts $fileID \t[lindex $origData $i]
-      }
-      }
+      #----- Copy from original til Camera configs
+      APViz::WriteConfigSection $fileID $origData 0 [expr $cameraConfigIndex + 1]
       
-      #----- COPY TIL VARCONFIGS
-      APViz::WriteConfigSection $fileID $origData 0 $varConfigsIndex
+      #----- Write Geo params
+      APViz::WriteProjectionConfigs $fileID
+      APViz::WriteViewportConfigs $fileID
 
-      #----- Variable Style Configs     -> what to do when several vars of same type?
+      #----- Variable Style Configs     ->QUESTION: what to do when several vars of same type?
       set configLst [APViz::GetVariableConfigs $Data(CurrentProduct) $colormapLst]
+      puts $fileID "\n\#----- Variable Style Configurations"
       foreach config $configLst {
          puts $fileID $config
       }
       
-      #----- Ranges
-      #----- COPY Ranges section
-      #TODO DEFAULT VALUES
-      puts "copying Range section: From $rangesIndex to $layersIndex" 
+      #----- Ranges : COPY Ranges section from original config file
+      puts -nonewline $fileID "\n"
       APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
       
-      puts $fileID "set Layers \{"
-      #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
-      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-         if {[set rowID $RowID(Layer$i)] >= 0} {
-            puts $fileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
-         }
-      }
-      puts $fileID "\}"
+      #----- Write Layers
+      APViz::WriteLayers $Data(CurrentProduct) $fileID
+      
+      #----- TODO DEFAULT VALUES
+      #APViz::WriteDefaultValues
       
       close $fileID
       
@@ -1789,9 +1764,27 @@ proc APViz::GenerateConfigFile { Path } {
    }
 }
 
+proc APViz::WriteLayers { Product FileID } {
+   variable Data
+   variable ${Product}::Value
+   variable ${Product}::RowID
+   
+   puts $FileID "set Layers \{"
+   #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+         puts $FileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
+      }
+   }
+   puts $FileID "\}"
+}
+
 ##### NOT USED RIGHT NOW
-proc APViz::WriteRangesConfigs { FileID DataSource } {
-   #GetDefaultValues
+proc APViz::WriteDefaultValues { FileID } {
+   
+   puts $FileID "\n\#----- Default Values "
+   puts $FileID "set DefaultValues \{"
+   
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $RowID(Layer$i)] >= 0} {
          #----- Ajouter Layer
@@ -1804,23 +1797,19 @@ proc APViz::WriteRangesConfigs { FileID DataSource } {
          set src		$Value(Sources,$i)
          
          set layer "\t$checked:$model:$var:$lev:$hour:$run:$src"
-         puts $fileID $layer
+         puts $FileID $layer
       }
    }
-
-   #----- Deplacer la valeur au debut de la liste
-   set rangeIndexes [lsearch -glob -all $DataSource "*Range(*)*"]
-
-   foreach index $rangeIndexes {
-      puts "Treating "
-   }
+   
+   puts $FileID "\}"
 }
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::ManageColormaps>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : Generer un fichier de configuration
+# But      :    Gerer les colormaps pour les fichiers de config et en creer des 
+#               nouvelles s'il y a eu des modifications
 #
 # Parametres    :
 #       <Product>  : Le nom du produit selectionne (aussi le namespace) 
@@ -1845,15 +1834,13 @@ proc APViz::ManageColormaps { Product } {
          set ID [lindex $Data(LayerIDs) $rowID]
          if {[fstdfield is $ID]} {
             set name [fstdfield configure $ID -colormap]	
-            puts "IS $name MODIFIED? [set isModified [colormap modified $name]]"
-            
+            set isModified [colormap modified $name]
             set initialColormap [APViz::GetInitialColormap $name]
             
             if {$isModified} {
                #-----Create new name by adding nunmber or changing number at the end of the original name
-               set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $name*.rgba]
-               puts "Derivatives for $name: $derivatives"
-               
+               set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $initialColormap*.rgba]
+
                set nbr 1
                set newName ${initialColormap}$nbr
                while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
@@ -1864,7 +1851,6 @@ proc APViz::ManageColormaps { Product } {
                colormap create $newName
                colormap copy $newName $name
                colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
-               puts "Creating new colormap $newName    ---   [colormap is $newName]"
                
                #----- Append name to the list
                lappend colorLst $newName
@@ -1876,6 +1862,31 @@ proc APViz::ManageColormaps { Product } {
    }
 
    return $colorLst
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetInitialColormap>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Retourner la colormap originalement lue dans le fichier de config
+#
+# Parametres      :
+#       <Colormap>   : Identifiant de la colormap
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetInitialColormap { Colormap } {
+   variable Data
+   
+   foreach pair $Data(ColormapPairs) {
+      if {[lindex $pair 0] eq $Colormap} {
+         return [lindex $pair 1]
+      }
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -1903,8 +1914,8 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
 
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $RowID(Layer$i)] >= 0} {
-         set var	$Value(Vars,$i)
-         set hour	$Value(Hours,$i)
+         set var $Value(Vars,$i)
+         set hour $Value(Hours,$i)
          set ID [lindex $Data(LayerIDs) $rowID]
          
          #---- TODO: GERER METOBS
@@ -1917,7 +1928,6 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          }
          
          #----- Recuperate field configurations
-         #set colorMap 	[fstdfield configure $ID -colormap]
          set colorMap           [lindex $ColorMaps $RowID(Layer$i)]
          set color 	        [fstdfield configure $ID -color]
          set renderContour      [fstdfield configure $ID -rendercontour]
@@ -1927,10 +1937,79 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
 
          set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
          lappend configLst $params
-         puts $params
       }
    }
    return $configLst
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteProjectionConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteProjectionConfigs { FileID } {
+   variable Data
+
+   set projID ${::APViz::Data(Frame)}
+   set params "set Params(Projection) \{"
+   set paramLst [list type scale mask mapcoast maplake mapriver mappolit mapadmin mapcity  maproad  mapplace maptopo mapbath maptext mapcoord minsize]
+   
+   foreach param $paramLst {
+      set value [projection configure $projID -$param]
+      set paramConfig "-$param $value"
+      set params [concat $params $paramConfig]
+   }
+   
+   set params [concat $params "\}"]
+   puts "$params"
+
+   puts $FileID $params
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteProjectionConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteViewportConfigs { FileID } {
+   variable Data
+   
+   set params "set Params(Viewport) \{"
+   set paramLst [list crowd font bg bd colorcoast colorlake colorfillcoast colorfilllake colorriver colorpolit coloradmin colorcity colorroad colorplace colorcoord]
+   set vp [lindex [Page::Registered ${::APViz::Data(Frame)} Viewport] 0]
+
+   foreach param $paramLst {
+      set value [${::APViz::Data(Frame)}.page.canvas itemconfigure $vp -$param]
+      set paramConfig "-$param [lindex $value [expr [llength $value] - 1]]"
+      set params [concat $params $paramConfig]
+   }
+   
+   set params [concat $params "\}"]
+   puts "$params"
+   
+   puts $FileID $params
 }
 
 #----------------------------------------------------------------------------
@@ -2031,12 +2110,10 @@ proc APViz::ReinitializeVP { } {
    variable Data
 
    Viewport::UnAssign $Data(Frame) $Viewport::Data(VP)	; # Enlever toutes les variables du viewport
-   puts "===================== REINITIALIZING ========================="
-   puts "DataLAYERS: $Data(LayerIDs) "
+   
    #----- Liberer les ID
    foreach ID $Data(LayerIDs) {
       if {[regexp FLD $ID]} {
-         puts "Freeing $ID"
          fstdfield free $ID
       } else {
          metobs free $ID
@@ -2059,9 +2136,7 @@ proc APViz::ReinitializeVP { } {
       }
    }
    
-   puts "COLORMAPS: $Data(Colormaps)"
    foreach colormap $Data(Colormaps) {
-      puts "FREEING $colormap"
       colormap free $colormap
    }
 
@@ -2071,8 +2146,6 @@ proc APViz::ReinitializeVP { } {
    set APViz::Data(Layers) {}
    set Data(Colormaps) {}
    set Data(ColormapPairs) {}
-
-   puts "=================== DONE REINITIALIZING ======================="
 }
 
 #----------------------------------------------------------------------------
@@ -2312,7 +2385,6 @@ proc APViz::ValidateDate { Product Date } {
    set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
 
    if {!$result} {
-      puts "Looking for $Date in $Value(Dates)   FAILED"
       ::Dialog::Info . $Lbl(WrongDate)
    }
 
@@ -2363,10 +2435,7 @@ proc APViz::UpdateAvailableDates { Product } {
    #----- Verifier s'il y a eu des changements dans le dossier
    set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
 
-   puts "UPDATE CHECK $lastModifiedDate"
-
    if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
-      puts "Updating dates   || old date: [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]"
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
       APViz::FetchDates $Product $model $src
@@ -2374,8 +2443,6 @@ proc APViz::UpdateAvailableDates { Product } {
    }
 
    if {!$Value(dateLock) && ($Value(Date) ne [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]])} {
-      puts "Changing last modified date   ---   $Value(Date) to $lastModifiedDate"
-      puts "Dates: $Value(Dates)"
       set Value(Date) [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
@@ -2383,7 +2450,5 @@ proc APViz::UpdateAvailableDates { Product } {
       APViz::InitializeVars $Product
    }
 
-   set Data(AutoUpdateEventID) [after [expr {1000*60*60}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 10min:1000*60*10
-
-   puts "FINISHED CHECKING"
+   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 10min:1000*60*10
 }
