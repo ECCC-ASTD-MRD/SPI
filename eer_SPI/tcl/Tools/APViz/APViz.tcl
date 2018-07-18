@@ -1769,6 +1769,7 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Get section indexes
       set cameraConfigIndex [lsearch -glob $origData "*Params\(Cameras\)*"]
+      set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
       set rangesIndex [lsearch -glob $origData "*Range*"]
       set layersIndex [lsearch -exact $origData "set Layers \{"] 
       
@@ -1779,12 +1780,8 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
 
-      #----- Variable Style Configs     ->QUESTION: what to do when several vars of same type?
-      set configLst [APViz::GetVariableConfigs $product $colormapLst]
-      puts $fileID "\n\#----- Variable Style Configurations"
-      foreach config $configLst {
-         puts $fileID $config
-      }
+      #----- Variable Style Configs     ->QUESTION: what to do when several vars of same type, at same level?
+      APViz::WriteVariableConfigs $product $fileID [lrange $origData $varConfigsIndex [expr $rangesIndex - 1]]  $colormapLst
       
       #----- Ranges : COPY Ranges section from original config file
       puts -nonewline $fileID "\n"
@@ -1801,6 +1798,27 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::UpdateProductInterface
    }
 }
+
+proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
+   #----- Get current configs
+   set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
+   puts $FileID "\n\#----- Variable Style Configurations"
+   foreach config $configLst {
+      puts $FileID $config
+   }
+   
+   #----- Copy the general configs
+   foreach content $DataSource {
+      #----- Copy only if not already defined
+      set configName [string range $content [string first \( $content] [string first \) $content]]
+      puts "Looking for $configName : [set index [lsearch -glob $configLst "*$configName*"]]"
+      if {($index < 0) && ($content ne "")} {
+         puts "adding $content"
+         puts $FileID $content
+      }
+   }
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::WriteLayers>
@@ -1986,7 +2004,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $RowID(Layer$i)] >= 0} {
          set var $Value(Vars,$i)
-         set hour $Value(Hours,$i)
+         set level $Value(Levels,$i)
          set ID [lindex $Data(LayerIDs) $rowID]
          
          #---- TODO: GERER METOBS
@@ -2006,7 +2024,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          set intervalMode 	[fstdfield configure $ID -intervalmode]
          set width 	        [fstdfield configure $ID -width]
 
-         set params "set Params(${var}$hour) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
+         set params "set Params(${var}$level) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
          lappend configLst $params
       }
    }

@@ -1,5 +1,4 @@
 global env 
-global GDefs
 
 #----- Geography
 set Params(Cameras)    {}
