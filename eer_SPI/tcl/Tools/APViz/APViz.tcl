@@ -443,10 +443,8 @@ proc APViz::Source { Path Widget } {
          
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
-            puts "=========== LOAD DefaultValues $DefaultValues"
             #----- Default values exist
             if {[llength $Layers] eq [llength $DefaultValues]} {
-               puts "EQUAL LENGTHS OF: [llength $DefaultValues]"
                CreateLayers $Product $Layers $Widget $DefaultValues
             } else {
                CreateLayers $Product $Layers $Widget
@@ -588,7 +586,12 @@ proc APViz::Source { Path Widget } {
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
                -command "APViz::Check $Product $no"
-            if {!$toggle} {
+               
+            if {$defaultToggle eq ""} {
+               set defaultToggle $toggle
+            }
+
+            if {!$defaultToggle} {
                $Widget.range.variableGrid.layer${no}_toggle deselect
             } elseif {!$IsAddedLayer} {
                $Widget.range.variableGrid.layer${no}_toggle select
@@ -1057,18 +1060,14 @@ proc APViz::AssignVariable { Product Index } {
          metobs create $obsID $filepath
          dataspec create $obsID
          
-         if { [info exist Params($var)] } {
+         if { [info exist Params(${var}$lev)] } {
             catch { 
-               eval dataspec configure $obsID $Params($var)
+               eval dataspec configure $obsID $Params(${var}$lev)
                puts "Configured OBS: $var"
             }
-         } elseif { [info exist Params(${var}$lev)] } {
+         } elseif { [info exist Params($var)] } {
             catch { 
-               eval dataspec configure $obsID $Params(${var}$lev) 
-            }
-         } elseif { [info exist Params(${var}$hour)] } {
-            catch { 
-               eval dataspec configure $obsID $Params(${var}$hour) 
+               eval dataspec configure $obsID $Params($var) 
             }
          } else {
             #----- Configurations par defaut
@@ -1114,17 +1113,13 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             #TODO: Cleanup
-            if { [info exist Params($var)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params($var) 
-               }
-            } elseif { [info exist Params(${var}$lev)] } {
+            if { [info exist Params(${var}$lev)] } {
                catch { 
                   eval fstdfield configure $fieldID $Params(${var}$lev) 
                }
-            } elseif { [info exist Params(${var}$hour)] } {
+            } elseif { [info exist Params($var)] } {
                catch { 
-                  eval fstdfield configure $fieldID $Params(${var}$hour) 
+                  eval fstdfield configure $fieldID $Params($var) 
                }
             }
             
@@ -1799,6 +1794,24 @@ proc APViz::GenerateConfigFile { Path } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteVariableConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Ecrire la section des configurations de variables dans le fichier de config
+#
+# Parametres    :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>      : Identifiant du fichier dans lequel ecrire
+#       <DataSource>  : Liste contenant le contenu du fichier de config source
+#       <ColormapLst> : Liste des colormaps associees aux variables
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    #----- Get current configs
    set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
@@ -1811,9 +1824,9 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    foreach content $DataSource {
       #----- Copy only if not already defined
       set configName [string range $content [string first \( $content] [string first \) $content]]
-      puts "Looking for $configName : [set index [lsearch -glob $configLst "*$configName*"]]"
+      set index [lsearch -glob $configLst "*$configName*"]
+      
       if {($index < 0) && ($content ne "")} {
-         puts "adding $content"
          puts $FileID $content
       }
    }
@@ -1828,6 +1841,7 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
 #               fichier de config
 #
 # Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
 #       <FileID>     : Identifiant du fichier dans lequel ecrire
 #
 # Retour:
@@ -1859,6 +1873,7 @@ proc APViz::WriteLayers { Product FileID } {
 #               fichier de config
 #
 # Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
 #       <FileID>     : Identifiant du fichier dans lequel ecrire
 #
 # Retour:
@@ -2061,8 +2076,6 @@ proc APViz::WriteProjectionConfigs { FileID } {
    }
    
    set params [concat $params "\}"]
-   puts "$params"
-
    puts $FileID $params
 }
 
@@ -2095,9 +2108,7 @@ proc APViz::WriteViewportConfigs { FileID } {
       set params [concat $params $paramConfig]
    }
    
-   set params [concat $params "\}"]
-   puts "$params"
-   
+   set params [concat $params "\}"]   
    puts $FileID $params
 }
 
