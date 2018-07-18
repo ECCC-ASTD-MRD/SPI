@@ -1712,12 +1712,12 @@ proc APViz::GenerateConfigFile { Path } {
    variable Data
    variable DataSrc
 
-   if {$Data(CurrentProduct) ne ""} {
-      variable $Data(CurrentProduct)::Value
-      variable $Data(CurrentProduct)::RowID
+   if {[set product $Data(CurrentProduct)] ne ""} {
+      variable ${product}::Value
+      variable ${product}::RowID
       
       #----- Verify if colormaps have changed
-      set colormapLst [APViz::ManageColormaps $Data(CurrentProduct)]
+      set colormapLst [APViz::ManageColormaps $product]
       
       set filename [file tail $Path]
       set fileID [open $Path w]
@@ -1742,7 +1742,7 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteViewportConfigs $fileID
 
       #----- Variable Style Configs     ->QUESTION: what to do when several vars of same type?
-      set configLst [APViz::GetVariableConfigs $Data(CurrentProduct) $colormapLst]
+      set configLst [APViz::GetVariableConfigs $product $colormapLst]
       puts $fileID "\n\#----- Variable Style Configurations"
       foreach config $configLst {
          puts $fileID $config
@@ -1753,16 +1753,32 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
       
       #----- Write Layers
-      APViz::WriteLayers $Data(CurrentProduct) $fileID
+      APViz::WriteLayers $product $fileID
       
-      #----- TODO DEFAULT VALUES
-      #APViz::WriteDefaultValues
+      #----- Write Default Values
+      APViz::WriteDefaultValues $product $fileID
       
       close $fileID
       
       APViz::UpdateProductInterface
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteLayers>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::WriteLayers { Product FileID } {
    variable Data
@@ -1773,14 +1789,31 @@ proc APViz::WriteLayers { Product FileID } {
    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $RowID(Layer$i)] >= 0} {
-         puts $FileID \t[lindex $Data(Layers) $Value(LayerType,$rowID)]
+         puts $FileID "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
       }
    }
    puts $FileID "\}"
 }
 
-##### NOT USED RIGHT NOW
-proc APViz::WriteDefaultValues { FileID } {
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteDefaultValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteDefaultValues { Product FileID } {
+   variable ${Product}::Value
+   variable ${Product}::RowID
    
    puts $FileID "\n\#----- Default Values "
    puts $FileID "set DefaultValues \{"
@@ -1790,13 +1823,13 @@ proc APViz::WriteDefaultValues { FileID } {
          #----- Ajouter Layer
          set checked 	[expr {$Value(Toggle,$i)?True:False}]
          set model 	$Value(Models,$i)
-         set var		$Value(Vars,$i)
-         set lev		$Value(Levels,$i)
-         set run		$Value(Runs,$i)
+         set var	$Value(Vars,$i)
+         set lev	$Value(Levels,$i)
+         set run	$Value(Runs,$i)
          set hour	$Value(Hours,$i)
-         set src		$Value(Sources,$i)
+         set src	$Value(Sources,$i)
          
-         set layer "\t$checked:$model:$var:$lev:$hour:$run:$src"
+         set layer "   $checked:$model:$var:$lev:$hour:$run:$src"
          puts $FileID $layer
       }
    }
