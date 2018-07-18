@@ -8,15 +8,10 @@ set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -m
 set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #000000 -colorlake #0000ff -colorfillcoast beige -colorfilllake LightSkyBlue1 \
       -colorriver #0000ff -colorpolit #ff0000 -coloradmin #ff0000 -colorcity #ffa500 -colorroad #404040 -colorplace #000000 -colorcoord #000000 }  
 
-#----- Colormap creation
-colormap create CM0 -file $env(HOME)/.spi/Colormap/REC_B&B2.rgba
-colormap create CM1 -file $env(HOME)/.spi/Colormap/COB_Div_BrBG.rgba
-colormap create CM2 -file $env(HOME)/.spi/Colormap/COB_Seq_MHue_GnBu.rgba
-colormap create CM3 -file $env(HOME)/.spi/Colormap/COB_Seq_MHue_RdPu.rgba
-colormap create CM4 -file $env(HOME)/.spi/Colormap/COB_Seq_MHue_BuPu.rgba
-
 #----- Variable Style Configurations
-set Params(PR) "-colormap CM3 -color grey  -font XFont12 -width 1 -rendercontour 1 -mapall True -intervals \{ 0 1 5 10 25 40 75 100 150 \}"
+set Params(PR) "-colormap COB_Seq_MHue_RdPu -color grey  -font XFont12 -width 1 -rendercontour 1 -mapall True -intervals \{ 0 1 5 10 25 40 75 100 150 \}"
+set Params(13023) "-size 10 -icon CIRCLE -color black -colormap REC_B&B2 -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }"
+set Params(13193) "-size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 }"
 
 #----- Ranges
 set Range(Levels) 	{250 500 700 850 1000}

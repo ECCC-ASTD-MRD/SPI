@@ -1053,12 +1053,30 @@ proc APViz::AssignVariable { Product Index } {
          }
 
          set obsID OBS$RowID(Layer$Index)_${var}
-         
-         #TODO: move to config files
+
          metobs create $obsID $filepath
          dataspec create $obsID
-         dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap CM0 \
-            -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
+         
+         if { [info exist Params($var)] } {
+            catch { 
+               eval dataspec configure $obsID $Params($var)
+               puts "Configured OBS: $var"
+            }
+         } elseif { [info exist Params(${var}$lev)] } {
+            catch { 
+               eval dataspec configure $obsID $Params(${var}$lev) 
+            }
+         } elseif { [info exist Params(${var}$hour)] } {
+            catch { 
+               eval dataspec configure $obsID $Params(${var}$hour) 
+            }
+         } else {
+            #----- Configurations par defaut
+            dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu \
+               -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
+         }
+         
+         dataspec configure $obsID -desc "$model (${timestamp}_)" -active $Value(Toggle,$Index)
 
          set lst [list [list 0 0 $var { }]]
          metmodel define [metobs define $obsID -MODEL] -items $lst -spacing 10
