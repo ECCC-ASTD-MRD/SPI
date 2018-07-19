@@ -552,7 +552,12 @@ proc APViz::Source { Path Widget } {
 
          } else {
             label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
-            set APViz::${Product}::Value($Options,$Index) $Style
+            if {$Default eq ""} {
+               set APViz::${Product}::Value($Options,$Index) $Style
+            } else {
+               set APViz::${Product}::Value($Options,$Index) $Default
+            }
+            
          }
          eval set defaultValue \$APViz::${Product}::Value($Options,$Index)
          return $defaultValue
@@ -1090,6 +1095,7 @@ proc APViz::AssignVariable { Product Index } {
             Viewport::Assign $Data(Frame) $Viewport::Data(VP) $obsID 1
          }      
       } else {
+                  
          #----- Pas un fichier BURP
          set timestamp ${date}${run}_$hour	
          set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
@@ -1109,13 +1115,26 @@ proc APViz::AssignVariable { Product Index } {
             set levelType [ APViz::GetLevelType $src ]
             set fieldID FLD$RowID(Layer$Index)_${var}
             
-            if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
-               ::Dialog::Info . $Lbl(InvalidField)
-               return
+            if {$var eq "DZ"} {
+               APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType
             } else {
-               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
+               if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+                  puts "============"
+                  puts "Var: $var"
+                  puts "Level: $lev"
+                  ::Dialog::Info . $Lbl(InvalidField)
+                  puts "============"
+                  return
+               } else {
+                  set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
+               }
             }
             
+            #----- In case DZ assignation failed
+            if {![fstdfield is $fieldID]} {
+               return
+            }
+
             #TODO: Cleanup
             if { [info exist Params(${var}$lev)] } {
                catch { 
@@ -1163,6 +1182,64 @@ proc APViz::AssignVariable { Product Index } {
    } else {
       puts "Missing values"
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::AssignDZ>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Verifier si tous les champs ont ete remplis
+#
+# Parametres      :
+#       <Model>   : Nom du modele meteorologique
+#       <Var>     : Variable meteorologique
+#       <Level>   : Niveau
+#       <Run>     : Le numero de la run
+#       <Source>  : La provenance des donnees
+#       <Date>    : La date de validite
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
+   variable Data
+   variable ${Product}::Value
+   variable ${Product}::RowID
+   
+   puts "===== \[ ASSIGNING DZ \] ====="
+   
+   #----- Get GZ levels: lev1 and lev2
+   lassign [split $Lev -] lev1 lev2
+   
+   #----- Create GZ fields : GZ1 and GZ2 ---- will not be added to viewport
+   set fieldIDGZ1 DZ$RowID(Layer$Index)_GZ1
+   set fieldIDGZ2 DZ$RowID(Layer$Index)_GZ2
+   
+   if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 "" [subst {$lev1 $LevelType}] -1 -1 "" GZ}]} {
+      puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
+   } elseif {[catch {fstdfield read $fieldIDGZ2 $FileID -1 "" [subst {$lev2 $LevelType}] -1 -1 "" GZ}]} {
+      puts "fieldIDGZ2: $fieldIDGZ2 failed for level $lev2"
+   } else {
+      set Data(DZ_GZpairs,$Index) [list $fieldIDGZ1 $fieldIDGZ2]
+   }
+   
+   #TODO: FREE GZ PAIRS WHEN ReinitializeVP
+   
+   #----- Calcul: GZ1 - GZ2
+   vexpr $FieldID "$fieldIDGZ1-$fieldIDGZ2"
+   
+   if {[fstdfield is $FieldID]} {      
+      #----- Add ID to Data(LayersID)
+      set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $FieldID]
+   } else {
+      puts "DZ FAILED"
+      ::Dialog::Info . $Lbl(InvalidField)
+   }
+   
+   puts "===== \[ ASSIGNING DZ \] ====="
 }
 
 #-------------------------------------------------------------------------------
@@ -2035,16 +2112,23 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          }
          }
          
-         #----- Recuperate field configurations
-         set colorMap           [lindex $ColorMaps $RowID(Layer$i)]
-         set color 	        [fstdfield configure $ID -color]
-         set renderContour      [fstdfield configure $ID -rendercontour]
-         set renderTexture      [fstdfield configure $ID -rendertexture]
-         set mapAll 	        [fstdfield configure $ID -mapall]
-         set intervalMode 	[fstdfield configure $ID -intervalmode]
-         set width 	        [fstdfield configure $ID -width]
-
-         set params "set Params(${var}$level) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -rendertexture $renderTexture -mapall $mapAll -intervalmode $intervalMode \""
+         set params "set Params(${var}$level) \""
+         set paramLst [list colormap color font width dash rendercontour rendertexture mapall intervalmode]
+         
+         foreach param $paramLst {
+            if {$param eq "colormap"} {
+               set value [lindex $ColorMaps $RowID(Layer$i)]
+            } else {
+               set value [fstdfield configure $ID -$param]
+            }
+            
+            #----- Case when no dash type selected
+            if {$value ne "" } {
+               set params [concat $params "-$param $value"]
+            }
+         }
+         
+         set params [concat $params "\""]
          lappend configLst $params
       }
    }
