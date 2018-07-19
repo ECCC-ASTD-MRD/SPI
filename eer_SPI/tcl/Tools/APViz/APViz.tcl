@@ -400,10 +400,14 @@ proc APViz::Source { Path Widget } {
          #----- Source product definition
          source $Path
          
-         eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
-   
-         foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
-            eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
+         if {[info exists Params(Projection)]} {
+             eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
+         }
+
+         if {[info exists Params(Viewport)]} {
+            foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
+               eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
+            }
          }
          
          #----- Refleter les valeurs dans l'interface de configuration des parametres
@@ -1115,11 +1119,11 @@ proc APViz::AssignVariable { Product Index } {
             #TODO: Cleanup
             if { [info exist Params(${var}$lev)] } {
                catch { 
-                  eval fstdfield configure $fieldID $Params(${var}$lev) 
+                  eval fstdfield configure $fieldID $Params(${var}$lev)
                }
             } elseif { [info exist Params($var)] } {
                catch { 
-                  eval fstdfield configure $fieldID $Params($var) 
+                  eval fstdfield configure $fieldID $Params($var)
                }
             }
             
@@ -1136,7 +1140,7 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             fstdfield configure $fieldID -colormap $colormapName
-            
+
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
             AttributeColor $var $fieldID						; # Changer la couleur si la variable a deja ete assignee
             
@@ -2035,11 +2039,12 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          set colorMap           [lindex $ColorMaps $RowID(Layer$i)]
          set color 	        [fstdfield configure $ID -color]
          set renderContour      [fstdfield configure $ID -rendercontour]
+         set renderTexture      [fstdfield configure $ID -rendertexture]
          set mapAll 	        [fstdfield configure $ID -mapall]
          set intervalMode 	[fstdfield configure $ID -intervalmode]
          set width 	        [fstdfield configure $ID -width]
 
-         set params "set Params(${var}$level) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -mapall $mapAll -intervalmode $intervalMode \""
+         set params "set Params(${var}$level) \"-colormap $colorMap -color $color -font XFont12 -width $width -rendercontour $renderContour -rendertexture $renderTexture -mapall $mapAll -intervalmode $intervalMode \""
          lappend configLst $params
       }
    }
@@ -2230,9 +2235,14 @@ proc APViz::ReinitializeVP { } {
    set product $Data(CurrentProduct)
    if {$product ne ""} {
       variable ${product}::Value
+      variable ${product}::Params
       #----- Reinitialiser les textvariables pour calcul
       for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
          set Value(Formula,$i) ""
+      }
+      
+      if {[array exists Params]} {
+         array unset Params
       }
    }
    
