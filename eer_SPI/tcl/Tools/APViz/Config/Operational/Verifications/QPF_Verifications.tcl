@@ -28,9 +28,3 @@ set Layers {
    True:RDPS:<Runs>:<Hours>:<Sources>:PR:0.0
    False:SYNOP:<Runs>:-:BURP:<Obs>:SFC
 }
-
-#toggle model var level hour run dataSrc
-set comment {
-   True:RDPS:PR:0.0:<Hours>:<Runs>:<Sources>
-   False:SYNOP:<Obs>:SFC:-:<Runs>:BURP
-}

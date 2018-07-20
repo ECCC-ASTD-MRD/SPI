@@ -1996,7 +1996,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
          set hour	$Value(Hours,$i)
          set src	$Value(Sources,$i)
          
-         set layer "   $checked:$model:$var:$lev:$hour:$run:$src"
+         set layer "   $checked:$model:$run:$hour:$src:$var:$lev"
          puts $FileID $layer
       }
    }
@@ -2129,7 +2129,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          
          #----- TODO: Include all parameters (in case user saves other params not included in the list.)
          set params "set Params(${var}$level) \""
-         set paramLst [list colormap color font width dash rendercontour rendertexture mapall intervalmode]
+         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue mapall intervalmode]
          
          foreach param $paramLst {
             if {$param eq "colormap"} {

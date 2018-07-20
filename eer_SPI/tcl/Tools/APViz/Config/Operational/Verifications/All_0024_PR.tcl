@@ -7,8 +7,8 @@ set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #0000
 
 #----- Variable Style Configurations
 set Params(DZ) "-colormap REC_Hue 	-color blue -font XFont12 -width 1 -dash - -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
-set Params(TT) "-colormap REC_Ocean 	-color yellow -font XFont12 -width 3 -rendercontour 1 -mapall True -intervals \{ 0 15 \}"
-set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -rendercontour 1 -mapall True -intervalmode INTERVAL 4"
+set Params(TT) "-colormap REC_Ocean 	-color yellow -font XFont12 -width 3 -rendercontour 1 -mapall False -intervals \{ 0 15 \}"
+set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 4 -rendervalue 20"
 set Params(PR) "-colormap REC_Beach     -color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 4"
 
 #----- Ranges
@@ -28,19 +28,11 @@ set Layers {
    True:RDPS:<Runs>:<Hours>:pres:DZ:<Levels_DZ>
 }
 
-set comment {
-   True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
-   True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
-   True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
-   True:RDPS:TT:<Levels_TT>:<Hours>:<Runs>:<Sources>
-   True:RDPS:DZ:<Levels_DZ>:<Hours>:<Runs>:pres
-}
-
 #----- Default Values 
 set DefaultValues {
-   False:RDPS:00:000:pres:PR:0.0
-   False:RDPS:00:000:pres:PR:0.0
-   False:RDPS:00:000:pres:PN:0.0
-   False:RDPS:00:000:pres:TT:850
+   True:RDPS:00:000:pres:PR:0.0
+   True:RDPS:00:000:pres:PR:0.0
+   True:RDPS:00:000:pres:PN:0.0
+   True:RDPS:00:000:pres:TT:850
    True:RDPS:00:000:pres:DZ:1000-500
 }
