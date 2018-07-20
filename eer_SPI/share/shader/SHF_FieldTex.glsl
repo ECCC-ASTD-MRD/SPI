@@ -35,6 +35,21 @@ vec4 texture2DRectBi(sampler2DRect Tex,vec2 ST) {
    return(mix(mix(tex11,tex21,t.x),mix(tex12,tex22,t.x),t.y));
 }
 
+vec4 texture2DRectMin(sampler2DRect Tex,vec2 ST) {
+
+   vec4 st;
+
+   st.xy = floor(ST-0.5)+0.5;
+   st.zw = st.xy+1.0;
+
+   vec4 tex11 = texture2DRect(Tex,st.xy);
+   vec4 tex21 = texture2DRect(Tex,st.zy);
+   vec4 tex12 = texture2DRect(Tex,st.xw);
+   vec4 tex22 = texture2DRect(Tex,st.zw);
+
+   // bilinear interpolation
+   return(min(min(tex11,tex21),min(tex12,tex22)));
+}
 void main() {
 
    float idx;
@@ -42,21 +57,25 @@ void main() {
    vec4  inter,frg,mask;
    float dd,sz,factor;
 
-   // Check if there's a valid mask value
-   if (IsMask==1) {
-      mask=texture2DRect(Mask,gl_TexCoord[0].st);
-      if (mask.a<=0.01) {
-         discard;
-      }
-   }
-
+   mask.a=1.0;
+   
    // Get value, nearest or linear
    if (Bi!=0) {
       inter=texture2DRectBi(Data,gl_TexCoord[0].st);
+      if (IsMask==1) {
+         mask=texture2DRectMin(Mask,gl_TexCoord[0].st);
+       }
    } else {
       inter=texture2DRect(Data,gl_TexCoord[0].st);
+      if (IsMask==1) {
+         mask=texture2DRect(Mask,gl_TexCoord[0].st);
+      }
    }
 
+   if (mask.a<0.01) {
+      discard;
+   }
+   
    dd=inter.r;
    idx=-1.0;
 

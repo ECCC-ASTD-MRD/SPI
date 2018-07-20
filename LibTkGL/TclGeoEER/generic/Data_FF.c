@@ -1409,18 +1409,21 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
       if (next) {
 
          idx=Def->NI*Y+X;
-
-         // Check for mask
-//         if (Def->Mask && !Def->Mask[idx]) break;
-         
+    
          // Check if we've already parsed this voxel from this side
-         if (PMatrix[idx]&side) break;
+         if (PMatrix[idx]&side)
+            break;
 
          // Get the voxel values
          pidx[0]=idx+dz;
          pidx[1]=pidx[0]+1;
          pidx[3]=pidx[0]+Def->NI;
          pidx[2]=pidx[3]+1;
+         
+         // Check for mask
+         if (Def->Mask && (!Def->Mask[pidx[0]] || !Def->Mask[pidx[1]] || !Def->Mask[pidx[2]] || !Def->Mask[pidx[3]]))
+            break;
+         
          Def_GetQuadMod(Def,pidx,pvox);
 
          // Test for value validity

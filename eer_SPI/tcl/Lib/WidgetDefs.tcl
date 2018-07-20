@@ -257,7 +257,7 @@ proc Option::Set { Frame List { ListVal {} } } {
             }
          } else {
             $Frame.b.m add command -label $item -columnbreak $columnbreak \
-               -command "eval set Option::Data(Pre$Frame) \$$Data(Var$Frame); set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
+               -command "set Option::Data(Pre$Frame) \$$Data(Var$Frame); set $Data(Var$Frame) {$item}; $Data(Cmd$Frame)"
          }
       }
       incr noitem
