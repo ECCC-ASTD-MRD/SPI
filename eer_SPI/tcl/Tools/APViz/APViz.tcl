@@ -606,13 +606,21 @@ proc APViz::Source { Path Widget } {
                $Widget.range.variableGrid.layer${no}_toggle select
             }
             
-            # CreateRangeWidget { Product Style Path Index Options IsSpinBox }
+            # CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
             CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
-            CreateRangeWidget $Product $level   $Widget.range.variableGrid.layer${no}_level     $no Levels true 5 $defaultLevel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 5 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 5 $defaultRun
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false 5 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false 5 $defaultDataSrc]
+            
+            #----- For DZ, level choices are LEV1-LEV2
+            if {$defaultVariable eq "DZ"} {
+               set levelWidth 8
+            } else {
+               set levelWidth 5
+            }
+            
+            CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels false $levelWidth $defaultLevel
             
             #----- Definir le numero de tab a ouvrir dans la fenetre de configuration
             set tab 1                                   ; # 1: Tab Champs
@@ -1620,8 +1628,12 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
 
    set selected [lindex $Lst $Index]
    set filepath "$GDefs(Dir)/tcl/Tools/APViz/Config/${Data(Folder)}/$Dir/$selected.tcl"
-   APViz::Source $filepath $Data(Tab)
-   set Data(ConfigPath) $filepath
+   if {[file isfile $filepath]} {
+      APViz::Source $filepath $Data(Tab)
+      set Data(ConfigPath) $filepath
+   } else {
+      puts "$filepath"
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2112,6 +2124,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          }
          }
          
+         #----- TODO: Include all parameters (in case user saves other params not included in the list.)
          set params "set Params(${var}$level) \""
          set paramLst [list colormap color font width dash rendercontour rendertexture mapall intervalmode]
          
@@ -2291,7 +2304,7 @@ proc APViz::InitializeVars { Product } {
 #
 # Retour:
 #
-# Remarques :
+# Remarques : TODO: RENAME of clean this up!!!! (Not just vp that is reinitialised here)
 #
 #----------------------------------------------------------------------------
 

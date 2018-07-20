@@ -12,7 +12,7 @@ set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -render
 set Params(PR) "-colormap REC_Beach     -color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 4"
 
 #----- Ranges
-set Range(Levels_TT) 	{0 250 500 700 850 1000}
+set Range(Levels_TT) 	{250 500 700 850 1000}
 set Range(Levels_DZ)    {1000-500 1000-700 1000-850 1000-925 925-850 850-700 850-500 700-500}
 set Range(Vars_Surf)   	{PR PN}
 set Range(Hours)  	{006 012 018 024}
