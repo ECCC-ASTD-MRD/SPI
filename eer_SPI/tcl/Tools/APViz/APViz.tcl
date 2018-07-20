@@ -589,8 +589,8 @@ proc APViz::Source { Path Widget } {
          set no $Value(NbLayers)
          foreach layer $Layers default $DefaultValues {
             #----- Extract layer parts
-            lassign [split $layer :] toggle model var level hour run dataSrc
-            lassign [split $default :] defaultToggle defaultModel defaultVar defaultLevel defaultHour defaultRun defaultDataSrc
+            lassign [split $layer :] toggle model run hour dataSrc var level
+            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel   
             
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -1216,9 +1216,7 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
    variable Data
    variable ${Product}::Value
    variable ${Product}::RowID
-   
-   puts "===== \[ ASSIGNING DZ \] ====="
-   
+
    #----- Get GZ levels: lev1 and lev2
    lassign [split $Lev -] lev1 lev2
    
@@ -1226,15 +1224,22 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
    set fieldIDGZ1 DZ$RowID(Layer$Index)_GZ1
    set fieldIDGZ2 DZ$RowID(Layer$Index)_GZ2
    
+   #----- Free those fields if already used
+   if {[fstdfield is $fieldIDGZ1]} {
+      fstdfield free $fieldIDGZ1
+   }
+   
+   if {[fstdfield is $fieldIDGZ2]} {
+      fstdfield free $fieldIDGZ2
+   }
+
    if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 "" [subst {$lev1 $LevelType}] -1 -1 "" GZ}]} {
       puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
    } elseif {[catch {fstdfield read $fieldIDGZ2 $FileID -1 "" [subst {$lev2 $LevelType}] -1 -1 "" GZ}]} {
       puts "fieldIDGZ2: $fieldIDGZ2 failed for level $lev2"
    } else {
-      set Data(DZ_GZpairs,$Index) [list $fieldIDGZ1 $fieldIDGZ2]
+      lappend Data(DZ_GZpairs) [list $fieldIDGZ1 $fieldIDGZ2]
    }
-   
-   #TODO: FREE GZ PAIRS WHEN ReinitializeVP
    
    #----- Calcul: GZ1 - GZ2
    vexpr $FieldID "$fieldIDGZ1-$fieldIDGZ2"
@@ -1246,8 +1251,6 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
       puts "DZ FAILED"
       ::Dialog::Info . $Lbl(InvalidField)
    }
-   
-   puts "===== \[ ASSIGNING DZ \] ====="
 }
 
 #-------------------------------------------------------------------------------
@@ -2346,13 +2349,24 @@ proc APViz::ReinitializeVP { } {
    foreach colormap $Data(Colormaps) {
       colormap free $colormap
    }
+  
+   #----- Free GZ pairs for DZ
+   foreach pair $Data(DZ_GZpairs) {
+      foreach gzID $pair {
+         if {[fstdfield is $gzID]} {
+            fstdfield free $gzID
+         }
+      }
+   }
 
+   #----- Reinitialise values
    set Data(LayerIDs) {}
    set Data(CalcIDs) {}
    set Data(CurrentProduct) ""
    set APViz::Data(Layers) {}
    set Data(Colormaps) {}
    set Data(ColormapPairs) {}
+   set Data(DZ_GZpairs) {}
 }
 
 #----------------------------------------------------------------------------

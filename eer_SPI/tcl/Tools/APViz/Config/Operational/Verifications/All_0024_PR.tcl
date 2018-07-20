@@ -19,8 +19,16 @@ set Range(Hours)  	{006 012 018 024}
 set Range(Runs)   	{00 06 12 28}
 set Range(Sources)	{pres diag eta hyb}
 
-#----- Layers (On:Model:Var:Level:Hour:Run:Source)
+#----- Layers (On:Model:Run:Hour:Source:Var:Level)
 set Layers {
+   True:RDPS:<Runs>:<Hours>:<Sources>:<Vars_Surf>:0.0
+   True:RDPS:<Runs>:<Hours>:<Sources>:<Vars_Surf>:0.0
+   True:RDPS:<Runs>:<Hours>:<Sources>:<Vars_Surf>:0.0
+   True:RDPS:<Runs>:<Hours>:<Sources>:TT:<Levels_TT>
+   True:RDPS:<Runs>:<Hours>:pres:DZ:<Levels_DZ>
+}
+
+set comment {
    True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
    True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
    True:RDPS:<Vars_Surf>:0.0:<Hours>:<Runs>:<Sources>
@@ -30,9 +38,9 @@ set Layers {
 
 #----- Default Values 
 set DefaultValues {
-   False:RDPS:PR:0.0:000:00:pres
-   False:RDPS:PR:0.0:000:00:pres
-   False:RDPS:PN:0.0:000:00:pres
-   False:RDPS:TT:850:000:00:pres
-   True:RDPS:DZ:1000-500:000:00:pres
+   False:RDPS:00:000:pres:PR:0.0
+   False:RDPS:00:000:pres:PR:0.0
+   False:RDPS:00:000:pres:PN:0.0
+   False:RDPS:00:000:pres:TT:850
+   True:RDPS:00:000:pres:DZ:1000-500
 }

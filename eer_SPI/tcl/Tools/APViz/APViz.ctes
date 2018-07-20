@@ -75,4 +75,5 @@ namespace eval APViz {
    set Data(Layers)		{}
    set Data(Colormaps)          {}
    set Data(ColormapPairs)      {}      ; #Contient des paires {NewColormapID OriginalColormapID}
+   set Data(DZ_GZpairs)         {}
 }
