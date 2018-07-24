@@ -421,28 +421,28 @@ proc APViz::Source { Path Widget } {
          frame $Widget.range.variableGrid	; #Frame pour le grid
          
          #----- Column titles
-         label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)] 	;#-width 8
-         label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)] 	;#-width 7
-         label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 	;#-width 7
-         label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)] 	;#-width 7
-         label $Widget.range.variableGrid.run 	-text [lindex $Label(Run) $GDefs(Lang)] 	;#-width 4
-         label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	;#-width 5
+         label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)]
+         label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)]
+         label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 
+         label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)]
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
-               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
+               -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
                
          checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
-               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
+               -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+               
+         #----- Add help bubbles
+         Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
+         Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
          
          grid $Widget.range.variableGrid 	-column 0 -row 1 -padx 0.2
          grid $Widget.range.variableGrid.mod 	-column 1 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.run 	-column 2 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.runLock -column 3 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.hour 	-column 4 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.hrLock 	-column 5 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.src 	-column 6 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.var 	-column 7 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.lev 	-column 8 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.runLock -column 2 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.hrLock -column 3 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.src 	-column 4 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.var 	-column 5 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.lev 	-column 6 -row 0 -padx 0.2
          
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
@@ -622,12 +622,15 @@ proc APViz::Source { Path Widget } {
             set itemList [list toggle model run hour dataSrc var level param delete]
             set colNb 0
             foreach item $itemList {
+            set comment {
                if {($item eq "run") || ($item eq "hour")} {
                   grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -columnspan 2 -padx 0.1
                   incr colNb
                } else {
                   grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
                }
+            }
+               grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
                set fieldIDTemp FLD$RowID(Layer$no)_$defaultVariable
                Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
                incr colNb
@@ -1783,9 +1786,11 @@ proc APViz::FetchDates { Product Model Src } {
             }
          }
          
-         #----- Speed up dateList construction, typically: containing 7 dates
+         #----- Speed up dateList construction, typically: containing 7 dates !!! NOT FOR ALL MODELS !!!
+         set comment {
          if {[llength $dateList] > 6} {
             break
+         }
          }
       }
       set dateList [lreplace [lsort $dateList] 0 0]
