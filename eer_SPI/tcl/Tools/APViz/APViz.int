@@ -82,10 +82,29 @@ proc APViz::Window { } {
          checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue APViz -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab).head.param -image PARAMS -bd 1 -relief flat -overrelief raised -command { SPI::Params . 1 }
          button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
-         pack $Data(Tab).head.mode $Data(Tab).head.param $Data(Tab).head.save -side left -padx 2
+         pack $Data(Tab).head.mode $Data(Tab).head.save -side left -padx 2
+         
+         #----- Configurable date
+         frame $Data(Tab).head.dateConfig
+            label $Data(Tab).head.dateConfig.lbl -text "Date: " -anchor e 
+            ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars"
+            set APViz::Data(DateCBWidget) $Data(Tab).head.dateConfig.cb
+            set dateList [APViz::FetchDates $Data(CurrentProduct) "" ""]
+            set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+            
+            checkbutton $Data(Tab).head.dateConfig.dateLock -variable ::APViz::Data(dateLock) -onvalue True -offvalue False \
+               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) 
+            Bubble::Create $Data(Tab).head.dateConfig.dateLock $APViz::Bubble(BlockDate)
+
+            pack $Data(Tab).head.dateConfig.lbl $Data(Tab).head.dateConfig.cb $Data(Tab).head.dateConfig.dateLock -side left
+         pack $Data(Tab).head.dateConfig -side right
+         
+
+         bind $Data(Tab).head.dateConfig.cb.select <Return> "APViz::DateBinding"
       pack $Data(Tab).head -side top -fill x
+      
+
       
       # PanedWindow pour ajuster taille de chaque section
       panedwindow $Data(Tab).vis -orient vertical -showhandle False -opaqueresize True -bd 0
@@ -149,7 +168,6 @@ proc APViz::Window { } {
       pack .apviz.dock -side bottom -fill x
 
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
-      Bubble::Create $Data(Tab).head.param $Bubble(Param)
       Bubble::Create $Data(Tab).head.save $Bubble(Save)
       
       bind $Data(Tab).opt.type.lst <ButtonRelease> "APViz::UpdateRange"

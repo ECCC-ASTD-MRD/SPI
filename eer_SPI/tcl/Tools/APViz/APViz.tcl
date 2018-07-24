@@ -353,7 +353,7 @@ proc APViz::Source { Path Widget } {
       set Label(Hour)		{ "Heure" "Hour" }
       set Label(Layer)		{ "Couches" "Layers" }
       set Label(Level)		{ "Niveau" "Level" }	
-      set Label(Model)		{ "Données" "Data" }
+      set Label(Model)		{ "Data" "Data" }
       set Label(Source)		{ "Source" "Source" }
       set Label(Run)		{ "Run" "Run" }
       set Label(Type)		{ "Type" "Type" }
@@ -364,7 +364,6 @@ proc APViz::Source { Path Widget } {
       
       set Value(Formula)	 ""	; # Formule de la couche de calcul (textvariable du entry pour la selection de formule)
       set Value(UneditedFormula) ""	; # Formule sans remplacement de variable
-      set Value(Date)		 ""
       set Value(HardcodedDate)	 {20180704 20180705 20180706}	; #TODO: FETCH DATES FROM FOLDER
       
       set RowID(LayerAdjustment)	0	; # Ajustement pour le calcul du rowID pour les couches
@@ -422,12 +421,12 @@ proc APViz::Source { Path Widget } {
          frame $Widget.range.variableGrid	; #Frame pour le grid
          
          #----- Column titles
-         label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)] 	-width 8
-         label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)] 	-width 7
-         label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 	-width 7
-         label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)] 	-width 7
-         label $Widget.range.variableGrid.run 	-text [lindex $Label(Run) $GDefs(Lang)] 	-width 4
-         label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	-width 5
+         label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)] 	;#-width 8
+         label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)] 	;#-width 7
+         label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 	;#-width 7
+         label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)] 	;#-width 7
+         label $Widget.range.variableGrid.run 	-text [lindex $Label(Run) $GDefs(Lang)] 	;#-width 4
+         label $Widget.range.variableGrid.hour 	-text [lindex $Label(Hour) $GDefs(Lang)] 	;#-width 5
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
                -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame)
@@ -458,28 +457,10 @@ proc APViz::Source { Path Widget } {
          }
          
          pack $Widget.range -side top -fill x -anchor nw
-         
-         #----- Configurable date
-         
-         frame $Widget.range.dateConfig
-         label $Widget.range.dateConfig.lbl -text "Date: " -width 36 -anchor e 
-         ComboBox::Create $Widget.range.dateConfig.cb APViz::${Product}::Value(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars $Product"
-         set APViz::Data(DateCBWidget) $Widget.range.dateConfig.cb
+
          set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
-         set APViz::${Product}::Value(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+         set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
          
-         checkbutton $Widget.range.dateConfig.dateLock -variable ::APViz::${Product}::Value(dateLock) -onvalue True -offvalue False \
-               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) 
-
-         bind $Widget.range.dateConfig.cb.select <Return> "APViz::DateBinding $Product"
-         
-         grid $Widget.range.dateConfig 		-column 0 -row 0 -padx 1
-         grid $Widget.range.dateConfig.lbl 	-column 1 -row 0 -padx 1
-         grid $Widget.range.dateConfig.cb 	-column 2 -row 0 -padx 1
-         grid $Widget.range.dateConfig.dateLock 	-column 3 -row 0 -padx 1
-         
-         Bubble::Create $Widget.range.dateConfig.dateLock $APViz::Bubble(BlockDate)
-
          ::APViz::DeleteWidget $Widget.add	; # Liberer le widget
          
          menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
@@ -532,6 +513,10 @@ proc APViz::Source { Path Widget } {
             if $IsSpinBox {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
+               
+               #----- Bind with return key
+               bind $Path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index "
+               
             } else {
                regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
                ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 8 \
@@ -1016,7 +1001,7 @@ proc APViz::Source { Path Widget } {
    
    set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $product]	; # Update a chaque 10min:1000*60*10
    
-   APViz::InitializeVars $product
+   APViz::InitializeVars
 }
 
 #-------------------------------------------------------------------------------
@@ -1053,9 +1038,9 @@ proc APViz::AssignVariable { Product Index } {
    set src	$Value(Sources,$Index)
    #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
    
-   set date $Value(Date)
+   set date $Data(Date)
 
-   if {![APViz::ValidateDate $Product $date]} {
+   if {![APViz::ValidateDate $date]} {
       return
    }
    
@@ -1123,21 +1108,36 @@ proc APViz::AssignVariable { Product Index } {
             set levelType [ APViz::GetLevelType $src ]
             set fieldID FLD$RowID(Layer$Index)_${var}
             
-            if {$var eq "DZ"} {
-               APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType
-            } else {
-               if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
-                  puts "============"
-                  puts "Var: $var"
-                  puts "Level: $lev"
-                  ::Dialog::Info . $Lbl(InvalidField)
-                  puts "============"
-                  return
-               } else {
-                  set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
-               }
+            switch $var {
+               "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType }
+               "PR"     { puts "ASSIGNING PR"
+                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 24 24 "" $var }]} {
+                              puts "============"
+                              puts "Var: $var"
+                              puts "Level: $lev"
+                              ::Dialog::Info . $Lbl(InvalidField)
+                              puts "============"
+                              return
+                           } else {
+                              fstdfield -configure $fieldID -factor 1e3
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
+                           }
+                        }
+               
+               default  {  
+                           if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+                              puts "============"
+                              puts "Var: $var"
+                              puts "Level: $lev"
+                              ::Dialog::Info . $Lbl(InvalidField)
+                              puts "============"
+                              return
+                           } else {
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
+                           }
+                        }
             }
-            
+
             #----- In case DZ assignation failed
             if {![fstdfield is $fieldID]} {
                return
@@ -1167,9 +1167,7 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             fstdfield configure $fieldID -colormap $colormapName
-
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
-            AttributeColor $var $fieldID						; # Changer la couleur si la variable a deja ete assignee
             
             #----- Assigner seulement si n'est pas assigne
             if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
@@ -1654,12 +1652,12 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::DateBinding { Product } {
-   variable ${Product}::Value
-
-   set result [APViz::ValidateDate $Product $Value(Date)] 
+proc APViz::DateBinding { } {
+   variable Data
+   
+   set result [APViz::ValidateDate $Data(Date)] 
    if {$result} {
-      APViz::InitializeVars $Product
+      APViz::InitializeVars
    }
 }
 
@@ -1765,39 +1763,40 @@ proc APViz::FetchFiles { Path Name } {
 proc APViz::FetchDates { Product Model Src } {
    variable Data
    variable DataSrc
-   variable ${Product}::Value
-
-   if {$Src eq "BURP"} {
-      set path $DataSrc(OBS,$Model)/
-   } else {
-      set path $DataSrc(${Model},${Src})/
-   }
-
-   set fileList [glob -nocomplain -tails -path $path *]
+   
    set dateList {}
+   
+   if {$Product ne ""} {
+      if {$Src eq "BURP"} {
+         set path $DataSrc(OBS,$Model)/
+      } else {
+         set path $DataSrc(${Model},${Src})/
+      }
 
-   foreach file $fileList {
-      if {![file isdirectory ${path}$file]} {
-         set date [string range $file 0 7]		; # Format nomFichier: AAAAMMDDRR_HHH
-         if {[lsearch -exact $dateList $date] eq -1} {
-            lappend dateList $date
+      set fileList [glob -nocomplain -tails -path $path *]
+
+      foreach file $fileList {
+         if {![file isdirectory ${path}$file]} {
+            set date [string range $file 0 7]              ; # Format nomFichier: AAAAMMDDRR_HHH
+            if {[lsearch -exact $dateList $date] eq -1} {
+               lappend dateList $date
+            }
+         }
+         
+         #----- Speed up dateList construction, typically: containing 7 dates
+         if {[llength $dateList] > 6} {
+            break
          }
       }
-      
-      #----- Speed up dateList construction, typically: containing 7 dates
-      if {[llength $dateList] > 6} {
-         break
-      }
+      set dateList [lreplace [lsort $dateList] 0 0]
    }
-
-   set dateList [lreplace [lsort $dateList] 0 0]
-
+   
    if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
       ComboBox::DelAll $Data(DateCBWidget)
       ComboBox::AddList $Data(DateCBWidget) $dateList
    }
 
-   set Value(Dates) $dateList
+   set Data(Dates) $dateList
 }
 
 #----------------------------------------------------------------------------
@@ -2283,14 +2282,20 @@ proc APViz::GetLevelType { Source } {
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::InitializeVars { Product } {
-   variable ${Product}::Value
-   variable ${Product}::RowID
+proc APViz::InitializeVars { } {
    variable Data
+   set product $Data(CurrentProduct)
+   
+   if {$product eq ""} {
+      return
+   }
+   
+   variable ${product}::Value
+   variable ${product}::RowID
 
    for {set idx 0} {$idx < $Value(NbLayers)} {incr idx} {
       if {$RowID(Layer$idx) >= 0} {
-         APViz::AssignVariable $Product $idx
+         APViz::AssignVariable $product $idx
       }	
    }
 }
@@ -2590,7 +2595,6 @@ proc APViz::UpdateRange { } {
 # But      : Valider la date
 #
 # Parametres :
-#	<Product> : Le nom du produit selectionne (aussi le namespace) 
 #	<Date>	  : La date a valider
 #
 # Retour:
@@ -2599,11 +2603,11 @@ proc APViz::UpdateRange { } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::ValidateDate { Product Date } {
+proc APViz::ValidateDate { Date } {
    variable Lbl
-   variable ${Product}::Value
+   variable Data
 
-   set result [expr [lsearch -exact $Value(Dates) $Date] >= 0]
+   set result [expr [lsearch -exact $Data(Dates) $Date] >= 0]
 
    if {!$result} {
       ::Dialog::Info . $Lbl(WrongDate)
@@ -2656,20 +2660,20 @@ proc APViz::UpdateAvailableDates { Product } {
    #----- Verifier s'il y a eu des changements dans le dossier
    set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
 
-   if {$lastModifiedDate > [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]} {
+   if {$lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]} {
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
       APViz::FetchDates $Product $model $src
       after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
    }
 
-   if {!$Value(dateLock) && ($Value(Date) ne [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]])} {
-      set Value(Date) [lindex $Value(Dates) [expr [llength $Value(Dates)] -1 ]]
+   if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {
+      set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
       after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
-      APViz::InitializeVars $Product
+      APViz::InitializeVars
    }
 
-   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product]	; # Update a chaque 10min:1000*60*10
+   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
 }

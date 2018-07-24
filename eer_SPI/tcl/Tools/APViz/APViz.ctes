@@ -76,4 +76,6 @@ namespace eval APViz {
    set Data(Colormaps)          {}
    set Data(ColormapPairs)      {}      ; #Contient des paires {NewColormapID OriginalColormapID}
    set Data(DZ_GZpairs)         {}
+   set Data(Dates)              {}
+   set Data(Date)               ""
 }
