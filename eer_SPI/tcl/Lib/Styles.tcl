@@ -376,6 +376,7 @@ proc Styles::Write { Channel Spec { Style "" } } {
       -rendertexture [dataspec configure $Spec -rendertexture] -rendervolume [dataspec configure $Spec -rendervolume] -renderparticle [dataspec configure $Spec -renderparticle]\
       -rendercoord [dataspec configure $Spec -rendercoord] -rendervalue [dataspec configure $Spec -rendervalue] -renderlabel [dataspec configure $Spec -renderlabel]\
       -rendergrid [dataspec configure $Spec -rendergrid] -min \"[dataspec configure $Spec -min]\" -max \"[dataspec configure $Spec -max]\"\
+      -renderboundary [dataspec configure $Spec -renderboundary]\"\
       -intervals \"[dataspec configure $Spec -intervals]\" -interlabels \"[dataspec configure $Spec -interlabels]\" -intervalmode [dataspec configure $Spec -intervalmode] \
       -interpdegree \"[dataspec configure $Spec -interpdegree]\" -extrapdegree \"[dataspec configure $Spec -extrapdegree]\" \
       -sample \"[dataspec configure $Spec -sample]\" -stipple \"[dataspec configure $Spec -stipple]\" \
