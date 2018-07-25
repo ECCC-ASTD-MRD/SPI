@@ -19,7 +19,7 @@ set Params(PN) "-colormap REC_Beach 	-color black -font XFont12 -width 1 -render
 set Range(Levels) 	{250 500 700 850 1000}
 set Range(Vars)   	{GZ HU TT UU}
 set Range(Hours)  	{000 024 036 048}
-set Range(Runs)   	{00 06 12 28}
+set Range(Runs)   	{00 06 12 18}
 set Range(Sources)	{pres diag eta hyb}
 
 #----- Layers (On:Model:Run:Hour:Source:Var:Level)

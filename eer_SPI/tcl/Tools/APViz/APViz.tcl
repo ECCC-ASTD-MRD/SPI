@@ -425,6 +425,7 @@ proc APViz::Source { Path Widget } {
          label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)]
          label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 
          label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)]
+         label $Widget.range.variableGrid.ip3   -text "IP3"
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
                -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
@@ -443,6 +444,7 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.src 	-column 4 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.var 	-column 5 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.lev 	-column 6 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
          
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
@@ -574,8 +576,8 @@ proc APViz::Source { Path Widget } {
          set no $Value(NbLayers)
          foreach layer $Layers default $DefaultValues {
             #----- Extract layer parts
-            lassign [split $layer :] toggle model run hour dataSrc var level
-            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel   
+            lassign [split $layer :] toggle model run hour dataSrc var level ip3
+            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel defaultIP3
             
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -593,10 +595,11 @@ proc APViz::Source { Path Widget } {
             
             # CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
             CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
-            CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 5 $defaultHour
-            CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 5 $defaultRun
-            set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false 5 $defaultVar]
-            set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false 5 $defaultDataSrc]
+            CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
+            CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
+            CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
+            set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
+            set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
             
             #----- For DZ, level choices are LEV1-LEV2
             if {$defaultVariable eq "DZ"} {
@@ -605,7 +608,7 @@ proc APViz::Source { Path Widget } {
                set levelWidth 5
             }
             
-            CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels false $levelWidth $defaultLevel
+            CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels false -1 $defaultLevel
             
             #----- Definir le numero de tab a ouvrir dans la fenetre de configuration
             set tab 1                                   ; # 1: Tab Champs
@@ -619,17 +622,9 @@ proc APViz::Source { Path Widget } {
             set RowID(Layer$no) [expr $no - $RowID(LayerAdjustment)]
             
             #----- Place widgets in grid        
-            set itemList [list toggle model run hour dataSrc var level param delete]
+            set itemList [list toggle model run hour dataSrc var level ip3 param delete]
             set colNb 0
             foreach item $itemList {
-            set comment {
-               if {($item eq "run") || ($item eq "hour")} {
-                  grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -columnspan 2 -padx 0.1
-                  incr colNb
-               } else {
-                  grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
-               }
-            }
                grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
                set fieldIDTemp FLD$RowID(Layer$no)_$defaultVariable
                Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
@@ -1113,30 +1108,28 @@ proc APViz::AssignVariable { Product Index } {
             
             switch $var {
                "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType }
+               
                "PR"     { puts "ASSIGNING PR"
-                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 24 24 "" $var }]} {
-                              puts "============"
-                              puts "Var: $var"
-                              puts "Level: $lev"
+                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 -1 6 "" $var }]} {
                               ::Dialog::Info . $Lbl(InvalidField)
-                              puts "============"
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
+                              puts "PR FAILED LAYERIDs: $Data(LayerIDs)"
                               return
                            } else {
-                              fstdfield -configure $fieldID -factor 1e3
+                              fstdfield configure $fieldID -factor 1e3
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
                            }
                         }
                
                default  {  
                            if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
-                              puts "============"
-                              puts "Var: $var"
-                              puts "Level: $lev"
                               ::Dialog::Info . $Lbl(InvalidField)
-                              puts "============"
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
+                              puts "DEFAULT FAILED LAYERIDs: $Data(LayerIDs)"
                               return
                            } else {
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
+                              puts "DEFAULT LAYERIDs: $Data(LayerIDs)"
                            }
                         }
             }
@@ -1249,6 +1242,7 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
       #----- Add ID to Data(LayersID)
       set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $FieldID]
    } else {
+      set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
       puts "DZ FAILED"
       ::Dialog::Info . $Lbl(InvalidField)
    }

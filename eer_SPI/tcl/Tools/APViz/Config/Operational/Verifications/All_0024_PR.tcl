@@ -9,7 +9,8 @@ set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #0000
 set Params(DZ) "-colormap REC_Hue 	-color blue -font XFont12 -width 1 -dash - -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
 set Params(TT) "-colormap REC_Ocean 	-color yellow -font XFont12 -width 3 -rendercontour 1 -mapall False -intervals \{ 0 15 \}"
 set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 4 -rendervalue 20"
-set Params(PR) "-colormap REC_Beach     -color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 4"
+set Params(PR) "-colormap REC_Beach     -color black -font XFont12 -width 1 -rendercontour 0 -rendertexture 1 -mapall True -intervals \{ 1 5 10 15 20 25 30 40 50 75 100 \}"
+set Params(PR2) "-colormap REC_Beach    -color black -font XFont12 -width 2 -rendercontour 0 -mapall False -intervals \{ 10 40 \} "
 
 #----- Ranges
 set Range(Levels_TT) 	{250 500 700 850 1000}
@@ -30,9 +31,9 @@ set Layers {
 
 #----- Default Values 
 set DefaultValues {
-   True:RDPS:00:000:pres:PR:0.0
-   True:RDPS:00:000:pres:PR:0.0
-   True:RDPS:00:000:pres:PN:0.0
-   True:RDPS:00:000:pres:TT:850
-   True:RDPS:00:000:pres:DZ:1000-500
+   True:RDPS:00:006:diag:PR:0.0
+   True:RDPS:00:006:diag:PR:0.0
+   True:RDPS:00:006:pres:PN:0.0
+   True:RDPS:00:006:pres:TT:850
+   True:RDPS:00:006:pres:DZ:1000-500
 }
