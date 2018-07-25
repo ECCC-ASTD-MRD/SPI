@@ -27,3 +27,21 @@
 #----- To run the tests
 /eer_SPI/share/examples/script/DataIn
 /eer_SPI/share/examples/script/DataOut
+
+#----- cscope code navigation databases
+cscope.out
+
+#----- Sample test files
+*.sqlite
+*.out
+
+#----- Output of tools
+callgrind.out.*
+
+#----- Network file system lock files
+.nfs*
+
+#----- Emacs files
+.projectfile
+spi.html
+*.d

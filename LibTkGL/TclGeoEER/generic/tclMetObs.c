@@ -8,7 +8,7 @@
  * Fichier      : tclMetObs.c
  * Creation     : Avril 2006 - J.P. Gauthier
  *
- * Description  : Fichier d'entete du module Obs.
+ * Description  : Fichier d'implémentation du module Obs.
  *
  * Remarques    :
  *
@@ -34,7 +34,11 @@
 #include "App.h"
 #include "tclMetObs.h"
 #include "Projection.h"
+#include "tclMetObs_Test.h"
 #include <math.h>
+// #define PHIL_DEBUG
+#include "debug.h"
+#include "tclMetObs_SQLite.h"
 
 static BUFR_Tables *BUFRTable=NULL;
 
@@ -118,16 +122,22 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-
+static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *CONST Objv[]);
 static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
+   FUNCBEGIN
+   (void) clientData;  // Squelch warning about unused parameter.
    TMetObs    *obs;
 
    int         idx,c,n;
-   static CONST char *sopt[] = { "create","read","write","free","define","stats","is","all","wipe","table",NULL };
-   enum               opt { CREATE,READ,WRITE,FREE,DEFINE,STATS,IS,ALL,WIPE,TABLE };
+   static CONST char *sopt[] = { "create","read","write","free","define","stats","is","all","wipe","table", "test",NULL };
+   enum               opt { CREATE,READ,WRITE,FREE,DEFINE,STATS,IS,ALL,WIPE,TABLE,TEST };
 
    Tcl_ResetResult(Interp);
+
+   for(int j = 0; j < Objc; ++j){
+      SVAL(Tcl_GetString(Objv[j]));
+   }
 
    if (Objc<2) {
       Tcl_WrongNumArgs(Interp,1,Objv,"command ?arg arg ...?");
@@ -139,6 +149,9 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
    }
 
    switch ((enum opt)idx) {
+      case TEST:
+         return MetObs_Test(Interp, Objc-2, Objv+2);
+         break;
       case CREATE:
          if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"id [files]");
@@ -238,6 +251,11 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
       case WIPE:
          TclY_HashWipe(&MetObsTable,(TclY_HashFreeEntryDataFunc*)MetObs_Free);
          TclY_HashWipe(&MetRepTable,(TclY_HashFreeEntryDataFunc*)TMetElemData_Free);
+         break;
+
+      default:
+         fprintf(stderr, "%s(): Default case reached\n",__func__);
+         return TCL_ERROR;
    }
    return(TCL_OK);
 }
@@ -1177,7 +1195,7 @@ static int MetObs_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
+int MetObs_Create(Tcl_Interp *Interp,char *Name) {
 
    TMetObs *obs;
 
@@ -1211,6 +1229,8 @@ static int MetObs_Create(Tcl_Interp *Interp,char *Name) {
 
    MetModel_Create(Interp,Name);
    obs->Model = MetModel_Get(Name);
+
+   Tcl_InitHashTable(&obs->LocationCoordIndex, TCL_STRING_KEYS);
 
    return(TCL_OK);
 }
@@ -1477,43 +1497,63 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
    return(loc);
 }
 
+static int hash_loc_coord(double Lat, double Lon, double Elev, char *Key)
+{
+   snprintf(Key, 64, "%d,%d,%d", (int)Lat, (int)Lon, (int)Elev);
+   return TCL_OK;
+}
+
+TMetLoc *TMetLoc_FindWithCoordIndex(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
+   (void) From;
+   (void) Id;
+   (void) Type;
+   (void) Multi;
+
+   TMetLoc *loc = NULL;
+
+   char loc_key[64];
+   hash_loc_coord(Lat, Lon, Elev, loc_key);
+
+   Tcl_HashEntry *entryPtr;
+   if((entryPtr = Tcl_FindHashEntry(&Obs->LocationCoordIndex, loc_key)) != NULL)
+      loc = (TMetLoc *) Tcl_GetHashValue(entryPtr);
+
+   /*
+    * TODO See with JP about what else to check for to emulate behavior of
+    * TMetLoc_FindWithCoord, maybe put the Id in the hash string.
+    */
+
+   return loc;
+}
+
+
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
-   TMetLoc *loc;
 
-   loc=From?From->Next:Obs->Loc;
-
-   while(loc) {
-      if (Type==MET_TYPENO) {
-         if (strcmp(loc->No,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
-      } else if (Type==MET_TYPEID) {
-         if (strcmp(loc->Id,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
-      } else {
-         if (strcmp(loc->Tag,Id)==0) {
-            if ((Lat==-999.0 || loc->Coord.Lat==Lat) && (Lon==-999.0 || loc->Coord.Lon==Lon) && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
-               *Multi=0;
-               break;
-            } else {
-               *Multi=1;
-            }
-         }
+   TMetLoc *start=From?From->Next:Obs->Loc;
+   for(TMetLoc *loc = start; loc; loc = loc->Next){
+      char *cmp;
+      switch(Type){
+         case MET_TYPENO: cmp = loc->No; break;
+         case MET_TYPEID: cmp = loc->Id; break;
+         default: cmp = loc->Tag; break;
       }
-      loc=loc->Next;
+
+      if(strcmp(cmp, Id) != 0)
+         continue;
+
+      /*
+       * Id matches, now check coordinates
+       */
+      if (     (Lat==-999.0  || loc->Coord.Lat==Lat)
+            && (Lon==-999.0  || loc->Coord.Lon==Lon)
+            && (Elev==-999.0 || loc->Coord.Elev==Elev)) {
+         *Multi=0; // We found a loc with the same Id and same Coordinates
+         return loc;
+      } else {
+         *Multi=1; // There is a loc with the same Id but different coordinates
+      }
    }
-   return(loc);
+   return NULL;
 }
 
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev) {
@@ -1543,6 +1583,12 @@ TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double
    } else {
       loc->Next=NULL;
    }
+
+   char loc_key[64];
+   hash_loc_coord(Lat, Lon, Elev, loc_key);
+   int new;
+   Tcl_HashEntry *entryPtr = Tcl_CreateHashEntry(&Obs->LocationCoordIndex, loc_key, &new);
+   Tcl_SetHashValue(entryPtr, loc);
 
    return(loc);
 }
@@ -1802,11 +1848,22 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
 }
 
 
-TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Codes) {
+/*
+ * Is the parameter time_t Min like the minimum timestep or something?
+ * It is called dt in MetObs_LoadBURP() so maybe it's some kind of precision or
+ * something.
+ */
+TMetElemData *TMetElem_Insert(TMetLoc *Loc,
+      time_t Min, time_t Time,
+      int Fam, int Type, int SType,
+      int Ne, int Nv, int Nt,
+      float *Data, int *Marker,
+      EntryTableB **Codes
+){
 
    TMetElemData *ptr,*data=NULL;
 
-   data=(TMetElemData*)malloc(sizeof(TMetElemData));
+   data = (TMetElemData*) malloc(sizeof(*data));
 
    data->Ne=Ne;
    data->Nv=Nv;
@@ -1817,27 +1874,33 @@ TMetElemData *TMetElem_Insert(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Ty
    data->Time=Time;
 
    if (Data) {
-      data->Data=(float*)malloc(data->Ne*data->Nv*data->Nt*sizeof(float));
-      memcpy(data->Data,Data,data->Ne*data->Nv*data->Nt*sizeof(float));
+      const size_t nb_data = Ne * Nv * Nt;
+      const size_t nb_bytes = nb_data * sizeof(float);
+      data->Data=(float*) malloc(nb_bytes);
+      memcpy(data->Data, Data, nb_bytes);
    } else {
       data->Data=NULL;
    }
 
    if (Marker) {
-      data->Marker=(int*)malloc(data->Ne*data->Nv*data->Nt*sizeof(int));
-      memcpy(data->Marker,Marker,data->Ne*data->Nv*data->Nt*sizeof(int));
+      const size_t nb_marker = Ne * Nv * Nt;
+      const size_t nb_bytes = nb_marker * sizeof(int);
+      data->Marker=(int*) malloc(nb_bytes);
+      memcpy(data->Marker, Marker, nb_bytes);
    } else {
       data->Marker=NULL;
    }
 
    if (Codes) {
-      data->Code=(EntryTableB**)malloc(data->Ne*sizeof(EntryTableB*));
-      memcpy(data->Code,Codes,data->Ne*sizeof(EntryTableB*));
+      const size_t nb_codes = data->Ne;
+      const size_t nb_bytes = nb_codes * sizeof(EntryTableB*);
+      data->Code = (EntryTableB**) malloc(nb_bytes);
+      memcpy(data->Code,Codes,nb_bytes);
    } else {
       data->Code=NULL;
    }
 
-   if (!(ptr=TMetElem_Add(Loc,data,Time))) {
+   if (!(ptr = TMetElem_Add(Loc,data,Time))) {
       TMetElemData_Free(data);
       free(data);
    } else {
@@ -1907,6 +1970,11 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 #ifdef HAVE_RMN
    type=f77name(wkoffit)(File,strlen(File));
 #endif
+   if(strstr(File,".sqlite") != NULL){
+      type = MET_SQLITE;
+   } else if (strstr(File, ".other") != NULL){
+     type = MET_SQLITE;
+   }
 
    App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
 
@@ -1914,6 +1982,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       case MET_BURP: res=MetObs_LoadBURP(Interp,File,Obs);  break;
       case MET_BUFR: res=MetObs_LoadBUFR(Interp,File,Obs); break;
 //Not recognized      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
+      case MET_SQLITE: res=MetObs_LoadSQLite(Interp,File,Obs); break;
       case MET_OTHER: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
                   res=MetObs_LoadASCII(Interp,File,Obs);
                }
@@ -3276,6 +3345,89 @@ int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {
       TMetElemData_Free(ref);
    }
    return(TCL_OK);
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <MetObs_Test>
+ * Creation     : Mai 2018 Philippe Carphin
+ *
+ * But          : Permettre des tests par TCL
+ *
+ * Parametres    :
+ *   <interp>    : Interpreteur Tcl
+ *   <Objc>      : Nombre d'arguments
+ *   <Objv>      : Pointeur sur la liste des arguments (word)
+ *
+ * Retour       : Code de retour standard TCL
+ *
+ * Remarques : This test command is invoked in TCL the following way:
+ *    metobs test arg1 arg2 ... if we are in this function, it means that
+ *    Objv[0] ~ metobs
+ *    Objv[1] ~ test
+ *
+ *    Furthermore,
+ *    Objv[2] should contain a test subcommand and
+ *    Objv[3] should contain a name to be used as a key in the TCL hashmaps when
+ *    creating or looking up a TMetObs instance.
+ *
+ *    I wanted to put this in a separate file but it uses functions that are
+ *    static in this file.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
+{
+   /*
+    * Read the arguments of the command and determine the subcommand
+    */
+   const char *test_subcommands[] = {"create_test_obs", "show", "sql", NULL};
+   enum TestSubcommand              { CREATE_TEST_OBS,    SHOW,   SQL      };
+
+   enum TestSubcommand test_subcommand;
+   int rc = Tcl_GetIndexFromObj(
+         Interp,
+         Objv[0],
+         test_subcommands,
+         "metobs test subcommand",
+         TCL_EXACT,
+         (int *)&test_subcommand
+   ); if (rc != TCL_OK) return rc;
+
+   char * name = NULL;
+   if( Objc > 1 ){
+      name = Tcl_GetString(Objv[1]);
+   }
+
+   /*
+    * Dispatch to handler functions
+    */
+   TMetObs *obs = NULL;
+   switch(test_subcommand){
+      case CREATE_TEST_OBS:
+         MetObs_Create(Interp, strdup(name));
+         obs = MetObs_Get(name);
+         MetObsTest_FillTestObs(obs);
+         break;
+      case SHOW:
+         obs = MetObs_Get(name);
+         if(obs == NULL){
+            printf("No obs with name=%s found\n", name);
+         } else {
+            MetObs_ShowObs(obs);
+         }
+         break;
+      case SQL:
+         if(name == NULL){
+            name = "acars.sqlite";
+         }
+         MetObs_Create(Interp, "sql_test");
+         obs = MetObs_Get("sql_test");
+         MetObs_LoadSQLite(Interp, name, obs);
+
+         break;
+   }
+
+   FUNCEND
+   return TCL_OK;
 }
 
 #endif

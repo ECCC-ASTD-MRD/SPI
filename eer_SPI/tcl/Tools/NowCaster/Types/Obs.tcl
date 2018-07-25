@@ -544,7 +544,7 @@ namespace eval NowCaster::Obs { } {
                      "do you really want to suppress this model ?" }
 
    set Error(File)  { "Fichier d'observation invalide." "Invalid observation file." }
-   set Error(Elems) { "Il n'y a aucun element dans ce fichier." "No element foun in this file." }
+   set Error(Elems) { "Il n'y a aucun élément dans ce fichier." "No element found in this file." }
 
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }

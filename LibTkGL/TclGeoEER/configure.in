@@ -204,7 +204,10 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tclMetObs_ASCII.c \
                  generic/tclMetObs_BUFR.c \
                  generic/tclMetObs_BURP.c \
+                 generic/tclMetObs_SQLite.c \
+                 generic/tclMetObs_SQLiteConfigParser.c \
                  generic/tclMetObs_SWOB.c \
+                 generic/tclMetObs_Test.c \
                  generic/tclOGR.c \
                  generic/tclObs.c \
                  generic/tclRADAR.c \
@@ -247,6 +250,9 @@ TEA_ADD_HEADERS([generic/Data_Calc.h
                  generic/tclGRIB.h \
                  generic/tclMetDataset.h \
                  generic/tclMetObs.h \
+                 generic/tclMetObs_SQLite.h \
+                 generic/tclMetObs_SQLiteConfigParser.h \
+                 generic/tclMetObs_Test.h \
                  generic/tclMetTables.h \
                  generic/tclOGR.h \
                  generic/tclObs.h \
@@ -262,7 +268,7 @@ TEA_ADD_HEADERS([generic/Data_Calc.h
 
 TEA_ADD_INCLUDES([-Igeneric])
 TEA_ADD_LIBS([-lc -lexpat -lGL -lGLU -ltk8.6 -L${TCL_BIN_DIR}/TkglCanvas8.6 -lTkglCanvas8.6])
-TEA_ADD_CFLAGS([])
+TEA_ADD_CFLAGS([-g -MMD])
 TEA_ADD_STUB_SOURCES([])
 TEA_ADD_TCL_SOURCES([])
 

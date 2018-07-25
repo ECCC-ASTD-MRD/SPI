@@ -1,0 +1,66 @@
+#BEGIN_SCHEMA key1
+#BEGIN_QUERY obs
+  SELECT
+  id_rapport AS id_rapport,
+  id_stn AS id_stn,
+  lat AS lat,
+  lon AS lon,
+  flight_level AS elev,
+  strftime("%s",date_validite) AS date_validite,
+  valeur AS valeur,
+  element AS element
+  FROM Rapport NATURAL JOIN Observation;
+#END_QUERY
+#BEGIN_QUERY elem
+Aquarius, the age of aquarius
+#END_QUERY
+#END_SCHEMA
+
+#BEGIN_SCHEMA notkey2 
+#BEGIN_QUERY obs
+I'm just a poor boy from a poor family
+#END_QUERY
+#BEGIN_QUERY elem
+I'm just a poor boy nobody loves me
+#END_QUERY
+#END_SCHEMA
+
+
+
+// ======================= ACARS DATABASE TYPE ========================================
+#BEGIN_SCHEMA acars
+#BEGIN_QUERY obs
+  SELECT
+  id_rapport as id_rapport,
+  id_stn as id_stn,
+  lat as lat,
+  lon as lon,
+  flight_level as elev,
+  strftime("%s",date_validite) as date_validite,
+  valeur as valeur,
+  element as element
+  FROM Rapport NATURAL JOIN Observation;
+#END_QUERY
+#BEGIN_QUERY elem
+  SELECT DISTINCT element FROM Observation;
+#END_QUERY
+#END_SCHEMA
+
+// ======================= SOME OTHER DATABASE TYPE ========================================
+#BEGIN_SCHEMA other
+#BEGIN_QUERY obs
+  SELECT
+  id_rapport AS id_rapport,
+  id_stn AS id_stn,
+  lat AS lat,
+  lon AS lon,
+  alt AS elev,
+  strftime("%s",date_validite) AS date_validite,
+  valeur AS valeur,
+  element AS element
+  FROM Rapport NATURAL JOIN Observation;
+#END_QUERY
+#BEGIN_QUERY elem
+  SELECT DISTINCT element FROM Observation;
+#END_QUERY
+#END_SCHEMA

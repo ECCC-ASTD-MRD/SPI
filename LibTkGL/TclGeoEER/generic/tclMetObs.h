@@ -54,6 +54,7 @@
 
 #define MET_BURP     6
 #define MET_BUFR     8
+#define MET_SQLITE   10
 #define MET_OTHER   -1
 
 #define fgetskip(BYTES,LEN,STREAM)   BYTES[0]='\0';while (fgets(BYTES,LEN,STREAM) && BYTES[0]=='#')
@@ -116,6 +117,8 @@ typedef struct TMetObs {
    Tcl_Obj *Tag;
    Tcl_Obj *Elems;
    Tcl_Obj *Levels;
+   Tcl_HashTable LocationCoordIndex;
+
    char     Format;
    char    *Desc;
 
@@ -166,6 +169,7 @@ BUFR_Tables *MetObs_GetTables(void);
 
 TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type);
 TMetLoc *TMetLoc_FindWithCoord(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
+TMetLoc *TMetLoc_FindWithCoordIndex(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi);
 TMetLoc *TMetLoc_New(TMetObs *Obs,char *Id,char *No,double Lat,double Lon,double Elev);
 
 TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Type,int SType,int Ne,int Nv,int Nt,float *Data,int *Marker,EntryTableB **Codes);
