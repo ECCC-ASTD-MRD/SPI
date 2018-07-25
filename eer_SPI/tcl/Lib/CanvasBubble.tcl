@@ -132,6 +132,10 @@ proc CanvasBubble::Create { Canvas Tag Text { WrapLen 0 } } {
       label .canvasbubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen
       pack .canvasbubble.hlp -fill both -expand true
+
+      #----- S'assure que la bulle disparaîsse même lorsque le <Leave> n'est pas envoyé
+      #----- (Cela arrive des fois lors d'une connexion via VNC)
+      bind .canvasbubble <Motion> "wm state .canvasbubble withdrawn"
    }
 
    CanvasBubble::Activate $Canvas
