@@ -1109,11 +1109,10 @@ proc APViz::AssignVariable { Product Index } {
             switch $var {
                "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType }
                
-               "PR"     { puts "ASSIGNING PR"
-                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 -1 6 "" $var }]} {
+               "PR"     { 
+                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 -1 $Value(IP3,$Index) "" $var }]} {
                               ::Dialog::Info . $Lbl(InvalidField)
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
-                              puts "PR FAILED LAYERIDs: $Data(LayerIDs)"
                               return
                            } else {
                               fstdfield configure $fieldID -factor 1e3
@@ -1125,11 +1124,9 @@ proc APViz::AssignVariable { Product Index } {
                            if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
                               ::Dialog::Info . $Lbl(InvalidField)
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
-                              puts "DEFAULT FAILED LAYERIDs: $Data(LayerIDs)"
                               return
                            } else {
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
-                              puts "DEFAULT LAYERIDs: $Data(LayerIDs)"
                            }
                         }
             }
@@ -1138,8 +1135,25 @@ proc APViz::AssignVariable { Product Index } {
             if {![fstdfield is $fieldID]} {
                return
             }
+            
+            #----- Increment number of vartype
+            puts "DICTIONARY ====== incremeting $var: [dict incr Data(VarsDict) $var]"
+            set index [APViz::GetVarsNb $var]
 
             #TODO: Cleanup
+            #HEREEEE
+            set comment {
+            if { [info exist Params(${var}$index)] } {
+               catch { 
+                  eval fstdfield configure $fieldID $Params(${var}$index)
+               }
+            } elseif { [info exist Params($var)] } {
+               catch { 
+                  eval fstdfield configure $fieldID $Params($var)
+               }
+            }
+            }
+            
             if { [info exist Params(${var}$lev)] } {
                catch { 
                   eval fstdfield configure $fieldID $Params(${var}$lev)
@@ -1149,6 +1163,7 @@ proc APViz::AssignVariable { Product Index } {
                   eval fstdfield configure $fieldID $Params($var)
                }
             }
+            
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
             set colormapName $var$Index
@@ -1184,6 +1199,19 @@ proc APViz::AssignVariable { Product Index } {
    } else {
       puts "Missing values"
    }
+}
+
+proc APViz::GetVarsNb { VarType } {
+   variable Data
+   
+   set nb "" 
+   if {[dict exists $Data(VarsDict) $VarType]} {
+      puts "GET $VarType: [set nb [dict get $Data(VarsDict) $VarType]]"
+   } else {
+      puts "Not included in dict"
+   }
+   
+   return $nb
 }
 
 #-------------------------------------------------------------------------------
@@ -2396,6 +2424,11 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
 
    Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $ID	; # Enlever variable du viewport
    set dataType ""
+
+   set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
+   puts "Removing 1 $varType from dict"
+   #----- Decrement from vartype total in VarsDict
+   puts "[dict incr Data(VarsDict) $varType -1]"
 
    if {$IsFSTDField} {
       fstdfield free $ID

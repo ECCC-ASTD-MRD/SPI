@@ -78,4 +78,5 @@ namespace eval APViz {
    set Data(DZ_GZpairs)         {}
    set Data(Dates)              {}
    set Data(Date)               ""
+   set Data(VarsDict)           ""      ; #Dictionaire contenant le nombre de variables pour chaque type de variable (VARTYPE: VARTYPE_NB)
 }
