@@ -217,8 +217,6 @@ typedef struct
 
 static int compare_lutE ( const void *va, const void *vb );
 
-static TGeoRef *GetCurrentRef(void);
-
 /**
  * @author Jean-Philippe Gauthier
  * @brief Finds a symbol in the function matrix symbol table
@@ -579,8 +577,7 @@ double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
-static int compare_lutE ( const void *va, const void *vb )
-{
+static int compare_lutE (const void *va,const void *vb) {
    LUTentry **ppa = (LUTentry **)va;
    LUTentry **ppb = (LUTentry **)vb;
    LUTentry  *pa  = *ppa;
@@ -608,7 +605,7 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    m=i<n?i:n;
    szMA=FSIZE2D(MA);
 
-/* create a sorted LUT and use bsearch to make things faster */
+   // Create a sorted LUT and use bsearch to make things faster
    szptr = sizeof(LUTentry *);
    table = (LUTentry *)malloc( sizeof(LUTentry) * m );
    ptrtable = (LUTentry **)malloc( szptr * m );
