@@ -697,10 +697,10 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   return(TCL_ERROR);
                }
                Tcl_ListObjIndex(Interp,Objv[i],0,&obj);
-               Tcl_GetIntFromObj(Interp,obj,&tra[0]);
+               Tcl_GetIntFromObj(Interp,obj,&ni);
                Tcl_ListObjIndex(Interp,Objv[i],1,&obj);
-               Tcl_GetIntFromObj(Interp,obj,&tra[1]);
-               GeoRef_Size(gref,0,0,tra[0]-1,tra[1]-1,gref->BD);
+               Tcl_GetIntFromObj(Interp,obj,&nj);
+               GeoRef_Size(gref,0,0,ni-1,nj-1,gref->BD);
             }
             break;
 
