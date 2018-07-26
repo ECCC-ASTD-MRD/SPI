@@ -341,7 +341,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int     n,i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
-   float   min,rng,inter[DATASPEC_MAX],fi,fj,ti=0.0;
+   float   min,rng,inter[DATASPEC_MAX],fi,fj;
    Vect3d *pos;
    float  *buf=NULL;
    char   *ptr;
@@ -396,7 +396,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUseProgramObjectARB(prog);
    glGenTextures(4,tx);
 
-   /*Setup 1D Colormap Texture*/
+   //Setup 1D Colormap Texture
    glActiveTexture(GL_TEXTURE0);
    glBindTexture(GL_TEXTURE_1D,tx[0]);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
@@ -420,7 +420,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
    glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_REPEAT);
 
    // Why the hell GL_FLOAT_R32_NV accepts only Float32, I don't know, here's the quick fix
    if (Field->Def->Type!=TD_Float32) {
@@ -446,7 +445,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[3]);
          glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
          glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-         glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_REPEAT);
          glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_ALPHA,Field->Def->NI,Field->Def->NJ,0,GL_ALPHA,GL_BYTE,Field->Def->Mask);         
       }
    } else {
@@ -482,7 +480,6 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    // Resolution selon la dimension des cellules (mid-grid) et la vue
    dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
-
    dp=(dp<1 || Field->GRef->Grid[0]=='V'|| (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
    
    if (Proj->Type->Def==PROJCYLIN || Field->GRef->Grid[0]=='X') {
@@ -502,21 +499,18 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glBegin(GL_QUAD_STRIP);
       for(i=0;i<(Field->Def->NI+dp);i+=dp) {
 
-         // If the next index is over the size
+         fi=i;
+         
+         // If the next index is over the grid limit
          if (i>=Field->Def->NI) {
             if (ox) {
                // If the grid wraps around, use the first point
-               fi=0;
-               ti=Field->Def->NI;
-               idx0=j*Field->Def->NI;
+               idx0-=Field->Def->NI;
             } else {
                // If not, use the last point
                fi=Field->Def->NI-1;
                idx0=(j+1)*Field->Def->NI-1;
             }
-         } else {
-            fi=i;
-            ti=0;
          }
          
          idx1=idx0+dn;
@@ -524,10 +518,10 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          fi+=0.5f;
          fj=(float)j+0.5f;
             
-         glTexCoord2f(fi+ti,fj+dp);
+         glTexCoord2f(fi,fj+dp);
 //         glNormal3dv(pos[idx1]);
          glVertex3dv(pos[idx1]);
-         glTexCoord2f(fi+ti,fj);
+         glTexCoord2f(fi,fj);
 //         glNormal3dv(pos[idx0]);
          glVertex3dv(pos[idx0]);
 

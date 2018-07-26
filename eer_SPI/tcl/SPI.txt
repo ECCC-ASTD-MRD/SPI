@@ -64,7 +64,7 @@ namespace eval SPI {
    set Lbl(New)            { "Nouveau" "New" }
    set Lbl(No)             { "Non" "No" }
    set Lbl(Obs)            { "Observations (OBS)" "Observations (OBS)" }
-   set Lbl(MetObs)         { "Observations météo (BURP/BUFR)" "Met Observations (BURP/BUFR)" }
+   set Lbl(MetObs)         { "Observations météo (BURP/BUFR/SQLite)" "Met Observations (BURP/BUFR/SQLite)" }
    set Lbl(Radar)          { "Volume radar (IRIS)" "Radar volume scan (IRIS)" }
    set Lbl(GeoOGR)         { "Couches vectorielles (OGR)" "Vectorial layers (OGR)" }
    set Lbl(GeoGDAL)        { "Couches matricielles (GDAL)" "Raster layers (GDAL)" }

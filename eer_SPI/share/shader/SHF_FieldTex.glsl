@@ -72,6 +72,7 @@ void main() {
       }
    }
 
+   // Discard if masked
    if (mask.a<0.01) {
       discard;
    }
