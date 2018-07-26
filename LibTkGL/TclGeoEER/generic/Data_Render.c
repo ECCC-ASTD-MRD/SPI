@@ -49,7 +49,7 @@ int   Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderStream3D(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
-void  Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj,int Tile);
+void  Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj,int Tile,int DisplayHighs,int DisplayLows);
 void  Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj);
 int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
@@ -219,7 +219,7 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
             Data_RenderVector(Interp,Field,VP,(Projection*)Proj);
 
          if (Field->Spec->RenderValue)
-            Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue);
+            Data_RenderValue(Interp,Field,VP,(Projection*)Proj,Field->Spec->RenderValue,Field->Spec->DisplayH,Field->Spec->DisplayL);
       }
 
       if (GLRender->GLZBuf) {
@@ -1702,7 +1702,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
  *
  *----------------------------------------------------------------------------
 */
-void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj,int Tile){
+void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj,int Tile,int DisplayHighs,int DisplayLows){
 
    double zm,zmm,zn,zv;
    int    high;
@@ -1799,9 +1799,9 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             gluProject(g[0],posa[idxp][1],posa[idxp][2],VP->GLModR,VP->GLProj,VP->GLView,&pos[0],&pos[1],&pos[2]);
             if (VIN(pos[0],1,Proj->VP->Width) && VIN(pos[1],1,Proj->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
-               if (high) {
+               if (high && DisplayHighs) {
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"H",lbl);
-               } else {
+               } else if (DisplayLows) {
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"L",lbl);
                }
             }

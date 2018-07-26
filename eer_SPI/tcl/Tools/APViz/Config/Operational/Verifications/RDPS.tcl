@@ -9,7 +9,7 @@ set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #0000
       -colorriver #0000ff -colorpolit #ff0000 -coloradmin #ff0000 -colorcity #ffa500 -colorroad #404040 -colorplace #000000 -colorcoord #000000 }  
 
 #----- Variable Style Configurations
-set Params(GZ) "-colormap REC_Hue 	-color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 6"
+set Params(GZ) "-colormap REC_Hue 	-color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 6 -extrema HL"
 set Params(TT) "-colormap REC_Ocean 	-color black -font XFont12 -width 1 -rendercontour 1 -mapall True -intervalmode INTERVAL 5"
 set Params(HU) "-colormap REC_Rainbow 	-color black -font XFont12 -width 1 -rendertexture 1 -mapall True"
 set Params(UU) "-colormap REC_Nature 	-color grey  -font XFont12 -width 1 -rendervector BARB -mapall False -intervals \{ -150 -100 -80 -50 -30 -20 -15 -10 0 10 15 20 30 50 80 100 150 \}"
