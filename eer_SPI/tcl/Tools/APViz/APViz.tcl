@@ -1186,15 +1186,29 @@ proc APViz::AssignVariable { Product Index } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetVarsNb>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Retourner le nombre de variables assignees au VP d'un type
+#
+# Parametres      :
+#       <Dict>    : Dictionnaire contenant le nombre de varaible pour chaque type de variable
+#       <VarType> : Type de variable (ex: GZ, TT, UU)
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
 proc APViz::GetVarsNb { Dict VarType } {
    upvar 1 $Dict vDict
    
    set nb ""
    catch {
       if {[dict exists $vDict $VarType]} {
-         puts "GET $VarType: [set nb [dict get $vDict $VarType]]"
-      } else {
-         puts "Not included in dict"
+         set nb [dict get $vDict $VarType]
       }
    }
    
@@ -1786,23 +1800,16 @@ proc APViz::FetchDates { Product Model Src } {
       }
 
       set fileList [glob -nocomplain -tails -path $path *]
-
-      foreach file $fileList {
-         if {![file isdirectory ${path}$file]} {
-            set date [string range $file 0 7]              ; # Format nomFichier: AAAAMMDDRR_HHH
-            if {[lsearch -exact $dateList $date] eq -1} {
-               lappend dateList $date
-            }
-         }
-         
-         #----- Speed up dateList construction, typically: containing 7 dates !!! NOT FOR ALL MODELS !!!
-         set comment {
-         if {[llength $dateList] > 6} {
-            break
-         }
-         }
+    
+      #----- Get today's date in format AAAAMMDD
+      set date [clock format [clock seconds] -format %Y%m%d]
+            
+      while {[lsearch -glob $fileList $date*] >= 0} {
+         lappend dateList $date
+         incr date -1
       }
-      set dateList [lreplace [lsort $dateList] 0 0]
+      
+      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates doesnt have all runs
    }
    
    if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
@@ -1884,7 +1891,7 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
 
-      #----- Variable Style Configs     ->QUESTION: what to do when several vars of same type, at same level?
+      #----- Variable Style Configs
       APViz::WriteVariableConfigs $product $fileID [lrange $origData $varConfigsIndex [expr $rangesIndex - 1]]  $colormapLst
       
       #----- Ranges : COPY Ranges section from original config file
@@ -2380,7 +2387,7 @@ proc APViz::ReinitializeVP { } {
       }
    }
 
-   #----- Reinitialise values
+   #----- Reinitialize values
    set Data(LayerIDs) {}
    set Data(CalcIDs) {}
    set Data(CurrentProduct) ""
@@ -2388,6 +2395,7 @@ proc APViz::ReinitializeVP { } {
    set Data(Colormaps) {}
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
+   set Data(VarsDict) ""
 }
 
 #----------------------------------------------------------------------------
