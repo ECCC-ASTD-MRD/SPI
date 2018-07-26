@@ -668,7 +668,7 @@ proc APViz::Source { Path Widget } {
          APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index) [expr {"$Src" ne "BURP"}]	; # Enlever variable du Viewport
          
          incr RowID(LayerAdjustment)							; # Ajuster le rowID
-         set itemList [list toggle model var level run hour dataSrc param delete]
+         set itemList [list toggle model var level run hour dataSrc ip3 param delete]
             
          #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
          for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -695,7 +695,7 @@ proc APViz::Source { Path Widget } {
                destroy $Widget.range.variableGrid.layer${Index}_$item
             }
          }
-
+        
          AdjustSpinboxValues $Widget True $oldRowID
       }
       
@@ -730,7 +730,6 @@ proc APViz::Source { Path Widget } {
                set RowID(Calc$i) [expr $RowID(Calc$i) - 1]
                #----- Reattribute id with formula
                ::APViz::CalculateExpression $Product $i
-               #AdjustIDBubble $Widget.range.variableGrid.layer${i} $i			; # Change row id in bubble
             }
          }
 
@@ -1137,12 +1136,10 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             #----- Increment number of vartype
-            puts "DICTIONARY ====== incremeting $var: [dict incr Data(VarsDict) $var]"
-            set index [APViz::GetVarsNb $var]
-
-            #TODO: Cleanup
-            #HEREEEE
-            set comment {
+            set index [APViz::GetVarsNb Data(VarsDict) $var]
+            dict incr Data(VarsDict) $var
+            
+            #----- Apply variable configs from config file 
             if { [info exist Params(${var}$index)] } {
                catch { 
                   eval fstdfield configure $fieldID $Params(${var}$index)
@@ -1152,18 +1149,6 @@ proc APViz::AssignVariable { Product Index } {
                   eval fstdfield configure $fieldID $Params($var)
                }
             }
-            }
-            
-            if { [info exist Params(${var}$lev)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params(${var}$lev)
-               }
-            } elseif { [info exist Params($var)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params($var)
-               }
-            }
-            
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
             set colormapName $var$Index
@@ -1201,14 +1186,16 @@ proc APViz::AssignVariable { Product Index } {
    }
 }
 
-proc APViz::GetVarsNb { VarType } {
-   variable Data
+proc APViz::GetVarsNb { Dict VarType } {
+   upvar 1 $Dict vDict
    
-   set nb "" 
-   if {[dict exists $Data(VarsDict) $VarType]} {
-      puts "GET $VarType: [set nb [dict get $Data(VarsDict) $VarType]]"
-   } else {
-      puts "Not included in dict"
+   set nb ""
+   catch {
+      if {[dict exists $vDict $VarType]} {
+         puts "GET $VarType: [set nb [dict get $vDict $VarType]]"
+      } else {
+         puts "Not included in dict"
+      }
    }
    
    return $nb
@@ -2153,8 +2140,10 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          }
          }
          
-         #----- TODO: Include all parameters (in case user saves other params not included in the list.)
-         set params "set Params(${var}$level) \""
+         set index [APViz::GetVarsNb vDict $var]
+         dict incr vDict $var
+         
+         set params "set Params(${var}$index) \""
          set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue mapall intervalmode]
          
          foreach param $paramLst {
@@ -2426,9 +2415,9 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
    set dataType ""
 
    set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
-   puts "Removing 1 $varType from dict"
+   
    #----- Decrement from vartype total in VarsDict
-   puts "[dict incr Data(VarsDict) $varType -1]"
+   dict incr Data(VarsDict) $varType -1
 
    if {$IsFSTDField} {
       fstdfield free $ID

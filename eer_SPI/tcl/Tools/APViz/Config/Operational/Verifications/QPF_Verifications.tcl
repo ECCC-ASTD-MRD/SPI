@@ -16,8 +16,8 @@ set Params(13193) "-size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdP
 #----- Ranges
 set Range(Levels) 	{250 500 700 850 1000}
 set Range(Vars)   	{GZ HU TT UU}
-set Range(Hours)  	{024 036 048}
-set Range(Runs)   	{00 06 12 18}
+set Range(Hours)  	{006 012 024}
+set Range(Runs)   	{00 06 12 18 24}
 set Range(Sources)	{pres diag eta hyb}
 set Range(Obs)		{13023 13193}
 set Range(ObsTypes)	{SHEF SYNOP DERISFC}
@@ -26,6 +26,6 @@ set Range(Accumul)      {6 12 24}
 
 #----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3)
 set Layers {   
-   True:RDPS:<Runs>:<Hours>:diag:PR:0.0:<Accumul>
+   True:RDPS:<Runs>:024:diag:PR:0.0:<Accumul>
    False:SYNOP:<Runs>:-:BURP:<Obs>:SFC:-
 }
