@@ -122,7 +122,7 @@ int TclMetObs_Init(Tcl_Interp *Interp) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *CONST Objv[]);
+//static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *CONST Objv[]);
 static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
    FUNCBEGIN
@@ -150,7 +150,7 @@ static int MetObs_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj 
 
    switch ((enum opt)idx) {
       case TEST:
-         return MetObs_Test(Interp, Objc-2, Objv+2);
+//         return MetObs_Test(Interp, Objc-2, Objv+2);
          break;
       case CREATE:
          if (Objc<3) {
@@ -1758,7 +1758,7 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
 
    TMetElem     *elem;
    TMetElemData *data=NULL;
-   int           nb,d,e,vt;
+   int           nb=0,d,e,vt;
 
    // Check if an element exist at this time
    if (!(elem=TMetElem_Find(Loc,Time,0)) || elem->Time!=Time) {
@@ -1790,7 +1790,7 @@ TMetElemData *TMetElem_Merge(TMetLoc *Loc,time_t Min,time_t Time,int Fam,int Typ
       
       // Add the new values
       if (Data) {
-         float *dptr,*dold,*dnew,*new,*mkr;
+         float *dptr,*dold,*dnew,*new;
          
          if (!(new=(float*)malloc(nb*sizeof(float)))) {
             return(NULL);            
@@ -3378,6 +3378,7 @@ int MetReport_Destroy(Tcl_Interp *Interp,char *Name) {
  *    static in this file.
  *---------------------------------------------------------------------------------------------------------------
 */
+#if 0
 static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
 {
    /*
@@ -3416,7 +3417,7 @@ static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
          if(obs == NULL){
             printf("No obs with name=%s found\n", name);
          } else {
-            MetObs_ShowObs(obs);
+//            MetObs_ShowObs(obs);
          }
          break;
       case SQL:
@@ -3433,5 +3434,6 @@ static int MetObs_Test(Tcl_Interp *Interp, int Objc, Tcl_Obj *const Objv[])
    FUNCEND
    return TCL_OK;
 }
+#endif
 
 #endif
