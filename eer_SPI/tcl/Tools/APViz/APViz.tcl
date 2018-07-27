@@ -2241,15 +2241,16 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          set level $Value(Levels,$i)
          set ID [lindex $Data(LayerIDs) $rowID]
          
-         #---- TODO: GERER METOBS
-         set comment {
+         #---- Set command depending on type
          if {[fstdfield is $ID]} {
-            set command fstdfield
+            set isFstdField True
+            set command "fstdfield configure $ID"
          } else {
-            set command metobs
+            set isFstdField False
+            set model [metobs define $ID -MODEL]
+            set command "metmodel configure $model $var"
          }
-         }
-         
+
          set index [APViz::GetVarsNb vDict $var]
          dict incr vDict $var
          
@@ -2260,12 +2261,21 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
             if {$param eq "colormap"} {
                set value [lindex $ColorMaps $RowID(Layer$i)]
             } else {
-               set value [fstdfield configure $ID -$param]
+               if {$isFstdField} {
+                  set value [fstdfield configure $ID -$param]
+               } else {
+                  set value [metmodel configure $model $var -$param]
+               }
+               
             }
             
             #----- Can only configure intervalmode OR intervals
             if {[expr {$param eq "intervalmode"}] && [expr {$value eq "NONE 0.0"}]} {
-               set params [concat $params "-intervals \{[fstdfield configure $ID -intervals]\}"]
+               if {$isFstdField} {
+                  set params [concat $params "-intervals \{[fstdfield configure $ID -intervals]\}"]
+               } else {
+                  set params [concat $params "-intervals \{[metmodel configure $model $var -intervals]\}"]
+               }
             } elseif {$value ne "" } {
                set params [concat $params "-$param $value"]
             }
