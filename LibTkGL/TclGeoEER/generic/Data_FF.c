@@ -1121,7 +1121,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
       // Calculate contours within the specified coverage limits
       i0=Def->Limits[0][0];
       j0=Def->Limits[1][0];
-      i1=Def->Limits[0][1]-1;
+      i1=Def->Limits[0][1];
       j1=Def->Limits[1][1]-1;
 
       i=i0;j=j0;
@@ -1391,36 +1391,49 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
 
    double        vox[4],pvox[4]={0.0,0.0,0.0,0.0},mid=0,x,y,d;
    unsigned int  md,depth,index=0,m,next=1,n=0,x0,y0;
-   int           px,py;
+   int           px,py,wrap,dw;
    unsigned char side=0;
    unsigned long idx=0,pidx[4],dz;
    Vect3d        *vbuf;
 
+   wrap=GPos->GRef->Type&GRID_WRAP && !(GPos->GRef->Type&GRID_REPEAT);
+
    // Check for grid insidness
-   if (X<Def->Limits[0][0] || X>Def->Limits[0][1]-1 || Y<Def->Limits[1][0] || Y>Def->Limits[1][1]-1) {
+   if (X<Def->Limits[0][0] || (X>Def->Limits[0][1]-1 && !wrap) || Y<Def->Limits[1][0] || Y>Def->Limits[1][1]-1) {
      return(0);
    }
 
    dz=Z*FSIZE2D(Def);
-   
+
    while (side || next) {
 
       // If we changed voxel
       if (next) {
 
-         idx=Def->NI*Y+X;
-
-         // Check for mask
-//         if (Def->Mask && !Def->Mask[idx]) break;
+         // Check for wrap-around
+         if (X<0 || X>=Def->NI-1) {
+            X=Def->NI-1;
+            dw=Def->NI;
+         } else {
+            dw=0;
+         }
          
+         idx=Def->NI*Y+X;
+    
          // Check if we've already parsed this voxel from this side
-         if (PMatrix[idx]&side) break;
+         if (PMatrix[idx]&side || X>Def->NI)
+            break;
 
          // Get the voxel values
          pidx[0]=idx+dz;
-         pidx[1]=pidx[0]+1;
+         pidx[1]=pidx[0]+1-dw;
          pidx[3]=pidx[0]+Def->NI;
-         pidx[2]=pidx[3]+1;
+         pidx[2]=pidx[3]+1-dw;
+         
+         // Check for mask
+         if (Def->Mask && (!Def->Mask[pidx[0]] || !Def->Mask[pidx[1]] || !Def->Mask[pidx[2]] || !Def->Mask[pidx[3]]))
+            break;
+         
          Def_GetQuadMod(Def,pidx,pvox);
 
          // Test for value validity
@@ -1441,7 +1454,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
             if ((vbuf=VBuffer_Alloc(n+1))) {
                switch(Mode) {
                   case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],1,1);vbuf[n][2]=0.0;break;
-                  case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
+                  case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z,wrap);break;
                   case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
                }
                n++;
@@ -1494,7 +1507,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          if ((vbuf=VBuffer_Alloc(n+1))) {
             switch(Mode) {
                case REF_COOR : GPos->GRef->Project(GPos->GRef,x,y,&vbuf[n][1],&vbuf[n][0],1,1);vbuf[n][2]=0.0;break;
-               case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z);break;
+               case REF_PROJ : VertexLoc(GPos->Pos,Def,vbuf[n],x,y,Z,wrap);break;
                case REF_GRID : Vect_Init(vbuf[n],x,y,Z);break;
             }
             n++;
@@ -1506,9 +1519,9 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
       }
 
       // Check grid limits (In projection or closing mode check for > instead of >= to avoid interpolation overflow)
-      pidx[0]=X<Def->Limits[0][0];
+      pidx[0]=X<Def->Limits[0][0] && !wrap;
       pidx[1]=Y<Def->Limits[1][0];
-      pidx[2]=(Limit || Mode!=REF_COOR)?X>=Def->Limits[0][1]:X>Def->Limits[0][1];
+      pidx[2]=((Limit || Mode!=REF_COOR)?X>=Def->Limits[0][1]:X>Def->Limits[0][1]) && !wrap;
       pidx[3]=(Limit || Mode!=REF_COOR)?Y>=Def->Limits[1][1]:Y>Def->Limits[1][1];
 
       // If we're out of grid, contour around the grid limits
@@ -1735,9 +1748,9 @@ int FFMarchingCube(TGeoPos *GPos,TDef *Def,Projection *Proj,double Value) {
             // Create the triangle
             for (n=0;TriTable[cubeidx][n]!=-1;n+=3) {
                if ((vbuf=VBuffer_Alloc(vridx+6))) {
-                  VertexLoc(GPos->Pos,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2]);
-                  VertexLoc(GPos->Pos,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2]);
-                  VertexLoc(GPos->Pos,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2]);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+1],vrlist[TriTable[cubeidx][n]][0]  ,vrlist[TriTable[cubeidx][n]][1]  ,vrlist[TriTable[cubeidx][n]][2],FALSE);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+3],vrlist[TriTable[cubeidx][n+1]][0],vrlist[TriTable[cubeidx][n+1]][1],vrlist[TriTable[cubeidx][n+1]][2],FALSE);
+                  VertexLoc(GPos->Pos,Def,vbuf[vridx+5],vrlist[TriTable[cubeidx][n+2]][0],vrlist[TriTable[cubeidx][n+2]][1],vrlist[TriTable[cubeidx][n+2]][2],FALSE);
 
                   // Find normals from gradient within a single voxel
                   Vect_Assign(vbuf[vridx]  ,vrlist[TriTable[cubeidx][n]]);
@@ -1882,7 +1895,7 @@ int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *
                                Stream[idx][2]=ZRef_Level2Meter(ILIN(GPos->ZRef->Levels[n],GPos->ZRef->Levels[n+1],Z-n),GPos->ZRef->Type);
                                break;
 
-               case REF_PROJ : VertexLoc(GPos->Pos,Def,Stream[idx],X,Y,Z);
+               case REF_PROJ : VertexLoc(GPos->Pos,Def,Stream[idx],X,Y,Z,FALSE);
                                break;
 
                case REF_GRID : Vect_Init(Stream[idx],X,Y,Z);
