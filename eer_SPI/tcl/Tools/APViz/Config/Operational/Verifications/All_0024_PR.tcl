@@ -2,14 +2,14 @@ global env
 
 #----- Geography
 set Params(Cameras)    {}
-set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 1 -mappolit 1 -mapadmin 1 -mapcity 0 -maproad 0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10.0 2 -minsize 5 }
-set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #000000 -colorlake #0000ff -colorfillcoast beige -colorfilllake LightSkyBlue1 -colorriver #0000ff -colorpolit #ff0000 -coloradmin #ff0000 -colorcity #ffa500 -colorroad #404040 -colorplace #000000 -colorcoord #000000 }
+set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 0 -mappolit 1 -mapadmin 1 -mapcity 0 -maproad 0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10.0 2 -minsize 5 }
+set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #000000 -colorlake #0000ff -colorfillcoast beige -colorfilllake LightSkyBlue1 -colorriver #0000ff -colorpolit #000000 -coloradmin #000000 -colorcity #ffa500 -colorroad #404040 -colorplace #000000 -colorcoord #000000 }
 
 #----- Variable Style Configurations
-set Params(DZ) "-colormap REC_Hue 	-color blue -font XFont12 -width 1 -dash - -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
+set Params(DZ) "-colormap REC_Hue 	-color blue -font XFont12 -width 1 -dash . -rendercontour 1 -mapall False -intervalmode INTERVAL 6"
 set Params(TT) "-colormap REC_Ocean 	-color yellow -font XFont12 -width 3 -rendercontour 1 -mapall False -intervals \{ 0 15 \}"
-set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 4 -rendervalue 20"
-set Params(PR) "-colormap REC_Beach     -color black -font XFont12 -width 1 -rendercontour 0 -rendertexture 1 -mapall True -intervals \{ 1 5 10 15 20 25 30 40 50 75 100 \}"
+set Params(PN) "-colormap REC_Beach 	-color green -font XFont12 -width 2 -rendercontour 1 -mapall False -intervalmode INTERVAL 4 -rendervalue 20 -extrema HL"
+set Params(PR) "-colormap REC_Beach1     -color black -font XFont12 -width 1 -rendercontour 1 -rendertexture 1 -rendervalue 20 -extrema H -mapall False -intervals \{ 1 5 10 15 20 25 30 40 50 75 100 \}"
 set Params(PR1) "-colormap REC_Beach    -color black -font XFont12 -width 2 -rendercontour 1 -mapall False -intervals \{ 10 40 \} "
 
 #----- Ranges

@@ -364,7 +364,6 @@ proc APViz::Source { Path Widget } {
       
       set Value(Formula)	 ""	; # Formule de la couche de calcul (textvariable du entry pour la selection de formule)
       set Value(UneditedFormula) ""	; # Formule sans remplacement de variable
-      set Value(HardcodedDate)	 {20180704 20180705 20180706}	; #TODO: FETCH DATES FROM FOLDER
       
       set RowID(LayerAdjustment)	0	; # Ajustement pour le calcul du rowID pour les couches
       set RowID(CalcAdjustment)		0	; # Ajustement pour le calcul du rowID pour les couches de calcul
@@ -460,7 +459,8 @@ proc APViz::Source { Path Widget } {
          
          pack $Widget.range -side top -fill x -anchor nw
 
-         set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
+         #set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
+         set dateList [APViz::FetchAllDates $Product]
          set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
          
          ::APViz::DeleteWidget $Widget.add	; # Liberer le widget
@@ -1055,8 +1055,9 @@ proc APViz::AssignVariable { Product Index } {
          }
 
          set obsID OBS$RowID(Layer$Index)_${var}
-
+         
          metobs create $obsID $filepath
+         #metobs read $obsID $filepath
          dataspec create $obsID
          
          if { [info exist Params(${var}$lev)] } {
@@ -1135,8 +1136,15 @@ proc APViz::AssignVariable { Product Index } {
                return
             }
             
+            #----- Verify if a variable param config has been saved for this row
+            if {[dict exists $Data(VarParamsDict) ${var}$RowID(Layer$Index)]} {
+               set index [dict get $Data(VarParamsDict) ${var}$RowID(Layer$Index)]
+            } else {
+               set index [APViz::GetVarsNb Data(VarsDict) $var]
+               dict set Data(VarParamsDict) ${var}$RowID(Layer$Index) $index
+            }
+            
             #----- Increment number of vartype
-            set index [APViz::GetVarsNb Data(VarsDict) $var]
             dict incr Data(VarsDict) $var
             
             #----- Apply variable configs from config file 
@@ -1803,12 +1811,28 @@ proc APViz::FetchDates { Product Model Src } {
     
       #----- Get today's date in format AAAAMMDD
       set date [clock format [clock seconds] -format %Y%m%d]
+      
+      #---- Verify if today's date is valid (in case of transfer problem)
+      if {[lsearch -glob $fileList $date*] >= 0} {
+         lappend dateList $date
+      }
+      
+      #----- Set to previous date (yesterday)
+      incr date -1
             
       while {[lsearch -glob $fileList $date*] >= 0} {
          lappend dateList $date
          incr date -1
       }
-      
+
+      if {[llength $dateList] eq 0} {
+         foreach file $fileList {
+            set date [string range $file 0 7]
+            if {[lsearch -exact $dateList $date] < 0} {
+               lappend dateList $date
+            }
+         }
+      }
       set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates doesnt have all runs
    }
    
@@ -1818,6 +1842,68 @@ proc APViz::FetchDates { Product Model Src } {
    }
 
    set Data(Dates) $dateList
+}
+
+proc APViz::FetchAllDates { Product } {
+   variable Data
+   
+   if {$Product ne ""} {
+      variable ${Product}::Value
+      variable ${Product}::RowID
+
+      set  sourceLst {}
+      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+         if {[set rowID $RowID(Layer$i)] >= 0} {
+            set model $Value(Models,$i)
+            set src $Value(Sources,$i)
+            
+            #----- Verify if the model and src have already been treated
+            if {[lsearch -exact $sourceLst $model$src] < 0} {
+               lappend dateLst [APViz::FetchDates $Product $model $src]
+               lappend sourceLst $model$src
+            }
+         }
+      }
+
+      if {[set nbDateLst [llength $dateLst]] > 1} {
+         
+         #----- Find the shortest list
+         set shortestLst [lindex $dateLst 0]
+         set finalDateLst {}
+         
+         foreach dates $dateLst {
+            if {[llength $shortestLst] > [llength $dates] } {
+               set shortestLst $dates
+            }
+         }
+
+         #----- For all dates contained in the shortest date list, verify if contained in all other lists
+         foreach date $shortestLst {
+            set isValid 1
+            for {set j 0} {$j < $nbDateLst} {incr j} {
+               if {[lsearch -exact [lindex $dateLst $j] $date] >= 0} {
+                  set isValid [expr $isValid && 1]
+               } else {
+                  set isValid [expr $isValid && 0]
+               }
+            }
+            
+            #----- Append date to list only if contained in all lists
+            if {$isValid} {
+               lappend finalDateLst $date
+            }
+         }
+      } else {
+         set finalDateLst [lindex $dateLst 0]
+      }
+      
+      if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
+         ComboBox::DelAll $Data(DateCBWidget)
+         ComboBox::AddList $Data(DateCBWidget) $finalDateLst
+      }
+
+      set Data(Dates) $finalDateLst
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2015,8 +2101,14 @@ proc APViz::WriteDefaultValues { Product FileID } {
          set run	$Value(Runs,$i)
          set hour	$Value(Hours,$i)
          set src	$Value(Sources,$i)
+         if {[info exists Value(IP3,$i)]} {
+            set ip3 :$Value(IP3,$i)
+         } else {
+            set ip3 ""
+         }
          
-         set layer "   $checked:$model:$run:$hour:$src:$var:$lev"
+         
+         set layer "   $checked:$model:$run:$hour:$src:$var:$lev$ip3"
          puts $FileID $layer
       }
    }
@@ -2151,8 +2243,8 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          dict incr vDict $var
          
          set params "set Params(${var}$index) \""
-         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue mapall intervalmode]
-         
+         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema]
+
          foreach param $paramLst {
             if {$param eq "colormap"} {
                set value [lindex $ColorMaps $RowID(Layer$i)]
@@ -2160,8 +2252,10 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
                set value [fstdfield configure $ID -$param]
             }
             
-            #----- Case when no dash type selected
-            if {$value ne "" } {
+            #----- Can only configure intervalmode OR intervals
+            if {[expr {$param eq "intervalmode"}] && [expr {$value eq "NONE 0.0"}]} {
+               set params [concat $params "-intervals \{[fstdfield configure $ID -intervals]\}"]
+            } elseif {$value ne "" } {
                set params [concat $params "-$param $value"]
             }
          }

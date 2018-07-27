@@ -90,7 +90,8 @@ proc APViz::Window { } {
             label $Data(Tab).head.dateConfig.lbl -text "Date: " -anchor e 
             ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars"
             set APViz::Data(DateCBWidget) $Data(Tab).head.dateConfig.cb
-            set dateList [APViz::FetchDates $Data(CurrentProduct) "" ""]
+            #set dateList [APViz::FetchDates $Data(CurrentProduct) "" ""]
+            set dateList [APViz::FetchAllDates $Data(CurrentProduct)]
             set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
             
             checkbutton $Data(Tab).head.dateConfig.dateLock -variable ::APViz::Data(dateLock) -onvalue True -offvalue False \
@@ -162,7 +163,7 @@ proc APViz::Window { } {
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 45 -bd 1
+         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 48 -bd 1
          pack .apviz.dock.sel .apviz.dock.del -side left
          pack .apviz.dock.coo -side left -fill both -expand true
       pack .apviz.dock -side bottom -fill x
@@ -227,37 +228,6 @@ proc APViz::SaveAsWindow { } {
       pack $Param(Frame).config.folder.name -side left -fill both -expand True
       pack $Param(Frame).config.folder.sel -side left -fill y
    pack $Param(Frame).config.folder -side top -fill x -expand True
-
-   set comment {
-   labelframe $Param(Frame).rangesC -text "Ranges"
-   pack $Param(Frame).rangesC -side top -fill x -padx 5 -ipady 2 -anchor n
-
-   label $Param(Frame).rangesC.desc -text [lindex $Lbl(RangeDesc) $GDefs(Lang)] -justify left -wraplength 410
-   pack $Param(Frame).rangesC.desc -side top -anchor w
-
-   Bubble::Create $Param(Frame).rangesC.desc $Bubble(SaveRange) 40
-
-   #----- Display rows (pack)
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {$RowID(Layer$i) >= 0} {
-         frame $Param(Frame).rangesC.row$i
-            set var		$Value(Vars,$i)
-            set lev		$Value(Levels,$i)
-            set layer "$var, $lev"
-            
-            set layerDesc [lindex $Data(Layers) $Value(LayerType,$i)]
-            regsub \(True:|False:\) $layerDesc "" layerDesc
-            
-            label $Param(Frame).rangesC.row$i.lbl -text "Row$i: $layer"
-            checkbutton $Param(Frame).rangesC.row$i.check -variable APViz::Data(SaveRangeC,$i) -onvalue True -offvalue False
-            $Param(Frame).rangesC.row$i.check deselect
-
-            pack $Param(Frame).rangesC.row$i.check $Param(Frame).rangesC.row$i.lbl -side left -fill x -expand True
-         pack $Param(Frame).rangesC.row$i -side top -anchor w
-         Bubble::Create $Param(Frame).rangesC.row$i $layerDesc
-      }
-   }
-   }
 
    frame .saveAsBox.par -relief raised -bd 1
    pack .saveAsBox.par -side top -padx 5 -fill x

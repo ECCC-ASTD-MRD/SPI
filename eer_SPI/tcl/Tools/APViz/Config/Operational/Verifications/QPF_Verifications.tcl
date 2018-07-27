@@ -26,6 +26,10 @@ set Range(Accumul)      {6 12 24}
 
 #----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3)
 set Layers {   
+   False:SYNOP:<Runs>:-:BURP:<Obs>:SFC:-
+}
+
+set comment {   
    True:RDPS:<Runs>:024:diag:PR:0.0:<Accumul>
    False:SYNOP:<Runs>:-:BURP:<Obs>:SFC:-
 }
