@@ -1051,13 +1051,22 @@ proc APViz::AssignVariable { Product Index } {
          
          #----- Liberer l'observation
          if {[metobs is [lindex $Data(LayerIDs) $RowID(Layer$Index)]]} {
+            puts "Removing [lindex $Data(LayerIDs) $RowID(Layer$Index)] from vp"
             APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index) False
          }
 
          set obsID OBS$RowID(Layer$Index)_${var}
          
+         #----- In case id alreayd exists
+         if {[metobs is $obsID]} {
+            metobs free $obsID
+         }
+         
          metobs create $obsID $filepath
-         #metobs read $obsID $filepath
+         if {$Data(PR_timestamp) ne ""} {
+            metobs define $obsID -VALID $Data(PR_timestamp) 0
+         }
+
          dataspec create $obsID
          
          if { [info exist Params(${var}$lev)] } {
@@ -1116,6 +1125,7 @@ proc APViz::AssignVariable { Product Index } {
                               return
                            } else {
                               fstdfield configure $fieldID -factor 1e3
+                              set Data(PR_timestamp) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
                            }
                         }
@@ -1180,6 +1190,7 @@ proc APViz::AssignVariable { Product Index } {
 
          } else {
             puts "File $filepath not available."
+            set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
             
             #----- Concatener le path du fichier au message d'erreur
             set messages {}
@@ -2243,7 +2254,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          dict incr vDict $var
          
          set params "set Params(${var}$index) \""
-         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema]
+         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema value]
 
          foreach param $paramLst {
             if {$param eq "colormap"} {
@@ -2525,6 +2536,7 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
       fstdfield free $ID
       set dataType FLD
    } else {
+      puts "Freeing $ID"
       metobs free $ID
       set dataType OBS
    }
