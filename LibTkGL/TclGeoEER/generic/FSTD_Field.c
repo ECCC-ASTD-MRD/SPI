@@ -3010,32 +3010,17 @@ int FSTD_FieldDataCopy
    (Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) 
    {
 
-   int    i,j, pos;
-   double msngval;
-   float  val0, val1, val2, vgval;
+   int    i,j;
+   float  val0;
    long    offset, offset2;
    int    insert_mode;
    double p1[2];
    double  pi1, pj1;
    int     i1, j1;
-   int     nthreads, nprocs;
    int     sNI,sNJ;
    int     tNI,tNJ;
    int     cnt;
-   int     tid;
    int     dx=0, dy=0;
-
-#if 0
-   nthreads = omp_get_num_threads();
-   fprintf( stderr, "Number of threads = %d\n", nthreads );
-   omp_set_num_threads( nthreads );
-#endif
-#ifdef _OPENMP
-   nprocs = omp_get_num_procs();
-#else //_OPENMP
-   nprocs = 1;
-#endif //_OPENMP
-//   fprintf( stderr, "Number of processors = %d\n", nprocs );
 
    if ((Field2->Def->NJ > Field0->Def->NJ)||(Field2->Def->NI > Field0->Def->NI))
       insert_mode = 1;
@@ -3053,30 +3038,11 @@ int FSTD_FieldDataCopy
       {
 #pragma omp parallel \
       shared(sNI,sNJ,Field0,Field2,dx,dy) \
-      private(i,j,p1,pi1,pj1,offset,val0,tid,i1,j1,offset2)
+      private(i,j,p1,pi1,pj1,offset,val0,i1,j1,offset2)
 {
-#ifdef _OPENMP
-      tid = omp_get_thread_num();
-#else //_OPENMP
-      tid = 0;
-#endif //_OPENMP
-      if (tid == 0)
-      {
-#ifdef _OPENMP
-         nthreads = omp_get_num_threads();
-#else //_OPENMP
-         nthreads = 1;
-#endif //_OPENMP
-//         fprintf( stderr, "Number of Threads = %d\n", nthreads );
-      }
 #pragma omp for schedule(static)
       for (j=0;j<sNJ;j++) 
          {
-#ifdef _OPENMP
-         tid = omp_get_thread_num();
-#else //_OPENMP
-         tid = 0;
-#endif //_OPENMP
          offset = sNI * j;
          for (i=0;i<sNI;i++) 
             {
