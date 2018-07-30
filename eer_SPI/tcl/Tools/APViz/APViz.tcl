@@ -1976,29 +1976,40 @@ proc APViz::GenerateConfigFile { Path } {
       set origData [split $origFileData "\n"]
       
       #----- Get section indexes
-      set cameraConfigIndex [lsearch -glob $origData "*Params\(Cameras\)*"]
-      set varConfigsIndex [lsearch -glob $origData "*rendercontour*"]
-      set rangesIndex [lsearch -glob $origData "*Range*"]
-      set layersIndex [lsearch -exact $origData "set Layers \{"] 
+      set geoStartIndex [lsearch -glob $origData "*GEOGRAPHY BEGIN*"]
+      set geoEndIndex [lsearch -glob $origData "*GEOGRAPHY END*"]
+      set styleStartIndex [lsearch -glob $origData "*STYLE CONFIGURATION BEGIN*"]
+      set styleEndIndex [lsearch -glob $origData "*STYLE CONFIGURATION END*"]
+      set rangeStartIndex [lsearch -glob $origData "*RANGES BEGIN*"]
+      set rangeEndIndex [lsearch -glob $origData "*RANGES END*"]
+      set layerStartIndex [lsearch -glob $origData "*LAYERS BEGIN*"]
+      set layerEndIndex [lsearch -glob $origData "*LAYERS END*"]
       
-      #----- Copy from original til Camera configs
-      APViz::WriteConfigSection $fileID $origData 0 [expr $cameraConfigIndex + 1]
+      #----- Copy from original til Geo configs
+      APViz::WriteConfigSection $fileID [lrange $origData 0 [expr $geoStartIndex -1]]
       
       #----- Write Geo params
+      puts $fileID "\#----- GEOGRAPHY BEGIN"
+      # TODO: Write Cameras
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
+      puts $fileID "\#----- GEOGRAPHY END"
 
       #----- Variable Style Configs
-      APViz::WriteVariableConfigs $product $fileID [lrange $origData $varConfigsIndex [expr $rangesIndex - 1]]  $colormapLst
-      
-      #----- Ranges : COPY Ranges section from original config file
       puts -nonewline $fileID "\n"
-      APViz::WriteConfigSection $fileID $origData $rangesIndex $layersIndex
+      APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex $styleEndIndex]  $colormapLst
       
+      #----- Ranges :
+      puts -nonewline $fileID "\n"
+      APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex $rangeEndIndex]
+
       #----- Write Layers
+      puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
       
+      
       #----- Write Default Values
+      puts -nonewline $fileID "\n"
       APViz::WriteDefaultValues $product $fileID
       
       close $fileID
@@ -2028,7 +2039,9 @@ proc APViz::GenerateConfigFile { Path } {
 proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    #----- Get current configs
    set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
-   puts $FileID "\n\#----- Variable Style Configurations"
+   puts $FileID "\#----- STYLE CONFIGURATION BEGIN"
+   puts $FileID "\#----- Variable Style Configurations"
+   
    foreach config $configLst {
       puts $FileID $config
    }
@@ -2043,6 +2056,8 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
          puts $FileID $content
       }
    }
+   
+   puts $FileID "\#----- STYLE CONFIGURATION END"
 }
 
 
@@ -2068,6 +2083,8 @@ proc APViz::WriteLayers { Product FileID } {
    variable ${Product}::Value
    variable ${Product}::RowID
    
+   puts $FileID "\#----- LAYERS BEGIN"
+   puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level)"
    puts $FileID "set Layers \{"
    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -2076,6 +2093,7 @@ proc APViz::WriteLayers { Product FileID } {
       }
    }
    puts $FileID "\}"
+   puts $FileID "\#----- LAYERS END"
 }
 
 #----------------------------------------------------------------------------
@@ -2099,7 +2117,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
    variable ${Product}::Value
    variable ${Product}::RowID
    
-   puts $FileID "\n\#----- Default Values "
+   puts $FileID "\#----- DEFAULT VALUES BEGIN"
    puts $FileID "set DefaultValues \{"
    
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -2125,6 +2143,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
    }
    
    puts $FileID "\}"
+   puts $FileID "\#----- DEFAULT VALUES END"
 }
 
 #----------------------------------------------------------------------------
@@ -2372,9 +2391,17 @@ proc APViz::WriteViewportConfigs { FileID } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::WriteConfigSection { FileID DataSource StartIndex EndIndex } { 
+proc APViz::WriteConfigSection { FileID DataSource } { 
+   #puts "Start index at: $StartIndex for line: [lindex $DataSource $StartIndex] til [lindex $DataSource $EndIndex]"
+   
+   foreach line $DataSource {
+      puts $FileID $line
+   }
+   
+   set comment {
    for {set i $StartIndex} {$i < $EndIndex} {incr i} {
       puts $FileID [lindex $DataSource $i]
+   }
    }
 }
 
