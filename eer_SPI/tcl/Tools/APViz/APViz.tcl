@@ -425,6 +425,7 @@ proc APViz::Source { Path Widget } {
          }
          
          #----- Refleter les valeurs dans l'interface de configuration des parametres
+         # TODO: GERER MULTIPLE VPS
          ::Viewport::ConfigGet ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
          ::Viewport::ConfigPut ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
       
@@ -539,7 +540,7 @@ proc APViz::Source { Path Widget } {
                
             } else {
                regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
-               ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 8 \
+               ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
                "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget False"
             }
             
@@ -617,7 +618,7 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
             # ICIIII!!!
-            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no VP true 2 $defaultVP
+            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no VP false 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
             
@@ -686,7 +687,7 @@ proc APViz::Source { Path Widget } {
          variable Value
          
          #----- # Enlever variable du Viewport
-         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index) [expr {"$Src" ne "BURP"}]
+         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)
          
          #----- Ajustement du rowID
          incr RowID(LayerAdjustment)
@@ -705,7 +706,7 @@ proc APViz::Source { Path Widget } {
          #----- Enlever la derniere variable de Data(LayerIDs) vu qu'on a decale tous les fielIds
          set lastIndex [expr [llength ${::APViz::Data(LayerIDs)}] - 1]
          if {$lastIndex != $RowID(Layer$Index)} {
-            APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $lastIndex [expr {"$Src" ne "BURP"}]		; # Unassign ssi l'index a supprimer n'est pas la derniere rangee
+            APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $lastIndex		; # Unassign ssi l'index a supprimer n'est pas la derniere rangee
          }
          set oldRowID $RowID(Layer$Index)
          set RowID(Layer$Index) -1							; # Index supprime, n'est plus affiche
@@ -925,7 +926,7 @@ proc APViz::Source { Path Widget } {
          frame $Widget.calc.$no
             checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
             
-            Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 22 ${::APViz::Data(FormulaNames)} \
+            Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 15 ${::APViz::Data(FormulaNames)} \
                "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no True ; APViz::CalculateExpression $Product $no" \
                ${::APViz::Data(Formulas)}
             
@@ -942,6 +943,15 @@ proc APViz::Source { Path Widget } {
                -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
             spinbox $Widget.calc.$no.varB	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True \
                -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
+               
+            label $Widget.calc.$no.lblVP -text "VP:"
+            set vpLst {}
+            for {set i 1} {$i <= $APViz::Data(VPCount)} {incr i} {
+               lappend vpLst $i
+            }
+            puts "LIST: $vpLst"
+            spinbox $Widget.calc.$no.vp -values $vpLst -width 1 -textvariable APViz::${Product}::Value(CalcVP,$no) -wrap True \
+               -command "APViz::CalculateExpression $Product $no"
             
             Bubble::Create $Widget.calc.$no.varA "VarA"
             Bubble::Create $Widget.calc.$no.varB "VarB"
@@ -951,7 +961,7 @@ proc APViz::Source { Path Widget } {
             set RowID(Calc$no) [expr $no - $RowID(CalcAdjustment)]
             
             pack $Widget.calc.$no.check $Widget.calc.$no.formula $Widget.calc.$no.lblA $Widget.calc.$no.varA \
-               $Widget.calc.$no.lblB $Widget.calc.$no.varB $Widget.calc.$no.param $Widget.calc.$no.delete -side left -fill x -expand true
+               $Widget.calc.$no.lblB $Widget.calc.$no.varB $Widget.calc.$no.lblVP $Widget.calc.$no.vp $Widget.calc.$no.param $Widget.calc.$no.delete -side left -fill x -expand true
             
          pack $Widget.calc.$no -side top -fill x
          incr Value(NbCalcLayers)
@@ -1076,7 +1086,7 @@ proc APViz::AssignVariable { Product Index } {
          #----- Liberer l'observation
          if {[metobs is [lindex $Data(LayerIDs) $RowID(Layer$Index)]]} {
             puts "Removing [lindex $Data(LayerIDs) $RowID(Layer$Index)] from vp"
-            APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index) False
+            APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)
          }
 
          set obsID OBS$RowID(Layer$Index)_${var}
@@ -1115,8 +1125,8 @@ proc APViz::AssignVariable { Product Index } {
          metmodel configure [metobs define $obsID -MODEL] $var -dataspec $obsID
          set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $obsID]
          
-         if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $obsID] eq -1} {
-            Viewport::Assign $Data(Frame) $Viewport::Data(VP) $obsID 1
+         if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $obsID] eq -1} {
+            Viewport::Assign $Data(Frame) $vpID $obsID 1
          }      
       } else {
                   
@@ -1208,18 +1218,9 @@ proc APViz::AssignVariable { Product Index } {
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
             
             #----- Assigner seulement si n'est pas assigne
-            #----- TODO: Check VP#
-            set vpID [APViz::GetVPNumber $vp]
-            puts "Assigning to VP: $vpID"
-            set comment {
-            if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
-               Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldID 1
-            }
-            }
             if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $fieldID] eq -1} {
                Viewport::Assign $Data(Frame) $vpID $fieldID 1
             }
-            puts "Tags: [lindex [fstdfield stats $fieldID -tag] 1]  || total vps: $Viewport::Data(VPNb) || Viewport courant: $Viewport::Data(VP)"
 
          } else {
             puts "File $filepath not available."
@@ -1240,7 +1241,7 @@ proc APViz::AssignVariable { Product Index } {
 
 proc APViz::GetVPNumber { VPid } {
    variable Data
-   if {$Data(VPCount) eq "1"} {
+   if {[expr {$Data(VPCount) eq 1}] || [expr $VPid > $Data(VPCount)] || [expr $VPid < 0]} {
       return $Viewport::Data(VP)
    } else {
       set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPid]]
@@ -1463,13 +1464,14 @@ proc APViz::CalculateExpression { Product Index} {
          if {[fstdfield is $resultFieldID]} {
             set isActivated $Value(CalcToggle,$Index)
             
+            set vpID [GetVPNumber $Value(CalcVP,$Index)]
             #----- Assigner au ViewPort
-            if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $resultFieldID] eq -1} {
-               Viewport::Assign $Data(Frame) $Viewport::Data(VP) $resultFieldID
+            if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $resultFieldID] eq -1} {
+               Viewport::Assign $Data(Frame) $vpID $resultFieldID
             }
             
             fstdfield configure $resultFieldID -active $isActivated
-            Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
+            Viewport::UpdateData $Data(Frame) $vpID
             set Data(CalcIDs) [lreplace $Data(CalcIDs) $RowID(Calc$Index) $RowID(Calc$Index) $resultFieldID]
          }
       } else {
@@ -1548,9 +1550,11 @@ proc APViz::Check { Product Index {IsCalc False}} {
    if {$IsCalc} {
       set ID [lindex $Data(CalcIDs) $RowID(Calc$Index)] 
       set isActivated $Value(CalcToggle,$Index)
+      set vpID [APViz::GetVPNumber $Value(CalcVP,$Index)]
    } else {
       set ID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
       set isActivated $Value(Toggle,$Index)
+      set vpID [APViz::GetVPNumber $Value(VP,$Index)]
    }
 
    if {[fstdfield is $ID]} {
@@ -1560,8 +1564,7 @@ proc APViz::Check { Product Index {IsCalc False}} {
       set var [string range $ID $startIndex [string length $ID]]
       metmodel configure [metobs define $ID -MODEL] $var -active $isActivated 
    }
-   
-   set vpID [APViz::GetVPNumber $Value(VP,$Index)]
+
    Viewport::UpdateData $Data(Frame) $vpID
    #Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
 }
@@ -1619,8 +1622,11 @@ proc APViz::CheckExpression { Expr VarType } {
 
    if {[llength $IDList] > 0} {
       foreach ID $IDList {
-         if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $ID] eq -1} {
-            return False
+         #----- Si ce n'est ni un fstdfield ni un metobs, retourner faux
+         if {![fstdfield is $ID] } {
+            if {![metobs is $ID]} {
+               return false
+            }
          }
       }
    }
@@ -2034,9 +2040,8 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Write Geo params
       puts $fileID "\#----- GEOGRAPHY BEGIN"
-      #----- COPY Cameras and ViewportNb ------- TODO: Write Cameras & VPNb
+      #----- COPY Camera - TODO: Write Cameras
       puts $fileID [lindex $origData [expr $geoStartIndex + 1]]
-      puts $fileID [lindex $origData [expr $geoStartIndex + 2]]
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
       puts $fileID "\#----- GEOGRAPHY END"
@@ -2176,14 +2181,20 @@ proc APViz::WriteDefaultValues { Product FileID } {
          set run	$Value(Runs,$i)
          set hour	$Value(Hours,$i)
          set src	$Value(Sources,$i)
+         
          if {[info exists Value(IP3,$i)]} {
-            set ip3 :$Value(IP3,$i)
+            set ip3 $Value(IP3,$i)
          } else {
             set ip3 ""
          }
          
+         if {[info exists Value(VP,$i)]} {
+            set vp $Value(VP,$i)
+         } else {
+            set vp ""
+         }
          
-         set layer "   $checked:$model:$run:$hour:$src:$var:$lev$ip3"
+         set layer "   $checked:$model:$run:$hour:$src:$var:$lev:$ip3:$vp"
          puts $FileID $layer
       }
    }
@@ -2310,7 +2321,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          if {[fstdfield is $ID]} {
             set isFstdField True
             set command "fstdfield configure $ID"
-         } else {
+         } elseif {[metobs is $ID]} {
             set isFstdField False
             set model [metobs define $ID -MODEL]
             set command "metmodel configure $model $var"
@@ -2417,6 +2428,8 @@ proc APViz::WriteViewportConfigs { FileID } {
    
    set params [concat $params "\}"]   
    puts $FileID $params
+   
+   puts $FileID "set Params(ViewportNb) $Data(VPCount)"
 }
 
 #----------------------------------------------------------------------------
@@ -2529,8 +2542,10 @@ proc APViz::InitializeVars { } {
 
 proc APViz::ReinitializeVP { } {
    variable Data
-   #TODO: GERER TOUS LES VP
-   Viewport::UnAssign $Data(Frame) $Viewport::Data(VP)	; # Enlever toutes les variables du viewport
+
+   for {set i 1} {$i <= $Data(VPNb)} {incr i} {
+      Viewport::UnAssign $Data(Frame) VP$i
+   }
    
    #----- Liberer les ID
    foreach ID $Data(LayerIDs) {
@@ -2584,6 +2599,7 @@ proc APViz::ReinitializeVP { } {
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
    set Data(VarsDict) ""
+   set Data(VPNb) 1
 }
 
 #----------------------------------------------------------------------------
@@ -2602,26 +2618,24 @@ proc APViz::ReinitializeVP { } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
+proc APViz::RemoveVariableFromVP { IDList Index } {
    variable Data
 
    set ID [lindex $IDList $Index]
    puts "========"
 
-   #Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $ID	; # Enlever variable du viewport
    set dataType ""
-
    set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
    
    #----- Decrement from vartype total in VarsDict
    dict incr Data(VarsDict) $varType -1
 
-   if {$IsFSTDField} {
+   if {[fstdfield is $ID]} {
       set vp [lindex [fstdfield stats $ID -tag] 1]
       Viewport::UnAssign $Data(Frame) $vp $ID 1     ; # Enlever variable du viewport
       fstdfield free $ID
       set dataType FLD
-   } else {
+   } elseif {[metobs is $ID]} {
       set vp [lindex [metobs stats $ID -tag] 1]
       Viewport::UnAssign $Data(Frame) $vp $ID 1     ; # Enlever variable du viewport
       metobs free $ID
@@ -2716,14 +2730,12 @@ proc APViz::SetParam { Index Product {IsCalcLayer False}} {
    } else {
       set id [lindex $Data(LayerIDs) $RowID(Layer$Index)]
    }
-
-   if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $id] ne -1} {
-      if {[string equal -length 3 $id OBS ]} {
-         ::Obs::ParamUpdate $id
-      } else {
-         ::FSTD::ParamUpdate $id
-      }
-   }
+   
+   if {[fstdfield is $id]} {
+      ::FSTD::ParamUpdate $id
+   } elseif {[metobs is $id]} {
+      ::Obs::ParamUpdate $id
+   }   
 }
 
 #-------------------------------------------------------------------------------

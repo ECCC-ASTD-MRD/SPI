@@ -1261,13 +1261,14 @@ proc FSTD::ParamOwnership { { Fields { } } } {
 
    #----- Parse all fields
    foreach fld $Fields {
+      if {[fstdfield is $fld]} {
+		#----- If they were configured outside SPI
+	if { [fstdfield configure $fld -set]==1 } {
+	  incr n
 
-      #----- If they were configured outside SPI
-      if { [fstdfield configure $fld -set]==1 } {
-         incr n
-
-         #----- Get ownership
-         fstdfield configure $fld -set 2
+	  #----- Get ownership
+	  fstdfield configure $fld -set 2
+	}
       }
    }
 

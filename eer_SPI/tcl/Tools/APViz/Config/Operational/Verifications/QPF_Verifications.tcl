@@ -2,6 +2,7 @@ global env
 
 #----- GEOGRAPHY BEGIN
 set Params(Cameras)    {}
+set Params(ViewportNb) 1
 set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 0 -mappolit 1 -mapadmin 1 \
       -mapcity 0 -maproad  0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10 2 -minsize 5 }
       
@@ -25,7 +26,7 @@ set Range(Accumul)      {6 12 24}
 #----- RANGES END
 
 #----- LAYERS BEGIN
-#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3)
+#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)
 set Layers { 
    True:RDPS:<Runs>:024:diag:PR:0.0:<Accumul>
    True:SYNOP:<Runs>:-:BURP:13023:SFC:-

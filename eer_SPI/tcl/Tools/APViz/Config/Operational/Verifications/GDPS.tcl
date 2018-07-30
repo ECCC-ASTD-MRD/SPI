@@ -2,6 +2,7 @@ global env
 
 #----- GEOGRAPHY BEGIN
 set Params(Cameras)    {}
+set Params(ViewportNb) 1
 set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 1 -mappolit 1 -mapadmin 1 \
       -mapcity 0 -maproad  0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10 2 -minsize 5 }
       
@@ -28,7 +29,7 @@ set Range(Sources)	{pres diag eta hyb}
 #----- RANGES END
 
 #----- LAYERS BEGIN
-#----- Layers (On:Model:Run:Hour:Source:Var:Level)
+#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)
 set Layers {
    True:GDPS:<Runs>:<Hours>:<Sources>:<Vars>:<Levels>
    False:GDPS:<Runs>:<Hours>:<Sources>:PN:0.0

@@ -2,6 +2,7 @@ global env
 
 #----- GEOGRAPHY BEGIN
 set Params(Cameras)    {}
+set Params(ViewportNb) 1
 set Params(Projection) { -type orthographic -scale 1.0 -mask NONE -mapcoast 1 -maplake 1 -mapriver 0 -mappolit 1 -mapadmin 1 -mapcity 0 -maproad 0 -mapplace 0 -maptopo 0 -mapbath 0 -maptext 0 -mapcoord 1 10.0 2 -minsize 5 }
 set Params(Viewport) { -crowd 20 -font XFont12 -bg white -bd 1 -colorcoast #000000 -colorlake #0000ff -colorfillcoast beige -colorfilllake LightSkyBlue1 -colorriver #0000ff -colorpolit #000000 -coloradmin #000000 -colorcity #ffa500 -colorroad #404040 -colorplace #000000 -colorcoord #000000 }
 #----- GEOGRAPHY END
@@ -25,7 +26,7 @@ set Range(Accumul)      {6 12 24}
 #----- RANGES END
 
 #----- LAYERS BEGIN
-#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3)
+#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)
 set Layers {
    True:RDPS:<Runs>:024:diag:PR:0.0:<Accumul>
    False:RDPS:<Runs>:024:diag:PR:0.0:<Accumul>

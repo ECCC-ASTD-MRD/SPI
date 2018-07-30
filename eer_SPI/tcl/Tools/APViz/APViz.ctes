@@ -81,4 +81,5 @@ namespace eval APViz {
    set Data(VarsDict)           ""      ; #Dictionaire contenant le nombre de variables pour chaque type de variable (VARTYPE: VARTYPE_NB)
    set Data(VarParamsDict)      ""      ; #Dictionaire contenant l'index de param pour une variable a un rowid spcifique (VARROWID: PARAMSINDEX)
    set Data(PR_timestamp)       ""
+   set Data(VPNb)               1
 }
