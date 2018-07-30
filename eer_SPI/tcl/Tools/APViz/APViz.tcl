@@ -478,7 +478,6 @@ proc APViz::Source { Path Widget } {
          
          pack $Widget.range -side top -fill x -anchor nw
 
-         #set dateList [APViz::FetchDates $Product $Value(Models,0) $Value(Sources,0)]
          set dateList [APViz::FetchAllDates $Product]
          set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
          
@@ -1076,7 +1075,7 @@ proc APViz::AssignVariable { Product Index } {
    
    #----- Verifier si tous les champs sont remplis
    if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {
-      set vpID [APViz::GetVPNumber $vp]
+      set vpID [APViz::GetVPId $vp]
    
       if {$src eq "BURP"} {
          set timestamp ${date}${run}_
@@ -1239,12 +1238,28 @@ proc APViz::AssignVariable { Product Index } {
    }
 }
 
-proc APViz::GetVPNumber { VPid } {
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetVPId>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Retourner l'id du VP
+#
+# Parametres      :
+#       <VPno>    : Numero du vp lu dans le fichier de config
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetVPId { VPno } {
    variable Data
-   if {[expr {$Data(VPCount) eq 1}] || [expr $VPid > $Data(VPCount)] || [expr $VPid < 0]} {
+   
+   if {[expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
       return $Viewport::Data(VP)
    } else {
-      set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPid]]
+      set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
       return $vpNumber
    }
 } 
@@ -1464,7 +1479,7 @@ proc APViz::CalculateExpression { Product Index} {
          if {[fstdfield is $resultFieldID]} {
             set isActivated $Value(CalcToggle,$Index)
             
-            set vpID [GetVPNumber $Value(CalcVP,$Index)]
+            set vpID [GetVPId $Value(CalcVP,$Index)]
             #----- Assigner au ViewPort
             if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $resultFieldID] eq -1} {
                Viewport::Assign $Data(Frame) $vpID $resultFieldID
@@ -1550,11 +1565,11 @@ proc APViz::Check { Product Index {IsCalc False}} {
    if {$IsCalc} {
       set ID [lindex $Data(CalcIDs) $RowID(Calc$Index)] 
       set isActivated $Value(CalcToggle,$Index)
-      set vpID [APViz::GetVPNumber $Value(CalcVP,$Index)]
+      set vpID [APViz::GetVPId $Value(CalcVP,$Index)]
    } else {
       set ID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
       set isActivated $Value(Toggle,$Index)
-      set vpID [APViz::GetVPNumber $Value(VP,$Index)]
+      set vpID [APViz::GetVPId $Value(VP,$Index)]
    }
 
    if {[fstdfield is $ID]} {
@@ -1860,7 +1875,7 @@ proc APViz::FetchDates { Product Model Src } {
    variable DataSrc
    
    set dateList {}
-   
+
    if {$Product ne ""} {
       if {$Src eq "BURP"} {
          set path $DataSrc(OBS,$Model)/
@@ -1880,13 +1895,15 @@ proc APViz::FetchDates { Product Model Src } {
       
       #----- Set to previous date (yesterday)
       incr date -1
-            
-      while {[lsearch -glob $fileList $date*] >= 0} {
+      
+      set no 0
+      while {([lsearch -glob $fileList $date*] >= 0) || ($no < 10)} {
          lappend dateList $date
          incr date -1
+         incr no
       }
 
-      if {[llength $dateList] eq 0} {
+      if {[llength $dateList] <= 1} {
          foreach file $fileList {
             set date [string range $file 0 7]
             if {[lsearch -exact $dateList $date] < 0} {
@@ -2026,38 +2043,31 @@ proc APViz::GenerateConfigFile { Path } {
       set origData [split $origFileData "\n"]
       
       #----- Get section indexes
-      set geoStartIndex [lsearch -glob $origData "*GEOGRAPHY BEGIN*"]
-      set geoEndIndex [lsearch -glob $origData "*GEOGRAPHY END*"]
-      set styleStartIndex [lsearch -glob $origData "*STYLE CONFIGURATION BEGIN*"]
-      set styleEndIndex [lsearch -glob $origData "*STYLE CONFIGURATION END*"]
-      set rangeStartIndex [lsearch -glob $origData "*RANGES BEGIN*"]
-      set rangeEndIndex [lsearch -glob $origData "*RANGES END*"]
-      set layerStartIndex [lsearch -glob $origData "*LAYERS BEGIN*"]
-      set layerEndIndex [lsearch -glob $origData "*LAYERS END*"]
+      set geoStartIndex [lsearch -glob $origData "*\#----- Geography*"]
+      set styleStartIndex [lsearch -glob $origData "*Style*"]
+      set rangeStartIndex [lsearch -glob $origData "*\#----- Ranges*"]
+      set layerStartIndex [lsearch -glob $origData "*\#----- Layers*"]
+
       
       #----- Copy from original til Geo configs
-      APViz::WriteConfigSection $fileID [lrange $origData 0 [expr $geoStartIndex -1]]
+      APViz::WriteConfigSection $fileID [lrange $origData 0 $geoStartIndex]
       
       #----- Write Geo params
-      puts $fileID "\#----- GEOGRAPHY BEGIN"
       #----- COPY Camera - TODO: Write Cameras
       puts $fileID [lindex $origData [expr $geoStartIndex + 1]]
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
-      puts $fileID "\#----- GEOGRAPHY END"
 
       #----- Variable Style Configs
       puts -nonewline $fileID "\n"
-      APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex $styleEndIndex]  $colormapLst
+      APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex [expr $rangeStartIndex - 1]]  $colormapLst
       
       #----- Ranges :
       puts -nonewline $fileID "\n"
-      APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex $rangeEndIndex]
+      APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex [expr $layerStartIndex - 1]]
 
       #----- Write Layers
-      puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
-      
       
       #----- Write Default Values
       puts -nonewline $fileID "\n"
@@ -2089,9 +2099,8 @@ proc APViz::GenerateConfigFile { Path } {
 
 proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    #----- Get current configs
-   set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
-   puts $FileID "\#----- STYLE CONFIGURATION BEGIN"
    puts $FileID "\#----- Variable Style Configurations"
+   set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
    
    foreach config $configLst {
       puts $FileID $config
@@ -2107,8 +2116,6 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
          puts $FileID $content
       }
    }
-   
-   puts $FileID "\#----- STYLE CONFIGURATION END"
 }
 
 
@@ -2133,8 +2140,7 @@ proc APViz::WriteLayers { Product FileID } {
    variable Data
    variable ${Product}::Value
    variable ${Product}::RowID
-   
-   puts $FileID "\#----- LAYERS BEGIN"
+
    puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level)"
    puts $FileID "set Layers \{"
    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
@@ -2144,7 +2150,6 @@ proc APViz::WriteLayers { Product FileID } {
       }
    }
    puts $FileID "\}"
-   puts $FileID "\#----- LAYERS END"
 }
 
 #----------------------------------------------------------------------------
@@ -2168,7 +2173,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
    variable ${Product}::Value
    variable ${Product}::RowID
    
-   puts $FileID "\#----- DEFAULT VALUES BEGIN"
+   puts $FileID "\#----- Default Values"
    puts $FileID "set DefaultValues \{"
    
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -2200,7 +2205,6 @@ proc APViz::WriteDefaultValues { Product FileID } {
    }
    
    puts $FileID "\}"
-   puts $FileID "\#----- DEFAULT VALUES END"
 }
 
 #----------------------------------------------------------------------------
@@ -2320,11 +2324,12 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          #---- Set command depending on type
          if {[fstdfield is $ID]} {
             set isFstdField True
-            set command "fstdfield configure $ID"
          } elseif {[metobs is $ID]} {
             set isFstdField False
             set model [metobs define $ID -MODEL]
-            set command "metmodel configure $model $var"
+         } else {
+            puts "Sortir de la boucle"
+            break
          }
 
          set index [APViz::GetVarsNb vDict $var]
@@ -2875,6 +2880,51 @@ proc APViz::UpdateAvailableDates { Product } {
    variable Data
    variable DataSrc
    variable Lbl
+   
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {$RowID(Layer$i) >= 0} {
+         set model $Value(Models,$i)
+         set src $Value(Sources,$i)
+         
+         #----- Recuperer le path de la source
+         if {$src eq "BURP"} {
+            set path $DataSrc(OBS,$model)
+         } else {
+            set path $DataSrc($model,$src)
+         }
+
+         #----- Verifier s'il y a eu des changements dans le dossier
+         set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
+
+         if {$lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]} {
+            #----- Afficher message
+            .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
+            APViz::FetchAllDates $Product
+            after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
+            break
+         }
+      }
+   }
+
+   if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {
+      set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
+      #----- Afficher message
+      .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
+      after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
+      APViz::InitializeVars
+   }
+
+   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
+}
+
+proc APViz::UpdateAvailableDates1 { Product } {
+   global GDefs
+
+   variable ${Product}::Value
+   variable ${Product}::RowID
+   variable Data
+   variable DataSrc
+   variable Lbl
 
    #----- Recuperer le premier index qui na pas ete supprime
    set i 0
@@ -2898,7 +2948,7 @@ proc APViz::UpdateAvailableDates { Product } {
    if {$lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]} {
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
-      APViz::FetchDates $Product $model $src
+      APViz::FetchAllDates $Product
       after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
    }
 
