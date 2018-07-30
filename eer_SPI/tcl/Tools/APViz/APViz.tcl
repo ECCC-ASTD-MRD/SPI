@@ -398,6 +398,22 @@ proc APViz::Source { Path Widget } {
          #----- Source product definition
          source $Path
          
+         #----- Get nb of VPs
+         if {[info exists Params(ViewportNb)]} {
+            set ::QuickLayout::Param(NbVP) $Params(ViewportNb)
+            set ::APViz::Data(VPCount) $Params(ViewportNb)
+         } else {       
+            set ::QuickLayout::Param(NbVP) 1
+            set ::APViz::Data(VPCount) 1
+         }
+         
+         #----- Get frame params
+         set ::QuickLayout::Data(Frame) ${::APViz::Data(Frame)}
+         set ::QuickLayout::Param(Width)  [Page::CanvasWidth ${::APViz::Data(Frame)}]
+         set ::QuickLayout::Param(Height) [Page::CanvasHeight ${::APViz::Data(Frame)}]
+         ::QuickLayout::LayoutGrid
+         
+         
          if {[info exists Params(Projection)]} {
              eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
          }
@@ -425,6 +441,7 @@ proc APViz::Source { Path Widget } {
          label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 
          label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)]
          label $Widget.range.variableGrid.ip3   -text "IP3"
+         label $Widget.range.variableGrid.vp    -text "VP"
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
                -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
@@ -444,6 +461,7 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.var 	-column 5 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.lev 	-column 6 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
          
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
@@ -576,8 +594,8 @@ proc APViz::Source { Path Widget } {
          set no $Value(NbLayers)
          foreach layer $Layers default $DefaultValues {
             #----- Extract layer parts
-            lassign [split $layer :] toggle model run hour dataSrc var level ip3
-            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel defaultIP3
+            lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp
+            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel defaultIP3 defaultVP
             
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -593,11 +611,13 @@ proc APViz::Source { Path Widget } {
                $Widget.range.variableGrid.layer${no}_toggle select
             }
             
-            # CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
+            #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
             CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
+            # ICIIII!!!
+            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no VP true 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
             
@@ -622,7 +642,7 @@ proc APViz::Source { Path Widget } {
             set RowID(Layer$no) [expr $no - $RowID(LayerAdjustment)]
             
             #----- Place widgets in grid        
-            set itemList [list toggle model run hour dataSrc var level ip3 param delete]
+            set itemList [list toggle model run hour dataSrc var level ip3 vp param delete]
             set colNb 0
             foreach item $itemList {
                grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
@@ -664,11 +684,13 @@ proc APViz::Source { Path Widget } {
       proc DeleteLayer { Widget Index Product Src } {
          variable RowID
          variable Value
-
-         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index) [expr {"$Src" ne "BURP"}]	; # Enlever variable du Viewport
          
-         incr RowID(LayerAdjustment)							; # Ajuster le rowID
-         set itemList [list toggle model var level run hour dataSrc ip3 param delete]
+         #----- # Enlever variable du Viewport
+         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index) [expr {"$Src" ne "BURP"}]
+         
+         #----- Ajustement du rowID
+         incr RowID(LayerAdjustment)
+         set itemList [list toggle model var level run hour dataSrc ip3 vp param delete]
             
          #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
          for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -1033,6 +1055,7 @@ proc APViz::AssignVariable { Product Index } {
    set run	$Value(Runs,$Index)
    set hour	$Value(Hours,$Index)
    set src	$Value(Sources,$Index)
+   set vp       $Value(VP,$Index)
    #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
    
    set date $Data(Date)
@@ -1043,6 +1066,7 @@ proc APViz::AssignVariable { Product Index } {
    
    #----- Verifier si tous les champs sont remplis
    if {[ APViz::AreFieldsFilled $model $var $lev $run $hour $src $date ]} {
+      set vpID [APViz::GetVPNumber $vp]
    
       if {$src eq "BURP"} {
          set timestamp ${date}${run}_
@@ -1080,7 +1104,7 @@ proc APViz::AssignVariable { Product Index } {
             }
          } else {
             #----- Configurations par defaut
-            dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu \
+            dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu \
                -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
          }
          
@@ -1109,7 +1133,7 @@ proc APViz::AssignVariable { Product Index } {
             }
             
             if {[fstdfield is [lindex $Data(LayerIDs) $RowID(Layer$Index)]]} {
-               APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)		; # Enlever la variable courante du VP pour cette couche
+               APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)  	; # Enlever la variable courante du VP pour cette couche
             }
             
             set levelType [ APViz::GetLevelType $src ]
@@ -1184,9 +1208,18 @@ proc APViz::AssignVariable { Product Index } {
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
             
             #----- Assigner seulement si n'est pas assigne
+            #----- TODO: Check VP#
+            set vpID [APViz::GetVPNumber $vp]
+            puts "Assigning to VP: $vpID"
+            set comment {
             if {[lsearch -exact [Viewport::Assigned $Data(Frame) $Viewport::Data(VP)] $fieldID] eq -1} {
                Viewport::Assign $Data(Frame) $Viewport::Data(VP) $fieldID 1
             }
+            }
+            if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $fieldID] eq -1} {
+               Viewport::Assign $Data(Frame) $vpID $fieldID 1
+            }
+            puts "Tags: [lindex [fstdfield stats $fieldID -tag] 1]  || total vps: $Viewport::Data(VPNb) || Viewport courant: $Viewport::Data(VP)"
 
          } else {
             puts "File $filepath not available."
@@ -1204,6 +1237,16 @@ proc APViz::AssignVariable { Product Index } {
       puts "Missing values"
    }
 }
+
+proc APViz::GetVPNumber { VPid } {
+   variable Data
+   if {$Data(VPCount) eq "1"} {
+      return $Viewport::Data(VP)
+   } else {
+      set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPid]]
+      return $vpNumber
+   }
+} 
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::GetVarsNb>
@@ -1500,7 +1543,6 @@ proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
 proc APViz::Check { Product Index {IsCalc False}} {
    variable ${Product}::Value
    variable ${Product}::RowID
-
    variable Data
 
    if {$IsCalc} {
@@ -1518,8 +1560,10 @@ proc APViz::Check { Product Index {IsCalc False}} {
       set var [string range $ID $startIndex [string length $ID]]
       metmodel configure [metobs define $ID -MODEL] $var -active $isActivated 
    }
-
-   Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
+   
+   set vpID [APViz::GetVPNumber $Value(VP,$Index)]
+   Viewport::UpdateData $Data(Frame) $vpID
+   #Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
 }
 
 #-------------------------------------------------------------------------------
@@ -1990,7 +2034,9 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Write Geo params
       puts $fileID "\#----- GEOGRAPHY BEGIN"
-      # TODO: Write Cameras
+      #----- COPY Cameras and ViewportNb ------- TODO: Write Cameras & VPNb
+      puts $fileID [lindex $origData [expr $geoStartIndex + 1]]
+      puts $fileID [lindex $origData [expr $geoStartIndex + 2]]
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
       puts $fileID "\#----- GEOGRAPHY END"
@@ -2483,7 +2529,7 @@ proc APViz::InitializeVars { } {
 
 proc APViz::ReinitializeVP { } {
    variable Data
-
+   #TODO: GERER TOUS LES VP
    Viewport::UnAssign $Data(Frame) $Viewport::Data(VP)	; # Enlever toutes les variables du viewport
    
    #----- Liberer les ID
@@ -2560,8 +2606,9 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
    variable Data
 
    set ID [lindex $IDList $Index]
+   puts "========"
 
-   Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $ID	; # Enlever variable du viewport
+   #Viewport::UnAssign $Data(Frame) $Viewport::Data(VP) $ID	; # Enlever variable du viewport
    set dataType ""
 
    set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
@@ -2570,14 +2617,18 @@ proc APViz::RemoveVariableFromVP { IDList Index {IsFSTDField True} } {
    dict incr Data(VarsDict) $varType -1
 
    if {$IsFSTDField} {
+      set vp [lindex [fstdfield stats $ID -tag] 1]
+      Viewport::UnAssign $Data(Frame) $vp $ID 1     ; # Enlever variable du viewport
       fstdfield free $ID
       set dataType FLD
    } else {
-      puts "Freeing $ID"
+      set vp [lindex [metobs stats $ID -tag] 1]
+      Viewport::UnAssign $Data(Frame) $vp $ID 1     ; # Enlever variable du viewport
       metobs free $ID
       set dataType OBS
    }
-
+   
+   puts "Removing $ID from $vp"
    if {[regexp CALC $ID]} {
       set Data(CalcIDs) [lreplace $IDList $Index $Index CALC$Index]
    } else {
