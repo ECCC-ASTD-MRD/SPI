@@ -2642,7 +2642,7 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    char     buf[256];
    int      i, j;
    int      offset;
-   double   nodata, nodata2;
+   double   nodata;
    int      sNI, sNJ;
    int      dNI, dNJ;
    TGeoRef   *FromRef, *ToRef;
@@ -2652,7 +2652,6 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    float      x, y;
    int        xi, yi;
    int        nthreads, nmemalloc;
-   int        nprocs;
    int        tid;
 
    int        cnt;
@@ -2662,7 +2661,6 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    double     *scanX, *scanY;
    float      **Tflt_X, **Tflt_Y;
    float      *flt_X, *flt_Y;
-   char       buffer[256];
 
    OGRCoordinateTransformationH  *Tctf;
    OGRSpatialReferenceH          *TsrcSR;
@@ -2712,15 +2710,6 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    sNI = FromDef->NI;
    sNJ = FromDef->NJ;
    nodata = FromDef->NoData;
-
-#if DEBUG
-#ifdef _OPENMP
-   nprocs = omp_get_num_procs();
-#else //_OPENMP
-   nprocs = 1;
-#endif //_OPENMP
-   fprintf( stderr, "Number of processes = %d\n", nprocs );
-#endif
 
    cnt = 0;
 /*
@@ -2894,14 +2883,14 @@ int GDAL_BandToFieldWithPos
    (Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand, GDAL_Band *PosBand, int Mode)
    {
 
-   double        val,vx,di[4],dj[4],*fld, fldInitValue;
+   double        vx,*fld, fldInitValue;
    int          *acc=NULL;
-   unsigned long idxt,idxk,nijk,nij;
-   unsigned long x, t;
+   unsigned long idxt,nijk,nij;
+   unsigned long x;
    unsigned int  ndi,ndj;
    int           sNI,sNJ,toNK;
-   int           i, j, k;
-   unsigned long offset, offseti;
+   int           i, j;
+   unsigned long offset;
    double        dxi, dyi;
    double        posNodata;
    double        srcNodata;
@@ -2912,7 +2901,6 @@ int GDAL_BandToFieldWithPos
    DiscreetGridPoint  *dgp;
    int             new;
    TDef          *ToDef, *PosDef, *FromDef;
-   TGeoRef       *ToRef;
    char          buffer[256];
 
    if ((FromBand->Def->NI != PosBand->Def->NI)||(FromBand->Def->NJ != PosBand->Def->NJ))
@@ -2928,7 +2916,6 @@ int GDAL_BandToFieldWithPos
       }
 
    ToDef = ToGrid->Def;
-   ToRef = ToGrid->GRef;
    PosDef = PosBand->Def;
    FromDef = FromBand->Def;
 
@@ -3158,8 +3145,7 @@ static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fl
    DiscreetGridPoint  *dgp;
    Tcl_HashEntry      *entry;
    Tcl_HashSearch     searchPtr;
-   unsigned long      idxt, idxk;
-   int                k;
+   unsigned long      idxt;
    int                tot_acc=0;
    char               buffer[256];
 

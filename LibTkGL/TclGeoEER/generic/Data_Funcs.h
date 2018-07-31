@@ -68,6 +68,7 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol);
 
 // Derivative functions
 double darea(TDef *Res,TDef *Def,int Mode);
+double dcoriolis(TDef *Res,TDef *Def,int Mode);
 double dangle(TDef *Res,TDef *Def,int Mode);
 double dlat(TDef *Res,TDef *Def,int Mode);
 double dlon(TDef *Res,TDef *Def,int Mode);
