@@ -983,7 +983,7 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
          my=gref->Distance(gref,i,j-1,i,j+1)*4;
 
          /*Slope*/
-         dx=((b[0]+b[3]+b[3]+b[6])-(b[2]+b[5]+b[5]+b[8]))/mx;
+         dx=((b[2]+b[5]+b[5]+b[8])-(b[0]+b[3]+b[3]+b[6]))/mx;
          if (Mode==DDX) {
             Def_Set(Res,0,idx,dx);
             continue;
