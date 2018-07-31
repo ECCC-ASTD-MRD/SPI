@@ -1590,7 +1590,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
          $Frame.page.canvas xview moveto 0
          destroy $Frame.page.v $Frame.page.h
          pack $Frame.page.canvas -side top -fill both -expand true
-         bind $Frame <Configure> "update idletasks; SPI::LayoutFit $Frame"
+         bind $Frame <Configure> "update idletasks; SPI::LayoutFit $Frame; QuickLayout::LayoutGrid False"
       } else {
          $Frame.page.canvas configure -yscrollcommand "$Frame.page.v set" -xscrollcommand "$Frame.page.h set"
          pack $Frame.page.canvas -side top -anchor nw -expand false -fill none
