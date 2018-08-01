@@ -1714,11 +1714,14 @@ proc APViz::CreateColormaps { } {
 
    set path $DataSrc(Colormaps)
    set colormapLst [glob -nocomplain -tails -path $path *.rgba]
-
+   
+   #----- TODO: fetch all colormap paths and save in list
    #----- Create colormaps
    foreach colormap $colormapLst {
       regsub .rgba $colormap "" colormapName
-      colormap create $colormapName -file ${path}/$colormap
+      if {![colormap is $colormapName]} {
+         colormap create $colormapName -file ${path}/$colormap
+      }
    }
    
    #----- Add folder to MapBox paths
@@ -1746,6 +1749,7 @@ proc APViz::CreateColormaps { } {
 proc APViz::CreateRangeInterface { Lst Index Dir } {
    global GDefs
    variable Data
+   variable Param
 
    APViz::ReinitializeVP
    APViz::CloseFiles
@@ -1756,7 +1760,7 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
    }
 
    set selected [lindex $Lst $Index]
-   set filepath "$GDefs(Dir)/tcl/Tools/APViz/Config/${Data(Folder)}/$Dir/$selected.tcl"
+   set filepath "$Param(ConfigPath)/Config/${Data(Folder)}/$Dir/$selected.tcl"
    if {[file isfile $filepath]} {
       APViz::Source $filepath $Data(Tab)
       set Data(ConfigPath) $filepath
@@ -1827,12 +1831,17 @@ proc APViz::DeleteWidget { Widget } {
 
 proc APViz::FetchConfigFiles { } {
    global GDefs
+   global env
    variable Data
+   variable Param
 
    set dir Config
-   set path $GDefs(Dir)/tcl/Tools/APViz/
-
-   APViz::FetchFiles $path $dir
+   #set path $GDefs(Dir)/tcl/Tools/APViz/
+   if { [info exists env(SPI_APVIZ)] } {
+      set Param(ConfigPath) $env(SPI_APVIZ) 
+   }
+   
+   APViz::FetchFiles $Param(ConfigPath) $dir
 }
 
 #----------------------------------------------------------------------------
@@ -1867,6 +1876,26 @@ proc APViz::FetchFiles { Path Name } {
          APViz::FetchFiles $Path $file
       } else {
          lappend Data($Name,Files) [lindex [split $file .] 0]
+      }
+   }
+}
+
+proc APViz::FetchConfigPaths { } {
+   global env
+   
+   puts "Fetching config paths"
+   #----- Get SPI_APVIZ env variable to locate configuration files
+   if { [info exists env(SPI_APVIZ)] } {
+      puts "Env SPI_APVIZ exists "
+      set env(SPI_APVIZ) [join [lsort -unique [split $env(SPI_APVIZ) :]] :]
+      
+      foreach path [split $env(SPI_APVIZ) :] {
+         if { [file isdirectory $path] } {
+            foreach configPath [lsort [glob -nocomplain $path/Config/*]] {
+               set name [file tail [file rootname $configPath]]
+               puts "Name: $name"
+            }
+         }
       }
    }
 }

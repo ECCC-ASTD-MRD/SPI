@@ -27,7 +27,7 @@ namespace eval APViz {
    set Data(Colors)		{black pink blue green red}		; # Couleurs pour chaque variable additionnelle pour chaque type (GZ, HU, TT et UU)
 
    #----- Data Sources
-   set DataSrc(Colormaps)	$GDefs(Dir)/tcl/Tools/APViz/Config/Colormap/
+   set DataSrc(Colormaps)	/users/dor/afsm/cng/APViz_Configs/Config/Colormap/
    
    set mirrorgrid 		$env(CMCPROD)/hubs/suites
    set mirrorsat 		$env(CMCPROD)/hubs/sat

@@ -62,6 +62,7 @@ proc APViz::Window { } {
          if { $SPI::Param(Window) } { wm transient .apviz . }
       }
       
+      #APViz::FetchConfigPaths
       #----- Fetch config files and folders and populate lists
       APViz::FetchConfigFiles
       

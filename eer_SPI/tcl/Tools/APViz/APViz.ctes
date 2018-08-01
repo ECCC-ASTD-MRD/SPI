@@ -35,6 +35,8 @@ namespace eval APViz {
    set Param(Filename)	config
    set Param(FullName)	$APViz::Param(Path)$APViz::Param(Filename)
    set Param(Formats) 	{{Tcl {*.tcl}}}
+   
+   set Param(ConfigPath) ""
 
    set Data(Active) 0        ;#Flag d'activation de l'outils
    set Data(Canvas) ""       ;#Canvas Actif
