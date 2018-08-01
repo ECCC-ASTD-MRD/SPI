@@ -413,7 +413,7 @@ proc APViz::Source { Path Widget } {
          set ::QuickLayout::Param(Height) [Page::CanvasHeight ${::APViz::Data(Frame)}]
          ::QuickLayout::LayoutGrid
          
-         
+         #----- Set Geography parameters
          if {[info exists Params(Projection)]} {
              eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
          }
@@ -422,6 +422,10 @@ proc APViz::Source { Path Widget } {
             foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
                eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
             }
+         }
+         
+         if {[info exists Params(Camera)]} {
+            ::ProjCam::Select ${::APViz::Data(Frame)} ${::APViz::Data(Frame)} $Params(Camera)
          }
          
          #----- Refleter les valeurs dans l'interface de configuration des parametres
@@ -446,9 +450,11 @@ proc APViz::Source { Path Widget } {
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
                -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+         $Widget.range.variableGrid.runLock select
                
          checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
                -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+         $Widget.range.variableGrid.hrLock select
                
          #----- Add help bubbles
          Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
@@ -654,6 +660,7 @@ proc APViz::Source { Path Widget } {
             if {$IsAddedLayer} {
                APViz::AssignVariable $Product $no
                set APViz::${Product}::Value(LayerType,$no) $LayerType
+               APViz::FetchAllDates $Product
             } else {
                set APViz::${Product}::Value(LayerType,$no) [expr $no - $Value(NbLayers)]
             }
@@ -719,6 +726,8 @@ proc APViz::Source { Path Widget } {
          }
         
          AdjustSpinboxValues $Widget True $oldRowID
+         
+         APViz::FetchAllDates $Product
       }
       
       #-------------------------------------------------------------------------------
@@ -1084,7 +1093,6 @@ proc APViz::AssignVariable { Product Index } {
          
          #----- Liberer l'observation
          if {[metobs is [lindex $Data(LayerIDs) $RowID(Layer$Index)]]} {
-            puts "Removing [lindex $Data(LayerIDs) $RowID(Layer$Index)] from vp"
             APViz::RemoveVariableFromVP $Data(LayerIDs) $RowID(Layer$Index)
          }
 
@@ -1102,10 +1110,21 @@ proc APViz::AssignVariable { Product Index } {
 
          dataspec create $obsID
          
-         if { [info exist Params(${var}$lev)] } {
+         #----- Verify if a variable param config has been saved for this row
+         if {[dict exists $Data(VarParamsDict) ${var}$RowID(Layer$Index)]} {
+            set index [dict get $Data(VarParamsDict) ${var}$RowID(Layer$Index)]
+         } else {
+            set index [APViz::GetVarsNb Data(VarsDict) $var]
+            dict set Data(VarParamsDict) ${var}$RowID(Layer$Index) $index
+         }
+         
+         #----- Increment number of vartype
+         dict incr Data(VarsDict) $var
+         
+         #----- Apply variable configs from config file 
+         if { [info exist Params(${var}$index)] } {
             catch { 
-               eval dataspec configure $obsID $Params(${var}$lev)
-               puts "Configured OBS: $var"
+               eval dataspec configure $obsID $Params(${var}$index)
             }
          } elseif { [info exist Params($var)] } {
             catch { 
@@ -1882,44 +1901,23 @@ proc APViz::FetchDates { Product Model Src } {
       } else {
          set path $DataSrc(${Model},${Src})/
       }
-
-      set fileList [glob -nocomplain -tails -path $path *]
-    
-      #----- Get today's date in format AAAAMMDD
-      set date [clock format [clock seconds] -format %Y%m%d]
       
-      #---- Verify if today's date is valid (in case of transfer problem)
-      if {[lsearch -glob $fileList $date*] >= 0} {
-         lappend dateList $date
-      }
+      #----- Check for the last 30 dates if a file exists for that date
+      set fileList [glob -nocomplain -tails -path $path *]      
+      set seconds [clock seconds]
       
-      #----- Set to previous date (yesterday)
-      incr date -1
-      
-      set no 0
-      while {([lsearch -glob $fileList $date*] >= 0) || ($no < 10)} {
-         lappend dateList $date
-         incr date -1
-         incr no
-      }
-
-      if {[llength $dateList] <= 1} {
-         foreach file $fileList {
-            set date [string range $file 0 7]
-            if {[lsearch -exact $dateList $date] < 0} {
-               lappend dateList $date
-            }
+      for {set i 0} {$i < 30} {incr i} {
+         set seconds [expr $seconds -86400]
+         set date [clock format $seconds -format %Y%m%d]
+         if {[lsearch -glob $fileList $date*] >= 0} {
+            lappend dateList $date
          }
       }
-      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates doesnt have all runs
-   }
-   
-   if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
-      ComboBox::DelAll $Data(DateCBWidget)
-      ComboBox::AddList $Data(DateCBWidget) $dateList
+      
+      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
    }
 
-   set Data(Dates) $dateList
+   return $dateList
 }
 
 proc APViz::FetchAllDates { Product } {
@@ -1930,6 +1928,7 @@ proc APViz::FetchAllDates { Product } {
       variable ${Product}::RowID
 
       set  sourceLst {}
+      set dateLst {}
       for {set i 0} {$i < $Value(NbLayers)} {incr i} {
          if {[set rowID $RowID(Layer$i)] >= 0} {
             set model $Value(Models,$i)
@@ -2043,18 +2042,17 @@ proc APViz::GenerateConfigFile { Path } {
       set origData [split $origFileData "\n"]
       
       #----- Get section indexes
-      set geoStartIndex [lsearch -glob $origData "*\#----- Geography*"]
-      set styleStartIndex [lsearch -glob $origData "*Style*"]
-      set rangeStartIndex [lsearch -glob $origData "*\#----- Ranges*"]
-      set layerStartIndex [lsearch -glob $origData "*\#----- Layers*"]
+      set geoStartIndex [lsearch -glob $origData "*\#*Geography*"]
+      set styleStartIndex [lsearch -glob $origData "*\#*Style*"]
+      set rangeStartIndex [lsearch -glob $origData "*\#*Ranges*"]
+      set layerStartIndex [lsearch -glob $origData "*\#*Layers*"]
 
       
       #----- Copy from original til Geo configs
       APViz::WriteConfigSection $fileID [lrange $origData 0 $geoStartIndex]
       
       #----- Write Geo params
-      #----- COPY Camera - TODO: Write Cameras
-      puts $fileID [lindex $origData [expr $geoStartIndex + 1]]
+      APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $fileID
 
@@ -2370,6 +2368,28 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::WriteCameraConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de camera et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteCameraConfigs { FileID } {
+   variable Data
+
+   puts $FileID "set Params(Camera) \{${::ProjCam::Data(Name)}\}"
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::WriteProjectionConfigs>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
@@ -2403,7 +2423,7 @@ proc APViz::WriteProjectionConfigs { FileID } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::WriteProjectionConfigs>
+# Nom      : <APViz::WriteViewportConfigs>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
 # But      :    Recupere les parametres de projection et les ecrire dans le 
@@ -2627,8 +2647,6 @@ proc APViz::RemoveVariableFromVP { IDList Index } {
    variable Data
 
    set ID [lindex $IDList $Index]
-   puts "========"
-
    set dataType ""
    set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
    
@@ -2646,8 +2664,7 @@ proc APViz::RemoveVariableFromVP { IDList Index } {
       metobs free $ID
       set dataType OBS
    }
-   
-   puts "Removing $ID from $vp"
+
    if {[regexp CALC $ID]} {
       set Data(CalcIDs) [lreplace $IDList $Index $Index CALC$Index]
    } else {
@@ -2904,52 +2921,6 @@ proc APViz::UpdateAvailableDates { Product } {
             break
          }
       }
-   }
-
-   if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {
-      set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
-      #----- Afficher message
-      .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
-      after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
-      APViz::InitializeVars
-   }
-
-   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
-}
-
-proc APViz::UpdateAvailableDates1 { Product } {
-   global GDefs
-
-   variable ${Product}::Value
-   variable ${Product}::RowID
-   variable Data
-   variable DataSrc
-   variable Lbl
-
-   #----- Recuperer le premier index qui na pas ete supprime
-   set i 0
-   while {$RowID(Layer$i) == -1 } {
-      incr i
-   }
-
-   #----- Recuperer le path de la source
-   #TODO: Quelle source prendre? En ce moment: Celle de la premiere rangee
-   set model $Value(Models,$i)
-   set src $Value(Sources,$i)
-   if {$src eq "BURP"} {
-      set path $DataSrc(OBS,$model)
-   } else {
-      set path $DataSrc($model,$src)
-   }
-
-   #----- Verifier s'il y a eu des changements dans le dossier
-   set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
-
-   if {$lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]} {
-      #----- Afficher message
-      .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
-      APViz::FetchAllDates $Product
-      after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
    }
 
    if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {

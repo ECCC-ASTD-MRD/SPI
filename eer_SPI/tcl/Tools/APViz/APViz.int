@@ -95,8 +95,9 @@ proc APViz::Window { } {
             set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
             
             checkbutton $Data(Tab).head.dateConfig.dateLock -variable ::APViz::Data(dateLock) -onvalue True -offvalue False \
-               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) 
+               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
             Bubble::Create $Data(Tab).head.dateConfig.dateLock $APViz::Bubble(BlockDate)
+            $Data(Tab).head.dateConfig.dateLock select
 
             pack $Data(Tab).head.dateConfig.lbl $Data(Tab).head.dateConfig.cb $Data(Tab).head.dateConfig.dateLock -side left
          pack $Data(Tab).head.dateConfig -side right
