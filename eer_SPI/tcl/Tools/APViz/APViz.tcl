@@ -409,8 +409,6 @@ proc APViz::Source { Path Widget } {
          
          #----- Get frame params
          set ::QuickLayout::Data(Frame) ${::APViz::Data(Frame)}
-         set ::QuickLayout::Param(Width)  [Page::CanvasWidth ${::APViz::Data(Frame)}]
-         set ::QuickLayout::Param(Height) [Page::CanvasHeight ${::APViz::Data(Frame)}]
          ::QuickLayout::LayoutGrid
          
          #----- Set Geography parameters
@@ -1268,14 +1266,15 @@ proc APViz::AssignVariable { Product Index } {
 #       
 # Retour:
 #
-# Remarques :
+# Remarques :   Si le parametre recu n'est pas un chiffre, renvoyer l'identifiant du 
+#               vp courant
 #
 #-------------------------------------------------------------------------------
 
 proc APViz::GetVPId { VPno } {
    variable Data
    
-   if {[expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
+   if {![string is digit $VPno] || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
       return $Viewport::Data(VP)
    } else {
       set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
@@ -1773,7 +1772,6 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
 # But      : Valider la date et initialiser les variables si valide
 #
 # Parametres :
-#	<Product> : Le nom du produit selectionne (aussi le namespace) 
 #
 # Retour:
 #
@@ -1880,6 +1878,7 @@ proc APViz::FetchFiles { Path Name } {
 # But      : 	Construire la liste de dates disponibles pour afficher dans l'interface
 #
 # Parametres	:
+#       <Product> : Le nom du produit selectionne (aussi le namespace) 
 #	<Path>  : Path du parent du dossier
 #	<Name>	: Nom du dossier
 #
@@ -1919,6 +1918,22 @@ proc APViz::FetchDates { Product Model Src } {
 
    return $dateList
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FetchAllDates>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire la liste de dates disponibles pour afficher dans l'interface
+#               en considerant toutes les sources
+#
+# Parametres    :
+#       <Product> : Le nom du produit selectionne (aussi le namespace) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::FetchAllDates { Product } {
    variable Data
@@ -1974,6 +1989,7 @@ proc APViz::FetchAllDates { Product } {
          set finalDateLst [lindex $dateLst 0]
       }
       
+      #----- Display dates in Available Dates combo box
       if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
          ComboBox::DelAll $Data(DateCBWidget)
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
