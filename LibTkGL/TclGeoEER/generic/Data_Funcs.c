@@ -65,6 +65,7 @@ TFuncDef FuncD[] = {
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
   { "fpeel"     , fpeel     , 1 , TD_Unknown },
   { "darea"     , darea     , 1 , TD_Float32 },
+  { "dcoriolis" , dcoriolis , 1 , TD_Float32 },
   { "dlat"      , dlat      , 1 , TD_Float32 },
   { "dlon"      , dlon      , 1 , TD_Float32 },
   { "ddx"       , ddx       , 1 , TD_Float32 },
@@ -216,8 +217,6 @@ typedef struct
 } LUTentry;
 
 static int compare_lutE ( const void *va, const void *vb );
-
-static TGeoRef *GetCurrentRef(void);
 
 /**
  * @author Jean-Philippe Gauthier
@@ -579,8 +578,7 @@ double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
-static int compare_lutE ( const void *va, const void *vb )
-{
+static int compare_lutE (const void *va,const void *vb) {
    LUTentry **ppa = (LUTentry **)va;
    LUTentry **ppb = (LUTentry **)vb;
    LUTentry  *pa  = *ppa;
@@ -608,7 +606,7 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    m=i<n?i:n;
    szMA=FSIZE2D(MA);
 
-/* create a sorted LUT and use bsearch to make things faster */
+   // Create a sorted LUT and use bsearch to make things faster
    szptr = sizeof(LUTentry *);
    table = (LUTentry *)malloc( sizeof(LUTentry) * m );
    ptrtable = (LUTentry **)malloc( szptr * m );
@@ -736,6 +734,41 @@ double darea(TDef *Res,TDef *Def,int Mode) {
          for(i=0;i<Def->NI;i++) {
             Def_Set(Res,0,idx+i,a[idx+i]);
          }
+      }
+   }
+   
+   return(1.0);
+}
+
+double dcoriolis(TDef *Res,TDef *Def,int Mode) {
+ 
+   unsigned long i,j,idx;
+   float        *a=NULL;
+   double        lat,lon,cor,omega=7.292e-5;
+   TGeoRef      *gref=NULL;
+
+   extern TData     *GField;
+   extern GDAL_Band *GBand;
+   extern int        GMode;
+
+   switch (GMode) {
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
+   }
+
+   if (!gref) 
+      return(0.0);
+
+#pragma omp parallel for \
+   private( j,i,lat,lon,idx,cor ) \
+   shared( gref,Def,Res ) \
+   schedule(static)
+   for(j=0;j<Def->NJ;j++) {
+      idx=j*Def->NI;
+      for(i=0;i<Def->NI;i++) {
+         gref->Project(gref,i,j,&lat,&lon,0,1);
+         cor = 2.0*omega*sin(DEG2RAD(lat));
+         Def_Set(Res,0,idx+i,cor);
       }
    }
    
@@ -986,7 +1019,7 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
          my=gref->Distance(gref,i,j-1,i,j+1)*4;
 
          /*Slope*/
-         dx=((b[0]+b[3]+b[3]+b[6])-(b[2]+b[5]+b[5]+b[8]))/mx;
+         dx=((b[2]+b[5]+b[5]+b[8])-(b[0]+b[3]+b[3]+b[6]))/mx;
          if (Mode==DDX) {
             Def_Set(Res,0,idx,dx);
             continue;

@@ -25,7 +25,7 @@ namespace eval QuickLayout {
     set Param(NbVP)         1
     set Param(Height)       340
     set Param(Width)        550
-    set Param(Dimension)    Page
+    set Param(Dimension)    FIT
 
     set Param(BdX)          5
     set Param(BdY)          5
@@ -46,7 +46,7 @@ namespace eval QuickLayout {
     set Lbl(Width)          {"Largeur       " "Width              "}
     set Lbl(Height)         {"Hauteur       " "Height             "}
     set Lbl(Dimension)      {"Dimensions de " "Dimensions of      "}
-    set Lbl(Dimensions)     { {"Page" "Vue"} {"Page" "Viewport"} }
+    set Lbl(Dimensions)     { {"Etendre" "Page" "Vue"} {"Fit" "Page" "Viewport"} }
 
     set Lbl(Expand)         {"Élargir si possible" "Expand if possible"}
     set Lbl(Gap)            {"Espace entre les vues  " "Space between viewports"}
@@ -65,11 +65,12 @@ namespace eval QuickLayout {
 
     variable Data
 
+    set Data(Frame)         ""
     set Data(NbRows)        1
     set Data(NbCols)        1
 
     set Data(Methods)       {PreferColumns PreferRows OptimizePerimeter Manual}
-    set Data(Dimensions)    {Page VP}
+    set Data(Dimensions)    {FIT PAGE VP}
 }
 
 #-------------------------------------------------------------------------------
@@ -186,6 +187,15 @@ proc QuickLayout::ComboSelect { Key } {
         }
     }
 
+    if { $Key=="Dimension" } {
+        #----- If manual, pack the rest of the interface
+
+#        if { $Param($Key)=="FIT" } {
+#            eval $Data(ManualPack)
+#        } else {
+#            eval $Data(ManualForget)
+#        }
+    }
     #----- Update the layout
 
     ::QuickLayout::LayoutGrid
@@ -213,7 +223,7 @@ proc QuickLayout::Window { Frame } {
 
     #----- Update some values
 
-    if { $Param(Dimension) == "Page" } {
+    if { $Param(Dimension) == "PAGE" || $Param(Dimension) == "FIT" } {
         set Param(Width)  [Page::CanvasWidth $Frame]
         set Param(Height) [Page::CanvasHeight $Frame]
     }
@@ -292,13 +302,18 @@ proc QuickLayout::Window { Frame } {
 # Remarque :
 #
 #-------------------------------------------------------------------------------
-proc QuickLayout::LayoutGrid { } {
+proc QuickLayout::LayoutGrid { { Clear True } } {
     variable Param
     variable Data
 
+    if { ![winfo exists $Data(Frame)] } {
+       return
+    }
+    
     #----- Clear the current layout
-
-    Viewport::Destroy $Data(Frame)
+    if { $Clear } {
+       Viewport::Destroy $Data(Frame)
+    }
 
     if { ![string is integer $Param(NbVP)] || $Param(NbVP)<1 } {
         Log::Print ERROR "Number of viewport is not valid : \"$Param(NbVP)\""
@@ -349,9 +364,16 @@ proc QuickLayout::LayoutGrid { } {
     set Data(NbCols) $nbc
 
     #----- Update the dimensions
-
     switch $Param(Dimension) {
-        Page {
+        FIT {
+            Page::Size $Data(Frame) 0 0
+            set Param(Width)  [Page::CanvasWidth $Data(Frame)]
+            set Param(Height) [Page::CanvasHeight $Data(Frame)]
+            
+            set w [expr {($Param(Width)-2*$Param(BdX)-($nbc-1)*$Param(Gap))/$nbc}]
+            set h [expr {($Param(Height)-2*$Param(BdY)-($nbr-1)*$Param(Gap))/$nbr}]
+        }
+        PAGE {
             set w [expr {($Param(Width)-2*$Param(BdX)-($nbc-1)*$Param(Gap))/$nbc}]
             set h [expr {($Param(Height)-2*$Param(BdY)-($nbr-1)*$Param(Gap))/$nbr}]
 
@@ -401,7 +423,18 @@ proc QuickLayout::LayoutGrid { } {
 
             #----- Create the viewport and position the hypothetical colormap
 
-            set Data(VP$n) [Viewport::Create $Data(Frame) $x $y $w $h 1 0]
+            if { $Clear } {
+               set Data(VP$n) [Viewport::Create $Data(Frame) $x $y $w $h 1 0]
+            } else {
+               set x1 [expr $x+$w]
+               set y1 [expr $y+$h]
+               $Data(Frame).page.canvas itemconfigure $Data(VP$n) -x $x -y $y -width $w -height $h
+               $Data(Frame).page.canvas coords BSPAGE$Data(VP$n) "$x1 $y1"    
+               $Data(Frame).page.canvas coords BMPAGE$Data(VP$n) "[expr $x1-11] $y1" 
+               $Data(Frame).page.canvas coords BFPAGE$Data(VP$n) "[expr $x1-22] $y1"
+               $Data(Frame).page.canvas coords BDPAGE$Data(VP$n) "$x1 $y"           
+               $Data(Frame).page.canvas coords SCPAGE$Data(VP$n) "[expr $x1-150-35] $y1"
+            }
             #set ColorBar::Data($Data(VP$n)0) [list [expr {$x+$w-$Param(CB_Width)}] $y $Param(CB_Width) $Param(VP_Height) [set Data(CB$n) [ColorBar::Tag $Data(VP$n) CB]:$Data(VP$n)0] {*}$cbparams]
 
             incr x [expr {$w+$Param(Gap)}]

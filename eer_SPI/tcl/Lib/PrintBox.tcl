@@ -205,15 +205,15 @@ proc PrintBox::PrintTXT { File { Type "" } } {
    
    if { $Type=="printer" } {
       if { $Param(Angle) == "portrait" } {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Param(Printer) }
+         catch { exec -ignorestderr a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -P $Param(Printer) }
       } else {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File -P $Param(Printer) }
+         catch { exec -ignorestderr a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3  $File -P $Param(Printer) }
       }
    } else {
       if { $Param(Angle) == "portrait" } {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
+         catch { exec -ignorestderr a2ps --columns=1 --rows=1 --font-size=9.0 -R -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
       } else {
-         catch { exec a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
+         catch { exec -ignorestderr a2ps --columns=1 --rows=1 --font-size=9.0 -r -T3 $File -o - | convert -density $Print(DPI) - $Param(FullName).$Print(Device) }
       }
 
       if { $Print(WEBSite)!="" } {
@@ -720,11 +720,11 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
       InfoFrame::Incr .printbox.job 1 "[lindex $Txt(Print) $GDefs(Lang)] $Param(Printer)"
       if { $Param(Printer) == "wideprnt1" || $Param(Printer) == "wideprnt2" } {
-         catch { exec convert -density 200 -colors 2 -dither -monochrome $tmpfile.ps $tmpfile.tiff }
-         exec lpr -s -r -P$Param(Printer) $tmpfile.tiff
+         exec -ignorestderr convert -density 200 -colors 2 -dither -monochrome $tmpfile.ps $tmpfile.tiff
+         exec -ignorestderr lpr -s -r -P$Param(Printer) $tmpfile.tiff
          file delete $tmpfile.ps
       } else {
-         exec lpr -s -r -P$Param(Printer) $tmpfile.ps
+         exec -ignorestderr lpr -s -r -P$Param(Printer) $tmpfile.ps
       }
    } else {
       if { $Print(Device)!="ps" } {
@@ -815,7 +815,7 @@ proc PrintBox::Save { Frame X Y Width Height File Device { GeoRef False } } {
       TMPIMG write "$File.ppm" -format ppm
        
       if { $device != "ppm" } {
-         exec convert $File.ppm $File.$Device
+         exec -ignorestderr convert $File.ppm $File.$Device
          file delete $File.ppm
       }
    } else {
@@ -852,7 +852,7 @@ proc PrintBox::Save { Frame X Y Width Height File Device { GeoRef False } } {
             
             #----- In case of tiff, we can encode within a geotiff
             if { $device == "tiff" } { 
-               exec gdal_translate -a_srs $ref $File.$Device $File.gtif
+               exec -ignorestderr gdal_translate -a_srs $ref $File.$Device $File.gtif
                file delete $File.wld $File.$Device
             }
          } else {
