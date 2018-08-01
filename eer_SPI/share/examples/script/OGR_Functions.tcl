@@ -68,6 +68,8 @@ puts  "   WKT output          : [ogrgeometry define $geom1 -wkt]"
 puts  "   GML output          : [ogrgeometry define $geom1 -gml]"
 puts  "   KML output          : [ogrgeometry define $geom1 -kml]"
 puts  "   JSON output         : [ogrgeometry define $geom1 -json]"
+puts  "   WKT (topoint) output: [ogrgeometry define [ogrgeometry stats $geom1 -topoint] -wkt]"
+
 
 set sub [ogrgeometry define $geom0 -geometry]
 puts  "   Geom object         : $geom0"
