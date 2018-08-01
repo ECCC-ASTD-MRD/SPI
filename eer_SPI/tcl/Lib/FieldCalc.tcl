@@ -69,6 +69,7 @@ namespace eval FieldCalc {
 
    set Param(Derivative) {
       { darea(A)      "Aire des cellules"                                         "Area of grid cells" }
+      { dcoriolis(A)  "Facteur de coriolis a chaque points de grilles"            "Coriolis factor of grid cell" }
       { dlat(A)       "Latitudes de chaque points de grilles"                     "Latitudes of grid cells" }
       { dlon(A)       "Longitudes de chaque points de grilles"                    "Longitudes of grid cells" }
       { ddx(A)        "Longueur des cellules selon X en mètres"                   "Length of grid cells in meters along X axis" }

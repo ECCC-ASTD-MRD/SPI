@@ -65,6 +65,7 @@ TFuncDef FuncD[] = {
   { "fcentile"  , fcentile  , 3 , TD_Unknown },
   { "fpeel"     , fpeel     , 1 , TD_Unknown },
   { "darea"     , darea     , 1 , TD_Float32 },
+  { "dcoriolis" , dcoriolis , 1 , TD_Float32 },
   { "dlat"      , dlat      , 1 , TD_Float32 },
   { "dlon"      , dlon      , 1 , TD_Float32 },
   { "ddx"       , ddx       , 1 , TD_Float32 },
@@ -736,6 +737,41 @@ double darea(TDef *Res,TDef *Def,int Mode) {
          for(i=0;i<Def->NI;i++) {
             Def_Set(Res,0,idx+i,a[idx+i]);
          }
+      }
+   }
+   
+   return(1.0);
+}
+
+double dcoriolis(TDef *Res,TDef *Def,int Mode) {
+ 
+   unsigned long i,j,idx;
+   float        *a=NULL;
+   double        lat,lon,cor,omega=7.292e-5;
+   TGeoRef      *gref=NULL;
+
+   extern TData     *GField;
+   extern GDAL_Band *GBand;
+   extern int        GMode;
+
+   switch (GMode) {
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
+   }
+
+   if (!gref) 
+      return(0.0);
+
+#pragma omp parallel for \
+   private( j,i,lat,lon,idx,cor ) \
+   shared( gref,Def,Res ) \
+   schedule(static)
+   for(j=0;j<Def->NJ;j++) {
+      idx=j*Def->NI;
+      for(i=0;i<Def->NI;i++) {
+         gref->Project(gref,i,j,&lat,&lon,0,1);
+         cor = 2.0*omega*sin(DEG2RAD(lat));
+         Def_Set(Res,0,idx+i,cor);
       }
    }
    
