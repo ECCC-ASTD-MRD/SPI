@@ -84,4 +84,7 @@ namespace eval APViz {
    set Data(VarParamsDict)      ""      ; #Dictionaire contenant l'index de param pour une variable a un rowid spcifique (VARROWID: PARAMSINDEX)
    set Data(PR_timestamp)       ""
    set Data(VPNb)               1
+   set Data(RangeNames)         {}
+   set Data(Ranges)             {}
+   set Data(ColNames)           [list Models Runs Hours Sources Vars IP3 VP]
 }

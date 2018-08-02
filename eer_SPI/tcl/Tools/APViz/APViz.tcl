@@ -498,6 +498,8 @@ proc APViz::Source { Path Widget } {
             lappend ::APViz::Data(Layers) $layer		; #save layer configs
             incr no
          }
+         $Widget.add.menu add command -label "ADD LAYER WINDOW" -command "APViz::AddLayerWindow"
+         
          $Widget.add.menu add separator
          $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
          
@@ -534,6 +536,11 @@ proc APViz::Source { Path Widget } {
          
          if { [string index $Style 0] eq "<" } {
             set rangeType [string trim $Style {< >}]
+            if {[lsearch -exact $APViz::Data(RangeNames) $rangeType] < 0} {
+               lappend APViz::Data(RangeNames) $rangeType
+               lappend APViz::Data(Ranges) \{$Range($rangeType)\}
+            }
+
             if $IsSpinBox {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
@@ -614,7 +621,7 @@ proc APViz::Source { Path Widget } {
             } elseif {!$IsAddedLayer} {
                $Widget.range.variableGrid.layer${no}_toggle select
             }
-            
+
             #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
             CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
@@ -2670,6 +2677,10 @@ proc APViz::ReinitializeVP { } {
    set Data(DZ_GZpairs) {}
    set Data(VarsDict) ""
    set Data(VPNb) 1
+   set Data(RangeNames) {}
+   set Data(Ranges) {}
+   lappend Data(RangeNames) NONE
+   lappend Data(Ranges) NONE
 }
 
 #----------------------------------------------------------------------------

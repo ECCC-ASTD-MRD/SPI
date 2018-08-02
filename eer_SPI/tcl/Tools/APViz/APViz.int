@@ -244,3 +244,85 @@ proc APViz::SaveAsWindow { } {
    grab .saveAsBox
 }
 
+proc APViz::AddLayerWindow { } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Bubble
+
+   APViz::DeleteWidget .addLayerBox
+   
+   toplevel .addLayerBox
+   wm protocol  .addLayerBox WM_DELETE_WINDOW { APViz::DeleteWidget .addLayerBox }
+   wm transient .addLayerBox $Data(Frame)
+   wm geom      .addLayerBox 300x300+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+   
+   TabFrame::Create .addLayerBox.tab 1 ""
+   pack .addLayerBox.tab -side top -fill both -expand false -padx 5 -pady 5
+   
+   wm title .addLayerBox "AddLayer"
+   
+   frame .addLayerBox.layers
+      #----- Titles
+      frame .addLayerBox.layers.layerGrid
+      label .addLayerBox.layers.layerGrid.valueLbl -text "Value" -width 8
+      label .addLayerBox.layers.layerGrid.rangeLbl -text "Range" -width 8
+      button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {puts "Adding new range" ; APViz::CreateRangeWindow }
+      
+      Bubble::Create .addLayerBox.layers.layerGrid.addRange $Bubble(AddRange)
+      
+      grid .addLayerBox.layers.layerGrid -column 0 -row 0
+      grid .addLayerBox.layers.layerGrid.valueLbl -column 1 -row 0
+      grid .addLayerBox.layers.layerGrid.rangeLbl -column 2 -row 0
+      grid .addLayerBox.layers.layerGrid.addRange -column 3 -row 0
+      
+      set typeLst [list Model Run Hour Source NomVar Level IP3 VP]
+      
+      set no 0
+      foreach type $typeLst {
+         APViz::CreateAddLayerRow .addLayerBox.layers.layerGrid $type $no
+         incr no
+      }
+
+   pack .addLayerBox.layers -side top -fill x -pady 5 -padx 5
+   
+   frame .addLayerBox.command
+      button .addLayerBox.command.ok -text "Add Layer" -bd 1 -command "puts {Adding Layer} ; APViz::DeleteWidget .addLayerBox"
+      button .addLayerBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addLayerBox" -bd 1
+      pack .addLayerBox.command.ok .addLayerBox.command.cancel -side left -fill x -expand true
+   pack .addLayerBox.command -side top -fill x -pady 5 -padx 5
+
+   raise .addLayerBox
+   grab .addLayerBox
+    
+}
+
+proc APViz::CreateAddLayerRow { Widget Type Row } {
+   variable Data
+   variable Bubble
+
+   set lowerType [string tolower $Type] 
+   #----- Field name
+   label $Widget.${lowerType}Lbl -text "${Type}:" -anchor w
+   
+   #----- Value and range widgets
+   #----- If range is not empty, value will be default value
+   #TODO: Save range in list to copy in config file 
+   entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Row,Value)
+   #ComboBox::Create $Widget.${lowerType}Range APViz::Data(AddLayer$Row,Range) noedit unsorted nodouble -1 [lappend list NONE] 10 7 {puts "hello"}
+   set Var$Row NONE
+   Option::Create $Widget.${lowerType}Range "" "Var$Row Var$Row" 0 15 $Data(Ranges) {puts "option"} $Data(RangeNames)
+   
+   set rowNb [expr $Row + 1]
+   
+   grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
+   grid $Widget.${lowerType}Value    -column 1 -row $rowNb -padx .5
+   grid $Widget.${lowerType}Range    -column 2 -row $rowNb -padx .5
+   
+   Bubble::Create $Widget.${lowerType}Range $Bubble(ChooseRange)
+   Bubble::Create $Widget.${lowerType}Value $Bubble(DefaultValue)
+}
+
+proc APViz::CreateRangeWindow { } {
+   
+}
