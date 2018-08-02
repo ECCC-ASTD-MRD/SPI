@@ -149,6 +149,7 @@ CMap_Rec* CMap_New(char* Name,int Nb) {
       cmap->Gamma[0]=cmap->Gamma[1]=cmap->Gamma[2]=1.0;
       cmap->InvertX[0]=cmap->InvertX[1]=cmap->InvertX[2]=cmap->InvertX[3]=0;
       cmap->InvertY[0]=cmap->InvertY[1]=cmap->InvertY[2]=cmap->InvertY[3]=0;
+      cmap->HasChanged = 0;
 
       /*Assigner les pixels*/
       for(i=0;i<CR_MAX;i++) {
@@ -305,8 +306,8 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
 
    int         idx,c,n;
    CMap_Rec   *cmap;
-   static CONST char *sopt[] = { "read","write","colorlist","image","create","copy","configure","control","free","is",NULL };
-   enum                opt { READ,WRITE,COLORLIST,IMAGE,CREATE,COPY,CONFIGURE,CONTROL,FREE,IS };
+   static CONST char *sopt[] = { "read","write","colorlist","image","create","copy","configure","control","free","is","modified",NULL };
+   enum                opt { READ,WRITE,COLORLIST,IMAGE,CREATE,COPY,CONFIGURE,CONTROL,FREE,IS,MODIFIED };
 
    Tcl_ResetResult(Interp);
 
@@ -429,6 +430,18 @@ static int CMap_CmdMap(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
          }
          break;
+	 
+      case MODIFIED:
+         if(Objc!=3) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"cmap");
+            return(TCL_ERROR);
+         }
+         if (CMap_Get(Tcl_GetString(Objv[2]))->HasChanged > 1) {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
+         } else {
+            Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
+         }
+         break;
    }
    return(TCL_OK);
 }
@@ -546,6 +559,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(CMap->Ratio[3]));
                Tcl_SetObjResult(Interp,obj);
             } else {
+	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->Ratio[0]);
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->Ratio[1]);
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->Ratio[2]);
@@ -560,6 +574,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(CMap->RatioMax));
                Tcl_SetObjResult(Interp,obj);
             } else {
+	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->RatioMin);
                Tcl_GetIntFromObj(Interp,Objv[++i],&CMap->RatioMax);
             }
@@ -594,6 +609,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewStringObj(CMap->Type[index],-1));
                   }
                } else {
+	          CMap->HasChanged++;
                   if (index==4) {
                      strncpy(CMap->Type[0],Tcl_GetString(Objv[++i]),16);
                      strncpy(CMap->Type[1],Tcl_GetString(Objv[i]),16);
@@ -679,6 +695,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertX[index]));
                   }
                } else  {
+		  CMap->HasChanged++;
                   if (index==4) {
                      Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->InvertX[0]);
                      CMap->InvertX[1]=CMap->InvertX[2]=CMap->InvertX[3]=CMap->InvertX[0];
@@ -719,6 +736,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
                      Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->InvertY[index]));
                   }
                } else {
+		  CMap->HasChanged++;
                   if (index==4) {
                      Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->InvertY[0]);
                      CMap->InvertY[1]=CMap->InvertY[2]=CMap->InvertY[3]=CMap->InvertY[0];
@@ -880,6 +898,7 @@ static int CMap_Config(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONST
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(CMap->Interp));
             } else {
+	       CMap->HasChanged++;
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&CMap->Interp);
                CMap_ControlDefine(CMap);
             }
@@ -934,6 +953,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                Tcl_WrongNumArgs(Interp,1,Objv,"index [red green blue alpha]");
                return(TCL_ERROR);
             } else {
+	       CMap->HasChanged++;
                Tcl_GetIntFromObj(Interp,Objv[++i],&index);
                if (index>=0 && index<CR_MAX) {
                   Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
@@ -1008,6 +1028,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
             break;
 
          case DEL:
+	    CMap->HasChanged++;
             if (Objc==1) {
                memset(CMap->Control,0,4*CR_MAX);
             } else if (Objc==2) {
@@ -1029,6 +1050,7 @@ static int CMap_Control(Tcl_Interp *Interp,CMap_Rec *CMap,int Objc,Tcl_Obj *CONS
                Tcl_WrongNumArgs(Interp,1,Objv,"to from");
                return(TCL_ERROR);
             }
+            CMap->HasChanged++;
             Tcl_GetIntFromObj(Interp,Objv[++i],&index);
             Tcl_GetIntFromObj(Interp,Objv[++i],&ii);
 
@@ -1365,6 +1387,9 @@ int CMap_Read(Tcl_Interp *Interp,CMap_Rec *CMap,char *RGBAFile){
       Tcl_AppendResult(Interp,"CMap_Read: Invalid colormap",(char *)NULL);
       return(TCL_ERROR);
    }
+
+   //Increment HasChanged
+   CMap->HasChanged++;
 
    /*Clear control table*/
    memset(CMap->Control,0,4*CR_MAX);

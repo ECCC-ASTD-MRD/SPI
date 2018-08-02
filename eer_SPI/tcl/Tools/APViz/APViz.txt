@@ -1,0 +1,62 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.txt
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Description des divers textes et messages
+#
+#===============================================================================
+
+namespace eval APViz {
+   variable Lbl
+   variable Msg
+   variable Bubble
+   
+   set Lbl(Description)		{ "Description" "Description" }
+   set Lbl(DescriptionMSG)	{ "Le produit généré sera décrit ici." "The generated product will be described here." }
+   set Lbl(Category)		{ "Catégorie" "Category" }
+   set Lbl(Folder)		{ "Dossier" "Folder" }
+   set Lbl(Geography)		{ "Géographie" "Geography" }
+   set Lbl(MissingConst)	{ "Remplacez \"const\" par une constante dans l'expression." "Replace \"const\" by a constant in expression." }
+   set Lbl(MissingFields)	{ "Champs invalide dans l'expression." "Invalid field in expression." }
+   set Lbl(Options)		{ "Options" "Options" }
+   set Lbl(Type)		{ "Type" "Type" }
+   set Lbl(Variables)		{ "Variables" "Variables"}
+   set Lbl(InvalidField)	{ "Choix de champ invalide" "Invalid field choice" }
+   set Lbl(WrongDate)		{ "Veuillez choisir parmi les dates disponibles" "Please select an available date" }
+   set Lbl(InvalidFile)		{ "Fichier non disponible : " "File not available : "}
+   set Lbl(UpdatingDate)	{ "Mise à jour de la date" "Updating date"}
+   set Lbl(FetchingDates)	{ "Mise à jour des dates disponibles" "Updating available dates"}
+   
+   
+   set Lbl(Save)       		{ "Sauvegarder" "Save" }
+   set Lbl(File)       		{ "Fichier" "File" }
+   set Lbl(Close)      		{ "Fermer" "Close" }
+   set Lbl(FileName)		{ "Nom fichier" "File name" }
+   set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first" }
+   set Lbl(RangeDesc)		{ "Sélectionner les rangées pour lesquelles les options de valeurs variables doivent être conservées." "Select the rows for which to save the range configurations." }
+
+   
+   #----- Messages
+
+   set Msg(Test)    { "Ceci est un message" "This is a message" }
+
+   #----- Bulles d'aides
+
+   set Bubble(Mode)    		{ "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Param)		{ "Modifier les paramètres" "Modify Parameters" }
+   set Bubble(Save)		{ "Enregistrer sous" "Save As" }
+   set Bubble(SaveRange)	{ "Les rangées non sélectionnées conserveront leur valeur exacte dans le nouveau fichier de configuration." \
+				  "Unchecked rows with keep their exact value in the new configuration files." }
+   set Bubble(BlockDate)	{ "Bloquer la mise à jour automatique de la date sélectionnée" "Block the automatic update of the selected date"}
+   set Bubble(Lock)             { "Cliquer pour bloquer/débloquer" "Click to lock/unlock" }
+}

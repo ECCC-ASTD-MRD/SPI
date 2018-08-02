@@ -376,14 +376,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                                  "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
-                                 "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask",NULL };
+                                 "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask","-extrema",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERBOUNDARY,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,HIGHDASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
                      ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,FLAT,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
-                     INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK,OGRMASK };
+                     INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK,OGRMASK,EXTREMA };
 
    if (!Spec) {
       Tcl_AppendResult(Interp,"DataSpec_Config: invalid configuration object",(char*)NULL);
@@ -1445,6 +1445,27 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                }
             }
             break;
+            
+         case EXTREMA:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewStringObj(Spec->Extrema,-1));
+            } else {
+               if (Spec->Extrema) free(Spec->Extrema); Spec->Extrema=NULL;
+               if (strlen(Tcl_GetString(Objv[++i]))) {
+                  Spec->Extrema=strdup(Tcl_GetString(Objv[i]));
+                  if (Spec->Extrema) {
+                     if (strcmp(Spec->Extrema, "NONE") == 0) {
+                        Spec->DisplayH = 0;
+                        Spec->DisplayL = 0;
+                     } else if (strcmp(Spec->Extrema, "H") == 0) {
+                        Spec->DisplayL = 0;
+                     } else if (strcmp(Spec->Extrema, "L") == 0) {
+                        Spec->DisplayH = 0;
+                     }
+                  }
+               }
+            }
+            break;
       }
    }
 
@@ -1878,6 +1899,9 @@ TDataSpec *DataSpec_New(){
       spec->Cube[0]=1;spec->Cube[1]=1;spec->Cube[2]=1;
       spec->Cube[3]=1;spec->Cube[4]=1;spec->Cube[5]=1;
       spec->Axis='X';
+      spec->Extrema=NULL;
+      spec->DisplayH=1;
+      spec->DisplayL=1;
 
       spec->Mask=1;
       spec->OGRMask=NULL;
@@ -1975,6 +1999,7 @@ void DataSpec_Clear(TDataSpec *Spec) {
       if (Spec->LabelVar)     free(Spec->LabelVar);                              Spec->LabelVar=NULL;
       if (Spec->SizeVar)      free(Spec->SizeVar);                               Spec->SizeVar=NULL;
       if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
+      if (Spec->Extrema)      free(Spec->Extrema);                               Spec->Extrema=NULL;
       if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
 
       if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;

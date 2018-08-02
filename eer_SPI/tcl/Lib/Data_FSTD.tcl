@@ -800,7 +800,7 @@ proc FSTD::Follower { Page Canvas VP Lat Lon X Y } {
 proc FSTD::ParamGet { { Spec "" } } {
    variable Data
    variable Param
-
+   
    set spec $Spec
    if { $spec=="" } {
       set spec $Param(Spec)
@@ -1112,6 +1112,7 @@ proc FSTD::ParamInit { Field { Spec "" } } {
       
       #----- Set a colormap if not done
       set map [dataspec configure $Spec -colormap]
+      
       if { $map=="" } {
          set map FLDMAP$Spec
       }
@@ -1260,13 +1261,14 @@ proc FSTD::ParamOwnership { { Fields { } } } {
 
    #----- Parse all fields
    foreach fld $Fields {
+      if {[fstdfield is $fld]} {
+		#----- If they were configured outside SPI
+	if { [fstdfield configure $fld -set]==1 } {
+	  incr n
 
-      #----- If they were configured outside SPI
-      if { [fstdfield configure $fld -set]==1 } {
-         incr n
-
-         #----- Get ownership
-         fstdfield configure $fld -set 2
+	  #----- Get ownership
+	  fstdfield configure $fld -set 2
+	}
       }
    }
 
@@ -1388,6 +1390,7 @@ proc FSTD::ParamUpdate { { Fields { } } } {
          if { ![dataspec is $var] } {
             if { $spec!=$var } {
                dataspec copy $var $spec
+
                if { $set==0 } {
                   dataspec configure $var -colormap ""
                }

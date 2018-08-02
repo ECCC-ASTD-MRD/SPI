@@ -156,6 +156,9 @@ typedef struct TDataSpec {
 
    int             Cube[6];             // Cube de selection
    char            Axis;                // Axe
+   char            *Extrema;            // Extrema a afficher
+   int             DisplayH;            // Afficher les hauts
+   int             DisplayL;            // Afficher les bas
 
    CONST char*     InterpDegree;        // Degree d'interpolation
    CONST char*     ExtrapDegree;        // Degree d'extrapolation

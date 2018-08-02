@@ -1,0 +1,85 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.ctes
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Descriptions des variables internes du module
+#
+#===============================================================================
+
+namespace eval APViz {
+   global env
+   global GDefs
+   variable Data
+   variable Param
+   variable DataSrc
+
+   set Param(Title)   { "APViz" "APViz" }
+   set Param(Version) 1.0
+   set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Icon)    EYE
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+   
+   #----- For FileBox
+   set Param(InitPath)	$GDefs(Dir)/tcl/Tools/APViz/Config/
+   set Param(Path)	$GDefs(Dir)/tcl/Tools/APViz/Config/
+   set Param(Filename)	config
+   set Param(FullName)	$APViz::Param(Path)$APViz::Param(Filename)
+   set Param(Formats) 	{{Tcl {*.tcl}}}
+
+   set Data(Active) 0        ;#Flag d'activation de l'outils
+   set Data(Canvas) ""       ;#Canvas Actif
+   set Data(Frame)  ""       ;#Frame actif
+   set Data(VP)     ""       ;#Viewport actif
+
+   set Data(Lat0)   0        ;#Coordonnees de la boite de selection
+   set Data(Lon0)   0
+   set Data(Lat1)   0
+   set Data(Lon1)   0
+   
+   #----- Widgets
+   set Data(MacroCatDropdown)	""	; #ComboBox listant les types de macro (level 2)
+   set Data(TypeListBox)	""	; #Boite listant les choix de types de la macro
+   set Data(RangeSection)	""	; #Section des variables
+   set Data(DateCBWidget)	""
+   
+   #----- LEVEL 1
+   set Data(Folder)		""
+   set Data(Folders)		{}
+   
+   #----- LEVEL 2
+   set Data(MacroCategory)	""	; #textvariable de la ComboBox pour MacroCategory
+   set Data(MacroCategories)	{}
+   
+   #----- LEVEL 3
+   set Data(MacroType)		""
+   set Data(MacroTypes)		{}	; #Liste les configuration files 
+
+   set Data(OpenedFiles)	""
+   set Data(LayerIDs)		""
+   set Data(CalcIDs)		""
+   
+   set Data(CurrentProduct)	""
+   set Data(ConfigPath)		""
+   
+   set Data(AutoUpdateEventID)	""
+   set Data(Layers)		{}
+   set Data(Colormaps)          {}
+   set Data(ColormapPairs)      {}      ; #Contient des paires {NewColormapID OriginalColormapID}
+   set Data(DZ_GZpairs)         {}
+   set Data(Dates)              {}
+   set Data(Date)               ""
+   set Data(VarsDict)           ""      ; #Dictionaire contenant le nombre de variables pour chaque type de variable (VARTYPE: VARTYPE_NB)
+   set Data(VarParamsDict)      ""      ; #Dictionaire contenant l'index de param pour une variable a un rowid spcifique (VARROWID: PARAMSINDEX)
+   set Data(PR_timestamp)       ""
+   set Data(VPNb)               1
+}
