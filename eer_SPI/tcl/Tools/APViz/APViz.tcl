@@ -536,9 +536,15 @@ proc APViz::Source { Path Widget } {
          
          if { [string index $Style 0] eq "<" } {
             set rangeType [string trim $Style {< >}]
+            if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
+               dict lappend APViz::Data(RangeNames) $Options $rangeType
+               dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
+            }
+            set comment {
             if {[lsearch -exact $APViz::Data(RangeNames) $rangeType] < 0} {
                lappend APViz::Data(RangeNames) $rangeType
                lappend APViz::Data(Ranges) \{$Range($rangeType)\}
+            }
             }
 
             if $IsSpinBox {
@@ -2677,10 +2683,12 @@ proc APViz::ReinitializeVP { } {
    set Data(DZ_GZpairs) {}
    set Data(VarsDict) ""
    set Data(VPNb) 1
-   set Data(RangeNames) {}
-   set Data(Ranges) {}
-   lappend Data(RangeNames) NONE
-   lappend Data(Ranges) NONE
+   set Data(RangeNames) ""
+   set Data(Ranges) ""
+   foreach column $Data(ColNames) {
+      dict lappend Data(RangeNames) $column NONE
+      dict lappend Data(Ranges) $column NONE
+   }
 }
 
 #----------------------------------------------------------------------------

@@ -86,5 +86,5 @@ namespace eval APViz {
    set Data(VPNb)               1
    set Data(RangeNames)         {}
    set Data(Ranges)             {}
-   set Data(ColNames)           [list Models Runs Hours Sources Vars IP3 VP]
+   set Data(ColNames)           [list Models Runs Hours Sources Vars Levels IP3 VP]
 }

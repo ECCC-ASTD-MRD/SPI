@@ -255,7 +255,7 @@ proc APViz::AddLayerWindow { } {
    toplevel .addLayerBox
    wm protocol  .addLayerBox WM_DELETE_WINDOW { APViz::DeleteWidget .addLayerBox }
    wm transient .addLayerBox $Data(Frame)
-   wm geom      .addLayerBox 300x300+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+   wm geom      .addLayerBox 360x300+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
    
    TabFrame::Create .addLayerBox.tab 1 ""
    pack .addLayerBox.tab -side top -fill both -expand false -padx 5 -pady 5
@@ -287,9 +287,9 @@ proc APViz::AddLayerWindow { } {
    pack .addLayerBox.layers -side top -fill x -pady 5 -padx 5
    
    frame .addLayerBox.command
-      button .addLayerBox.command.ok -text "Add Layer" -bd 1 -command "puts {Adding Layer} ; APViz::DeleteWidget .addLayerBox"
+      button .addLayerBox.command.add -text "Add Layer" -bd 1 -command "APViz::AddNewLayer ; APViz::DeleteWidget .addLayerBox"
       button .addLayerBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addLayerBox" -bd 1
-      pack .addLayerBox.command.ok .addLayerBox.command.cancel -side left -fill x -expand true
+      pack .addLayerBox.command.add .addLayerBox.command.cancel -side left -fill x -expand true
    pack .addLayerBox.command -side top -fill x -pady 5 -padx 5
 
    raise .addLayerBox
@@ -309,10 +309,9 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    #----- If range is not empty, value will be default value
    #TODO: Save range in list to copy in config file 
    entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Row,Value)
-   #ComboBox::Create $Widget.${lowerType}Range APViz::Data(AddLayer$Row,Range) noedit unsorted nodouble -1 [lappend list NONE] 10 7 {puts "hello"}
-   set Var$Row NONE
-   Option::Create $Widget.${lowerType}Range "" "Var$Row Var$Row" 0 15 $Data(Ranges) {puts "option"} $Data(RangeNames)
-   
+   set option [lindex $Data(ColNames) $Row]
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Range,$Type)" 0 15 [dict get $Data(Ranges) $option] \
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $option" [dict get $Data(RangeNames) $option]
    set rowNb [expr $Row + 1]
    
    grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
@@ -325,4 +324,22 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
 
 proc APViz::CreateRangeWindow { } {
    
+}
+
+proc APViz::AddRangeBubbleInfo { Widget Value Option } {
+   variable Data
+
+   set index [lsearch -exact [dict get $Data(RangeNames) $Option] $Value]
+   set msg [lindex [dict get $Data(Ranges) $Option] $index]
+   Bubble::Create $Widget $msg
+}
+
+proc APViz::AddNewLayer { } {
+   variable Data
+   set product $Data(CurrentProduct)
+   
+   #----- Get all layer info in the following order: toggle model run hour dataSrc var level ip3 vp
+   #----- Get all default values
+   
+   #APViz::${product}::CreateLayers $product $layer $Widget {} True $no
 }
