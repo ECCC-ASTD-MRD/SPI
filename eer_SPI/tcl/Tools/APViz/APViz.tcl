@@ -536,15 +536,10 @@ proc APViz::Source { Path Widget } {
          
          if { [string index $Style 0] eq "<" } {
             set rangeType [string trim $Style {< >}]
+            
             if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
                dict lappend APViz::Data(RangeNames) $Options $rangeType
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
-            }
-            set comment {
-            if {[lsearch -exact $APViz::Data(RangeNames) $rangeType] < 0} {
-               lappend APViz::Data(RangeNames) $rangeType
-               lappend APViz::Data(Ranges) \{$Range($rangeType)\}
-            }
             }
 
             if $IsSpinBox {
@@ -634,7 +629,7 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
             # ICIIII!!!
-            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no VP false 2 $defaultVP
+            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no Viewports false 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
             
@@ -1084,7 +1079,7 @@ proc APViz::AssignVariable { Product Index } {
    set run	$Value(Runs,$Index)
    set hour	$Value(Hours,$Index)
    set src	$Value(Sources,$Index)
-   set vp       $Value(VP,$Index)
+   set vp       $Value(Viewports,$Index)
    #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
    
    set date $Data(Date)
@@ -1600,7 +1595,7 @@ proc APViz::Check { Product Index {IsCalc False}} {
    } else {
       set ID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
       set isActivated $Value(Toggle,$Index)
-      set vpID [APViz::GetVPId $Value(VP,$Index)]
+      set vpID [APViz::GetVPId $Value(Viewports,$Index)]
    }
 
    if {[fstdfield is $ID]} {
@@ -2249,8 +2244,8 @@ proc APViz::WriteDefaultValues { Product FileID } {
             set ip3 ""
          }
          
-         if {[info exists Value(VP,$i)]} {
-            set vp $Value(VP,$i)
+         if {[info exists Value(Viewports,$i)]} {
+            set vp $Value(Viewports,$i)
          } else {
             set vp ""
          }

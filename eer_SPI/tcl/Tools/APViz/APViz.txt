@@ -44,7 +44,7 @@ namespace eval APViz {
    set Lbl(FileName)		{ "Nom fichier" "File name" }
    set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first" }
    set Lbl(RangeDesc)		{ "Sélectionner les rangées pour lesquelles les options de valeurs variables doivent être conservées." "Select the rows for which to save the range configurations." }
-
+   set Lbl(EmptyFields)         { "Tous les champs doivent être remplis." "All fields must be filled." }
    
    #----- Messages
 
@@ -52,13 +52,15 @@ namespace eval APViz {
 
    #----- Bulles d'aides
 
-   set Bubble(Mode)    		{ "Mode de sélection de l'outils" "Tool selection mode" }
-   set Bubble(Param)		{ "Modifier les paramètres" "Modify Parameters" }
-   set Bubble(Save)		{ "Enregistrer sous" "Save As" }
-   set Bubble(BlockDate)	{ "Bloquer la mise à jour automatique de la date sélectionnée" "Block the automatic update of the selected date"}
-   set Bubble(Lock)             { "Cliquer pour bloquer/débloquer" "Click to lock/unlock" }
-   set Bubble(AddRange)         { "Ajouter un range" "Add a range" }
-   set Bubble(ChooseRange)      { "Sélectionnez un range" "Select a range"}
-   set Bubble(DefaultValue)     { "Inscrivez une valeur par defaut. Si la valeur n'est pas dans le range, le range sera ignoré" <
+   set Bubble(Mode)    		  { "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Param)		  { "Modifier les paramètres" "Modify Parameters" }
+   set Bubble(Save)		  { "Enregistrer sous" "Save As" }
+   set Bubble(BlockDate)	  { "Bloquer la mise à jour automatique de la date sélectionnée" "Block the automatic update of the selected date"}
+   set Bubble(Lock)               { "Cliquer pour bloquer/débloquer" "Click to lock/unlock" }
+   set Bubble(AddRange)           { "Ajouter un range" "Add a range" }
+   set Bubble(DefaultValue)       { "Valeur par défaut" "Default Value" }
+   set Bubble(SelectRange)        { "Sélectionnez un range" "Select a range"}
+   set Bubble(SelectDefaultValue) { "Inscrivez une valeur par defaut. Si la valeur n'est pas dans le range, le range sera ignoré"
                                     "Insert default value. If value not in range, the range will be ignored and the default value will become a constant for the layer."}
+   set Bubble(RangeValues)        { "Insérez les valeurs du range en les séparant d'un espace \" \"" "Insert range values, seperated by a space \" \"" }
 }
