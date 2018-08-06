@@ -498,7 +498,7 @@ proc APViz::Source { Path Widget } {
             lappend ::APViz::Data(Layers) $layer		; #save layer configs
             incr no
          }
-         $Widget.add.menu add command -label "ADD LAYER WINDOW" -command "APViz::AddLayerWindow"
+         $Widget.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"
          
          $Widget.add.menu add separator
          $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
@@ -624,7 +624,7 @@ proc APViz::Source { Path Widget } {
             }
 
             #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
-            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
+            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models false 5 $defaultModel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
@@ -1041,6 +1041,7 @@ proc APViz::Source { Path Widget } {
    
    set Data(CurrentProduct) $product
    ${product}::Load $Path $product $Widget
+   set Data(ParentWidget) $Widget
    
    set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $product]	; # Update a chaque 10min:1000*60*10
    
@@ -1224,6 +1225,9 @@ proc APViz::AssignVariable { Product Index } {
                catch { 
                   eval fstdfield configure $fieldID $Params($var)
                }
+            } else {
+               #----- Valeur par defaut
+               fstdfield configure $fieldID -colormap REC_Rainbow -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
             }
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
@@ -1282,7 +1286,7 @@ proc APViz::AssignVariable { Product Index } {
 proc APViz::GetVPId { VPno } {
    variable Data
    
-   if {![string is digit $VPno] || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
+   if {![string is digit $VPno] || ($VPno eq "") || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
       return $Viewport::Data(VP)
    } else {
       set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
@@ -1978,6 +1982,8 @@ proc APViz::FetchAllDates { Product } {
    if {$Product ne ""} {
       variable ${Product}::Value
       variable ${Product}::RowID
+      
+      set selectedDate $Data(Date)
 
       set  sourceLst {}
       set dateLst {}
@@ -2032,7 +2038,17 @@ proc APViz::FetchAllDates { Product } {
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
       }
 
+      if {($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
+         if {$selectedDate ne "" } {
+            set Data(Date) $selectedDate
+         } else {
+            set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
+         }
+      }
+      
       set Data(Dates) $finalDateLst
+      
+
    }
 }
 
@@ -2621,7 +2637,7 @@ proc APViz::InitializeVars { } {
 proc APViz::ReinitializeVP { } {
    variable Data
 
-   for {set i 1} {$i <= $Data(VPNb)} {incr i} {
+   for {set i 1} {$i <= $Data(VPCount)} {incr i} {
       Viewport::UnAssign $Data(Frame) VP$i
    }
    
@@ -2677,7 +2693,7 @@ proc APViz::ReinitializeVP { } {
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
    set Data(VarsDict) ""
-   set Data(VPNb) 1
+   set Data(VPCount) 1
    set Data(RangeNames) ""
    set Data(Ranges) ""
    foreach column $Data(ColNames) {
@@ -2982,7 +2998,7 @@ proc APViz::UpdateAvailableDates { Product } {
       }
    }
 
-   if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {
+   if {(!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])) || ($Data(Date) eq "")} {
       set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
@@ -2990,5 +3006,5 @@ proc APViz::UpdateAvailableDates { Product } {
       APViz::InitializeVars
    }
 
-   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
+   set Data(AutoUpdateEventID) [after [expr {1000*60*1}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
 }

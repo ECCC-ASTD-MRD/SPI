@@ -308,11 +308,9 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    
    #----- Value and range widgets
    #----- If range is not empty, value will be default value
-   entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Row,Value)
-   #Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Range,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
-      #"eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type" [dict get $Data(RangeNames) $Type]
-   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Name,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
-      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type ; APViz::SetDefaultValue $Row $Type" [dict get $Data(RangeNames) $Type]
+   entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
    set rowNb [expr $Row + 1]
    
    grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
@@ -402,11 +400,10 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
       if { [lsearch -exact [dict get $APViz::Data(RangeNames) $RangeCategory] $RangeName] < 0} {
          #----- Create range
          if {[set product $Data(CurrentProduct)] ne ""} {
-            set ${product}::Range($RangeName) \{$RangeValues\}
+            eval set ${product}::Range($RangeName) \{$RangeValues\}
 
             #----- Add to new ranges list to save into config file later
             lappend Data(NewRanges) [list $RangeName $RangeValues]
-            puts "Newranges: $Data(NewRanges)"
          }
 
          #----- Add to ranges dict and rangenames dict
@@ -436,44 +433,75 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
 
 proc APViz::AddRangeBubbleInfo { Widget Value Option } {
    variable Data
-
-   set Data(RangeValues,$Option) $Data(Range,$Option)
-   set Data(Range,$Option) $Data(Name,$Option)
    
-   Bubble::Create $Widget $Data(RangeValues,$Option)
+   #----- Construction du message
+   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $Data(Range,$Option)"
+   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $Data(Range,$Option)"
+   
+   Bubble::Create $Widget $msg
 }
 
 proc APViz::AddNewLayer { Widget } {
    variable Data
    variable Lbl
-
-   set product $Data(CurrentProduct)
-   for {set i 0} {$i < [llength $Data(ColNames)]} {incr i} {
-      if {![info exists APViz::Data(AddLayer$i,Value)] || ($APViz::Data(AddLayer$i,Value) eq "")} {
-         ::Dialog::Info . $Lbl(EmptyFields)
-         return
+   
+   #------ Verify if all mandatory fields are filled (optional: IP3 and VP)
+   foreach type $Data(ColNames) {
+      if {($type ne "IP3")} {
+         if {![info exists APViz::Data(AddLayer$type,Value)] || ($APViz::Data(AddLayer$type,Value) eq "")} {
+            ::Dialog::Info . $Lbl(EmptyFields)
+            return
+         }
       }
    }
    
-   #APViz::DeleteWidget $Widget
-   #APViz::ClearAddLayerValues
-   #----- Get all layer info in the following order: toggle model run hour dataSrc var level ip3 vp
-   #----- Get all default values
+   set layer False
+   set defaults False
    
-   #--APViz::${product}::CreateLayers $product $layer $Widget {} True $no
+   #----- Get all ranges and default values  
+   foreach type $Data(ColNames) {
+      set default$type [string trim $Data(AddLayer$type,Value)]
+      if {[info exists Data(Range,$type)] && ($Data(Range,$type) ne "") && ($Data(Range,$type) ne "NONE")} {
+         set range$type <[string trim $Data(RangeName,$type)]>
+      } else { 
+         eval set range$type \$default$type
+      }
+      
+      eval set layer [string cat ${layer}: \$range$type]
+      eval set defaults [string cat ${defaults}: \$default$type]
+   }
+   
+   puts "Layer: $layer"
+   puts "Defaults: $defaults"
+   
+   lappend Data(Layers) $layer
+
+   set product $Data(CurrentProduct)
+   
+   if {$product ne ""} {
+      APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True [set no [expr [llength $Data(Layers)] - 1]]
+      if {[winfo exists $Data(ParentWidget).add.menu]} {
+         regsub \(True:|False:\) $layer "" desc
+         $Data(ParentWidget).add.menu insert $no command -label "Type$no: $desc" -command "APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True $no"
+      }
+      
+      APViz::DeleteWidget $Widget
+      APViz::ClearAddLayerValues
+   } else {
+      ::Dialog::Info . $Lbl(SelectProduct)
+   }
+
 }
 
-proc APViz::SetDefaultValue { Row Option } {
+proc APViz::SetDefaultValue { Option } {
    variable Data
    
-   if {$Data(AddLayer$Row,Value) eq ""} {
-      puts "EMPTY - Adding default value"
-      
+   if {$Data(AddLayer$Option,Value) eq ""} {      
       #----- Putting first list element as default value 
-      if {[set value [lindex [split $Data(RangeValues,$Option) " "] 0]] ne "NONE"} {
+      if {[set value [lindex [split $Data(Range,$Option) " "] 0]] ne "NONE"} {
          #----- Remove brackets
          regsub \(\{|\}\) $value "" value
-         set Data(AddLayer$Row,Value) $value
+         set Data(AddLayer$Option,Value) $value
       }
       
    }
@@ -482,13 +510,9 @@ proc APViz::SetDefaultValue { Row Option } {
 proc APViz::ClearAddLayerValues { } {
    variable Data
    
-   #----- Clear default values 
-   for {set i 0} {$i < [llength $Data(ColNames)]} {incr i} {
-      set Data(AddLayer$i,Value) ""
-   }
-   
+   #----- Clear default values    
    foreach type $Data(ColNames) {
       set Data(Range,$type) ""
-      set Data(RangeValues,$type) ""
+      set Data(AddLayer$type,Value) ""
    }
 }

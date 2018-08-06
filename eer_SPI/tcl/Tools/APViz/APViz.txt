@@ -45,6 +45,7 @@ namespace eval APViz {
    set Lbl(SelectProduct)	{ "Veuillez tout d'abord sélectionner un produit" "Please select a product first" }
    set Lbl(RangeDesc)		{ "Sélectionner les rangées pour lesquelles les options de valeurs variables doivent être conservées." "Select the rows for which to save the range configurations." }
    set Lbl(EmptyFields)         { "Tous les champs doivent être remplis." "All fields must be filled." }
+   set Lbl(CreateNewLayer)      { "Créer une nouvelle couche" "Create new layer" }
    
    #----- Messages
 
@@ -60,7 +61,6 @@ namespace eval APViz {
    set Bubble(AddRange)           { "Ajouter un range" "Add a range" }
    set Bubble(DefaultValue)       { "Valeur par défaut" "Default Value" }
    set Bubble(SelectRange)        { "Sélectionnez un range" "Select a range"}
-   set Bubble(SelectDefaultValue) { "Inscrivez une valeur par defaut. Si la valeur n'est pas dans le range, le range sera ignoré"
-                                    "Insert default value. If value not in range, the range will be ignored and the default value will become a constant for the layer."}
+   set Bubble(SelectDefaultValue) { "Inscrivez une valeur par defaut." "Insert default value." }
    set Bubble(RangeValues)        { "Insérez les valeurs du range en les séparant d'un espace \" \"" "Insert range values, seperated by a space \" \"" }
 }
