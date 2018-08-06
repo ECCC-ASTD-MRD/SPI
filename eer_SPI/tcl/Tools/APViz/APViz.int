@@ -289,7 +289,7 @@ proc APViz::AddLayerWindow { } {
    
    frame .addLayerBox.command
       button .addLayerBox.command.add -text "Add Layer" -bd 1 -command "APViz::AddNewLayer .addLayerBox"
-      button .addLayerBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addLayerBox" -bd 1
+      button .addLayerBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addLayerBox ; APViz::ClearAddLayerValues" -bd 1
       pack .addLayerBox.command.add .addLayerBox.command.cancel -side left -fill x -expand true
    pack .addLayerBox.command -side top -fill x -pady 5 -padx 5
 
@@ -309,8 +309,10 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    #----- Value and range widgets
    #----- If range is not empty, value will be default value
    entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Row,Value)
-   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Range,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
-      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type" [dict get $Data(RangeNames) $Type]
+   #Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Range,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
+      #"eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type" [dict get $Data(RangeNames) $Type]
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(Name,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type ; APViz::SetDefaultValue $Row $Type" [dict get $Data(RangeNames) $Type]
    set rowNb [expr $Row + 1]
    
    grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
@@ -435,9 +437,10 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
 proc APViz::AddRangeBubbleInfo { Widget Value Option } {
    variable Data
 
-   set index [lsearch -exact [dict get $Data(RangeNames) $Option] $Value]
-   set msg [lindex [dict get $Data(Ranges) $Option] $index]
-   Bubble::Create $Widget $msg
+   set Data(RangeValues,$Option) $Data(Range,$Option)
+   set Data(Range,$Option) $Data(Name,$Option)
+   
+   Bubble::Create $Widget $Data(RangeValues,$Option)
 }
 
 proc APViz::AddNewLayer { Widget } {
@@ -453,8 +456,39 @@ proc APViz::AddNewLayer { Widget } {
    }
    
    #APViz::DeleteWidget $Widget
+   #APViz::ClearAddLayerValues
    #----- Get all layer info in the following order: toggle model run hour dataSrc var level ip3 vp
    #----- Get all default values
    
    #--APViz::${product}::CreateLayers $product $layer $Widget {} True $no
+}
+
+proc APViz::SetDefaultValue { Row Option } {
+   variable Data
+   
+   if {$Data(AddLayer$Row,Value) eq ""} {
+      puts "EMPTY - Adding default value"
+      
+      #----- Putting first list element as default value 
+      if {[set value [lindex [split $Data(RangeValues,$Option) " "] 0]] ne "NONE"} {
+         #----- Remove brackets
+         regsub \(\{|\}\) $value "" value
+         set Data(AddLayer$Row,Value) $value
+      }
+      
+   }
+}
+
+proc APViz::ClearAddLayerValues { } {
+   variable Data
+   
+   #----- Clear default values 
+   for {set i 0} {$i < [llength $Data(ColNames)]} {incr i} {
+      set Data(AddLayer$i,Value) ""
+   }
+   
+   foreach type $Data(ColNames) {
+      set Data(Range,$type) ""
+      set Data(RangeValues,$type) ""
+   }
 }
