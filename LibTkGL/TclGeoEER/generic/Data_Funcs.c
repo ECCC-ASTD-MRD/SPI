@@ -743,7 +743,6 @@ double darea(TDef *Res,TDef *Def,int Mode) {
 double dcoriolis(TDef *Res,TDef *Def,int Mode) {
  
    unsigned long i,j,idx;
-   float        *a=NULL;
    double        lat,lon,cor,omega=7.292e-5;
    TGeoRef      *gref=NULL;
 
@@ -950,7 +949,7 @@ double ddy(TDef *Res,TDef *Def,int Mode) {
 double dcore(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx,d;
-   double  b[9]={ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+   double  b[9]={0.0};
    double  mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv;
    TGeoRef *gref=NULL;
 
@@ -970,9 +969,10 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
    /*check for wrap around*/
    d=gref->Type&GRID_WRAP?0:1;
 
-#pragma omp parallel for \
-      private( j,i,idx,b,mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv ) \
-      shared( gref,Def,Res,d ) \
+#pragma omp parallel for default(none) \
+      firstprivate(b) \
+      private( j,i,idx,mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv ) \
+      shared( gref,Def,Res,d,Mode ) \
       schedule(static)
    for(j=1;j<Def->NJ-1;j++) {
       for(i=d;i<Def->NI-d;i++) {
@@ -983,27 +983,26 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
            b3  b4  b5
            b6  b7  b8
         */
-         if (i!=0 && i!=1) {
+         if (i==0 || i==1) {
+            if (i==0) {
+                Def_Get(Def,0,idx-1,b[0]);
+                Def_Get(Def,0,idx-1+Def->NI,b[3]);
+                Def_Get(Def,0,idx-1+Def->NI+Def->NI,b[6]);
+            } else {
+                Def_Get(Def,0,idx-1-Def->NI,b[0]);
+                Def_Get(Def,0,idx-1,b[3]);
+                Def_Get(Def,0,idx-1+Def->NI,b[6]);
+            }
+            Def_Get(Def,0,idx-Def->NI,b[1]);
+            Def_Get(Def,0,idx,b[4]);
+            Def_Get(Def,0,idx+Def->NI,b[7]);
+         } else {
             b[0]=b[1];b[1]=b[2];
             b[3]=b[4];b[4]=b[5];
             b[6]=b[7];b[7]=b[8];
          }
-         if (i==0 || i==1) {
-            Def_Get(Def,0,idx-Def->NI,b[1]);
-            Def_Get(Def,0,idx,b[4]);
-            Def_Get(Def,0,idx+Def->NI,b[7]);
-         }
 
-         if (i==0) {
-            Def_Get(Def,0,idx-1,b[0]);
-            Def_Get(Def,0,idx-1+Def->NI,b[3]);
-            Def_Get(Def,0,idx-1+Def->NI+Def->NI,b[6]);
-         }
-         if (i==1) {
-            Def_Get(Def,0,idx-1-Def->NI,b[0]);
-            Def_Get(Def,0,idx-1,b[3]);
-            Def_Get(Def,0,idx-1+Def->NI,b[6]);
-         }
+
          if (i==Def->NI-1) {
             Def_Get(Def,0,idx-2-Def->NI-Def->NI,b[2]);
             Def_Get(Def,0,idx-2-Def->NI,b[5]);
@@ -1049,7 +1048,7 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
 
          /*Aspect*/
          if (Mode==DASPECT) {
-            asp=(dxy2==0.0?0.0:(dx==0.0?(dy>0?0.0:180.0):RAD2DEG(atan2(dy,dx))+90.0));
+            asp=(dxy2==0.0?0.0:RAD2DEG(atan2(dy,-dx))+90.0);
             asp=asp<0.0?asp+360.0:asp;
             Def_Set(Res,0,idx,asp);
             continue;
