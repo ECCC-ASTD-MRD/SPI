@@ -28,9 +28,10 @@
 #
 #===============================================================================
 
-#----- Lire les sources d'execution #source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
+#----- Lire les sources d'execution
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
 
+#----- TODO: lire de plusieurs paths
 if { [info exists env(SPI_APVIZ)] } {
    set APViz::Param(ConfigPath) $env(SPI_APVIZ)
    
@@ -1719,6 +1720,18 @@ proc APViz::CreateColormaps { } {
       regsub .rgba $colormap "" colormapName
       if {![colormap is $colormapName]} {
          colormap create $colormapName -file ${path}/$colormap
+      }
+   }
+   
+   #----- Create the ones in .spi 
+   set spiPath $env(HOME)/.spi/Colormap/
+   if {[file isdirectory $spiPath]} {
+      set spiColormapLst [glob -nocomplain -tails -path $spiPath *.rgba]
+      foreach colormap $spiColormapLst {
+         regsub .rgba $colormap "" colormapName
+         if {![colormap is $colormapName]} {
+            colormap create $colormapName -file ${spiPath}/$colormap
+         }
       }
    }
    
