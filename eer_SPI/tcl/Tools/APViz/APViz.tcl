@@ -41,6 +41,11 @@ if { [info exists env(SPI_APVIZ)] } {
       ::Dialog::Info . $msg
    }
    
+   if {[file isdirectory ${APViz::Param(ConfigPath)}Config/]} {
+      set APViz::Param(InitPath) ${APViz::Param(ConfigPath)}Config/
+      set APViz::Param(Path) ${APViz::Param(ConfigPath)}Config/
+   }
+   
    #----- Getting colormaps
    if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
       set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
