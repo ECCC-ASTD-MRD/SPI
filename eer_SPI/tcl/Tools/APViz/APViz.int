@@ -62,6 +62,7 @@ proc APViz::Window { } {
          if { $SPI::Param(Window) } { wm transient .apviz . }
       }
       
+      #APViz::FetchConfigPaths
       #----- Fetch config files and folders and populate lists
       APViz::FetchConfigFiles
       
@@ -179,6 +180,20 @@ proc APViz::Window { } {
    APViz::CreateColormaps
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveAsWindow>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre "Enregistrer Sous"
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::SaveAsWindow { } {
    global GDefs
 
@@ -243,3 +258,399 @@ proc APViz::SaveAsWindow { } {
    grab .saveAsBox
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddLayerWindow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre pour ajouter une couche
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::AddLayerWindow { } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Bubble
+
+   APViz::DeleteWidget .addLayerBox
+   
+   toplevel .addLayerBox
+   wm protocol  .addLayerBox WM_DELETE_WINDOW { APViz::DeleteWidget .addLayerBox }
+   wm transient .addLayerBox $Data(Frame)
+   wm geom      .addLayerBox 410x260
+   
+   TabFrame::Create .addLayerBox.tab 1 ""
+   pack .addLayerBox.tab -side top -fill both -expand false -padx 5 -pady 5
+   
+   wm title .addLayerBox "AddLayer"
+   
+   frame .addLayerBox.layers
+      #----- Titles
+      frame .addLayerBox.layers.layerGrid
+      label .addLayerBox.layers.layerGrid.valueLbl -text "Default Value \n(Required)"
+      label .addLayerBox.layers.layerGrid.rangeLbl -text "Range \n(Optional)"
+      button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {puts "Adding new range" ; APViz::CreateRangeWindow }
+      
+      Bubble::Create .addLayerBox.layers.layerGrid.addRange $Bubble(AddRange)
+      Bubble::Create .addLayerBox.layers.layerGrid.valueLbl $Bubble(DefaultValue)
+      
+      grid .addLayerBox.layers.layerGrid -column 0 -row 0
+      grid .addLayerBox.layers.layerGrid.valueLbl -column 1 -row 0
+      grid .addLayerBox.layers.layerGrid.rangeLbl -column 2 -row 0
+      grid .addLayerBox.layers.layerGrid.addRange -column 3 -row 0
+      
+      set no 0
+      foreach type $Data(ColNames) {
+         APViz::CreateAddLayerRow .addLayerBox.layers.layerGrid $type $no
+         incr no
+      }
+
+   pack .addLayerBox.layers -side top -fill x -pady 5 -padx 5
+   
+   #TODO: verifier que toutes les valeurs par defaut ont ete selectionnees
+   
+   frame .addLayerBox.command
+      button .addLayerBox.command.add -text "Add Layer" -bd 1 -command "APViz::AddNewLayer .addLayerBox"
+      button .addLayerBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addLayerBox ; APViz::ClearAddLayerValues" -bd 1
+      pack .addLayerBox.command.add .addLayerBox.command.cancel -side left -fill x -expand true
+   pack .addLayerBox.command -side top -fill x -pady 5 -padx 5
+
+   raise .addLayerBox
+   grab .addLayerBox
+    
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateAddLayerRow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une rangee dans l'interface pour ajouter une couche
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#       <Type>   : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#       <Row>    : Le numero de la rangee pour placer dans l'interface (grid)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateAddLayerRow { Widget Type Row } {
+   variable Data
+   variable Bubble
+
+   set lowerType [string tolower $Type] 
+   #----- Field name
+   label $Widget.${lowerType}Lbl -text "${Type}:" -anchor w
+   
+   #----- Value and range widgets
+   #----- If range is not empty, value will be default value
+   entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
+   set rowNb [expr $Row + 1]
+   
+   grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
+   grid $Widget.${lowerType}Value    -column 1 -row $rowNb -padx .5
+   grid $Widget.${lowerType}Range    -column 2 -row $rowNb -padx .5
+   
+   Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
+   Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRangeWindow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre pour creer une nouvelle range
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateRangeWindow { } {
+   global GDefs
+   
+   variable Data
+   variable Lbl
+   variable Bubble
+   
+   APViz::DeleteWidget .addRangeBox
+   
+   toplevel .addRangeBox
+   wm protocol  .addRangeBox WM_DELETE_WINDOW { APViz::DeleteWidget .addRangeBox }
+   wm transient .addRangeBox $Data(Frame)
+   wm geom      .addRangeBox 370x160
+   
+   TabFrame::Create .addRangeBox.tab 1 ""
+   pack .addRangeBox.tab -side top -fill both -expand false -padx 5 -pady 5
+   
+   wm title     .addRangeBox "Create New Range"
+   
+   #TODO: Save range in list to copy in config file 
+   #TODO: Update range lists
+   
+   labelframe .addRangeBox.range
+   pack .addRangeBox.range -side top -fill x -padx 5 -ipady 2 -anchor n
+
+   #----- Range name (Entry)
+   frame .addRangeBox.range.name
+      label .addRangeBox.range.name.lbl -text "Range Name:" -width 15 -anchor w
+      entry .addRangeBox.range.name.entry -bg white -width 32 -textvariable rangeName
+      .addRangeBox.range.name.entry delete 0 [string length [.addRangeBox.range.name.entry get]]
+      pack .addRangeBox.range.name.lbl .addRangeBox.range.name.entry -side left
+   pack .addRangeBox.range.name -side top -fill x
+     
+   #----- Range values (Entry)
+   frame .addRangeBox.range.values
+      label .addRangeBox.range.values.lbl -text "Range Values:" -width 15 -anchor w
+      entry .addRangeBox.range.values.entry -bg white -width 32 -textvariable rangeValues
+      .addRangeBox.range.values.entry delete 0 [string length [.addRangeBox.range.values.entry get]]
+      pack .addRangeBox.range.values.lbl .addRangeBox.range.values.entry -side left
+   pack .addRangeBox.range.values -side top -fill x
+   
+   Bubble::Create .addRangeBox.range.values $Bubble(RangeValues)
+   
+   #----- Range category (ComboBox)
+   frame .addRangeBox.range.category
+      label .addRangeBox.range.category.lbl -text "Range Category:" -width 15 -anchor w
+      #TODO: Effacer la selection 
+      unset -nocomplain rangeType
+      catch {ComboBox::DelAll .addRangeBox.range.category.cb True}
+      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 30 8 "puts {combolist selected}"
+      pack .addRangeBox.range.category.lbl .addRangeBox.range.category.cb -side left
+   pack .addRangeBox.range.category -side top -fill x
+   
+   frame .addRangeBox.par -relief raised -bd 1
+   pack .addRangeBox.par -side top -padx 5 -fill x
+   
+   frame .addRangeBox.command
+      button .addRangeBox.command.add -text "Create Range" -bd 1 -command "APViz::CreateRange .addRangeBox \$rangeName \$rangeValues \$rangeType"
+      button .addRangeBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addRangeBox" -bd 1
+      pack .addRangeBox.command.add .addRangeBox.command.cancel -side left -fill x -expand true
+   pack .addRangeBox.command -side top -fill x -pady 5 -padx 5
+   
+   raise .addRangeBox
+   grab .addRangeBox
+   
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRange>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une range
+#
+# Parametres :
+#       <Widget>        : Le widget de la fenetre parent
+#       <RangeName>     : Le nom de la range
+#       <RangeValues>   : Valeurs de la range
+#       <RangeCategory> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                         Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
+   variable Data
+   variable Lbl
+   
+   #----- Verify if all field have been filled
+   if {($RangeName ne "") && ($RangeCategory ne "") && ([llength $RangeValues] > 0)} {
+      puts "All fields filled : $RangeName | $RangeCategory | $RangeValues"
+      
+      #----- Make sure that the range name is unique
+      if { [lsearch -exact [dict get $APViz::Data(RangeNames) $RangeCategory] $RangeName] < 0} {
+         #----- Create range
+         if {[set product $Data(CurrentProduct)] ne ""} {
+            eval set ${product}::Range($RangeName) \{$RangeValues\}
+
+            #----- Add to new ranges list to save into config file later
+            lappend Data(NewRanges) [list $RangeName $RangeValues]
+         }
+
+         #----- Add to ranges dict and rangenames dict
+         dict lappend APViz::Data(RangeNames) $RangeCategory $RangeName
+         dict lappend APViz::Data(Ranges) $RangeCategory \{$RangeValues\}
+         
+         #----- Update Combobox lists
+         set lowerCategory [string tolower $RangeCategory]
+         if {[winfo exists .addLayerBox.layers.layerGrid.${lowerCategory}Range]} {
+            Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range [dict get $Data(Ranges) $RangeCategory] [dict get $Data(RangeNames) $RangeCategory]
+         }      
+
+         APViz::DeleteWidget .addRangeBox
+      } else {
+         set fr "Le nom \"$RangeName\" est deja utilise. Veillez en choisir un autre."
+         set eng "The name \"$RangeName\" has already been used. Please choose another one."
+         set msg [list $fr $eng]
+         ::Dialog::Info . $msg
+      }
+   } else {
+      puts "Missing fields : $RangeName | $RangeCategory | $RangeValues"
+      ::Dialog::Info . $Lbl(EmptyFields)
+   }
+   
+   
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddRangeBubbleInfo>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une bulle d'aide concernant les informations sur le range
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::AddRangeBubbleInfo { Widget Option } {
+   variable Data
+   
+   #----- Construction du message
+   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $Data(Range,$Option)"
+   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $Data(Range,$Option)"
+   
+   Bubble::Create $Widget $msg
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddNewLayer>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Lire les entrees de l'usager et ajouter la couche a l'interface
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::AddNewLayer { Widget } {
+   variable Data
+   variable Lbl
+   
+   #------ Verify if all mandatory fields are filled (optional: IP3 and VP)
+   foreach type $Data(ColNames) {
+      if {($type ne "IP3")} {
+         if {![info exists APViz::Data(AddLayer$type,Value)] || ($APViz::Data(AddLayer$type,Value) eq "")} {
+            ::Dialog::Info . $Lbl(EmptyFields)
+            return
+         }
+      }
+   }
+   
+   #----- Initialiser layer et defaultValues
+   set layer False
+   set defaults False
+   
+   #----- Get all ranges and default values  
+   foreach type $Data(ColNames) {
+      set default$type [string trim $Data(AddLayer$type,Value)]
+      if {[info exists Data(Range,$type)] && ($Data(Range,$type) ne "") && ($Data(Range,$type) ne "NONE")} {
+         set range$type <[string trim $Data(RangeName,$type)]>
+      } else { 
+         eval set range$type \$default$type
+      }
+      
+      eval set layer [string cat ${layer}: \$range$type]
+      eval set defaults [string cat ${defaults}: \$default$type]
+   }
+   
+   lappend Data(Layers) $layer
+   set product $Data(CurrentProduct)
+   
+   if {$product ne ""} {
+      APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True [set no [expr [llength $Data(Layers)] - 1]]
+      if {[winfo exists $Data(ParentWidget).add.menu]} {
+         regsub \(True:|False:\) $layer "" desc
+         $Data(ParentWidget).add.menu insert $no command -label "Type$no: $desc" -command "APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True $no"
+      }
+      
+      APViz::DeleteWidget $Widget
+      APViz::ClearAddLayerValues
+   } else {
+      ::Dialog::Info . $Lbl(SelectProduct)
+   }
+
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SetDefaultValue>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer une valeur par defaut selon le range choisi dans l'interface
+#               d'ajout d'une couche
+#
+# Parametres :
+#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::SetDefaultValue { Option } {
+   variable Data
+   
+   if {$Data(AddLayer$Option,Value) eq ""} {      
+      #----- Putting first list element as default value 
+      if {[set value [lindex [split $Data(Range,$Option) " "] 0]] ne "NONE"} {
+         #----- Remove brackets
+         regsub \(\{|\}\) $value "" value
+         set Data(AddLayer$Option,Value) $value
+      }     
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ClearAddLayerValues>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Vider les entrees de l'interface d'ajout d'une couche
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ClearAddLayerValues { } {
+   variable Data
+   
+   #----- Clear default values    
+   foreach type $Data(ColNames) {
+      set Data(Range,$type) ""
+      set Data(AddLayer$type,Value) ""
+   }
+}

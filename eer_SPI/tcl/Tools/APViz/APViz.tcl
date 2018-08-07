@@ -30,7 +30,29 @@
 
 #----- Lire les sources d'execution
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
-source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
+
+#----- TODO: lire de plusieurs paths
+if { [info exists env(SPI_APVIZ)] } {
+   set APViz::Param(ConfigPath) $env(SPI_APVIZ)
+   
+   #----- Getting config files path
+   if {[catch { source ${APViz::Param(ConfigPath)}APViz_Data.tcl }]} {
+      lappend msg "Fichier APViz_Data.tcl manquant de ${APViz::Param(ConfigPath)}"
+      lappend msg "File APViz_Data.tcl containing paths missing from ${APViz::Param(ConfigPath)}"
+      ::Dialog::Info . $msg
+   }
+   
+   if {[file isdirectory ${APViz::Param(ConfigPath)}Config/]} {
+      set APViz::Param(InitPath) ${APViz::Param(ConfigPath)}Config/
+      set APViz::Param(Path) ${APViz::Param(ConfigPath)}Config/
+   }
+   
+   #----- Getting colormaps
+   if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
+      set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
+   }
+}
+
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
@@ -498,6 +520,8 @@ proc APViz::Source { Path Widget } {
             lappend ::APViz::Data(Layers) $layer		; #save layer configs
             incr no
          }
+         $Widget.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"
+         
          $Widget.add.menu add separator
          $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
          
@@ -534,6 +558,12 @@ proc APViz::Source { Path Widget } {
          
          if { [string index $Style 0] eq "<" } {
             set rangeType [string trim $Style {< >}]
+            
+            if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
+               dict lappend APViz::Data(RangeNames) $Options $rangeType
+               dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
+            }
+
             if $IsSpinBox {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
@@ -614,14 +644,14 @@ proc APViz::Source { Path Widget } {
             } elseif {!$IsAddedLayer} {
                $Widget.range.variableGrid.layer${no}_toggle select
             }
-            
+
             #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
-            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models true 5 $defaultModel
+            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models false 5 $defaultModel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
             # ICIIII!!!
-            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no VP false 2 $defaultVP
+            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no Viewports false 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
             
@@ -1033,6 +1063,7 @@ proc APViz::Source { Path Widget } {
    
    set Data(CurrentProduct) $product
    ${product}::Load $Path $product $Widget
+   set Data(ParentWidget) $Widget
    
    set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $product]	; # Update a chaque 10min:1000*60*10
    
@@ -1071,7 +1102,7 @@ proc APViz::AssignVariable { Product Index } {
    set run	$Value(Runs,$Index)
    set hour	$Value(Hours,$Index)
    set src	$Value(Sources,$Index)
-   set vp       $Value(VP,$Index)
+   set vp       $Value(Viewports,$Index)
    #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
    
    set date $Data(Date)
@@ -1216,6 +1247,9 @@ proc APViz::AssignVariable { Product Index } {
                catch { 
                   eval fstdfield configure $fieldID $Params($var)
                }
+            } else {
+               #----- Valeur par defaut
+               fstdfield configure $fieldID -colormap REC_Rainbow -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
             }
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
@@ -1274,7 +1308,7 @@ proc APViz::AssignVariable { Product Index } {
 proc APViz::GetVPId { VPno } {
    variable Data
    
-   if {![string is digit $VPno] || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
+   if {![string is digit $VPno] || ($VPno eq "") || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
       return $Viewport::Data(VP)
    } else {
       set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
@@ -1401,41 +1435,6 @@ proc APViz::AreFieldsFilled { Model Var Level Run Hour Source Date } {
       }
    }
    return true
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::AttributeColor>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : 	Attibuer une differente a un field si celui-ci n'est pas le seul de 
-#		sa categorie de variable. Permet de distinguer plus facilement les courbes
-#
-# Parametres 	  :
-#	<Var>	  : Variable meteorologique
-#	<FieldID> : ID du field
-#	
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AttributeColor { Var FieldID } {
-   variable Data
-
-   #----- Verifier si un autre field du meme type est assigned
-   set varList [eval lsearch -glob -all \$Data(LayerIDs) *$Var]
-
-   if {[llength $varList] > 1} {
-      set i [string index $FieldID 3]			; # TODO: gerer ID > 9
-
-      set index [lsearch -exact $varList $i]		; # Le nieme var dans la liste
-      if {$index >= 0} {
-         set nbColors [llength [split $Data(Colors)]]
-         set index [expr $index % $nbColors]
-         fstdfield configure $FieldID -color [lindex $Data(Colors) $index]
-      }
-   }
 }
 
 #-------------------------------------------------------------------------------
@@ -1587,7 +1586,7 @@ proc APViz::Check { Product Index {IsCalc False}} {
    } else {
       set ID [lindex $Data(LayerIDs) $RowID(Layer$Index)] 
       set isActivated $Value(Toggle,$Index)
-      set vpID [APViz::GetVPId $Value(VP,$Index)]
+      set vpID [APViz::GetVPId $Value(Viewports,$Index)]
    }
 
    if {[fstdfield is $ID]} {
@@ -1714,11 +1713,26 @@ proc APViz::CreateColormaps { } {
 
    set path $DataSrc(Colormaps)
    set colormapLst [glob -nocomplain -tails -path $path *.rgba]
-
+   
+   #----- TODO: fetch all colormap paths and save in list
    #----- Create colormaps
    foreach colormap $colormapLst {
       regsub .rgba $colormap "" colormapName
-      colormap create $colormapName -file ${path}/$colormap
+      if {![colormap is $colormapName]} {
+         colormap create $colormapName -file ${path}/$colormap
+      }
+   }
+   
+   #----- Create the ones in .spi 
+   set spiPath $env(HOME)/.spi/Colormap/
+   if {[file isdirectory $spiPath]} {
+      set spiColormapLst [glob -nocomplain -tails -path $spiPath *.rgba]
+      foreach colormap $spiColormapLst {
+         regsub .rgba $colormap "" colormapName
+         if {![colormap is $colormapName]} {
+            colormap create $colormapName -file ${spiPath}/$colormap
+         }
+      }
    }
    
    #----- Add folder to MapBox paths
@@ -1746,6 +1760,7 @@ proc APViz::CreateColormaps { } {
 proc APViz::CreateRangeInterface { Lst Index Dir } {
    global GDefs
    variable Data
+   variable Param
 
    APViz::ReinitializeVP
    APViz::CloseFiles
@@ -1756,7 +1771,7 @@ proc APViz::CreateRangeInterface { Lst Index Dir } {
    }
 
    set selected [lindex $Lst $Index]
-   set filepath "$GDefs(Dir)/tcl/Tools/APViz/Config/${Data(Folder)}/$Dir/$selected.tcl"
+   set filepath "$Param(ConfigPath)/Config/${Data(Folder)}/$Dir/$selected.tcl"
    if {[file isfile $filepath]} {
       APViz::Source $filepath $Data(Tab)
       set Data(ConfigPath) $filepath
@@ -1827,12 +1842,19 @@ proc APViz::DeleteWidget { Widget } {
 
 proc APViz::FetchConfigFiles { } {
    global GDefs
+   global env
    variable Data
+   variable Param
 
    set dir Config
-   set path $GDefs(Dir)/tcl/Tools/APViz/
-
-   APViz::FetchFiles $path $dir
+   #set path $GDefs(Dir)/tcl/Tools/APViz/
+   set comment {
+   if { [info exists env(SPI_APVIZ)] } {
+      set Param(ConfigPath) $env(SPI_APVIZ)
+   }
+   }
+   
+   APViz::FetchFiles $Param(ConfigPath) $dir
 }
 
 #----------------------------------------------------------------------------
@@ -1867,6 +1889,26 @@ proc APViz::FetchFiles { Path Name } {
          APViz::FetchFiles $Path $file
       } else {
          lappend Data($Name,Files) [lindex [split $file .] 0]
+      }
+   }
+}
+
+proc APViz::FetchConfigPaths { } {
+   global env
+   
+   puts "Fetching config paths"
+   #----- Get SPI_APVIZ env variable to locate configuration files
+   if { [info exists env(SPI_APVIZ)] } {
+      puts "Env SPI_APVIZ exists "
+      set env(SPI_APVIZ) [join [lsort -unique [split $env(SPI_APVIZ) :]] :]
+      
+      foreach path [split $env(SPI_APVIZ) :] {
+         if { [file isdirectory $path] } {
+            foreach configPath [lsort [glob -nocomplain $path/Config/*]] {
+               set name [file tail [file rootname $configPath]]
+               puts "Name: $name"
+            }
+         }
       }
    }
 }
@@ -1941,6 +1983,8 @@ proc APViz::FetchAllDates { Product } {
    if {$Product ne ""} {
       variable ${Product}::Value
       variable ${Product}::RowID
+      
+      set selectedDate $Data(Date)
 
       set  sourceLst {}
       set dateLst {}
@@ -1995,7 +2039,17 @@ proc APViz::FetchAllDates { Product } {
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
       }
 
+      if {($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
+         if {$selectedDate ne "" } {
+            set Data(Date) $selectedDate
+         } else {
+            set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
+         }
+      }
+      
       set Data(Dates) $finalDateLst
+      
+
    }
 }
 
@@ -2207,8 +2261,8 @@ proc APViz::WriteDefaultValues { Product FileID } {
             set ip3 ""
          }
          
-         if {[info exists Value(VP,$i)]} {
-            set vp $Value(VP,$i)
+         if {[info exists Value(Viewports,$i)]} {
+            set vp $Value(Viewports,$i)
          } else {
             set vp ""
          }
@@ -2584,7 +2638,7 @@ proc APViz::InitializeVars { } {
 proc APViz::ReinitializeVP { } {
    variable Data
 
-   for {set i 1} {$i <= $Data(VPNb)} {incr i} {
+   for {set i 1} {$i <= $Data(VPCount)} {incr i} {
       Viewport::UnAssign $Data(Frame) VP$i
    }
    
@@ -2640,7 +2694,13 @@ proc APViz::ReinitializeVP { } {
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
    set Data(VarsDict) ""
-   set Data(VPNb) 1
+   set Data(VPCount) 1
+   set Data(RangeNames) ""
+   set Data(Ranges) ""
+   foreach column $Data(ColNames) {
+      dict lappend Data(RangeNames) $column NONE
+      dict lappend Data(Ranges) $column NONE
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2939,7 +2999,7 @@ proc APViz::UpdateAvailableDates { Product } {
       }
    }
 
-   if {!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])} {
+   if {(!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])) || ($Data(Date) eq "")} {
       set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
@@ -2947,5 +3007,5 @@ proc APViz::UpdateAvailableDates { Product } {
       APViz::InitializeVars
    }
 
-   set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
+   set Data(AutoUpdateEventID) [after [expr {1000*60*1}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
 }
