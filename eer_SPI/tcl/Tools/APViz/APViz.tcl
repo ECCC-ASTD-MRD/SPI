@@ -28,9 +28,25 @@
 #
 #===============================================================================
 
-#----- Lire les sources d'execution
+#----- Lire les sources d'execution #source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
-source $GDefs(Dir)/tcl/Tools/APViz/APViz_Data.tcl
+
+if { [info exists env(SPI_APVIZ)] } {
+   set APViz::Param(ConfigPath) $env(SPI_APVIZ)
+   
+   #----- Getting config files path
+   if {[catch { source ${APViz::Param(ConfigPath)}APViz_Data.tcl }]} {
+      lappend msg "Fichier APViz_Data.tcl manquant de ${APViz::Param(ConfigPath)}"
+      lappend msg "File APViz_Data.tcl containing paths missing from ${APViz::Param(ConfigPath)}"
+      ::Dialog::Info . $msg
+   }
+   
+   #----- Getting colormaps
+   if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
+      set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
+   }
+}
+
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
@@ -1416,41 +1432,6 @@ proc APViz::AreFieldsFilled { Model Var Level Run Hour Source Date } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::AttributeColor>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : 	Attibuer une differente a un field si celui-ci n'est pas le seul de 
-#		sa categorie de variable. Permet de distinguer plus facilement les courbes
-#
-# Parametres 	  :
-#	<Var>	  : Variable meteorologique
-#	<FieldID> : ID du field
-#	
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AttributeColor { Var FieldID } {
-   variable Data
-
-   #----- Verifier si un autre field du meme type est assigned
-   set varList [eval lsearch -glob -all \$Data(LayerIDs) *$Var]
-
-   if {[llength $varList] > 1} {
-      set i [string index $FieldID 3]			; # TODO: gerer ID > 9
-
-      set index [lsearch -exact $varList $i]		; # Le nieme var dans la liste
-      if {$index >= 0} {
-         set nbColors [llength [split $Data(Colors)]]
-         set index [expr $index % $nbColors]
-         fstdfield configure $FieldID -color [lindex $Data(Colors) $index]
-      }
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <APViz::CalculateExpression>
 # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -1849,8 +1830,10 @@ proc APViz::FetchConfigFiles { } {
 
    set dir Config
    #set path $GDefs(Dir)/tcl/Tools/APViz/
+   set comment {
    if { [info exists env(SPI_APVIZ)] } {
-      set Param(ConfigPath) $env(SPI_APVIZ) 
+      set Param(ConfigPath) $env(SPI_APVIZ)
+   }
    }
    
    APViz::FetchFiles $Param(ConfigPath) $dir

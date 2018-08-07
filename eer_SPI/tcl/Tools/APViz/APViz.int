@@ -180,6 +180,20 @@ proc APViz::Window { } {
    APViz::CreateColormaps
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveAsWindow>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre "Enregistrer Sous"
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::SaveAsWindow { } {
    global GDefs
 
@@ -244,6 +258,20 @@ proc APViz::SaveAsWindow { } {
    grab .saveAsBox
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddLayerWindow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre pour ajouter une couche
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::AddLayerWindow { } {
    global GDefs
    variable Data
@@ -298,6 +326,24 @@ proc APViz::AddLayerWindow { } {
     
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateAddLayerRow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une rangee dans l'interface pour ajouter une couche
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#       <Type>   : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#       <Row>    : Le numero de la rangee pour placer dans l'interface (grid)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::CreateAddLayerRow { Widget Type Row } {
    variable Data
    variable Bubble
@@ -310,7 +356,7 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    #----- If range is not empty, value will be default value
    entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
    Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
-      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range \${APViz::Data(Range,$Type)} $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
    set rowNb [expr $Row + 1]
    
    grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
@@ -320,6 +366,20 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
    Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRangeWindow>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre pour creer une nouvelle range
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::CreateRangeWindow { } {
    global GDefs
@@ -388,6 +448,25 @@ proc APViz::CreateRangeWindow { } {
    
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRange>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une range
+#
+# Parametres :
+#       <Widget>        : Le widget de la fenetre parent
+#       <RangeName>     : Le nom de la range
+#       <RangeValues>   : Valeurs de la range
+#       <RangeCategory> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                         Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
    variable Data
    variable Lbl
@@ -431,7 +510,24 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
    
 }
 
-proc APViz::AddRangeBubbleInfo { Widget Value Option } {
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddRangeBubbleInfo>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une bulle d'aide concernant les informations sur le range
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::AddRangeBubbleInfo { Widget Option } {
    variable Data
    
    #----- Construction du message
@@ -440,6 +536,21 @@ proc APViz::AddRangeBubbleInfo { Widget Value Option } {
    
    Bubble::Create $Widget $msg
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::AddNewLayer>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Lire les entrees de l'usager et ajouter la couche a l'interface
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::AddNewLayer { Widget } {
    variable Data
@@ -455,6 +566,7 @@ proc APViz::AddNewLayer { Widget } {
       }
    }
    
+   #----- Initialiser layer et defaultValues
    set layer False
    set defaults False
    
@@ -471,11 +583,7 @@ proc APViz::AddNewLayer { Widget } {
       eval set defaults [string cat ${defaults}: \$default$type]
    }
    
-   puts "Layer: $layer"
-   puts "Defaults: $defaults"
-   
    lappend Data(Layers) $layer
-
    set product $Data(CurrentProduct)
    
    if {$product ne ""} {
@@ -493,6 +601,23 @@ proc APViz::AddNewLayer { Widget } {
 
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SetDefaultValue>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer une valeur par defaut selon le range choisi dans l'interface
+#               d'ajout d'une couche
+#
+# Parametres :
+#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::SetDefaultValue { Option } {
    variable Data
    
@@ -502,10 +627,23 @@ proc APViz::SetDefaultValue { Option } {
          #----- Remove brackets
          regsub \(\{|\}\) $value "" value
          set Data(AddLayer$Option,Value) $value
-      }
-      
+      }     
    }
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ClearAddLayerValues>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Vider les entrees de l'interface d'ajout d'une couche
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::ClearAddLayerValues { } {
    variable Data
