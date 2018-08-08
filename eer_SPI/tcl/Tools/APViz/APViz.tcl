@@ -1869,7 +1869,9 @@ proc APViz::CreateFileTree { } {
    #----- Create a child node foreach file and folder
    #----- foreach folder, get all children files and directories
    #ICIIIIIIII
-   CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE IdCmd APViz::GetTreeId
+   CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
+      IdCmd APViz::GetTreeId \
+      SelectCmd APViz::SelectFiletreeBranch
 }
 
 proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
@@ -1882,20 +1884,24 @@ proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
    foreach file $fileList {
       if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
          #----- Create node
-         puts "Inserting $file to tree"
          $Tree insert $ParentNode end $file
          
+         #----- Set node attributes
          $Tree set $file name $file
+         
          if {$Level < 3} {
             $Tree set $file open True
          } else {
             $Tree set $file open False
          }
          
-         
          if {[file isdirectory [set newPath ${Path}$file/]]} {
             #----- Appel recursif
             APViz::ConstructTreeLayer $Tree $file $newPath [expr $Level + 1]
+            $Tree set $file path ""
+         } else {
+            $Tree set $file path ${Path}$file
+            puts "Path is ${Path}$file"
          }
       }
    }
@@ -1921,11 +1927,60 @@ proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
 proc APViz::GetTreeId { Tree Branch Leaf } {
 
    upvar $Leaf leaf
-   set leaf True
+   set leaf [$Tree isleaf $Branch]
    
    set id [$Tree get $Branch name]
    return $id
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::SelectFiletreeBranch>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Selection d'une branche de l'arborescence
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::SelectFiletreeBranch { Tree Branch Open } {
+   global GDefs
+   variable Data
+   variable Lbl
+
+   if { ![info exist Viewport::Data(Data$Page::Data(Frame))] } {
+      return
+   }
+
+   set Data(Select) $Branch
+   set filepath [$Tree get $Branch path]
+   
+   if {$filepath ne ""} {
+      #----- Call selection function
+      APViz::ReinitializeVP
+      APViz::CloseFiles
+
+      if {$Data(AutoUpdateEventID) ne ""} {
+         after cancel $Data(AutoUpdateEventID)
+         set Data(AutoUpdateEventID) ""
+      }
+
+      if {[file isfile $filepath]} {
+         APViz::Source $filepath $Data(Tab)
+         set Data(ConfigPath) $filepath
+      } else {
+         puts "$filepath not a file"
+      }
+   }
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::FetchFiles>
