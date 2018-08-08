@@ -49,8 +49,6 @@ namespace eval APViz {
    set Data(Lon1)   0
    
    #----- Widgets
-   set Data(MacroCatDropdown)	""	; #ComboBox listant les types de macro (level 2)
-   set Data(TypeListBox)	""	; #Boite listant les choix de types de la macro
    set Data(RangeSection)	""	; #Section des variables
    set Data(DateCBWidget)	""
    
@@ -63,9 +61,6 @@ namespace eval APViz {
    set Data(MacroCategories)	{}
    
    #----- LEVEL 3
-   set Data(MacroType)		""
-   set Data(MacroTypes)		{}	; #Liste les configuration files 
-
    set Data(OpenedFiles)	""
    set Data(LayerIDs)		""
    set Data(CalcIDs)		""

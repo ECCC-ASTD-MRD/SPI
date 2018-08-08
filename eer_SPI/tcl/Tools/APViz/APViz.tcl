@@ -300,51 +300,6 @@ proc APViz::AsProject { File } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::MacroCategory>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Changement des parametres de l'interface selon le type de grille.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::MacroCategory { } {
-   variable Data
-   
-   set macroCategory $Data(MacroCategory)
-   if {[info exists Data($macroCategory,Files)]} {
-    set Data(MacroTypes) $Data($macroCategory,Files)
-   }
-}
-
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::AddToListBox>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Ajouter (afficher) une liste d'elements a la liste
-#
-# Parametres 	:
-#	<lst>	: Liste d'elements a ajouter dans la listBox 
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AddToListBox { lst } {
-  variable Data
-
-  set Data(MacroTypes) [split $lst]
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <APViz::Source>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -1745,46 +1700,6 @@ proc APViz::CreateColormaps { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::CreateRangeInterface>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : 	Creer l'onterface des variables ranges
-#
-# Parametres	:
-#	<Lst>  	: Liste des differents Types
-#	<Index>	: Index de l'item choisi
-#	<Dir>	: Dossier dans lequel se trouve le fichier de config
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::CreateRangeInterface { Lst Index Dir } {
-   global GDefs
-   variable Data
-   variable Param
-
-   APViz::ReinitializeVP
-   APViz::CloseFiles
-
-   if {$Data(AutoUpdateEventID) ne ""} {
-      after cancel $Data(AutoUpdateEventID)
-      set Data(AutoUpdateEventID) ""
-   }
-
-   set selected [lindex $Lst $Index]
-   set filepath "$Param(ConfigPath)/Config/${Data(Folder)}/$Dir/$selected.tcl"
-   if {[file isfile $filepath]} {
-      APViz::Source $filepath $Data(Tab)
-      set Data(ConfigPath) $filepath
-   } else {
-      puts "$filepath"
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <APViz::DateBinding>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
@@ -1864,11 +1779,9 @@ proc APViz::CreateFileTree { } {
       return
    }
    
-   #----- Get all files and directories from configs path
+   #----- Construct tree with all files and directories from configs path
    APViz::ConstructTreeLayer FILETREE root $Param(ConfigPath) 0
-   #----- Create a child node foreach file and folder
-   #----- foreach folder, get all children files and directories
-   #ICIIIIIIII
+
    CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
       IdCmd APViz::GetTreeId \
       SelectCmd APViz::SelectFiletreeBranch
@@ -2237,7 +2150,7 @@ proc APViz::GenerateConfigFile { Path } {
       set origData [split $origFileData "\n"]
       
       #----- Get section indexes
-      set geoStartIndex [lsearch -glob $origData "*\#*Geography*"]
+      set geoStartIndex   [lsearch -glob $origData "*\#*Geography*"]
       set styleStartIndex [lsearch -glob $origData "*\#*Style*"]
       set rangeStartIndex [lsearch -glob $origData "*\#*Ranges*"]
       set layerStartIndex [lsearch -glob $origData "*\#*Layers*"]
@@ -2246,6 +2159,9 @@ proc APViz::GenerateConfigFile { Path } {
       #----- Copy from original til Geo configs
       APViz::WriteConfigSection $fileID [lrange $origData 0 $geoStartIndex]
       
+      if {$geoStartIndex <= 0} {
+         puts $fileID "\#----- Geography"
+      }
       #----- Write Geo params
       APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
@@ -2256,6 +2172,7 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex [expr $rangeStartIndex - 1]]  $colormapLst
       
       #----- Ranges :
+      #TODO: Generate ranges from ranges dict and range variable
       puts -nonewline $fileID "\n"
       APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex [expr $layerStartIndex - 1]]
 
@@ -2268,7 +2185,8 @@ proc APViz::GenerateConfigFile { Path } {
       
       close $fileID
       
-      APViz::UpdateProductInterface
+      #----- TODO: UPDATE FILETREE
+      APViz::UpdateProductInterface $filename $Path
    }
 }
 
@@ -2671,16 +2589,9 @@ proc APViz::WriteViewportConfigs { FileID } {
 #----------------------------------------------------------------------------
 
 proc APViz::WriteConfigSection { FileID DataSource } { 
-   #puts "Start index at: $StartIndex for line: [lindex $DataSource $StartIndex] til [lindex $DataSource $EndIndex]"
-   
+
    foreach line $DataSource {
       puts $FileID $line
-   }
-   
-   set comment {
-   for {set i $StartIndex} {$i < $EndIndex} {incr i} {
-      puts $FileID [lindex $DataSource $i]
-   }
    }
 }
 
@@ -2904,31 +2815,6 @@ proc APViz::SaveConfigFile { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::SelectFolder>
-# Creation : July 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Selectionner le dossier et afficher les choix de macro categories correspondantes
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::SelectFolder { } {
-   variable Data
-
-   set selectedFolder $Data(Folder)
-   if {[info exists Data($selectedFolder,Folders)]} {
-      set APViz::Data(MacroCategories) $Data($selectedFolder,Folders)
-      ComboBox::DelAll $Data(MacroCatDropdown)
-      ComboBox::AddList $Data(MacroCatDropdown) $Data($selectedFolder,Folders)
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <APViz::SetParam>
 # Creation : Juin 2018 - C. Nguyen - CMC/CMOE
 #
@@ -3014,36 +2900,22 @@ proc APViz::TranslateExpression { Product Expr } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::UpdateProductInterface { } { 
+proc APViz::UpdateProductInterface { FileName Path } { 
    variable Data
-
-   #----- Mise a jour des listes
-   APViz::FetchConfigFiles
-   APViz::MacroCategory
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::UpdateRange>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Mise a jour de la section Range de l'interface
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::UpdateRange { } { 
-   variable Data
-
-   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
-   set macroCategory $Data(MacroCategory)
-   if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
-      APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
+   
+   set parentNode [file tail [file dirname $Path]]
+   #----- Verify if already exist
+   if {![FILETREE exists $FileName]} {
+      #----- Add new node
+      puts "CREATING NEW NODE $FileName"
+      FILETREE insert $parentNode end $FileName
    }
+
+   FILETREE set $FileName open False
+   FILETREE set $FileName name $FileName
+   FILETREE set $FileName path $Path
+
+   CVTree::Render $Data(Tab).filetree.canvas APViz::FILETREE
 }
 
 #----------------------------------------------------------------------------
