@@ -56,6 +56,10 @@ if { [info exists env(SPI_APVIZ)] } {
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
+namespace eval APViz {
+   ::struct::tree FILETREE
+}
+
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::Close>
 # Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE -
@@ -1847,14 +1851,80 @@ proc APViz::FetchConfigFiles { } {
    variable Param
 
    set dir Config
-   #set path $GDefs(Dir)/tcl/Tools/APViz/
-   set comment {
-   if { [info exists env(SPI_APVIZ)] } {
-      set Param(ConfigPath) $env(SPI_APVIZ)
-   }
+
+   APViz::FetchFiles $Param(ConfigPath) $dir
+}
+
+proc APViz::CreateFileTree { } {
+   variable Data
+   variable Param 
+   
+   #----- Verify if tree already exist
+   if { [llength [FILETREE children root]] } {
+      return
    }
    
-   APViz::FetchFiles $Param(ConfigPath) $dir
+   #----- Get all files and directories from configs path
+   APViz::ConstructTreeLayer FILETREE root $Param(ConfigPath) 0
+   #----- Create a child node foreach file and folder
+   #----- foreach folder, get all children files and directories
+   #ICIIIIIIII
+   CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE IdCmd APViz::GetTreeId
+}
+
+proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
+   variable Data
+   
+   puts "Level $Level: $ParentNode"
+   #----- Get file and folders list
+   set fileList [glob -nocomplain -tails -path $Path *]
+
+   foreach file $fileList {
+      if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
+         #----- Create node
+         puts "Inserting $file to tree"
+         $Tree insert $ParentNode end $file
+         
+         $Tree set $file name $file
+         if {$Level < 3} {
+            $Tree set $file open True
+         } else {
+            $Tree set $file open False
+         }
+         
+         
+         if {[file isdirectory [set newPath ${Path}$file/]]} {
+            #----- Appel recursif
+            APViz::ConstructTreeLayer $Tree $file $newPath [expr $Level + 1]
+         }
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetTreeId>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creer l'identification de la branche
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetTreeId { Tree Branch Leaf } {
+
+   upvar $Leaf leaf
+   set leaf True
+   
+   set id [$Tree get $Branch name]
+   return $id
 }
 
 #----------------------------------------------------------------------------

@@ -145,13 +145,13 @@ proc APViz::Window { } {
       
       pack $Data(Tab).opt -side bottom -fill x -padx 2 -pady 2
       
-      #--------- Description
+      #----- Description
       labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
 	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
 	pack $Data(Tab).desc.message -side top -fill x -expand true
       pack $Data(Tab).desc -side bottom -fill both -expand True
 
-      #--------- Range
+      #----- Range
       labelframe $Data(Tab).range -text [lindex $Lbl(Variables) $GDefs(Lang)]
 	set Data(RangeSection) $Data(Tab).range
 	label $Data(Tab).range.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
@@ -161,7 +161,20 @@ proc APViz::Window { } {
       # Ajouter les sections au panedwindow
       $Data(Tab).vis add $Data(Tab).opt $Data(Tab).desc $Data(Tab).range
       
-      #--------- Dock
+      #----- Filetree
+      labelframe $Data(Tab).filetree -text "Filetree"
+         canvas $Data(Tab).filetree.canvas -bg white -relief sunken -bd 1 -yscrollcommand "$Data(Tab).filetree.scrolly set" \
+           -xscrollcommand "$Data(Tab).filetree.scrollx set" -scrollregion "1 1 250 500" -width 1 -height 1
+         scrollbar $Data(Tab).filetree.scrolly -orient vertical -bd 1 -width 10 -command "$Data(Tab).filetree.canvas yview"
+         scrollbar $Data(Tab).filetree.scrollx -orient horizontal -bd 1 -width 10 -command "$Data(Tab).filetree.canvas xview"
+         pack $Data(Tab).filetree.scrollx -side bottom -fill x
+         pack $Data(Tab).filetree.canvas -side left -fill both -expand true
+         pack $Data(Tab).filetree.scrolly -side left -fill y
+      pack $Data(Tab).filetree -side bottom -fill both -expand True
+      
+      APViz::CreateFileTree
+      
+      #----- Dock
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
