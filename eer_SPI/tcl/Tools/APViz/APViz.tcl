@@ -1789,8 +1789,7 @@ proc APViz::CreateFileTree { } {
 
 proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
    variable Data
-   
-   puts "Level $Level: $ParentNode"
+
    #----- Get file and folders list
    set fileList [glob -nocomplain -tails -path $Path *]
 
@@ -1814,7 +1813,6 @@ proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
             $Tree set $file path ""
          } else {
             $Tree set $file path ${Path}$file
-            puts "Path is ${Path}$file"
          }
       }
    }
@@ -2139,9 +2137,6 @@ proc APViz::GenerateConfigFile { Path } {
       #----- Verify if colormaps have changed
       set colormapLst [APViz::ManageColormaps $product]
       
-      set filename [file tail $Path]
-      set fileID [open $Path w]
-      
       #----- Get data from original config file
       set origFileID [open $Data(ConfigPath) r]
       set origFileData [read $origFileID]
@@ -2153,15 +2148,13 @@ proc APViz::GenerateConfigFile { Path } {
       set geoStartIndex   [lsearch -glob $origData "*\#*Geography*"]
       set styleStartIndex [lsearch -glob $origData "*\#*Style*"]
       set rangeStartIndex [lsearch -glob $origData "*\#*Ranges*"]
-      set layerStartIndex [lsearch -glob $origData "*\#*Layers*"]
-
+      
+      set filename [file tail $Path]
+      set fileID [open $Path w]
       
       #----- Copy from original til Geo configs
       APViz::WriteConfigSection $fileID [lrange $origData 0 $geoStartIndex]
-      
-      if {$geoStartIndex <= 0} {
-         puts $fileID "\#----- Geography"
-      }
+
       #----- Write Geo params
       APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
@@ -2172,11 +2165,11 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex [expr $rangeStartIndex - 1]]  $colormapLst
       
       #----- Ranges :
-      #TODO: Generate ranges from ranges dict and range variable
       puts -nonewline $fileID "\n"
-      APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex [expr $layerStartIndex - 1]]
+      APViz::WriteRanges $product $fileID
 
       #----- Write Layers
+      puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
       
       #----- Write Default Values
@@ -2190,6 +2183,33 @@ proc APViz::GenerateConfigFile { Path } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteRanges>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Ecrire la section des ranges dans le fichier de config
+#
+# Parametres    :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>      : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteRanges { Product FileID } {
+   variable ${Product}::Range
+   #----- Copy the general configs
+   puts $FileID "\#----- Ranges"
+   foreach rangeConfig [array names Range] {
+      set rangeValues $Range($rangeConfig)
+      puts "set Range($rangeConfig) \{$rangeValues\}"
+      puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+   }
+
+}
 #----------------------------------------------------------------------------
 # Nom      : <APViz::WriteVariableConfigs>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
@@ -2567,6 +2587,7 @@ proc APViz::WriteViewportConfigs { FileID } {
    set params [concat $params "\}"]   
    puts $FileID $params
    
+   #TODO: Save right nb of vps
    puts $FileID "set Params(ViewportNb) $Data(VPCount)"
 }
 

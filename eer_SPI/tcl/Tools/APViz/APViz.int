@@ -436,9 +436,6 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
          #----- Create range
          if {[set product $Data(CurrentProduct)] ne ""} {
             eval set ${product}::Range($RangeName) \{$RangeValues\}
-
-            #----- Add to new ranges list to save into config file later
-            lappend Data(NewRanges) [list $RangeName $RangeValues]
          }
 
          #----- Add to ranges dict and rangenames dict

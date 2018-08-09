@@ -81,6 +81,5 @@ namespace eval APViz {
    set Data(VPCount)               1
    set Data(RangeNames)         {}
    set Data(Ranges)             {}
-   set Data(NewRanges)          {}
    set Data(ColNames)           [list Models Runs Hours Sources Vars Levels IP3 Viewports]
 }
