@@ -30,10 +30,6 @@ namespace eval APViz {
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
    
    #----- For FileBox
-   set Param(InitPath)	"~/"
-   set Param(Path)	"~/"
-   set Param(Filename)	config
-   set Param(FullName)	$APViz::Param(Path)$APViz::Param(Filename)
    set Param(Formats) 	{{Tcl {*.tcl}}}
    
    set Param(ConfigPath) ""

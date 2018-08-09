@@ -180,6 +180,7 @@ proc APViz::SaveAsWindow { } {
    #----- Set path according to user selections
    set Param(Path) [file dirname $Data(ConfigPath)]/
    set Param(FullName) $Data(ConfigPath)
+   set Param(Filename) [file tail $Data(ConfigPath)]
 
    TabFrame::Create .saveAsBox.tab 1 ""
    pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5

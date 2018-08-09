@@ -33,6 +33,26 @@ source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
 
 #----- TODO: lire de plusieurs paths
 if { [info exists env(SPI_APVIZ)] } {
+   foreach path [split $env(SPI_APVIZ) :] {
+      lappend APViz::Param(ConfigPath) $path
+      
+      #----- Getting config files path
+      if {[catch { source ${path}APViz_Data.tcl }]} {
+         lappend msg "Fichier APViz_Data.tcl manquant de $path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $path"
+         ::Dialog::Info . $msg
+      }
+      
+      #----- Getting colormaps
+      if {[file isdirectory ${path}Colormap/]} {
+         lappend APViz::DataSrc(Colormaps) ${path}Colormap/
+      }
+   }
+}
+
+# For 1 path
+set comment {
+if { [info exists env(SPI_APVIZ)] } {
    set APViz::Param(ConfigPath) $env(SPI_APVIZ)
    
    #----- Getting config files path
@@ -41,16 +61,12 @@ if { [info exists env(SPI_APVIZ)] } {
       lappend msg "File APViz_Data.tcl containing paths missing from ${APViz::Param(ConfigPath)}"
       ::Dialog::Info . $msg
    }
-   
-   if {[file isdirectory ${APViz::Param(ConfigPath)}Config/]} {
-      set APViz::Param(InitPath) ${APViz::Param(ConfigPath)}Config/
-      set APViz::Param(Path) ${APViz::Param(ConfigPath)}Config/
-   }
-   
+
    #----- Getting colormaps
    if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
       set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
    }
+}
 }
 
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
@@ -1669,16 +1685,22 @@ proc APViz::CreateColormaps { } {
    global env
    variable DataSrc
    variable ::MapBox::Param
-
-   set path $DataSrc(Colormaps)
-   set colormapLst [glob -nocomplain -tails -path $path *.rgba]
    
-   #----- TODO: fetch all colormap paths and save in list
-   #----- Create colormaps
-   foreach colormap $colormapLst {
-      regsub .rgba $colormap "" colormapName
-      if {![colormap is $colormapName]} {
-         colormap create $colormapName -file ${path}/$colormap
+   if {[info exists DataSrc(Colormaps)]} {
+      foreach path $DataSrc(Colormaps) {
+         set colormapLst [glob -nocomplain -tails -path $path *.rgba]
+
+         #----- Create colormaps
+         foreach colormap $colormapLst {
+            regsub .rgba $colormap "" colormapName
+            if {![colormap is $colormapName]} {
+               colormap create $colormapName -file ${path}/$colormap
+            }
+         }
+         
+         #----- Add folder to MapBox paths
+         regsub /Colormap/ $path "" colormapPath
+         set Param(Paths) [concat $colormapPath $Param(Paths)]
       }
    }
    
@@ -1693,10 +1715,6 @@ proc APViz::CreateColormaps { } {
          }
       }
    }
-   
-   #----- Add folder to MapBox paths
-   regsub /Colormap/ $path "" colormapPath
-   set Param(Paths) [concat $colormapPath $Param(Paths)]
 }
 
 #----------------------------------------------------------------------------
@@ -1745,30 +1763,19 @@ proc APViz::DeleteWidget { Widget } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::FetchConfigFiles>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+# Nom      : <APViz::CreateFileTree>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : 	Construire les listes pour les fichiers de configuration
+# But      :    Construire l'arborescence de fichiers de config
 #
-# Parametres	:
-#	<Widget>  	: Widget a supprimer
+# Parametres    :
+#       <Widget>        : Widget a supprimer
 #
 # Retour:
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
-
-proc APViz::FetchConfigFiles { } {
-   global GDefs
-   global env
-   variable Data
-   variable Param
-
-   set dir Config
-
-   APViz::FetchFiles $Param(ConfigPath) $dir
-}
 
 proc APViz::CreateFileTree { } {
    variable Data
@@ -1780,14 +1787,36 @@ proc APViz::CreateFileTree { } {
    }
    
    #----- Construct tree with all files and directories from configs path
-   APViz::ConstructTreeLayer FILETREE root $Param(ConfigPath) 0
+   #TODO: Do for each path
+   #APViz::ConstructTreeBranches FILETREE root $Param(ConfigPath) 0
+   foreach path $Param(ConfigPath) {
+      APViz::ConstructTreeBranches FILETREE root $path 0
+   }
 
    CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
       IdCmd APViz::GetTreeId \
       SelectCmd APViz::SelectFiletreeBranch
 }
 
-proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ConstructTreeBranches>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire les embranchements de l'arborescence de fichiers
+#
+# Parametres    :
+#       <Tree>       : Identifiant de l'arbre
+#       <ParentNode> : Le noeud parent
+#       <Path>       : Le path vers le fichier
+#       <Level>      : Niveau de l'arborescence (Pour determiner si open est a True ou False)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
    variable Data
 
    #----- Get file and folders list
@@ -1809,7 +1838,7 @@ proc APViz::ConstructTreeLayer { Tree ParentNode Path Level} {
          
          if {[file isdirectory [set newPath ${Path}$file/]]} {
             #----- Appel recursif
-            APViz::ConstructTreeLayer $Tree $file $newPath [expr $Level + 1]
+            APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
             $Tree set $file path ""
          } else {
             $Tree set $file path ${Path}$file
@@ -2135,7 +2164,7 @@ proc APViz::GenerateConfigFile { Path } {
       variable ${product}::RowID
       
       #----- Verify if colormaps have changed
-      set colormapLst [APViz::ManageColormaps $product]
+      set colormapLst [APViz::ManageColormaps $product $Path]
       
       #----- Get data from original config file
       set origFileID [open $Data(ConfigPath) r]
@@ -2205,7 +2234,6 @@ proc APViz::WriteRanges { Product FileID } {
    puts $FileID "\#----- Ranges"
    foreach rangeConfig [array names Range] {
       set rangeValues $Range($rangeConfig)
-      puts "set Range($rangeConfig) \{$rangeValues\}"
       puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
    }
 
@@ -2354,7 +2382,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::ManageColormaps { Product } {
+proc APViz::ManageColormaps { Product Path } {
    global env
    variable Data
    variable DataSrc
@@ -2373,8 +2401,34 @@ proc APViz::ManageColormaps { Product } {
             
             if {$isModified} {
                #-----Create new name by adding nunmber or changing number at the end of the original name
-               set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $initialColormap*.rgba]
+               #----- Find same colormap folder to save modified colormap
+               puts "---- Looking for Colormap in $Path"
 
+               set colormapPath [file dirname $Path]
+               
+               #----- What if no Colormap directory was found?
+               while {![file isdirectory ${colormapPath}/Colormap] && ([string length colormapPath] > 0)} {
+                  if {![file isdirectory $colormapPath]} {
+                     set colormapPath [file dirname $colormapPath]
+                  } else {
+                     #----- Remove / if ends with /
+                     if {[string index $colormapPath [expr [string length $colormapPath] -1]] eq "/"} {
+                        set colormapPath [string range $colormapPath 0 [expr [string length $colormapPath] -2]]
+                     }
+                     set lastSeperator [string last "/" $colormapPath]
+                     regsub -start $lastSeperator [file tail $colormapPath] $colormapPath "" colormapPath
+                  }
+                  
+                  if {$colormapPath eq "."} {
+                     puts "Saving new colormap in .spi/Colormap"
+                     set colormapPath $env(HOME)/.spi
+                     break
+                  }
+               }
+               
+               set path ${colormapPath}/Colormap
+               set derivatives [glob -nocomplain -tails -path $path $initialColormap*.rgba]
+               
                set nbr 1
                set newName ${initialColormap}$nbr
                while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
@@ -2384,7 +2438,7 @@ proc APViz::ManageColormaps { Product } {
 
                colormap create $newName
                colormap copy $newName $name
-               colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
+               colormap write $newName $path/${newName}.rgba
                
                #----- Append name to the list
                lappend colorLst $newName
