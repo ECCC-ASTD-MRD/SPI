@@ -4,86 +4,159 @@
 # 2100 Trans-Canadienne
 # Dorval, Quebec
 #
-# Projet   : Librairie de fonctions Tcl relatives aux enregistrements info
+# Projet   : Package d'interface pour SPI
 # Fichier  : Grid.tcl
-# Creation : Avril 2015 - J.P.Gauthier - CMC/CMOE
+# Creation : Juin 2003
 #
 # Description:
-#    Definitions de diverses fonctionnalites relatives a la creatin de grille.
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI. Ces fichiers representent la structure standard de SPI. Une
+#    fonctionnalite de base de selection est implantee pour fin de demonstration.
 #
-# Fonctions:
-#    Grid::Window    { Frame }
-#    Grid::Init      { }
-#    Grid::Center    { Lat Lon }
-#    Grid::BBoxOrder { }
-#    Grid::Create    { { GridInfo {} } }
-#    Grid::Decode    { Scale { Lat 0.0 } { Lon 0.0 } }
-#    Grid::CreatePS  { Lat Lon Res NI NJ { ID MODELGRID } }
-#    Grid::CreateL   { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } }
-#    Grid::CreateLZ  { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } }
-#    Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } }
-#    Grid::Write     { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { GRID True } }
-#    Grid::MoveInit  { Canvas VP }
-#    Grid::Move      { Frame VP }
-#    Grid::MoveDone  { Canvas VP }
-#    Grid::DrawInit  { Canvas VP }
-#    Grid::Draw      { Canvas VP }
-#    Grid::DrawDone  { Canvas VP }
+#    Toutes les fonctions decrites sont le minimum necessaire au fonctionnement d'un
+#    outils a travers l'interface SPI
 #
-# Remarques :
+#    Pour creer un nouvel outil, il suffit de renommer ces fichiers (tcl,int,txt,ctes) au nom
+#    de l'outils que vous desirez et de remplacer "Grid" et "gridmaker" par le
+#    meme nom.
+#
+#    Par la suite il suffit d'inserer la ligne suivante dans le fichier $HOME/.spi/SPI
+#
+#       SPI::ToolDef <path>/Grid.tcl
+#
+#    et de modifier les references au <path> dans les 3 lignes ci-bas pour sourcer le tout.
 #
 #===============================================================================
 
-package provide Grid 1.0
-
-catch { SPI::Splash "Loading Package Grid 1.0" }
-
 package require Dialog
 
-namespace eval Grid {
-   variable Lbl
-   variable Msg
+#----- Lire les sources d'execution
+
+source $GDefs(Dir)/tcl/Tools/Grid/Grid.ctes
+source $GDefs(Dir)/tcl/Tools/Grid/Grid.txt
+source $GDefs(Dir)/tcl/Tools/Grid/Grid.int
+
+#-------------------------------------------------------------------------------
+# Nom      : <Grid::Close>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Ferme l'interface de l'outil.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Grid::Close { } {
+   variable Data
+
+   #----- Si le mode etait celui de l'outils, revert to SPI
+   if { $Page::Data(ToolMode)=="Grid" } {
+      SPI::ToolMode SPI Zoom
+   }
+
+   #----- Cleanup de l'outils
+   set Data(Active) 0
+
+   $Data(Canvas) delete GRIDMAKER
+
+   Viewport::UnAssign $Data(Frame) $Data(VP)
+
+   destroy .gridmaker
+
+   if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+
+proc Grid::Switch { } {
    variable Param
-   variable Bubble
+   variable Data
 
-   set Param(Id)       "User"                                                    ;# Grid identification (name)
-   set Param(Data)     Float32                                                   ;# Data format of GRID field
-   set Param(Type)     "LZ"                                                      ;# Current grid type
-   set Param(Types)    { "PS" "PS_N" "PS_S" "LL" "LZ" "UTM" }                    ;# List of grid types
-   set Param(ResM)     10000                                                     ;# Grid resolution in meters
-   set Param(ResMs)    { 1 5 10 100 1000 2000 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
-   set Param(ResLL)    0.1                                                       ;# Grid resolution in degree
-   set Param(ResLLs)   { 0.01 0.1 0.25 0.5 1 2 }                                 ;# List of predefined resolution in degrees
-   set Param(NI)       0                                                         ;# Number of gridpoint in I
-   set Param(NJ)       0                                                         ;# Number of gridpoint in J
-   set Param(Lat0)     0                                                         ;# Latitude of first bbox corner
-   set Param(Lat1)     0                                                         ;# Latitude of second bbox corner
-   set Param(Lon0)     0                                                         ;# Longitude of first bbox corner
-   set Param(Lon1)     0                                                         ;# Longitude of second bbox corner
-   set Param(LatM)     0                                                         ;# Delta on latitute translating grid
-   set Param(LonM)     0                                                         ;# Delta on longitude when translating grid
-   set Param(PGSM)     ""                                                        ;# Grid description for PGSM
-   set Param(GridInfo) ""                                                        ;# General grid description
-   set Param(NIJWarn)  4000000                                                   ;# Warning grid size 2000x2000
-   set Param(SizeWarn) [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
-   set Param(LL2M)     [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
-
-   set Lbl(Grid)       { "Type de grille    " "Grid type         " }
-   set Lbl(ResM)       { "Résolution (m)    " "Resolution (m)    " }
-   set Lbl(ResLL)      { "Résolution (deg)  " "Resolution (deg)  " }
-   set Lbl(Size)       { "Dimension         " "Dimension         " }
-   set Lbl(BBox)       { "Couverture" "Bounding box" }
-   set Lbl(Yes)        { "Oui" "Yes" }
-   set Lbl(No)         { "Non" "No" }
-
-   set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
+   #----- Kind of a hack, but let's use the widget's internal previous value
+   set no $Option::Data(Pre$Data(Tab).grid.sel.no)
+   lset Data(GridParams) $no [array get Grid::Param]
+  
+   array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
+   set Data(GridId) MODELGRID$Data(GridNo)
    
-   set Bubble(Types)     { "Sélection du type de grille:\n\tPS  : Polaire stéréographique\n\tPS_N: Polaire stéréographique centrée au pôle nord\n\tPS_S: Polaire stéréographique centrée au pôle sud\n\tLL  : LatLon traditionelle (GRTYP=L)\n\tLZ  : LatLon utilisant des ^^ << (GRTYP:Z)\n\tUTM : Universelle mercator transveralle (GRTYP=Z)"
-                           "Grid type selection:\n\tPS  : Polar stereographic\n\tPS_N: Polar stereographic centered on north pole\n\tPS_S: Polar stereographic centered on south pole\n\tLL  : LatLon traditionnal (GRTYP=L)\n\tLZ  : LatLon using ^^ << (GRTYP:Z)\n\tUTM : Universal transverse mercator (GRTYP=Z)" }
-   set Bubble(ResM)      { "Résolution en mètres (selon l'axe des latitudes pour les grilles latlon)" "Resolution in meters (on the latutide axis for latlon grids)" }
-   set Bubble(ResLL)     { "Résolution en degrées" "Resolution in degrees" }
-   set Bubble(Dimension) { "Nombre de points de grilles" "Number of gridpoints" }
-   set Bubble(Coverage)  { "Couverture de la grille en latlon, spécifié par les coins opposés" "Grid coverage specified by the opposite corners in latlon" }
+   Grid::WindowSet $Data(Tab).grid
+   Grid::ConfigGet $Data(GridId)
+}
+
+proc Grid::Add { } {
+   variable Param
+   variable Data
+   
+   set Data(GridNo) [incr Data(GridNb)]
+
+   lappend Data(Grids) $Data(GridNo)
+   lappend Data(GridParams) [array get Grid::Param]
+
+   Option::Set $Data(Tab).grid.sel.no $Data(Grids)
+   $Data(Tab).grid.sel.no.b.m invoke end
+   
+   set Param(GridColor) [lindex $Data(GridColors) $Data(GridNo)]
+   ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
+   Grid::Create $Data(GridId)
+}
+
+proc Grid::Del { } {
+   variable Param
+   variable Data
+   
+   if { [llength $Data(Grids)]>1 } {
+      Viewport::UnAssign $Data(Frame) $Data(VP) $Data(GridId)
+
+      set idx [lsearch -exact $Data(Grids) $Data(GridNo)]
+      set Data(Grids) [lreplace $Data(Grids) $idx $idx]
+
+      Option::Set $Data(Tab).grid.sel.no $Data(Grids)      
+      $Data(Tab).grid.sel.no.b.m invoke end     
+   }
+}
+
+proc Grid::ConfigSet { { ID MODELGRID } } {
+   variable Param
+   variable Data
+
+   if { $Param(GridSize)==6 } {
+      set Param(GridBoundary) 1
+      set grid 0
+   } else {
+      set Param(GridBoundary) 0
+      set grid $Param(GridSize)
+   }
+
+   lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
+   
+   #----- Kind of a hack, but let's use the widget's internal previous value
+   #-transparency [expr int(0x$Param(GridAlpha)/255.0*100.0)]
+   if { [fstdfield is $ID] } {
+      fstdfield configure $ID -rendergrid $grid  -renderboundary $Param(GridBoundary) \
+         -width 2 -color $Param(GridColor)
+      Viewport::UpdateData $Data(Frame)        
+   }
+}
+
+proc Grid::ConfigGet { { ID MODELGRID } } {
+   variable Param
+   variable Data
+
+   if { [fstdfield is $ID] } {
+      set Param(GridSize)       [fstdfield configure $ID -rendergrid]
+      set Param(GridBoundary)   [fstdfield configure $ID -renderboundary]
+      set Param(GridColor)      [fstdfield configure $ID -color]
+      set Param(GridAlpha)      [fstdfield configure $ID -transparency]
+
+      if { $Param(GridBoundary) } {
+         set Param(GridSize) 6
+      }
+      ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
+      IcoMenu::Set  $Data(Tab).grid.sel.size   $Param(GridSize)
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -103,6 +176,7 @@ namespace eval Grid {
 
 proc Grid::Reset { } {
    variable Param
+   variable Data
 
    set Param(NI)       0                                                         ;# Number of gridpoint in I
    set Param(NJ)       0                                                         ;# Number of gridpoint in J
@@ -114,132 +188,17 @@ proc Grid::Reset { } {
    set Param(LonM)     0                                                         ;# Delta on longitude whehn translating grid
    set Param(PGSM)     ""                                                        ;# Grid description for PGSM
    set Param(GridInfo) ""                                                        ;# General grid description
-
-   fstdfield free MODELGRID
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Grid::Window>
-# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Interface de creation de grille.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#    Aucune.
-#
-#----------------------------------------------------------------------------
-
-proc Grid::Window { Frame } {
-   global GDefs
-   variable Lbl
-   variable Param
-   variable Bubble
-
-   #----- If wigdet already created
-   if { [winfo exists $Frame.type] } {
-      return
-   }
-
-   Option::Create $Frame.type  [lindex $Lbl(Grid) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame"
-   Option::Create $Frame.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create"
-   Option::Create $Frame.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create"
-   frame  $Frame.dim
-      label $Frame.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
-      entry $Frame.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5
-      label $Frame.dim.x -text x
-      entry $Frame.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5
-      pack $Frame.dim.lbl $Frame.dim.ni $Frame.dim.x $Frame.dim.nj -side left
-   label $Frame.bboxl -text [lindex $Lbl(BBox) $GDefs(Lang)] -anchor w
-   pack $Frame.type $Frame.reskm $Frame.resll $Frame.dim $Frame.bboxl -side top -fill x -expand True
-
-   frame $Frame.bbox
-#      checkbutton $Frame.bbox.mode -variable Page::Data(ToolMode) -onvalue Grid -offvalue SPI \
-#         -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorLight) \
-#         -command "SPI::ToolMode \$Page::Data(ToolMode) Data True"
-
-      label $Frame.bbox.llat0 -text lat0 -relief groove -bd 2
-      label $Frame.bbox.llon0 -text lon0 -relief groove -bd 2
-      label $Frame.bbox.llat1 -text lat1 -relief groove -bd 2
-      label $Frame.bbox.llon1 -text lon1 -relief groove -bd 2
-      entry $Frame.bbox.elat0 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat0) -width 10
-      entry $Frame.bbox.elon0 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon0) -width 10
-      entry $Frame.bbox.elat1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat1) -width 10
-      entry $Frame.bbox.elon1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon1) -width 10
-#      grid  $Frame.bbox.mode -rowspan 2 -row 0 -column 0 -sticky nsew
-      grid  $Frame.bbox.llat0 -sticky ew -row 0 -column 1
-      grid  $Frame.bbox.llon0 -sticky ew -row 0 -column 2
-      grid  $Frame.bbox.llat1 -sticky ew -row 0 -column 3
-      grid  $Frame.bbox.llon1 -sticky ew -row 0 -column 4
-      grid  $Frame.bbox.elat0 -sticky ew -row 1 -column 1
-      grid  $Frame.bbox.elon0 -sticky ew -row 1 -column 2
-      grid  $Frame.bbox.elat1 -sticky ew -row 1 -column 3
-      grid  $Frame.bbox.elon1 -sticky ew -row 1 -column 4
-
-   pack $Frame.bbox -padx 2 -pady 5 -ipadx 2 -ipady 2
-
-   bind $Frame.reskm.e    <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create }"
-   bind $Frame.resll.e    <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create }"
-   bind $Frame.dim.ni     <Return> "catch { Grid::Create }"
-   bind $Frame.dim.nj     <Return> "catch { Grid::Create }"
-   bind $Frame.bbox.elat0 <Return> "catch { Grid::Create }"
-   bind $Frame.bbox.elon0 <Return> "catch { Grid::Create }"
-   bind $Frame.bbox.elat1 <Return> "catch { Grid::Create }"
-   bind $Frame.bbox.elon1 <Return> "catch { Grid::Create }"
-
-   set Param(SizeWarn) True
-   set Param(ResLL)    [expr $Param(ResM)/$Param(LL2M)]
+   set Param(LatR)     0.0                                                       ;
+   set Param(LonR)     180.0                                                     ;
+   set Param(MaxCfl)   10                                                        ;
+   set Param(XLat1)    0                                                         ;# Center latitude
+   set Param(XLon1)    0                                                         ;# Center longitude
+   set Param(XLat2)    0                                                         ;# Rotation axis latitude
+   set Param(XLon2)    90                                                        ;# Rotation axis longitude
+   set Param(Angle)    0                                                         ;# Rotation angle
+   set Param(Extend)   0                                                         ;# Internal extension
    
-   Bubble::Create $Frame.type  $Bubble(Types)
-   Bubble::Create $Frame.reskm $Bubble(ResM)
-   Bubble::Create $Frame.resll $Bubble(ResLL)
-   Bubble::Create $Frame.dim   $Bubble(Dimension)
-   Bubble::Create $Frame.bbox  $Bubble(Coverage)
-   
-   Grid::WindowSet $Frame
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Grid::Set>
-# Creation : Juin 2015 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Ajuster l'interface selon le type de grille.
-#
-# Parametres :
-#  <Frame>   : Widget parent
-#
-# Retour:
-#
-# Remarques :
-#    Aucune.
-#
-#----------------------------------------------------------------------------
-
-proc Grid::WindowSet { Frame } {
-   variable Param
-   
-   $Frame.bbox.elat0 configure -state normal 
-   $Frame.bbox.elon0 configure -state normal 
-   $Frame.bbox.elat1 configure -state normal 
-   $Frame.bbox.elon1 configure -state normal 
-   $Frame.dim.ni     configure -state normal 
-   $Frame.dim.nj     configure -state normal 
-   
-   switch $Param(Type) {
-      "PS"   - 
-      "PS_N" -
-      "PS_S" { $Frame.bbox.elat1 configure -state disabled 
-               $Frame.bbox.elon1 configure -state disabled 
-             }     
-      "LL"   -
-      "LZ"   -
-      "UTM"  { $Frame.dim.ni configure -state disabled 
-               $Frame.dim.nj configure -state disabled 
-             }
-   }
+   fstdfield free $Data(GridId) ${Data(GridId)}TIC ${Data(GridId)}TAC ${Data(GridId)}PROJ ${Data(GridId)}MTRX
 }
 
 #----------------------------------------------------------------------------
@@ -259,17 +218,19 @@ proc Grid::WindowSet { Frame } {
 
 proc Grid::Init { } {
    variable Param
+   variable Data
 
    switch $Param(Type) {
       "PS"   { set Param(NI) 229; set Param(NJ) 229; }
       "PS_N" { set Param(NI) 229; set Param(NJ) 229; set Param(ResM)  150000; set Param(ResLL) [expr $Param(ResM)/$Param(LL2M)]; set Param(Lon0) 0.0; set Param(Lat0)  90.0 }
       "PS_S" { set Param(NI) 229; set Param(NJ) 229; set Param(ResM)  150000; set Param(ResLL) [expr $Param(ResM)/$Param(LL2M)]; set Param(Lon0) 0.0; set Param(Lat0) -90.0 }
       "LL"   { }
-      "LZ"   { }
+      "ZL"   { }
+      "ZE"   { }
       "UTM"  { }
    }
 
-   Grid::Create
+   Grid::Create $Data(GridId)
 }
 
 #----------------------------------------------------------------------------
@@ -289,15 +250,20 @@ proc Grid::Init { } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::Center { Lat Lon } {
+proc Grid::Center { Lat Lon { Update True } } {
    variable Param
+   variable Data
 
+   set Param(XLat1) $Lat
+   set Param(XLon1) $Lon
+   
    switch $Param(Type) {
       "PS"   { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_N" { set Param(Lon0) 0.0;  set Param(Lat0)  90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_S" { set Param(Lon0) 0.0;  set Param(Lat0) -90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "LL"   -
-      "LZ"   -
+      "ZL"   -
+      "ZE"   -
       "UTM"  { set dlat [expr ($Param(Lat1)-$Param(Lat0))*0.5]
                set dlon [expr ($Param(Lon1)-$Param(Lon0))*0.5]
                set Param(Lat0) [expr $Lat-$dlat]
@@ -307,14 +273,17 @@ proc Grid::Center { Lat Lon } {
              }
    }
 
-   Grid::Create
+   if { $Update} {
+      Grid::Create $Data(GridId)
+   
+   }
 }
 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::BBoxOrder>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Ordonnre les coordonnees de la bounding box
+# But      : Ordonne les coordonnees de la bounding box
 #
 # Parametres :
 #
@@ -349,6 +318,48 @@ proc Grid::BBoxOrder { } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Grid::NIJ>
+# Creation : Juin 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calcule les NIJ ou les Lat1 Lon1 selon le cas
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Grid::NIJ { } {
+   variable Param
+   variable Msg
+   variable Lbl
+
+   uplevel {
+      if { $Param(GetNIJ) } {
+         set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
+         set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
+
+         if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
+            if { ![Dialog::Default . 400 WARNING $Grid::Msg(Size) "\n\n\t$ni x $nj" 0 $Grid::Lbl(No) $Grid::Lbl(Yes)] } {
+               return ""
+            }
+            set Param(SizeWarn) False
+         }
+
+         set Param(NI) $ni
+         set Param(NJ) $nj
+      } else {
+         set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Res]]
+         set Param(Lon1) [set Lon1 [expr $Lon0+$Param(NI)*$Res]]
+      }
+      set Param(XLat1) [expr ($Lat0+$Lat1)*0.5]
+      set Param(XLon1) [expr ($Lon0+$Lon1)*0.5]
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Grid::Create>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
@@ -365,7 +376,7 @@ proc Grid::BBoxOrder { } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
+proc Grid::Create { { ID MODELGRID }  { GridInfo {} } } {
    variable Param
    variable Data
 
@@ -373,6 +384,9 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
       scan $GridInfo "%s %i %i %f %f %f %f %f %f" Param(Type) Param(NI) Param(NJ) Param(Lat0) Param(Lon0) Param(Lat1) Param(Lon1) Param(ResM) Param(ResLL)
    }
 
+   if { $Data(LockCenter) } {
+      Grid::Center $Param(XLat1) $Param(XLon1) False
+   }
    if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
 
       switch $Param(Type) {
@@ -380,23 +394,23 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
          "PS_S"  -
          "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResM) $Param(NI) $Param(NJ) $ID }
          "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
-         "LZ"    { Grid::CreateLZ  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
+         "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
+         "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $Param(Angle) $ID }
          "UTM"   { Grid::CreateUTM $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
       }
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
 
       if { [info exists ::tk_version] } {
-         fstdfield configure $ID -rendergrid 1 -colormap FLDMAPDEFAULT -color black -font XFont10
-
          set Data(Frame) $Page::Data(Frame)
          set Data(VP)    $Viewport::Data(VP)
 
+         Grid::ConfigSet $ID
          Viewport::Assign $Data(Frame) $Data(VP) $ID
-         Viewport::UpdateData $Data(Frame)
+         Grid::UpdateItems $Page::Data(Frame)
       }
    }
 }
-
+ 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::Decode>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
@@ -417,6 +431,7 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
 
 proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    variable Param
+   variable Data
 
    set center      False
 
@@ -451,7 +466,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    }
 
    #----- For latlon grid, check for global case
-   if { $Param(Type)=="LZ" || $Param(Type)=="LL" } {
+   if { $Param(Type)=="ZL" || $Param(Type)=="LL" || $Param(Type)=="ZE" } {
       if { [expr ($Param(NI)*$Param(ResLL))>=(360-$Param(ResLL))] } {
           set Param(Lon0) -180
           set Param(Lon1) 180
@@ -469,7 +484,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    if { $center || $Lon!=0.0 } {
       Grid::Center $Lat $Lon
    } else {
-      Grid::Create
+      Grid::Create $Data(GridId)
    }
    return $Param(GridInfo)
 }
@@ -555,23 +570,9 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 
 proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    variable Param
-   variable Msg
-   variable Lbl
 
    Grid::BBoxOrder
-
-   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
-   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
-
-   if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
-      if { ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
-         return ""
-      }
-      set Param(SizeWarn) False
-   }
-
-   set Param(NI) $ni
-   set Param(NJ) $nj
+   Grid::NIJ
 
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP L $Lat0 $Lon0 $Res $Res
@@ -582,7 +583,7 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Grid::CreateLZ>
+# Nom      : <Grid::CreateZL>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Creation d'une grille Z sur reference de grille latlon (L)
@@ -602,26 +603,14 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 #    Aucune.
 #
 #----------------------------------------------------------------------------
-
 proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
+   Grid::CreateZL $Lat0 $Lon0 $Lat1 $Lon1 $Res $ID
+}
+proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    variable Param
-   variable Msg
-   variable Lbl
 
    Grid::BBoxOrder
-
-   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
-   set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
-
-   if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
-      if { ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
-         return ""
-      }
-      set Param(SizeWarn) False
-   }
-
-   set Param(NI) $ni
-   set Param(NJ) $nj
+   Grid::NIJ
 
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
    fstdfield create ${ID}TIC $Param(NI) 1 1
@@ -648,6 +637,59 @@ proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
+
+   set Param(PGSM) ""
+
+   return ${ID}
+}
+#----------------------------------------------------------------------------
+# Nom      : <Grid::CreateZE>
+# Creation : Juin 2018 - Michel Van Eeckhout - CMC/CMDS
+#
+# But      : Creation d'une grille Z sur reference de grille E
+#
+# Parametres :
+#   <Lat0>   : Latitude du premier coin
+#   <Lon0>   : Longitude du premier coin
+#   <Lat1>   : Latitude du deuxieme coin
+#   <Lon1>   : Longitude du deuxieme coin
+#   <Res>    : Resolution en degres
+#   <Angle>  : Angle en degres
+#   <ID>     : Identificateur du champs qui sera cree
+#
+# Retour:
+#   <ID>     : Identificateur du champs cree
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } } {
+   variable Param
+
+   Grid::BBoxOrder
+   Grid::NIJ
+
+   set ll [projection function $Page::Data(Frame) -circle $Param(XLat1) $Param(XLon1) [expr $Res*1852.0*60*0.75*$Param(NI)] [expr $Angle-90.0]]
+   set Param(XLat2) [lindex $ll 0]
+   set Param(XLon2) [lindex $ll 1]
+      
+   fstdfield free ${ID} 
+   georef free ${ID}
+   
+   #----- Create the grid 
+   georef create ${ID}
+   georef define ${ID} -rpn $Param(NI) $Param(NJ) $Res $Res $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2) $Param(MaxCfl)
+
+   #----- Get size, it is possible that the grid build algorithm adjusts the nixnj
+   set sz [georef define ${ID} -size]
+   set ni [lindex $sz 0]
+   set nj [lindex $sz 1]
+   set Param(Extend) [expr $ni-$Param(NI)]
+   
+   fstdfield create ${ID} $ni $nj 1 $Param(Data)
+   fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X
 
    set Param(PGSM) ""
 
@@ -699,8 +741,8 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
          PARAMETER\[\"Latitude_Of_Origin\",0.0\],\
          UNIT\[\"Meter\",1.0\]\]\}"
 
-   georef free $ID
    fstdfield free ${ID} ${ID}PROJ ${ID}MTRX
+   georef free $ID
 
    georef create $ID $wkt
 
@@ -824,20 +866,32 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::MoveInit { Canvas VP } { }
+proc Grid::MoveInit { Canvas VP } {
+   variable Data
+   
+   set Data(VP)     $VP
+}
 
 proc Grid::Move { Frame VP } {
    variable Sim
    variable Param
+   variable Data
 
-   set Param(LatM) $Viewport::Map(LatD)
-   set Param(LonM) $Viewport::Map(LonD)
+   if { !$Data(LockCenter) } {
+      set Data(VP)    $VP
 
-   Grid::Create
+      set Param(LatM) $Viewport::Map(LatD)
+      set Param(LonM) $Viewport::Map(LonD)
+
+      Grid::Create $Data(GridId)
+   }
 }
 
 proc Grid::MoveDone { Canvas VP } {
-  variable Param
+   variable Param
+   variable Data
+   
+   set Data(VP)    $VP
 
    set Param(Lat0) [expr $Param(Lat0)+$Param(LatM)]
    set Param(Lon0) [expr $Param(Lon0)+$Param(LonM)]
@@ -845,18 +899,23 @@ proc Grid::MoveDone { Canvas VP } {
    set Param(Lon1) [expr $Param(Lon1)+$Param(LonM)]
    set Param(LatM) 0
    set Param(LonM) 0
-
 }
 
 proc Grid::DrawInit { Canvas VP } {
-  variable Param
+   variable Param
+   variable Data
+   
+   set Data(VP)     $VP
 
    set Param(Lat0) $Viewport::Map(LatCursor)
    set Param(Lon0) $Viewport::Map(LonCursor)
-   }
+}
 
 proc Grid::Draw     { Canvas VP } {
-  variable Param
+   variable Param
+   variable Data
+   
+   set Data(VP)    $VP
 
    set Param(Lat1) $Viewport::Map(LatCursor)
    set Param(Lon1) $Viewport::Map(LonCursor)
@@ -865,7 +924,131 @@ proc Grid::Draw     { Canvas VP } {
       set Param(Lat0) $Viewport::Map(LatCursor)
       set Param(Lon0) $Viewport::Map(LonCursor)
    }
-   Grid::Create
+
+   Grid::Create $Data(GridId)
 }
 
-proc Grid::DrawDone { Canvas VP } { }
+proc Grid::DrawDone { Canvas VP } {
+   variable Param
+   variable Data
+   
+   set Data(VP)    $VP
+
+   #----- Reorder corner LowerLeft and UpperRight
+   if { $Param(Lat1)<$Param(Lat0) } {
+      set tmp $Param(Lat0)
+      set Param(Lat0) $Param(Lat1)
+      set Param(Lat1) $tmp
+   }
+
+   if { $Param(Lon1)<$Param(Lon0) } {
+      set tmp $Param(Lon0)
+      set Param(Lon0) $Param(Lon1)
+      set Param(Lon1) $tmp
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Grid::Update>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" de l'outils apres une mise a jour dans SPI
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc Grid::Update { Frame } {
+   variable Data
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Grid::UpdateItems>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
+#            la projection.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc Grid::UpdateItems { Frame } {
+   global   GDefs
+   variable Data
+   variable Param
+
+
+
+  $Data(Canvas) delete GRIDMAKER
+
+   if { $Data(VP)!="" } {
+      set d [expr [$Data(VP) -distpix]/(1852.0*60)*2]
+      $Data(Tab).grid.ll0.lat configure -increment $d
+      $Data(Tab).grid.ll0.lon configure -increment $d
+      $Data(Tab).grid.ll1.lat configure -increment $d
+      $Data(Tab).grid.ll1.lon configure -increment $d
+      $Data(Tab).grid.mid.xlat1 configure -increment $d
+      $Data(Tab).grid.mid.xlon1 configure -increment $d
+      
+#      Viewport::DrawRange $Data(Frame) $Data(VP) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) GRIDMAKER red
+      if { $Grid::Param(Type)=="ZE" } {
+         Viewport::DrawLine $Data(Frame) $Data(VP) [list $Grid::Param(XLat1) $Grid::Param(XLon1) 0.0 $Grid::Param(XLat2) $Grid::Param(XLon2) 0.0] GRIDMAKER blue 2 TRUE
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Grid::PageActivate>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils
+#            lors d'un changement de page par l'usager.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc Grid::PageActivate { Frame } {
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Grid::AsProject>
+# Creation : Aout 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Sauvegarder l'etat de l'outils dans un projet SPI.
+#
+# Parametres :
+#   <File>   : Descripteur de fichier ou ecrire les commandes
+#
+# Remarques :
+#    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
+#      afin de re-instaurer l'outils dans son etat actuel.
+#
+#-------------------------------------------------------------------------------
+
+proc Grid::AsProject { File } {
+   variable Data
+   variable Param
+
+   if { [winfo exists .gridmaker] } {
+      puts $File "#----- Tool: Grid\n"
+      puts $File "set Grid::Param(Dock)   $Param(Dock)"
+      puts $File "set Grid::Param(Geom)   [winfo geometry .gridmaker]"
+      puts $File "Grid::Window"
+      puts $File "\n"
+   }
+}
