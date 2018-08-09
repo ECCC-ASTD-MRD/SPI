@@ -536,20 +536,60 @@ proc Mapper::ProjFile { Widget File } {
    }
 }
 
-#-------------------------------------------------------------------------------
-# Nom      : <Mapper::Draw...>
-# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulations de la selection sur la projection.
-#
-# Parametres :
-#   <Frame>  : Identificateur de Page
-#   <VP>     : Identificateur du Viewport
-#
-# Remarques :
-#    - Ces fonctions sont appele par le package Page au besoin.
-#
-#-------------------------------------------------------------------------------
+proc Mapper::IndexLoad { Object Idxs {Prompt True} } {
+   variable Msg
+   variable Lbl
+
+   #----- Make sure we have something to load
+   if { ![llength $Idxs] } {
+      return 0
+   }
+
+   #----- Get the base path for every file found in the index (which is itself in a folder named Index)
+   set path [file dirname [file normalize [ogrfile filename [ogrlayer define $Object -fid]]]]
+   set path [file join {*}[lrange [file split $path] 0 end-1]]
+
+   set loaded 0
+   foreach idx $Idxs {
+      #----- Check if we have an index that points to some other file(s)
+      if { ![catch {set files [ogrlayer define $Object -feature $idx IDX_PATH]}] && [llength $files]
+           && (!$Prompt || ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)])
+      } {
+         foreach file $files {
+            if { [set band [Mapper::GDAL::Read $path/$file]] != "" } {
+               ogrgeometry copy MASK$band [ogrlayer define $Object -geometry $idx]
+               ogrgeometry stats MASK$band -transform [gdalband define $band -georef]
+               gdalband configure $band -mask MASK$band
+               incr loaded
+            }
+         }
+      }
+   }
+
+   #----- Update the viewport
+   if { $loaded } {
+      set Mapper::Data(Cut) True
+      UpdateData $Page::Data(Frame)
+   }
+
+   return $loaded
+}
+
+proc Mapper::IndexRegion { Object Coords } {
+   if { [llength $Coords] == 4 } {
+      #----- We have a line, transform this into a rectangle
+      lassign $Coords lat0 lon0 lat1 lon1
+      set Coords [list $lat0 $lon0 $lat0 $lon1 $lat1 $lon1 $lat1 $lon0 $lat0 $lon0]
+   } elseif { [llength $Coords] > 4 } {
+      #----- We have a polygon, make sure it is closed
+      if { [lindex $Coords 0]!=[lindex $Coords end-1] && [lindex $Coords 1]!=[lindex $Coords end] } {
+         lappend Coords [lindex $Coords 0] [lindex $Coords 1]
+      }
+   }
+
+   #----- Load all the indexes
+   return [IndexLoad $Object [ogrlayer pick $Object $Coords True INTERSECT] False]
+}
 
 proc Mapper::Pick { VP X Y } {
    global GDefs
@@ -593,28 +633,8 @@ proc Mapper::Pick { VP X Y } {
             Mapper::OGR::Table  $Data(Object) False $idx
 
             #----- Check if this is an index to some other data
-            if { ![catch { set files [ogrlayer define $object -feature $idx IDX_PATH]}] } {
-               if { $files!="" } {
-                  if { ![Dialog::Default . 400 INFO $Msg(Index) "\n\n$files\n" 0 $Lbl(Yes) $Lbl(No)] } {
-                     foreach file $files {
-                        set path [file dirname [ogrfile filename $Data(Id$object)]]
-                        set file $path/../$file
-                        set band [Mapper::GDAL::Read $file]
-                        ogrgeometry copy MASK$band [ogrlayer define $object -geometry $idx]
-                        ogrgeometry stats MASK$band -transform [gdalband define $band -georef]
-                        gdalband configure $band -mask MASK$band
-                        set Mapper::Data(Cut) True
+            IndexLoad $object $idx
 
-                        set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
-                        set Data(Job) [lindex $Msg(Render) $GDefs(Lang)]
-                        update idletasks
-                        projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Data(Frame))
-                        Page::Update $Page::Data(Frame)
-                        set Data(Job) ""
-                     }
-                  }
-               }
-            }
             break
          }
       } elseif { [gdalband is $object] && [info exists ::Mapper::DepotWare::WMS::Data($object)]} {
@@ -622,6 +642,21 @@ proc Mapper::Pick { VP X Y } {
       }               
    }
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <Mapper::Draw...>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonctions de manipulations de la selection sur la projection.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#
+# Remarques :
+#    - Ces fonctions sont appele par le package Page au besoin.
+#
+#-------------------------------------------------------------------------------
 
 proc Mapper::DrawClear  { Frame VP } {
    variable Data
