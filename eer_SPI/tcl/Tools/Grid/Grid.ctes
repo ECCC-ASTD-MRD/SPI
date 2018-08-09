@@ -32,14 +32,15 @@ namespace eval Grid {
    set Data(Canvas) ""       ;#Canvas Actif
    set Data(Frame)  ""       ;#Frame actif
    set Data(VP)     ""       ;#Viewport actif
+   set Data(Tab)    ""       ;#Widget
    
    set Data(GridNb)       0
    set Data(GridNo)       0
    set Data(GridId)       MODELGRID                                              ;# Grid identificator 
    set Data(Grids)        { 0 }
    set Data(GridParams)   { "" }
-   set Data(GridColors)   { black blue red yellow green white }
-   set Data(LockCenter)   False                                                   ;
+   set Data(GridColors)   { black blue red yellow green white }                  ;# Multiple grid color list
+   set Data(LockCenter)   False                                                  ;# Fixe the grid center
 
    set Param(Id)       "User"                                                    ;# Grid identification (name)
    set Param(Data)     Float32                                                   ;# Data format of GRID field
@@ -77,10 +78,5 @@ namespace eval Grid {
    set Param(GridSize)     1
    set Param(GridColor)    black
    set Param(GridBoundary) 0
-   set Param(GridAlpha)    100
-      
-#   set Param(Grid0) [array get Grid::Param]
-#   set Param(Grid1) [array get Grid::Param]
-#   set Param(Grid2) [array get Grid::Param]
-#   set Param(Grid3) [array get Grid::Param]
+   set Param(GridAlpha)    100      
 }

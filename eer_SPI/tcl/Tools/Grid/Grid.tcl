@@ -401,8 +401,9 @@ proc Grid::Create { { ID MODELGRID }  { GridInfo {} } } {
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
 
       if { [info exists ::tk_version] } {
-         set Data(Frame) $Page::Data(Frame)
-         set Data(VP)    $Viewport::Data(VP)
+         set Data(Frame)  $Page::Data(Frame)
+         set Data(Canvas) $Page::Data(Canvas)
+         set Data(VP)     $Viewport::Data(VP)
 
          Grid::ConfigSet $ID
          Viewport::Assign $Data(Frame) $Data(VP) $ID
@@ -987,18 +988,19 @@ proc Grid::UpdateItems { Frame } {
    variable Data
    variable Param
 
-
-
-  $Data(Canvas) delete GRIDMAKER
-
    if { $Data(VP)!="" } {
-      set d [expr [$Data(VP) -distpix]/(1852.0*60)*2]
-      $Data(Tab).grid.ll0.lat configure -increment $d
-      $Data(Tab).grid.ll0.lon configure -increment $d
-      $Data(Tab).grid.ll1.lat configure -increment $d
-      $Data(Tab).grid.ll1.lon configure -increment $d
-      $Data(Tab).grid.mid.xlat1 configure -increment $d
-      $Data(Tab).grid.mid.xlon1 configure -increment $d
+      $Data(Canvas) delete GRIDMAKER
+
+      if { [winfo exists $Data(Tab).grid] } {
+         #----- Adjust increment resolution relative to zoom
+         set d [expr [$Data(VP) -distpix]/(1852.0*60)*2]
+         $Data(Tab).grid.ll0.lat configure -increment $d
+         $Data(Tab).grid.ll0.lon configure -increment $d
+         $Data(Tab).grid.ll1.lat configure -increment $d
+         $Data(Tab).grid.ll1.lon configure -increment $d
+         $Data(Tab).grid.mid.xlat1 configure -increment $d
+         $Data(Tab).grid.mid.xlon1 configure -increment $d
+      }
       
 #      Viewport::DrawRange $Data(Frame) $Data(VP) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) GRIDMAKER red
       if { $Grid::Param(Type)=="ZE" } {

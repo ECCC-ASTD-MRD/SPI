@@ -38,8 +38,6 @@ proc Grid::Window { } {
    variable Param
 
    set Data(Active) 1
-   set Data(Canvas) $Page::Data(Canvas)
-   set Data(Frame)  $Page::Data(Frame)
    
    set Grid::Data(GridId) MODELGRID0
 
@@ -105,6 +103,7 @@ proc Grid::Window { } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
+
 proc Grid::Frame { Frame { Multi False } } {
    global GDefs
    variable Data
@@ -112,11 +111,15 @@ proc Grid::Frame { Frame { Multi False } } {
    variable Bubble
    variable Param
    
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
    if { [winfo exists $Frame.grid] } {
       return
    }
    
    frame $Frame.grid
+   
       if { $Multi } {
          frame $Frame.grid.sel
             Option::Create $Frame.grid.sel.no [lindex $Lbl(GridNo) $GDefs(Lang)] Grid::Data(GridNo) 0 -1 $Data(Grids) "Grid::Switch"
