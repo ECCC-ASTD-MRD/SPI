@@ -1200,6 +1200,10 @@ proc APViz::AssignVariable { Product Index } {
             set colormapName $var$Index
             if {[lsearch -exact $Data(Colormaps) $colormapName] < 0} {
                set configColormap [fstdfield configure $fieldID -colormap]
+               if {$configColormap eq ""} {
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap)
+                  set configColormap $Data(DefaultColormap)
+               }
                colormap create $colormapName
                colormap copy $colormapName $configColormap
                
@@ -1742,10 +1746,11 @@ proc APViz::DeleteWidget { Widget } {
 # Nom      : <APViz::CreateFileTree>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
-# But      :    Construire l'arborescence de fichiers de config
+# But      :    Construire l'arborescence de fichiers de config selon le 
+#               dossier selectionne
 #
 # Parametres    :
-#       <Widget>        : Widget a supprimer
+#       <Path>  : Path vers le fichier de config
 #
 # Retour:
 #
@@ -1753,21 +1758,26 @@ proc APViz::DeleteWidget { Widget } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::CreateFileTree { } {
+proc APViz::CreateFileTree { Path } {
    variable Data
    variable Param 
    
    #----- Verify if tree already exist
    if { [llength [FILETREE children root]] } {
-      return
+      #----- Reinitialize tree
+      FILETREE destroy
+      struct::tree FILETREE
+      
+      #----- Read APViz_Data.tcl file
+      if {[catch { source ${Path}APViz_Data.tcl }]} {
+         lappend msg "Fichier APViz_Data.tcl manquant de $path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $path"
+         ::Dialog::Info . $msg
+      }
    }
    
    #----- Construct tree with all files and directories from configs path
-   #TODO: Do for each path
-   #APViz::ConstructTreeBranches FILETREE root $Param(ConfigPath) 0
-   foreach path $Param(ConfigPath) {
-      APViz::ConstructTreeBranches FILETREE root $path 0
-   }
+   APViz::ConstructTreeBranches FILETREE root $Path 0
 
    CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
       IdCmd APViz::GetTreeId \
@@ -1797,12 +1807,12 @@ proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
 
    #----- Get file and folders list
    set fileList [glob -nocomplain -tails -path $Path *]
-
+   
    foreach file $fileList {
       if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
          #----- Create node
          $Tree insert $ParentNode end $file
-         
+
          #----- Set node attributes
          $Tree set $file name $file
          

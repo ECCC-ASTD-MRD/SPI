@@ -91,12 +91,18 @@ proc APViz::Window { } {
             pack $Data(Tab).head.dateConfig.lbl $Data(Tab).head.dateConfig.cb $Data(Tab).head.dateConfig.dateLock -side left
          pack $Data(Tab).head.dateConfig -side right
          
-
          bind $Data(Tab).head.dateConfig.cb.select <Return> "APViz::DateBinding"
       pack $Data(Tab).head -side top -fill x
+
       
       #----- Filetree
       labelframe $Data(Tab).filetree -text "Filetree"
+         frame $Data(Tab).filetree.repertoire
+            label $Data(Tab).filetree.repertoire.lbl -text "Config folder: "
+            ComboBox::Create $Data(Tab).filetree.repertoire.cb APViz::Data(Repertoire) editclose sorted double -1 $Param(ConfigPath) 36 5 "APViz::CreateFileTree \$APViz::Data(Repertoire)"
+            pack $Data(Tab).filetree.repertoire.lbl $Data(Tab).filetree.repertoire.cb -side left
+         pack $Data(Tab).filetree.repertoire -side top -fill x
+
          canvas $Data(Tab).filetree.canvas -bg white -relief sunken -bd 1 -yscrollcommand "$Data(Tab).filetree.scrolly set" \
            -xscrollcommand "$Data(Tab).filetree.scrollx set" -scrollregion "1 1 250 500" -width 1 -height 1
          scrollbar $Data(Tab).filetree.scrolly -orient vertical -bd 1 -width 10 -command "$Data(Tab).filetree.canvas yview"
@@ -106,7 +112,7 @@ proc APViz::Window { } {
          pack $Data(Tab).filetree.scrolly -side left -fill y
       pack $Data(Tab).filetree -side top -fill both -expand True
       
-      APViz::CreateFileTree
+      #APViz::CreateFileTree
       
       #----- Description
       labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
