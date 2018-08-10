@@ -236,7 +236,7 @@ proc Mapper::Del { { Object "" } { Frame "" } } {
          }      
       }
    
-      set Viewport::Data(Data$Frame) [lreplace $Viewport::Data(Data$Frame) $idx $idx]
+      set Viewport::Data(Data$Frame) [lsearch -all -inline -not -exact $Viewport::Data(Data$Frame) $Object]
       Mapper::UpdateData $Frame
 
       if { [info exists Mapper::Data(Id$Object)] } {
@@ -542,14 +542,14 @@ proc Mapper::IndexLoad { Object Idxs {Prompt True} } {
 
    #----- Make sure we have something to load
    if { ![llength $Idxs] } {
-      return 0
+      return ""
    }
 
    #----- Get the base path for every file found in the index (which is itself in a folder named Index)
    set path [file dirname [file normalize [ogrfile filename [ogrlayer define $Object -fid]]]]
    set path [file join {*}[lrange [file split $path] 0 end-1]]
 
-   set loaded 0
+   set loaded {}
    foreach idx $Idxs {
       #----- Check if we have an index that points to some other file(s)
       if { ![catch {set files [ogrlayer define $Object -feature $idx IDX_PATH]}] && [llength $files]
@@ -560,14 +560,14 @@ proc Mapper::IndexLoad { Object Idxs {Prompt True} } {
                ogrgeometry copy MASK$band [ogrlayer define $Object -geometry $idx]
                ogrgeometry stats MASK$band -transform [gdalband define $band -georef]
                gdalband configure $band -mask MASK$band
-               incr loaded
+               lappend loaded $band
             }
          }
       }
    }
 
    #----- Update the viewport
-   if { $loaded } {
+   if { [llength $loaded] } {
       set Mapper::Data(Cut) True
       UpdateData $Page::Data(Frame)
    }
