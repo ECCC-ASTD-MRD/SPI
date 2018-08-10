@@ -50,25 +50,6 @@ if { [info exists env(SPI_APVIZ)] } {
    }
 }
 
-# For 1 path
-set comment {
-if { [info exists env(SPI_APVIZ)] } {
-   set APViz::Param(ConfigPath) $env(SPI_APVIZ)
-   
-   #----- Getting config files path
-   if {[catch { source ${APViz::Param(ConfigPath)}APViz_Data.tcl }]} {
-      lappend msg "Fichier APViz_Data.tcl manquant de ${APViz::Param(ConfigPath)}"
-      lappend msg "File APViz_Data.tcl containing paths missing from ${APViz::Param(ConfigPath)}"
-      ::Dialog::Info . $msg
-   }
-
-   #----- Getting colormaps
-   if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
-      set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
-   }
-}
-}
-
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
@@ -1126,18 +1107,12 @@ proc APViz::AssignVariable { Product Index } {
          dict incr Data(VarsDict) $var
          
          #----- Apply variable configs from config file 
-         if { [info exist Params(${var}$index)] } {
-            catch { 
-               eval dataspec configure $obsID $Params(${var}$index)
+         if {[catch {eval dataspec configure $obsID $Params(${var}$index)}]} {
+            if {[catch {eval dataspec configure $obsID $Params($var) }]} {
+               #----- Configurations par defaut TODO: CHoose a colormap that exists
+               dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
+                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
-         } elseif { [info exist Params($var)] } {
-            catch { 
-               eval dataspec configure $obsID $Params($var) 
-            }
-         } else {
-            #----- Configurations par defaut
-            dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu \
-               -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
          }
          
          dataspec configure $obsID -desc "$model (${timestamp}_)" -active $Value(Toggle,$Index)
@@ -1214,17 +1189,11 @@ proc APViz::AssignVariable { Product Index } {
             dict incr Data(VarsDict) $var
             
             #----- Apply variable configs from config file 
-            if { [info exist Params(${var}$index)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params(${var}$index)
+            if {[catch {eval fstdfield configure $fieldID $Params(${var}$index)}]} {
+               if {[catch {eval fstdfield configure $fieldID $Params($var)}]} {
+                  #----- Valeur par defaut
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
                }
-            } elseif { [info exist Params($var)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params($var)
-               }
-            } else {
-               #----- Valeur par defaut
-               fstdfield configure $fieldID -colormap REC_Rainbow -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
             }
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
@@ -1684,6 +1653,7 @@ proc APViz::CloseFiles { } {
 proc APViz::CreateColormaps { } {
    global env
    variable DataSrc
+   variable Data
    variable ::MapBox::Param
    
    if {[info exists DataSrc(Colormaps)]} {
@@ -1695,6 +1665,9 @@ proc APViz::CreateColormaps { } {
             regsub .rgba $colormap "" colormapName
             if {![colormap is $colormapName]} {
                colormap create $colormapName -file ${path}/$colormap
+               if {$Data(DefaultColormap) eq ""} {
+                  set Data(DefaultColormap) $colormapName
+               }
             }
          }
          
@@ -1712,6 +1685,9 @@ proc APViz::CreateColormaps { } {
          regsub .rgba $colormap "" colormapName
          if {![colormap is $colormapName]} {
             colormap create $colormapName -file ${spiPath}/$colormap
+            if {$Data(DefaultColormap) eq ""} {
+               set Data(DefaultColormap) $colormapName
+            }
          }
       }
    }
@@ -2521,7 +2497,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          dict incr vDict $var
          
          set params "set Params(${var}$index) \""
-         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema value]
+         set paramLst [list font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema value colormap color]
 
          foreach param $paramLst {
             if {$param eq "colormap"} {
