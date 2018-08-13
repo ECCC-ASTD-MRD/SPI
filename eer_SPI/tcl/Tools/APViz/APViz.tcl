@@ -35,13 +35,20 @@ source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
 if { [info exists env(SPI_APVIZ)] } {
    foreach path [split $env(SPI_APVIZ) :] {
       lappend APViz::Param(ConfigPath) $path
-      
+      puts "Path is: $path"
       #----- Getting config files path
-      if {[catch { source ${path}APViz_Data.tcl }]} {
+      if {[file isfile ${path}APViz_Data.tcl]} {
+         if {[catch {source ${path}APViz_Data.tcl} error]} {
+            lappend msg "Erreur de lecture dans ${path}APViz_Data.tcl  : $error"
+            lappend msg "Sourcing error in ${path}APViz_Data.tcl : $error"
+            ::Dialog::Info . $msg
+         }
+      } else {
          lappend msg "Fichier APViz_Data.tcl manquant de $path"
          lappend msg "File APViz_Data.tcl containing paths missing from $path"
          ::Dialog::Info . $msg
       }
+      
       
       #----- Getting colormaps
       if {[file isdirectory ${path}Colormap/]} {
@@ -487,6 +494,9 @@ proc APViz::Source { Path Widget } {
          
          labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
          pack $Widget.calc -side bottom -fill both -expand True
+         
+         #----- Create formula lists
+         APViz::CreateFormulaLists
       }
       
       #-------------------------------------------------------------------------------
@@ -1770,8 +1780,8 @@ proc APViz::CreateFileTree { Path } {
       
       #----- Read APViz_Data.tcl file
       if {[catch { source ${Path}APViz_Data.tcl }]} {
-         lappend msg "Fichier APViz_Data.tcl manquant de $path"
-         lappend msg "File APViz_Data.tcl containing paths missing from $path"
+         lappend msg "Fichier APViz_Data.tcl manquant de $Path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $Path"
          ::Dialog::Info . $msg
       }
    }
@@ -1782,6 +1792,24 @@ proc APViz::CreateFileTree { Path } {
    CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
       IdCmd APViz::GetTreeId \
       SelectCmd APViz::SelectFiletreeBranch
+}
+
+proc APViz::CreateFormulaLists { } {
+   variable Data
+
+   #----- Construct formula lists
+   set Data(FormulaNames) {}
+   set Data(Formulas) {}
+
+   foreach formulaPair $Data(FormulaDefinitions) {
+      if {[lsearch -exact $Data(FormulaNames) [lindex $formulaPair 0]] < 0} {
+         lappend Data(FormulaNames) [lindex $formulaPair 0]
+         lappend Data(Formulas) [lindex $formulaPair 1]
+      }
+   }
+   
+   puts "FormulaNames: $Data(FormulaNames)"
+   puts "Formulas: $Data(Formulas)"
 }
 
 #----------------------------------------------------------------------------
