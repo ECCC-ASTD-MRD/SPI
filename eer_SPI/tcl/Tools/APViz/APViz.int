@@ -112,8 +112,6 @@ proc APViz::Window { } {
          pack $Data(Tab).filetree.scrolly -side left -fill y
       pack $Data(Tab).filetree -side top -fill both -expand True
       
-      #APViz::CreateFileTree
-      
       #----- Description
       labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
 	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
@@ -310,6 +308,7 @@ proc APViz::AddLayerWindow { } {
 proc APViz::CreateAddLayerRow { Widget Type Row } {
    variable Data
    variable Bubble
+   variable FieldList
 
    set lowerType [string tolower $Type] 
    #----- Field name
@@ -317,7 +316,16 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    
    #----- Value and range widgets
    #----- If range is not empty, value will be default value
-   entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
+   if {$Type eq "Vars"} {
+      ComboBox::Create $Widget.${lowerType}Value APViz::Data(AddLayer$Type,Value) edit sorted nodouble -1 $FieldList(ALL) 18 20 ""
+   } else {
+      entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
+   }
+   
+   if {$Type eq "Models"} {
+      $Widget.${lowerType}Value configure -validate focus -vcmd "APViz::SetAvailableVarsList \$APViz::Data(AddLayer$Type,Value) $Widget.varsValue"
+   }
+
    Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
       "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
    set rowNb [expr $Row + 1]
@@ -489,12 +497,19 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
 
 proc APViz::AddRangeBubbleInfo { Widget Option } {
    variable Data
+   variable FieldList
+   
+   if {[lsearch -exact [array names FieldList] $Data(RangeName,$Option)] >= 0} {
+      set values $FieldList($Data(RangeName,$Option))
+   } else {
+      set values $Data(Range,$Option)
+   }
    
    #----- Construction du message
-   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $Data(Range,$Option)"
-   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $Data(Range,$Option)"
+   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $values"
+   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $values"
    
-   Bubble::Create $Widget $msg
+   Bubble::Create $Widget $msg 600
 }
 
 #----------------------------------------------------------------------------
@@ -580,14 +595,20 @@ proc APViz::AddNewLayer { Widget } {
 
 proc APViz::SetDefaultValue { Option } {
    variable Data
+   variable FieldList
    
-   if {$Data(AddLayer$Option,Value) eq ""} {      
-      #----- Putting first list element as default value 
-      if {[set value [lindex [split $Data(Range,$Option) " "] 0]] ne "NONE"} {
+   #----- Putting first list element as default value 
+   if {[lsearch -exact [array names FieldList] $Data(Range,$Option)] >= 0} {
+      set values [split $FieldList($Data(Range,$Option)) " "]
+      if {($Data(AddLayer$Option,Value) eq "") || ([lsearch -exact $values $Data(AddLayer$Option,Value)] < 0)} {
+         set Data(AddLayer$Option,Value) [lindex [split $values " "] 0]
+      }
+   } elseif {[set value [lindex [set values [split $Data(Range,$Option) " "]] 0]] ne "NONE"} {
+      if {($Data(AddLayer$Option,Value) eq "") || ([lsearch -exact $values $Data(AddLayer$Option,Value)] < 0) } {
          #----- Remove brackets
          regsub \(\{|\}\) $value "" value
          set Data(AddLayer$Option,Value) $value
-      }     
+      }
    }
 }
 
@@ -613,4 +634,25 @@ proc APViz::ClearAddLayerValues { } {
       set Data(Range,$type) ""
       set Data(AddLayer$type,Value) ""
    }
+}
+
+proc APViz::SetAvailableVarsList { Model Widget } {
+   variable FieldList
+   variable Data
+   
+   set default $Data(AddLayerVars,Value)
+   ComboBox::DelAll $Widget
+   
+   if {[info exists FieldList($Model)]} {
+      ComboBox::AddList $Widget $FieldList($Model)
+   } else {
+      ComboBox::DelAll $Widget
+      ComboBox::AddList $Widget $FieldList(ALL)
+   }
+   
+   if {[lsearch -exact $FieldList(ALL) $default] >= 0} {
+      set Data(AddLayerVars,Value) $default
+   }    
+   
+   return True
 }

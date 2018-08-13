@@ -453,6 +453,9 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
          
+         #----- Creation des ransges de variables
+         CreateVariableRanges
+         
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
             #----- Default values exist
@@ -616,7 +619,6 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
-            # ICIIII!!!
             CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no Viewports false 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
@@ -664,6 +666,20 @@ proc APViz::Source { Path Widget } {
          set Value(NbLayers) $no
          
          AdjustSpinboxValues $Widget False
+      }
+      
+      proc CreateVariableRanges { } {
+         variable ::APViz::FieldList
+         variable Range
+
+         foreach variableType [array names FieldList] {
+            set Range($variableType) $FieldList($variableType)
+            #----- Add to dictionary
+            if {[lsearch -exact [dict get $APViz::Data(RangeNames) Vars] $variableType] < 0} {
+               dict lappend APViz::Data(RangeNames) Vars $variableType
+               dict lappend APViz::Data(Ranges) Vars $variableType
+            }
+         }
       }
 
       #-------------------------------------------------------------------------------
@@ -2244,11 +2260,15 @@ proc APViz::GenerateConfigFile { Path } {
 
 proc APViz::WriteRanges { Product FileID } {
    variable ${Product}::Range
-   #----- Copy the general configs
+   variable FieldList
+   
+   #----- Copy the range configs
    puts $FileID "\#----- Ranges"
    foreach rangeConfig [array names Range] {
-      set rangeValues $Range($rangeConfig)
-      puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+      if {[lsearch -exact [array names FieldList] $rangeConfig] < 0} {
+         set rangeValues $Range($rangeConfig)
+         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+      }
    }
 
 }
@@ -2701,10 +2721,10 @@ proc APViz::WriteConfigSection { FileID DataSource } {
 
 proc APViz::GetLevelType { Source } {
    switch $Source {
-      "pres"	{ return PRESSURE }
-      "eta"	{ return ETA }
-      "hyb"	{ return HYBRID }
-      "diag"	{ return PRESSURE }
+      "PRES"	{ return PRESSURE }
+      "ETA"	{ return ETA }
+      "HYB"	{ return HYBRID }
+      "DIAG"	{ return PRESSURE }
    }
 
    puts "Cannot determine level with source $Source."
@@ -2762,6 +2782,7 @@ proc APViz::InitializeVars { } {
 
 proc APViz::ReinitializeVP { } {
    variable Data
+   variable FieldList
 
    for {set i 1} {$i <= $Data(VPCount)} {incr i} {
       Viewport::UnAssign $Data(Frame) VP$i
@@ -2825,6 +2846,11 @@ proc APViz::ReinitializeVP { } {
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
       dict lappend Data(Ranges) $column NONE
+      
+      if {$column eq "Vars"} {
+         dict lappend Data(RangeNames) $column "ALL"
+         dict lappend Data(Ranges) $column "ALL"
+      }
    }
 }
 
