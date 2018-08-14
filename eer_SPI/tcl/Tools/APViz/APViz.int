@@ -144,85 +144,6 @@ proc APViz::Window { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::SaveAsWindow>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Creation de la fenetre "Enregistrer Sous"
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::SaveAsWindow { } {
-   global GDefs
-
-   variable Param
-   variable Lbl
-   variable Data
-   variable Bubble
-
-   if {$Data(CurrentProduct) eq ""} {
-      ::Dialog::Info . $Lbl(SelectProduct)
-      return
-   }
-
-   variable $Data(CurrentProduct)::Value
-   variable $Data(CurrentProduct)::RowID
-
-   APViz::DeleteWidget .saveAsBox
-
-   toplevel .saveAsBox
-   wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
-   wm transient .saveAsBox $Data(Frame)
-   wm geom      .saveAsBox 425x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
-
-   .saveAsBox configure -cursor left_ptr
-
-   set Param(Frame) ""
-
-   #----- Set path according to user selections
-   set Param(Path) [file dirname $Data(ConfigPath)]/
-   set Param(FullName) $Data(ConfigPath)
-   set Param(Filename) [file tail $Data(ConfigPath)]
-
-   TabFrame::Create .saveAsBox.tab 1 ""
-   pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5
-
-   wm title .saveAsBox "SaveAs"
-   set Param(Frame) [TabFrame::Add .saveAsBox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
-
-   labelframe $Param(Frame).config -text "Configurations"
-   pack $Param(Frame).config -side top -fill x -padx 5 -ipady 2 -anchor n
-
-   frame $Param(Frame).config.folder
-      label $Param(Frame).config.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
-      button $Param(Frame).config.folder.sel -image OPEN -relief flat -bd 0 -overrelief raised \
-         -command { APViz::FilePathDefine [FileBox::Create .saveAsBox $APViz::Param(Path) Save $APViz::Param(Formats) $APViz::Param(Filename)] }
-      entry $Param(Frame).config.folder.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FullName)
-      $Param(Frame).config.folder.name xview moveto 1
-      pack $Param(Frame).config.folder.lbl -side left 
-      pack $Param(Frame).config.folder.name -side left -fill both -expand True
-      pack $Param(Frame).config.folder.sel -side left -fill y
-   pack $Param(Frame).config.folder -side top -fill x -expand True
-
-   frame .saveAsBox.par -relief raised -bd 1
-   pack .saveAsBox.par -side top -padx 5 -fill x
-
-   frame .saveAsBox.command
-      button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile ; APViz::DeleteWidget .saveAsBox"
-      button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
-      pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
-   pack .saveAsBox.command -side top -fill x -pady 5 -padx 5
-
-   raise .saveAsBox
-   grab .saveAsBox
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <APViz::AddLayerWindow>
 # Creation : Aout 2018 - C. Nguyen - CMC/CMOE
 #
@@ -291,6 +212,42 @@ proc APViz::AddLayerWindow { } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::CalculateNumericalRange>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une range numerique
+#
+# Parametres :
+#       <Widget> : Le widget du entry affichant la range
+#       <Max>    : Valeur max de la range
+#       <Min>    : Valeurs min de la range
+#       <Step>   : Le pas entre chaque chiffre
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CalculateNumericalRange { Widget Max Min Step } {
+   variable Lbl
+   
+   #----- Verify if all are digits
+   if {[string is digit $Max] && ($Max ne "") && [string is digit $Min] && ($Min ne "") && [string is digit $Step] && ($Step ne "") } {
+      set range ""
+      set num $Min
+      while {$num <= $Max} {
+         set range [concat $range $num]
+         set num [expr $num + $Step]
+      }
+      $Widget delete 0 [string length [$Widget get]]
+      $Widget insert 0 $range
+   } else {
+      ::Dialog::Info . $Lbl(Digits)
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::CreateAddLayerRow>
 # Creation : Aout 2018 - C. Nguyen - CMC/CMOE
 #
@@ -339,6 +296,62 @@ proc APViz::CreateAddLayerRow { Widget Type Row } {
    
    Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
    Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
+}
+
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateRange>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une range
+#
+# Parametres :
+#       <Widget>        : Le widget de la fenetre parent
+#       <RangeName>     : Le nom de la range
+#       <RangeValues>   : Valeurs de la range
+#       <RangeCategory> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                         Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
+   variable Data
+   variable Lbl
+   
+   #----- Verify if all field have been filled
+   if {($RangeName ne "") && ($RangeCategory ne "") && ([llength $RangeValues] > 0)} {      
+      #----- Make sure that the range name is unique
+      if { [lsearch -exact [dict get $Data(RangeNames) $RangeCategory] $RangeName] < 0} {
+         #----- Create range
+         if {[set product $Data(CurrentProduct)] ne ""} {
+            eval set ${product}::Range($RangeName) \{$RangeValues\}
+         }
+
+         #----- Add to ranges dict and rangenames dict
+         dict lappend APViz::Data(RangeNames) $RangeCategory $RangeName
+         dict lappend APViz::Data(Ranges) $RangeCategory \{$RangeValues\}
+         
+         #----- Update Combobox lists
+         set lowerCategory [string tolower $RangeCategory]
+         if {[winfo exists .addLayerBox.layers.layerGrid.${lowerCategory}Range]} {
+            Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range [dict get $Data(Ranges) $RangeCategory] [dict get $Data(RangeNames) $RangeCategory]
+         }      
+
+         APViz::DeleteWidget .addRangeBox
+      } else {
+         set fr "Le nom \"$RangeName\" est deja utilise. Veillez en choisir un autre."
+         set eng "The name \"$RangeName\" has already been used. Please choose another one."
+         set msg [list $fr $eng]
+         ::Dialog::Info . $msg
+      }
+   } else {
+      puts "Missing fields : $RangeName | $RangeCategory | $RangeValues"
+      ::Dialog::Info . $Lbl(EmptyFields)
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -434,135 +447,6 @@ proc APViz::CreateRangeWindow { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::CalculateNumericalRange>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Creation d'une range numerique
-#
-# Parametres :
-#       <Widget> : Le widget du entry affichant la range
-#       <Max>    : Valeur max de la range
-#       <Min>    : Valeurs min de la range
-#       <Step>   : Le pas entre chaque chiffre
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::CalculateNumericalRange { Widget Max Min Step } {
-   variable Lbl
-   
-   #----- Verify if all are digits
-   if {[string is digit $Max] && ($Max ne "") && [string is digit $Min] && ($Min ne "") && [string is digit $Step] && ($Step ne "") } {
-      set range ""
-      set num $Min
-      while {$num <= $Max} {
-         set range [concat $range $num]
-         set num [expr $num + $Step]
-      }
-      $Widget delete 0 [string length [$Widget get]]
-      $Widget insert 0 $range
-   } else {
-      ::Dialog::Info . $Lbl(Digits)
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::CreateRange>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Creation d'une range
-#
-# Parametres :
-#       <Widget>        : Le widget de la fenetre parent
-#       <RangeName>     : Le nom de la range
-#       <RangeValues>   : Valeurs de la range
-#       <RangeCategory> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
-#                         Vars Levels IP3 Viewports) 
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
-   variable Data
-   variable Lbl
-   
-   #----- Verify if all field have been filled
-   if {($RangeName ne "") && ($RangeCategory ne "") && ([llength $RangeValues] > 0)} {
-      puts "All fields filled : $RangeName | $RangeCategory | $RangeValues"
-      
-      #----- Make sure that the range name is unique
-      if { [lsearch -exact [dict get $Data(RangeNames) $RangeCategory] $RangeName] < 0} {
-         #----- Create range
-         if {[set product $Data(CurrentProduct)] ne ""} {
-            eval set ${product}::Range($RangeName) \{$RangeValues\}
-         }
-
-         #----- Add to ranges dict and rangenames dict
-         dict lappend APViz::Data(RangeNames) $RangeCategory $RangeName
-         dict lappend APViz::Data(Ranges) $RangeCategory \{$RangeValues\}
-         
-         #----- Update Combobox lists
-         set lowerCategory [string tolower $RangeCategory]
-         if {[winfo exists .addLayerBox.layers.layerGrid.${lowerCategory}Range]} {
-            Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range [dict get $Data(Ranges) $RangeCategory] [dict get $Data(RangeNames) $RangeCategory]
-         }      
-
-         APViz::DeleteWidget .addRangeBox
-      } else {
-         set fr "Le nom \"$RangeName\" est deja utilise. Veillez en choisir un autre."
-         set eng "The name \"$RangeName\" has already been used. Please choose another one."
-         set msg [list $fr $eng]
-         ::Dialog::Info . $msg
-      }
-   } else {
-      puts "Missing fields : $RangeName | $RangeCategory | $RangeValues"
-      ::Dialog::Info . $Lbl(EmptyFields)
-   }
-   
-   
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::AddRangeBubbleInfo>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Creation d'une bulle d'aide concernant les informations sur le range
-#
-# Parametres :
-#       <Widget> : Le widget de la fenetre parent
-#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
-#                  Vars Levels IP3 Viewports) 
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::AddRangeBubbleInfo { Widget Option } {
-   variable Data
-   variable FieldList
-   
-   if {[lsearch -exact [array names FieldList] $Data(RangeName,$Option)] >= 0} {
-      set values $FieldList($Data(RangeName,$Option))
-   } else {
-      set values $Data(Range,$Option)
-   }
-   
-   #----- Construction du message
-   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $values"
-   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $values"
-   
-   Bubble::Create $Widget $msg 600
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <APViz::AddNewLayer>
 # Creation : Aout 2018 - C. Nguyen - CMC/CMOE
 #
@@ -627,6 +511,180 @@ proc APViz::AddNewLayer { Widget } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::AddRangeBubbleInfo>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une bulle d'aide concernant les informations sur le range
+#
+# Parametres :
+#       <Widget> : Le widget de la fenetre parent
+#       <Option> : Le type de rangee (valeurs possibles: Models Runs Hours Sources 
+#                  Vars Levels IP3 Viewports) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::AddRangeBubbleInfo { Widget Option } {
+   variable Data
+   variable FieldList
+   
+   if {[lsearch -exact [array names FieldList] $Data(RangeName,$Option)] >= 0} {
+      set values $FieldList($Data(RangeName,$Option))
+   } else {
+      set values $Data(Range,$Option)
+   }
+   
+   #----- Construction du message
+   lappend msg "Nom de range: $Data(RangeName,$Option) \nValeurs: $values"
+   lappend msg "Range Name: $Data(RangeName,$Option) \nRange Values: $values"
+   
+   Bubble::Create $Widget $msg 600
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ClearAddLayerValues>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Vider les entrees de l'interface d'ajout d'une couche
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ClearAddLayerValues { } {
+   variable Data
+   
+   #----- Clear default values    
+   foreach type $Data(ColNames) {
+      set Data(Range,$type) ""
+      set Data(AddLayer$type,Value) ""
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveAsWindow>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre "Enregistrer Sous"
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::SaveAsWindow { } {
+   global GDefs
+
+   variable Param
+   variable Lbl
+   variable Data
+   variable Bubble
+
+   if {$Data(CurrentProduct) eq ""} {
+      ::Dialog::Info . $Lbl(SelectProduct)
+      return
+   }
+
+   variable $Data(CurrentProduct)::Value
+   variable $Data(CurrentProduct)::RowID
+
+   APViz::DeleteWidget .saveAsBox
+
+   toplevel .saveAsBox
+   wm protocol .saveAsBox WM_DELETE_WINDOW { APViz::DeleteWidget .saveAsBox }
+   wm transient .saveAsBox $Data(Frame)
+   wm geom      .saveAsBox 425x120+[winfo rootx $Data(Frame)]+[winfo rooty $Data(Frame)]
+
+   .saveAsBox configure -cursor left_ptr
+
+   set Param(Frame) ""
+
+   #----- Set path according to user selections
+   set Param(Path) [file dirname $Data(ConfigPath)]/
+   set Param(FullName) $Data(ConfigPath)
+   set Param(Filename) [file tail $Data(ConfigPath)]
+
+   TabFrame::Create .saveAsBox.tab 1 ""
+   pack .saveAsBox.tab -side top -fill both -expand true -padx 5 -pady 5
+
+   wm title .saveAsBox "SaveAs"
+   set Param(Frame) [TabFrame::Add .saveAsBox.tab 1 [lindex $Lbl(Save) $GDefs(Lang)] False]
+
+   labelframe $Param(Frame).config -text "Configurations"
+   pack $Param(Frame).config -side top -fill x -padx 5 -ipady 2 -anchor n
+
+   frame $Param(Frame).config.folder
+      label $Param(Frame).config.folder.lbl -text [lindex $Lbl(Folder) $GDefs(Lang)] -width 12 -anchor w
+      button $Param(Frame).config.folder.sel -image OPEN -relief flat -bd 0 -overrelief raised \
+         -command { APViz::FilePathDefine [FileBox::Create .saveAsBox $APViz::Param(Path) Save $APViz::Param(Formats) $APViz::Param(Filename)] }
+      entry $Param(Frame).config.folder.name -width 10 -bg $GDefs(ColorLight) -bd 1 -justify left -textvariable APViz::Param(FullName)
+      $Param(Frame).config.folder.name xview moveto 1
+      pack $Param(Frame).config.folder.lbl -side left 
+      pack $Param(Frame).config.folder.name -side left -fill both -expand True
+      pack $Param(Frame).config.folder.sel -side left -fill y
+   pack $Param(Frame).config.folder -side top -fill x -expand True
+
+   frame .saveAsBox.par -relief raised -bd 1
+   pack .saveAsBox.par -side top -padx 5 -fill x
+
+   frame .saveAsBox.command
+      button .saveAsBox.command.ok -text "Sauvegarder" -bd 1 -command "APViz::SaveConfigFile ; APViz::DeleteWidget .saveAsBox"
+      button .saveAsBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .saveAsBox" -bd 1
+      pack .saveAsBox.command.ok .saveAsBox.command.cancel -side left -fill x -expand true
+   pack .saveAsBox.command -side top -fill x -pady 5 -padx 5
+
+   raise .saveAsBox
+   grab .saveAsBox
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SetAvailableVarsList>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Modifier la liste deroulante des variables disponibles selon le modele
+#
+# Parametres :
+#       <Model>  : Nom du modele (ex: RDPS, R2, etc.)
+#       <Widget> : Le widget de la liste de variables
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::SetAvailableVarsList { Model Widget } {
+   variable FieldList
+   variable Data
+   
+   set default $Data(AddLayerVars,Value)
+   ComboBox::DelAll $Widget
+   
+   if {[info exists FieldList($Model)]} {
+      ComboBox::AddList $Widget $FieldList($Model)
+   } else {
+      ComboBox::DelAll $Widget
+      ComboBox::AddList $Widget $FieldList(ALL)
+   }
+   
+   if {[lsearch -exact $FieldList(ALL) $default] >= 0} {
+      set Data(AddLayerVars,Value) $default
+   }    
+   
+   return True
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::SetDefaultValue>
 # Creation : Aout 2018 - C. Nguyen - CMC/CMOE
 #
@@ -662,49 +720,4 @@ proc APViz::SetDefaultValue { Option } {
          set Data(AddLayer$Option,Value) $value
       }
    }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::ClearAddLayerValues>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Vider les entrees de l'interface d'ajout d'une couche
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::ClearAddLayerValues { } {
-   variable Data
-   
-   #----- Clear default values    
-   foreach type $Data(ColNames) {
-      set Data(Range,$type) ""
-      set Data(AddLayer$type,Value) ""
-   }
-}
-
-proc APViz::SetAvailableVarsList { Model Widget } {
-   variable FieldList
-   variable Data
-   
-   set default $Data(AddLayerVars,Value)
-   ComboBox::DelAll $Widget
-   
-   if {[info exists FieldList($Model)]} {
-      ComboBox::AddList $Widget $FieldList($Model)
-   } else {
-      ComboBox::DelAll $Widget
-      ComboBox::AddList $Widget $FieldList(ALL)
-   }
-   
-   if {[lsearch -exact $FieldList(ALL) $default] >= 0} {
-      set Data(AddLayerVars,Value) $default
-   }    
-   
-   return True
 }

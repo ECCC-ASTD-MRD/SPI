@@ -38,288 +38,6 @@ namespace eval APViz {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::Start>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Sourcer les fichiers APViz_Data.tcl des repertoires de config 
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::Start { } {
-   global env
-   variable Param
-   variable DataSrc
-   
-   if { [info exists env(SPI_APVIZ)] } {
-      foreach path [split $env(SPI_APVIZ) :] {
-         lappend Param(ConfigPath) $path
-         #----- Getting config files path
-         if {[file isfile ${path}/APViz_Data.tcl]} {
-            if {[catch {source ${path}/APViz_Data.tcl} error]} {
-               lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
-               lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
-               ::Dialog::Info . $msg
-            }
-         } else {
-            lappend msg "Fichier APViz_Data.tcl manquant de $path"
-            lappend msg "File APViz_Data.tcl containing paths missing from $path"
-            ::Dialog::Info . $msg
-         }
-         
-         #----- Getting colormaps
-         if {[file isdirectory ${path}/Colormap/]} {
-            lappend DataSrc(Colormaps) ${path}/Colormap/
-         }
-      }
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::Close>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE -
-#
-# But      : Ferme l'interface de l'outil.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::Close { } {
-   variable Data
-
-   #----- Si le mode etait celui de l'outils, revert to SPI
-
-   if { $Page::Data(ToolMode)=="APViz" } {
-      SPI::ToolMode SPI Zoom
-   }
-
-   #----- Cleanup de l'outils
-   APViz::CloseFiles
-   APViz::ReinitializeVP
-   
-   if {$Data(AutoUpdateEventID) ne ""} {
-    after cancel $Data(AutoUpdateEventID)
-    set Data(AutoUpdateEventID) ""
-   }
-
-   set Data(Active) 0
-
-   $Data(Canvas) delete APVIZ
-
-   destroy .apviz
-
-   if { !$SPI::Param(Window) } { SPI::Quit }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::Draw...>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::DrawInit { Frame VP } {
-   variable Data
-
-   set Data(Lat0)   $Viewport::Map(LatCursor)
-   set Data(Lon0)   $Viewport::Map(LonCursor)
-}
-
-proc APViz::Draw { Frame VP } {
-   variable Data
-
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete APVIZ
-   }
-
-   set Data(Lat1)   $Viewport::Map(LatCursor)
-   set Data(Lon1)   $Viewport::Map(LonCursor)
-
-   set Data(Canvas) $Frame.page.canvas
-   set Data(Frame)  $Frame
-   set Data(VP)     $VP
-
-   APViz::UpdateItems $Frame
-}
-
-proc APViz::DrawDone { Frame VP } {
-   variable Data
-
-   if { $Data(Lat0)>$Data(Lat1) } {
-      set tmp $Data(Lat1)
-      set Data(Lat1) $Data(Lat0)
-      set Data(Lat0) $tmp
-   }
-
-   if { $Data(Lon0)>$Data(Lon1) } {
-      set tmp $Data(Lon1)
-      set Data(Lon1) $Data(Lon0)
-      set Data(Lon0) $tmp
-   }
-
-   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
-      set Data(Coo) ""
-   } else {
-      set Data(Coo) "$Data(Lat0),$Data(Lon0) - $Data(Lat1),$Data(Lon1)"
-   }
-}
-
-proc APViz::MoveInit { Frame VP } {
-   variable Data
-
-   set Data(LonD) $Viewport::Map(LonCursor)
-   set Data(LatD) $Viewport::Map(LatCursor)
-}
-
-proc APViz::Move { Frame VP } {
-   variable Data
-
-   #----- Effectuer la translation
-
-   set lat0 [expr $Data(Lat0) + $Viewport::Map(LatCursor) - $Data(LatD)]
-   set lat1 [expr $Data(Lat1) + $Viewport::Map(LatCursor) - $Data(LatD)]
-
-   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
-
-      set Data(Lat0) $lat0
-      set Data(Lat1) $lat1
-      eval set Data(Lon0) [Viewport::CheckCoord [expr $Data(Lon0) + $Viewport::Map(LonCursor) - $Data(LonD)]]
-      eval set Data(Lon1) [Viewport::CheckCoord [expr $Data(Lon1) + $Viewport::Map(LonCursor) - $Data(LonD)]]
-   }
-
-   #----- Reaffecter le point de reference de translation
-
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete APVIZ
-   }
-
-   set Data(LonD)   $Viewport::Map(LonCursor)
-   set Data(LatD)   $Viewport::Map(LatCursor)
-
-   set Data(Canvas) $Frame.page.canvas
-   set Data(Frame)  $Frame
-   set Data(VP)     $VP
-
-   APViz::UpdateItems $Frame
-}
-
-proc APViz::MoveDone { Frame VP } {
-   variable Data
-
-   APViz::DrawDone $Frame $VP
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::Update>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer le "Refresh" de l'outils apres une mise a jour dans SPI
-#
-# Parametres :
-#   <Frame>  : Identificateur de Page
-#
-# Remarques :
-#    - Cette fonctions est appele par SPI au besoin.
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::Update { Frame } {
-   variable Data
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::UpdateItems>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
-#            la projection.
-#
-# Parametres :
-#   <Frame>  : Identificateur de Page
-#   <VP>     : Identificateur du Viewport
-#
-# Remarques :
-#    - Cette fonctions est appele par SPI au besoin.
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::UpdateItems { Frame } {
-   global   GDefs
-   variable Data
-
-   $Data(Canvas) delete APVIZ
-
-   if { $Data(VP)!="" } {
-      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::PageActivate>
-# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Effectuer le "Refresh" des items relatifs a cet outils
-#            lors d'un changement de page par l'usager.
-#
-# Parametres :
-#   <Frame>  : Identificateur de Page
-#
-# Remarques :
-#    - Cette fonctions est appele par SPI au besoin.
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::PageActivate { Frame } {
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::AsProject>
-# Creation : Aout 2006 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Sauvegarder l'etat de l'outils dans un projet SPI.
-#
-# Parametres :
-#   <File>   : Descripteur de fichier ou ecrire les commandes
-#
-# Remarques :
-#    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
-#      afin de re-instaurer l'outils dans son etat actuel.
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AsProject { File } {
-   variable Data
-   variable Param
-
-   if { [winfo exists .visualizer] } {
-      puts $File "#----- Tool: APViz\n"
-      puts $File "set APViz::Param(Dock)   $Param(Dock)"
-      puts $File "set APViz::Param(Geom)   [winfo geometry .visualizer]"
-      puts $File "APViz::Window"
-      puts $File "\n"
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <APViz::Source>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -371,155 +89,223 @@ proc APViz::Source { Path Widget } {
       set RowID(LayerAdjustment)	0	; # Ajustement pour le calcul du rowID pour les couches
       set RowID(CalcAdjustment)		0	; # Ajustement pour le calcul du rowID pour les couches de calcul
       
+      
       #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::Load>
-      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+      # Nom      : <APViz::$product::AddManualCalcLayer>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
       #
-      # But      : Lire le fichier de configuration et creer l'interface des ranges
+      # But      : Ajouter une couche de calcul manuel
       #
-      # Parametres 	  :
-      #		<Path>	  : Path vers le fichier de config
-      #		<Widget>  : Nom du widget parent dans lequel afficher l'interface
-      #		<Product> : Produit a afficher
+      # Parametres         :
+      #         <Widget>   : Path vers le widget
+      #         <Index>    : L'index de la couche a supprimer
+      #         <Product>  : Produit a afficher (aussi le namespace)
       # Retour:
       #
       # Remarques :
       #
       #-------------------------------------------------------------------------------
       
-      proc Load { Path Product Widget } {
-         global GDefs
-         variable CalcLayers
-         variable Label
+      proc AddCalcLayer { Product Widget } {
          variable Value
-         variable Range
-         variable Params
+         variable RowID
          
-         #----- Default Geography parameters
-         set Map(Cameras)    {}
-         set Map(Projection) Orthographic
+         set no $Value(NbCalcLayers)
+         frame $Widget.calc.$no
+            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
+            
+            Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 15 ${::APViz::Data(FormulaNames)} \
+               "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no True ; APViz::CalculateExpression $Product $no" \
+               ${::APViz::Data(Formulas)}
+            
+            set Value(UneditedFormula,$no) ""
+            catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
+            
+            bind $Widget.calc.$no.formula.e <Return> "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ;\
+               APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"     ; # Calculer l'expression lorsque Return
+            
+            label $Widget.calc.$no.lblA -text "A:"
+            label $Widget.calc.$no.lblB -text "B:"
 
-         #----- Source product definition
-         source $Path
-         
-         #----- Get nb of VPs
-         if {[info exists Params(ViewportNb)]} {
-            set ::QuickLayout::Param(NbVP) $Params(ViewportNb)
-            set ::APViz::Data(VPCount) $Params(ViewportNb)
-         } else {       
-            set ::QuickLayout::Param(NbVP) 1
-            set ::APViz::Data(VPCount) 1
-         }
-         
-         #----- Get frame params
-         set ::QuickLayout::Data(Frame) ${::APViz::Data(Frame)}
-         ::QuickLayout::LayoutGrid
-         
-         #----- Set Geography parameters
-         if {[info exists Params(Projection)]} {
-             eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
-         }
-
-         if {[info exists Params(Viewport)]} {
-            foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
-               eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
-            }
-         }
-         
-         if {[info exists Params(Camera)]} {
-            ::ProjCam::Select ${::APViz::Data(Frame)} ${::APViz::Data(Frame)} $Params(Camera)
-         }
-         
-         #----- Refleter les valeurs dans l'interface de configuration des parametres
-         # TODO: GERER MULTIPLE VPS
-         ::Viewport::ConfigGet ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
-         ::Viewport::ConfigPut ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
-      
-         #----- Build product layer interface
-         ::APViz::DeleteWidget $Widget.range	; # Liberer le widget
-         
-         labelframe $Widget.range -text [lindex $Label(Layer) $GDefs(Lang)]
-         
-         frame $Widget.range.variableGrid	; #Frame pour le grid
-         
-         #----- Column titles
-         label $Widget.range.variableGrid.mod 	-text [lindex $Label(Model) $GDefs(Lang)]
-         label $Widget.range.variableGrid.var 	-text [lindex $Label(Variable) $GDefs(Lang)]
-         label $Widget.range.variableGrid.lev 	-text [lindex $Label(Level) $GDefs(Lang)] 
-         label $Widget.range.variableGrid.src 	-text [lindex $Label(Source) $GDefs(Lang)]
-         label $Widget.range.variableGrid.ip3   -text "IP3"
-         label $Widget.range.variableGrid.vp    -text "VP"
-         
-         checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
-         $Widget.range.variableGrid.runLock select
+            spinbox $Widget.calc.$no.varA       -values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True \
+               -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
+            spinbox $Widget.calc.$no.varB       -values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True \
+               -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
                
-         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
-         $Widget.range.variableGrid.hrLock select
-               
-         #----- Add help bubbles
-         Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
-         Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
-         
-         grid $Widget.range.variableGrid 	-column 0 -row 1 -padx 0.2
-         grid $Widget.range.variableGrid.mod 	-column 1 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.runLock -column 2 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.hrLock -column 3 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.src 	-column 4 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.var 	-column 5 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.lev 	-column 6 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
-         
-         #----- Creation des ranges de variables
-         CreateVariableRanges
-         
-         #----- Creation des couches         
-         if {[info exists DefaultValues]} {
-            #----- Default values exist
-            if {[llength $Layers] eq [llength $DefaultValues]} {
-               CreateLayers $Product $Layers $Widget $DefaultValues
-            } else {
-               CreateLayers $Product $Layers $Widget
+            label $Widget.calc.$no.lblVP -text "VP:"
+            set vpLst {}
+            for {set i 1} {$i <= $APViz::Data(VPCount)} {incr i} {
+               lappend vpLst $i
             }
-         } else {
-            CreateLayers $Product $Layers $Widget
-         }
-         
-         pack $Widget.range -side top -fill x -anchor nw
 
-         set dateList [APViz::FetchAllDates $Product]
-         set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+            spinbox $Widget.calc.$no.vp -values $vpLst -width 1 -textvariable APViz::${Product}::Value(CalcVP,$no) -wrap True \
+               -command "APViz::CalculateExpression $Product $no"
+            
+            Bubble::Create $Widget.calc.$no.varA "VarA"
+            Bubble::Create $Widget.calc.$no.varB "VarB"
+            button $Widget.calc.$no.param -image PARAMS -bd 1   -relief flat -overrelief raised -command "APViz::SetParam $no $Product True ; SPI::Params . 1"
+            button $Widget.calc.$no.delete -image DELETE -bd 1  -relief flat -overrelief raised -command "APViz::${Product}::DeleteCalcLayer $Widget.calc.$no $no $Product"
+            
+            set RowID(Calc$no) [expr $no - $RowID(CalcAdjustment)]
+            
+            pack $Widget.calc.$no.check $Widget.calc.$no.formula $Widget.calc.$no.lblA $Widget.calc.$no.varA \
+               $Widget.calc.$no.lblB $Widget.calc.$no.varB $Widget.calc.$no.lblVP $Widget.calc.$no.vp $Widget.calc.$no.param $Widget.calc.$no.delete -side left -fill x -expand true
+            
+         pack $Widget.calc.$no -side top -fill x
+         incr Value(NbCalcLayers)
          
-         ::APViz::DeleteWidget $Widget.add	; # Liberer le widget
-         
-         menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
-         
-         menu $Widget.add.menu
-         set no 0
-         foreach layer $Layers {
-            #----- Layer description
-            regsub \(True:|False:\) $layer "" desc
-            $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget {} True $no"
-            lappend ::APViz::Data(Layers) $layer		; #save layer configs
-            incr no
-         }
-         $Widget.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"
-         
-         $Widget.add.menu add separator
-         $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
-         
-         pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
-         
-         ::APViz::DeleteWidget $Widget.calc	; # Liberer le widget
-         
-         labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
-         pack $Widget.calc -side bottom -fill both -expand True
-         
-         #----- Create formula lists
-         APViz::CreateFormulaLists
+         #----- Ajouter le ID a la liste
+         lappend ${::APViz::Data(CalcIDs)} CALC$RowID(Calc$no)
+         return $no
       }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustIDBubble>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster le message dans la bulle d'aide pour que le bon fieldID soit affiche
+      #
+      # Parametres         :
+      #         <Widget>   : Path vers le widget
+      #         <Index>    : L'index de la couche
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustIDBubble { Widget Index } {
+         variable RowID
+         
+         set itemList [list toggle model var level run hour dataSrc param delete]       
+         set Widget [lindex [split $Widget _] 0]
+
+         foreach item $itemList {
+            if {[winfo exists ${Widget}_$item]} {
+               Bubble::Create ${Widget}_$item [lindex ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)]
+            }
+         }
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustLockedValues>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster les runs et les heures si ces-derniers sont locked
+      #
+      # Parametres         :
+      #         <Option>   : Nom de la colonne
+      #         <Index>    : L'index de la couche
+      #         <Product>  : Produit a afficher (aussi le namespace)
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustLockedValues { Option Index Product } {
+         variable Value
+         variable RowID
+         
+         switch $Option {
+            "Runs"      { set lockType Run }
+            "Hours"     { set lockType Hour }
+            default     { return }
+         }
+         
+         if {$Value(${lockType}Lock)} {
+            set newValue $Value($Option,$Index)
+            #----- Change all other values
+            for {set i 0} {($i < $Value(NbLayers))} {incr i} {
+               if {($i != $Index) && ($RowID(Layer$i) >= 0)} {
+                  set Value($Option,$i) $newValue
+                  APViz::AssignVariable $Product $i
+               }
+            }
+         }
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::AdjustSpinboxValues>
+      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajuster les valeurs de la spinbox pour afficher les bons fieldIDs
+      #
+      # Parametres         :
+      #         <Widget>   : Path vers le widget
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc AdjustSpinboxValues { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } } {
+         variable Value
+         variable RowID
+         
+         #----- Ajuster la valeur des spinbox pour les couches de calcul 
+         for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+            if {[winfo exists $Widget.calc.$i]} {
+            
+               #----- Recuperer les valeurs avant l'ajustement
+               set a $Value(VarA,$i)
+               set b $Value(VarB,$i)
+               
+               $Widget.calc.$i.varA configure -value ${::APViz::Data(LayerIDs)}
+               $Widget.calc.$i.varB configure -value ${::APViz::Data(LayerIDs)}
+               
+               if {!$IsDueToLayerDeletion} {
+                  #----- Values stay the same
+                  set Value(VarA,$i) $a
+                  set Value(VarB,$i) $b
+               } else {
+                  #----- Values only change if RowID of selected var has changed
+                  
+                  set values [list $a $b] 
+                  set vars       [list A B]
+                  
+                  #TODO: Gerer pour 2 digits
+                  foreach value $values var $vars {
+                  
+                     #----- If value points to deleted var, set value to first of layerIDs
+                     if {[string match \[A-Z\]+${DeletedPrevRowID}_\[A-Z\]+ $value]} {
+                        set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} 0]
+                     } else {
+                        #----- Value will be affected only if rowNb is higher than deleted's
+                        set lastIndex [expr [string first _ $value] - 1]
+                        set rowNb [string range $value 3 $lastIndex]
+                        if {$rowNb > $DeletedPrevRowID} {
+                           set newRowID [expr $rowNb - 1]
+                           if {$newRowID >= 0} {
+                              set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} $newRowID]
+                           }
+                        } else {
+                           set Value(Var${var},$i) $value
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::CreateCalcLayers>
+      # Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Creer l'interface des couches de calcul
+      #
+      # Parametres        :
+      #         <Product> : Produit a afficher
+      #         <Widget>  : Nom du widget parent dans lequel afficher l'interface
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
       
       proc CreateCalcLayers { Product Widget } {
          variable Value
@@ -571,87 +357,19 @@ proc APViz::Source { Path Widget } {
       }
       
       #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::CreateRangeWidget>
-      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-      #
-      # But      : Creer un widget pour un range specifique. Peut etre soit un spinbox ou un combobox
-      #
-      # Parametres 	    :
-      #		<Product>   : Produit a afficher (aussi le namespace)
-      #		<Path>	    : Path vers le widget
-      #		<Index>     : L'index de la couche
-      #		<Options>   : Option (Colonne)
-      #		<IsSpinbox> : Boolean indiquant si on cree un spinbox 
-      #		<Width>	    : Width of the widget
-      # Retour: La valeur par defaut
-      #
-      # Remarques :
-      #
-      #-------------------------------------------------------------------------------
-      
-      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default} {
-         variable Range
-         variable Value
-         
-         if { [string index $Style 0] eq "<" } {
-            set rangeType [string trim $Style {< >}]
-            
-            if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
-               dict lappend APViz::Data(RangeNames) $Options $rangeType
-               dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
-            }
-
-            if $IsSpinBox {
-               spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
-               -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
-               
-               #----- Bind with return key
-               bind $Path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index "
-               
-            } else {
-               regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
-               ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
-               "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget False"
-            }
-            
-            #----- Default Values
-            if {$Default eq ""} {
-               set ranges [split $Range($rangeType)]
-               if { [lindex $ranges 0] ne "" } {
-                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 0]
-               } else {
-                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]      ; # In case first elem in Ranges (after split)is a space
-               }
-            } else {
-               set APViz::${Product}::Value($Options,$Index) $Default
-            }
-
-         } else {
-            label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
-            if {$Default eq ""} {
-               set APViz::${Product}::Value($Options,$Index) $Style
-            } else {
-               set APViz::${Product}::Value($Options,$Index) $Default
-            }
-            
-         }
-         eval set defaultValue \$APViz::${Product}::Value($Options,$Index)
-         return $defaultValue
-      }
-      
-      #-------------------------------------------------------------------------------
       # Nom      : <APViz::$product::CreateLayers>
       # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
       #
       # But      : Creer une couche pour ajouter au viewport
       #
-      # Parametres 	        :
-      #		<Product>       : Produit a afficher (aussi le namespace)
-      #		<Layers>        : Information sur les ranges de la couche ayant la forme:
-      #					On:Model:Var:Level:Hour:Interval:Run:Source
+      # Parametres              :
+      #         <Product>       : Produit a afficher (aussi le namespace)
+      #         <Layers>        : Information sur les ranges de la couche ayant la forme:
+      #                                 On:Model:Var:Level:Hour:Interval:Run:Source
       #         <DefaultValues> : Valeurs par defauts les layers
-      #		<Widget>        : Path vers le widget
-      #		<IsAddedLayer>  : Boolean indiquant s'il s'agit d'une couche additionnelle
+      #         <Widget>        : Path vers le widget
+      #         <IsAddedLayer>  : Boolean indiquant s'il s'agit d'une couche additionnelle
+      #         <LayerType>     : Type (numero) du layer a ajouter
       # Retour:
       #
       # Remarques : Lorsque la variable est entre <>, cela signifie que c'est un range
@@ -736,6 +454,89 @@ proc APViz::Source { Path Widget } {
          AdjustSpinboxValues $Widget False
       }
       
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::CreateRangeWidget>
+      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Creer un widget pour un range specifique. Peut etre soit un spinbox ou un combobox
+      #
+      # Parametres 	    :
+      #		<Product>   : Produit a afficher (aussi le namespace)
+      #		<Path>	    : Path vers le widget
+      #		<Index>     : L'index de la couche
+      #		<Options>   : Option (Colonne)
+      #		<IsSpinbox> : Boolean indiquant si on cree un spinbox 
+      #		<Width>	    : Width of the widget
+      #         <Default>   : Valeur par defaut
+      # Retour: La valeur par defaut
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default} {
+         variable Range
+         variable Value
+         
+         if { [string index $Style 0] eq "<" } {
+            set rangeType [string trim $Style {< >}]
+            
+            if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
+               dict lappend APViz::Data(RangeNames) $Options $rangeType
+               dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
+            }
+
+            if $IsSpinBox {
+               spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) \
+               -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index " 
+               
+               #----- Bind with return key
+               bind $Path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product ; APViz::AssignVariable $Product $Index "
+               
+            } else {
+               regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
+               ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
+               "APViz::AssignVariable $Product $Index ; ::APViz::${Product}::AdjustIDBubble $Path $Index ; ::APViz::${Product}::AdjustSpinboxValues $widget False"
+            }
+            
+            #----- Default Values
+            if {$Default eq ""} {
+               set ranges [split $Range($rangeType)]
+               if { [lindex $ranges 0] ne "" } {
+                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 0]
+               } else {
+                  set APViz::${Product}::Value($Options,$Index) [lindex [split $Range($rangeType)] 1]      ; # In case first elem in Ranges (after split)is a space
+               }
+            } else {
+               set APViz::${Product}::Value($Options,$Index) $Default
+            }
+
+         } else {
+            label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
+            if {$Default eq ""} {
+               set APViz::${Product}::Value($Options,$Index) $Style
+            } else {
+               set APViz::${Product}::Value($Options,$Index) $Default
+            }
+            
+         }
+         eval set defaultValue \$APViz::${Product}::Value($Options,$Index)
+         return $defaultValue
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::CreateVariableRanges>
+      # Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Creer les ranges pour les field lists lus dans APViz_Data.tcl
+      #
+      # Parametres :
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
       proc CreateVariableRanges { } {
          variable ::APViz::FieldList
          variable Range
@@ -748,64 +549,6 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(Ranges) Vars $variableType
             }
          }
-      }
-
-      #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::DeleteLayer>
-      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-      #
-      # But      : Supprimer une couche et ajustement les numeros de rangees
-      #
-      # Parametres 	   :
-      #		<Widget>   : Path vers le widget
-      #		<Index>	   : L'index de la couche a supprimer
-      #		<Product>  : Produit a afficher (aussi le namespace)
-      # Retour:
-      #
-      # Remarques :
-      #
-      #-------------------------------------------------------------------------------
-      
-      proc DeleteLayer { Widget Index Product Src } {
-         variable RowID
-         variable Value
-         
-         #----- # Enlever variable du Viewport
-         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)
-         
-         #----- Ajustement du rowID
-         incr RowID(LayerAdjustment)
-         set itemList [list toggle model var level run hour dataSrc ip3 vp param delete]
-            
-         #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
-         for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-            if {$RowID(Layer$i) > $RowID(Layer$Index)} {
-               set RowID(Layer$i) [expr $RowID(Layer$i) - 1]
-               #$Widget.range.variableGrid.layer${i}_rowID configure -text $RowID(Layer$i)
-               APViz::AssignVariable $Product $i
-               AdjustIDBubble $Widget.range.variableGrid.layer${i} $i		; # Change row id in bubble
-            }
-         }
-
-         #----- Enlever la derniere variable de Data(LayerIDs) vu qu'on a decale tous les fielIds
-         set lastIndex [expr [llength ${::APViz::Data(LayerIDs)}] - 1]
-         if {$lastIndex != $RowID(Layer$Index)} {
-            APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $lastIndex		; # Unassign ssi l'index a supprimer n'est pas la derniere rangee
-         }
-         set oldRowID $RowID(Layer$Index)
-         set RowID(Layer$Index) -1							; # Index supprime, n'est plus affiche
-         set ::APViz::Data(LayerIDs) [lreplace ${::APViz::Data(LayerIDs)} $lastIndex $lastIndex ]
-         
-         #----- Detruire les widgets
-         if [winfo exists $Widget.range.variableGrid] {	  
-            foreach item $itemList {
-               destroy $Widget.range.variableGrid.layer${Index}_$item
-            }
-         }
-        
-         AdjustSpinboxValues $Widget True $oldRowID
-         
-         APViz::FetchAllDates $Product
       }
       
       #-------------------------------------------------------------------------------
@@ -856,205 +599,211 @@ proc APViz::Source { Path Widget } {
       }
       
       #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::AdjustIDBubble>
-      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      # Nom      : <APViz::$product::DeleteLayer>
+      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
       #
-      # But      : Ajuster le message dans la bulle d'aide pour que le bon fieldID soit affiche
+      # But      : Supprimer une couche et ajustement les numeros de rangees
       #
-      # Parametres 	   :
-      #		<Widget>   : Path vers le widget
-      #		<Index>	   : L'index de la couche
-      #
+      # Parametres         :
+      #         <Widget>   : Path vers le widget
+      #         <Index>    : L'index de la couche a supprimer
+      #         <Product>  : Produit a afficher (aussi le namespace)
       # Retour:
       #
       # Remarques :
       #
       #-------------------------------------------------------------------------------
       
-      proc AdjustIDBubble { Widget Index } {
+      proc DeleteLayer { Widget Index Product Src } {
          variable RowID
+         variable Value
          
-         set itemList [list toggle model var level run hour dataSrc param delete]	
-         set Widget [lindex [split $Widget _] 0]
-
-         foreach item $itemList {
-            if {[winfo exists ${Widget}_$item]} {
-               Bubble::Create ${Widget}_$item [lindex ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)]
+         #----- # Enlever variable du Viewport
+         APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $RowID(Layer$Index)
+         
+         #----- Ajustement du rowID
+         incr RowID(LayerAdjustment)
+         set itemList [list toggle model var level run hour dataSrc ip3 vp param delete]
+            
+         #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
+         for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+            if {$RowID(Layer$i) > $RowID(Layer$Index)} {
+               set RowID(Layer$i) [expr $RowID(Layer$i) - 1]
+               #$Widget.range.variableGrid.layer${i}_rowID configure -text $RowID(Layer$i)
+               APViz::AssignVariable $Product $i
+               AdjustIDBubble $Widget.range.variableGrid.layer${i} $i           ; # Change row id in bubble
             }
          }
+
+         #----- Enlever la derniere variable de Data(LayerIDs) vu qu'on a decale tous les fielIds
+         set lastIndex [expr [llength ${::APViz::Data(LayerIDs)}] - 1]
+         if {$lastIndex != $RowID(Layer$Index)} {
+            APViz::RemoveVariableFromVP ${::APViz::Data(LayerIDs)} $lastIndex           ; # Unassign ssi l'index a supprimer n'est pas la derniere rangee
+         }
+         set oldRowID $RowID(Layer$Index)
+         set RowID(Layer$Index) -1                                                      ; # Index supprime, n'est plus affiche
+         set ::APViz::Data(LayerIDs) [lreplace ${::APViz::Data(LayerIDs)} $lastIndex $lastIndex ]
+         
+         #----- Detruire les widgets
+         if [winfo exists $Widget.range.variableGrid] {   
+            foreach item $itemList {
+               destroy $Widget.range.variableGrid.layer${Index}_$item
+            }
+         }
+        
+         AdjustSpinboxValues $Widget True $oldRowID
+         
+         APViz::FetchAllDates $Product
       }
       
       #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::AdjustLockedValues>
-      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
+      # Nom      : <APViz::$product::Load>
+      # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
       #
-      # But      : Ajuster les runs et les heures si ces-derniers sont locked
+      # But      : Lire le fichier de configuration et creer l'interface des ranges
       #
-      # Parametres 	   :
-      #		<Option>   : Nom de la colonne
-      #		<Index>	   : L'index de la couche
-      #		<Product>  : Produit a afficher (aussi le namespace)
-      #
+      # Parametres        :
+      #         <Path>    : Path vers le fichier de config
+      #         <Widget>  : Nom du widget parent dans lequel afficher l'interface
+      #         <Product> : Produit a afficher
       # Retour:
       #
       # Remarques :
       #
       #-------------------------------------------------------------------------------
       
-      proc AdjustLockedValues { Option Index Product } {
+      proc Load { Path Product Widget } {
+         global GDefs
+         variable CalcLayers
+         variable Label
          variable Value
-         variable RowID
+         variable Range
+         variable Params
          
-         switch $Option {
-            "Runs" 	{ set lockType Run }
-            "Hours"	{ set lockType Hour }
-            default 	{ return }
+         #----- Default Geography parameters
+         set Map(Cameras)    {}
+         set Map(Projection) Orthographic
+
+         #----- Source product definition
+         source $Path
+         
+         #----- Get nb of VPs
+         if {[info exists Params(ViewportNb)]} {
+            set ::QuickLayout::Param(NbVP) $Params(ViewportNb)
+            set ::APViz::Data(VPCount) $Params(ViewportNb)
+         } else {       
+            set ::QuickLayout::Param(NbVP) 1
+            set ::APViz::Data(VPCount) 1
          }
          
-         if {$Value(${lockType}Lock)} {
-            set newValue $Value($Option,$Index)
-            #----- Change all other values
-            for {set i 0} {($i < $Value(NbLayers))} {incr i} {
-               if {($i != $Index) && ($RowID(Layer$i) >= 0)} {
-                  set Value($Option,$i) $newValue
-                  APViz::AssignVariable $Product $i
-               }
+         #----- Get frame params
+         set ::QuickLayout::Data(Frame) ${::APViz::Data(Frame)}
+         ::QuickLayout::LayoutGrid
+         
+         #----- Set Geography parameters
+         if {[info exists Params(Projection)]} {
+             eval projection configure ${::APViz::Data(Frame)} $Params(Projection)
+         }
+
+         if {[info exists Params(Viewport)]} {
+            foreach vp [Page::Registered ${::APViz::Data(Frame)} Viewport] {
+               eval ${::APViz::Data(Frame)}.page.canvas itemconfigure $vp $Params(Viewport)
             }
          }
-      }
-      
-      #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::AdjustSpinboxValues>
-      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
-      #
-      # But      : Ajuster les valeurs de la spinbox pour afficher les bons fieldIDs
-      #
-      # Parametres 	   :
-      #		<Widget>   : Path vers le widget
-      #
-      # Retour:
-      #
-      # Remarques :
-      #
-      #-------------------------------------------------------------------------------
-      
-      proc AdjustSpinboxValues { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } } {
-         variable Value
-         variable RowID
          
-         #----- Ajuster la valeur des spinbox pour les couches de calcul 
-         for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
-            if {[winfo exists $Widget.calc.$i]} {
-            
-               #----- Recuperer les valeurs avant l'ajustement
-               set a $Value(VarA,$i)
-               set b $Value(VarB,$i)
-               
-               $Widget.calc.$i.varA configure -value ${::APViz::Data(LayerIDs)}
-               $Widget.calc.$i.varB configure -value ${::APViz::Data(LayerIDs)}
-               
-               if {!$IsDueToLayerDeletion} {
-                  #----- Values stay the same
-                  set Value(VarA,$i) $a
-                  set Value(VarB,$i) $b
-               } else {
-                  #----- Values only change if RowID of selected var has changed
-                  
-                  set values [list $a $b] 
-                  set vars 	 [list A B]
-                  
-                  #TODO: Gerer pour 2 digits
-                  foreach value $values var $vars {
-                  
-                     #----- If value points to deleted var, set value to first of layerIDs
-                     if {[string match \[A-Z\]+${DeletedPrevRowID}_\[A-Z\]+ $value]} {
-                        set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} 0]
-                     } else {
-                        #----- Value will be affected only if rowNb is higher than deleted's
-                        set lastIndex [expr [string first _ $value] - 1]
-                        set rowNb [string range $value 3 $lastIndex]
-                        if {$rowNb > $DeletedPrevRowID} {
-                           set newRowID [expr $rowNb - 1]
-                           if {$newRowID >= 0} {
-                              set Value(Var${var},$i) [lindex ${::APViz::Data(LayerIDs)} $newRowID]
-                           }
-                        } else {
-                           set Value(Var${var},$i) $value
-                        }
-                     }
-                  }
-               }
-            }
+         if {[info exists Params(Camera)]} {
+            ::ProjCam::Select ${::APViz::Data(Frame)} ${::APViz::Data(Frame)} $Params(Camera)
          }
-      }
-
-      #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::AddManualCalcLayer>
-      # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
-      #
-      # But      : Ajouter une couche de calcul manuel
-      #
-      # Parametres 	   :
-      #		<Widget>   : Path vers le widget
-      #		<Index>	   : L'index de la couche a supprimer
-      #		<Product>  : Produit a afficher (aussi le namespace)
-      # Retour:
-      #
-      # Remarques :
-      #
-      #-------------------------------------------------------------------------------
+         
+         #----- Refleter les valeurs dans l'interface de configuration des parametres
+         # TODO: GERER MULTIPLE VPS
+         ::Viewport::ConfigGet ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
+         ::Viewport::ConfigPut ${::APViz::Data(Frame)} ${Viewport::Data(VP)}
       
-      proc AddCalcLayer { Product Widget } {
-         variable Value
-         variable RowID
+         #----- Build product layer interface
+         ::APViz::DeleteWidget $Widget.range    ; # Liberer le widget
          
-         set no $Value(NbCalcLayers)
-         frame $Widget.calc.$no
-            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
-            
-            Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 15 ${::APViz::Data(FormulaNames)} \
-               "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ; APViz::${Product}::SetFormula $no True ; APViz::CalculateExpression $Product $no" \
-               ${::APViz::Data(Formulas)}
-            
-            set Value(UneditedFormula,$no) ""
-            catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
-            
-            bind $Widget.calc.$no.formula.e <Return> "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)} ;\
-               APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"	; # Calculer l'expression lorsque Return
-            
-            label $Widget.calc.$no.lblA	-text "A:"
-            label $Widget.calc.$no.lblB	-text "B:"
-
-            spinbox $Widget.calc.$no.varA	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True \
-               -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
-            spinbox $Widget.calc.$no.varB	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True \
-               -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
+         labelframe $Widget.range -text [lindex $Label(Layer) $GDefs(Lang)]
+         
+         frame $Widget.range.variableGrid       ; #Frame pour le grid
+         
+         #----- Column titles
+         label $Widget.range.variableGrid.mod   -text [lindex $Label(Model) $GDefs(Lang)]
+         label $Widget.range.variableGrid.var   -text [lindex $Label(Variable) $GDefs(Lang)]
+         label $Widget.range.variableGrid.lev   -text [lindex $Label(Level) $GDefs(Lang)] 
+         label $Widget.range.variableGrid.src   -text [lindex $Label(Source) $GDefs(Lang)]
+         label $Widget.range.variableGrid.ip3   -text "IP3"
+         label $Widget.range.variableGrid.vp    -text "VP"
+         
+         checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+         $Widget.range.variableGrid.runLock select
                
-            label $Widget.calc.$no.lblVP -text "VP:"
-            set vpLst {}
-            for {set i 1} {$i <= $APViz::Data(VPCount)} {incr i} {
-               lappend vpLst $i
-            }
-
-            spinbox $Widget.calc.$no.vp -values $vpLst -width 1 -textvariable APViz::${Product}::Value(CalcVP,$no) -wrap True \
-               -command "APViz::CalculateExpression $Product $no"
-            
-            Bubble::Create $Widget.calc.$no.varA "VarA"
-            Bubble::Create $Widget.calc.$no.varB "VarB"
-            button $Widget.calc.$no.param -image PARAMS -bd 1 	-relief flat -overrelief raised -command "APViz::SetParam $no $Product True ; SPI::Params . 1"
-            button $Widget.calc.$no.delete -image DELETE -bd 1 	-relief flat -overrelief raised -command "APViz::${Product}::DeleteCalcLayer $Widget.calc.$no $no $Product"
-            
-            set RowID(Calc$no) [expr $no - $RowID(CalcAdjustment)]
-            
-            pack $Widget.calc.$no.check $Widget.calc.$no.formula $Widget.calc.$no.lblA $Widget.calc.$no.varA \
-               $Widget.calc.$no.lblB $Widget.calc.$no.varB $Widget.calc.$no.lblVP $Widget.calc.$no.vp $Widget.calc.$no.param $Widget.calc.$no.delete -side left -fill x -expand true
-            
-         pack $Widget.calc.$no -side top -fill x
-         incr Value(NbCalcLayers)
+         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+         $Widget.range.variableGrid.hrLock select
+               
+         #----- Add help bubbles
+         Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
+         Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
          
-         #----- Ajouter le ID a la liste
-         lappend ${::APViz::Data(CalcIDs)} CALC$RowID(Calc$no)
-         return $no
+         grid $Widget.range.variableGrid        -column 0 -row 1 -padx 0.2
+         grid $Widget.range.variableGrid.mod    -column 1 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.runLock -column 2 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.hrLock -column 3 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.src    -column 4 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.var    -column 5 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.lev    -column 6 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
+         
+         #----- Creation des ranges de variables
+         CreateVariableRanges
+         
+         #----- Creation des couches         
+         if {[info exists DefaultValues]} {
+            #----- Default values exist
+            if {[llength $Layers] eq [llength $DefaultValues]} {
+               CreateLayers $Product $Layers $Widget $DefaultValues
+            } else {
+               CreateLayers $Product $Layers $Widget
+            }
+         } else {
+            CreateLayers $Product $Layers $Widget
+         }
+         
+         pack $Widget.range -side top -fill x -anchor nw
+
+         set dateList [APViz::FetchAllDates $Product]
+         set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
+         
+         ::APViz::DeleteWidget $Widget.add      ; # Liberer le widget
+         
+         menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
+         
+         menu $Widget.add.menu
+         set no 0
+         foreach layer $Layers {
+            #----- Layer description
+            regsub \(True:|False:\) $layer "" desc
+            $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget {} True $no"
+            lappend ::APViz::Data(Layers) $layer                ; #save layer configs
+            incr no
+         }
+         $Widget.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"
+         
+         $Widget.add.menu add separator
+         $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
+         
+         pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
+         
+         ::APViz::DeleteWidget $Widget.calc     ; # Liberer le widget
+         
+         labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
+         pack $Widget.calc -side bottom -fill both -expand True
+         
+         #----- Create formula lists
+         APViz::CreateFormulaLists
       }
       
       #-------------------------------------------------------------------------------
@@ -1121,6 +870,64 @@ proc APViz::Source { Path Widget } {
    APViz::InitializeVars
    #----- Create Calclayers
    ${product}::CreateCalcLayers $product $Widget
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::AreFieldsFilled>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Verifier si tous les champs ont ete remplis
+#
+# Parametres      :
+#       <Model>   : Nom du modele meteorologique
+#       <Var>     : Variable meteorologique
+#       <Level>   : Niveau
+#       <Run>     : Le numero de la run
+#       <Source>  : La provenance des donnees
+#       <Date>    : La date de validite
+#       
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::AreFieldsFilled { Model Var Level Run Hour Source Date } {
+   set valueList [list $Model $Var $Level $Run $Hour $Source $Date]
+   foreach value $valueList {
+      if {$value eq ""} {
+         return false
+      }
+   }
+   return true
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::AsProject>
+# Creation : Aout 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Sauvegarder l'etat de l'outils dans un projet SPI.
+#
+# Parametres :
+#   <File>   : Descripteur de fichier ou ecrire les commandes
+#
+# Remarques :
+#    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
+#      afin de re-instaurer l'outils dans son etat actuel.
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::AsProject { File } {
+   variable Data
+   variable Param
+
+   if { [winfo exists .visualizer] } {
+      puts $File "#----- Tool: APViz\n"
+      puts $File "set APViz::Param(Dock)   $Param(Dock)"
+      puts $File "set APViz::Param(Geom)   [winfo geometry .visualizer]"
+      puts $File "APViz::Window"
+      puts $File "\n"
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -1335,62 +1142,6 @@ proc APViz::AssignVariable { Product Index } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::GetVPId>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      :    Retourner l'id du VP
-#
-# Parametres      :
-#       <VPno>    : Numero du vp lu dans le fichier de config
-#       
-# Retour:
-#
-# Remarques :   Si le parametre recu n'est pas un chiffre, renvoyer l'identifiant du 
-#               vp courant
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::GetVPId { VPno } {
-   variable Data
-   
-   if {![string is digit $VPno] || ($VPno eq "") || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
-      return $Viewport::Data(VP)
-   } else {
-      set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
-      return $vpNumber
-   }
-} 
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::GetVarsNb>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      :    Retourner le nombre de variables assignees au VP d'un type
-#
-# Parametres      :
-#       <Dict>    : Dictionnaire contenant le nombre de variable pour chaque type de variable
-#       <VarType> : Type de variable (ex: GZ, TT, UU)
-#       
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::GetVarsNb { Dict VarType } {
-   upvar 1 $Dict vDict
-   
-   set nb ""
-   catch {
-      if {[dict exists $vDict $VarType]} {
-         set nb [dict get $vDict $VarType]
-      }
-   }
-   
-   return $nb
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <APViz::AssignDZ>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -1450,36 +1201,6 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
       puts "DZ FAILED"
       ::Dialog::Info . $Lbl(InvalidField)
    }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::AreFieldsFilled>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : 	Verifier si tous les champs ont ete remplis
-#
-# Parametres 	  :
-#	<Model>	  : Nom du modele meteorologique
-#	<Var>	  : Variable meteorologique
-#	<Level>	  : Niveau
-#	<Run>	  : Le numero de la run
-#	<Source>  : La provenance des donnees
-#	<Date>	  : La date de validite
-#	
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AreFieldsFilled { Model Var Level Run Hour Source Date } {
-   set valueList [list $Model $Var $Level $Run $Hour $Source $Date]
-   foreach value $valueList {
-      if {$value eq ""} {
-         return false
-      }
-   }
-   return true
 }
 
 #-------------------------------------------------------------------------------
@@ -1556,50 +1277,6 @@ proc APViz::CalculateExpression { Product Index} {
          return
       }
    }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::GetAllFieldsWithOp>
-# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : 	Calculer une expression de fields et l'afficher sur le VP
-#
-# Parametres 	      :
-#	<Operator>    : L'operateur de calcul (+-*/)
-#	<OnlyChecked> : Bool indiquand si on n'inclut que les variables selectionnees 
-#	
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
-   variable Data
-   variable ${Product}::Value
-   variable ${Product}::RowID
-
-   set fieldString ""
-
-   if {!$OnlyChecked} {
-      foreach ID $Data(LayerIDs) {
-         if {[fstdfield is $ID]} { 
-            set fieldString [string cat $fieldString $ID$Operator] 
-         }
-      }
-   } else {
-      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-         if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
-            set ID [lindex $Data(LayerIDs) $RowID(Layer$i)]
-            if {[fstdfield is $ID]} {
-               set fieldString [string cat $fieldString $ID$Operator]
-            }
-         }
-      }
-   }
-
-   set fieldString [string range $fieldString 0 [expr [string length $fieldString] - 2]]
-   return $fieldString
 }
 
 #-------------------------------------------------------------------------------
@@ -1712,6 +1389,47 @@ proc APViz::CheckExpression { Expr VarType } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <APViz::Close>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE -
+#
+# But      : Ferme l'interface de l'outil.
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::Close { } {
+   variable Data
+
+   #----- Si le mode etait celui de l'outils, revert to SPI
+
+   if { $Page::Data(ToolMode)=="APViz" } {
+      SPI::ToolMode SPI Zoom
+   }
+
+   #----- Cleanup de l'outils
+   APViz::CloseFiles
+   APViz::ReinitializeVP
+   
+   if {$Data(AutoUpdateEventID) ne ""} {
+    after cancel $Data(AutoUpdateEventID)
+    set Data(AutoUpdateEventID) ""
+   }
+
+   set Data(Active) 0
+
+   $Data(Canvas) delete APVIZ
+
+   destroy .apviz
+
+   if { !$SPI::Param(Window) } { SPI::Quit }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <APViz::CloseFiles>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -1735,6 +1453,55 @@ proc APViz::CloseFiles { } {
    }
 
    set $Data(OpenedFiles) {}
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ConstructTreeBranches>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire les embranchements de l'arborescence de fichiers
+#
+# Parametres    :
+#       <Tree>       : Identifiant de l'arbre
+#       <ParentNode> : Le noeud parent
+#       <Path>       : Le path vers le fichier
+#       <Level>      : Niveau de l'arborescence (Pour determiner si open est a True ou False)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
+   variable Data
+
+   #----- Get file and folders list
+   set fileList [glob -nocomplain -tails -path $Path *]
+   
+   foreach file $fileList {
+      if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
+         #----- Create node
+         $Tree insert $ParentNode end $file
+
+         #----- Set node attributes
+         $Tree set $file name $file
+         
+         if {$Level < 3} {
+            $Tree set $file open True
+         } else {
+            $Tree set $file open False
+         }
+         
+         if {[file isdirectory [set newPath ${Path}/$file/]]} {
+            #----- Appel recursif
+            APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
+            $Tree set $file path ""
+         } else {
+            $Tree set $file path ${Path}/$file
+         }
+      }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -1795,51 +1562,6 @@ proc APViz::CreateColormaps { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::DateBinding>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Valider la date et initialiser les variables si valide
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::DateBinding { } {
-   variable Data
-   
-   set result [APViz::ValidateDate $Data(Date)] 
-   if {$result} {
-      APViz::InitializeVars
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::DeleteWidget>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : 	Supprime le widget et ses enfants
-#
-# Parametres	:
-#	<Widget>  	: Widget a supprimer
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::DeleteWidget { Widget } {
-   if [winfo exists $Widget] {
-      eval destroy [winfo children $Widget]
-      destroy $Widget
-   }
-}
-
-#----------------------------------------------------------------------------
 # Nom      : <APViz::CreateFileTree>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
@@ -1882,6 +1604,21 @@ proc APViz::CreateFileTree { Path } {
       SelectCmd APViz::SelectFiletreeBranch
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CreateFormulaLists>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire les listes de formules Data(FormulaNames) et Data(Formulas)
+#               selon la liste de paires {Formula_name Formula}
+#
+# Parametres    :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc APViz::CreateFormulaLists { } {
    variable Data
 
@@ -1897,171 +1634,13 @@ proc APViz::CreateFormulaLists { } {
    }
 }
 
-proc APViz::GetFormulaName { Formula } {
-   variable Data
-   
-   set formulaName ""
-   set index [lsearch -exact $Data(Formulas) $Formula]
-   if {$index >= 0} {
-      set formulaName [lindex $Data(FormulaNames) $index]
-   }
-   
-   return $formulaName
-}
-
 #----------------------------------------------------------------------------
-# Nom      : <APViz::ConstructTreeBranches>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Construire les embranchements de l'arborescence de fichiers
-#
-# Parametres    :
-#       <Tree>       : Identifiant de l'arbre
-#       <ParentNode> : Le noeud parent
-#       <Path>       : Le path vers le fichier
-#       <Level>      : Niveau de l'arborescence (Pour determiner si open est a True ou False)
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
-   variable Data
-
-   #----- Get file and folders list
-   set fileList [glob -nocomplain -tails -path $Path *]
-   
-   foreach file $fileList {
-      if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
-         #----- Create node
-         $Tree insert $ParentNode end $file
-
-         #----- Set node attributes
-         $Tree set $file name $file
-         
-         if {$Level < 3} {
-            $Tree set $file open True
-         } else {
-            $Tree set $file open False
-         }
-         
-         if {[file isdirectory [set newPath ${Path}/$file/]]} {
-            #----- Appel recursif
-            APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
-            $Tree set $file path ""
-         } else {
-            $Tree set $file path ${Path}/$file
-         }
-      }
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::GetTreeId>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Creer l'identification de la branche
-#
-# Parametres :
-#  <Tree>    : Arbre
-#  <Branch>  : Branche
-#
-# Retour    :
-#  <Id>     : Identification
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::GetTreeId { Tree Branch Leaf } {
-
-   upvar $Leaf leaf
-   set leaf [$Tree isleaf $Branch]
-   
-   set id [$Tree get $Branch name]
-   return $id
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::SelectFiletreeBranch>
-# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Selection d'une branche de l'arborescence
-#
-# Parametres :
-#  <Tree>    : Arbre
-#  <Branch>  : Branche
-#
-# Retour    :
-#  <Id>     : Identification
-#
-# Remarque :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::SelectFiletreeBranch { Tree Branch Open } {
-   global GDefs
-   variable Data
-   variable Lbl
-
-   if { ![info exist Viewport::Data(Data$Page::Data(Frame))] } {
-      return
-   }
-
-   set Data(Select) $Branch
-   set filepath [$Tree get $Branch path]
-   
-   if {$filepath ne ""} {
-      #----- Call selection function
-      APViz::ReinitializeVP
-      APViz::CloseFiles
-
-      if {$Data(AutoUpdateEventID) ne ""} {
-         after cancel $Data(AutoUpdateEventID)
-         set Data(AutoUpdateEventID) ""
-      }
-
-      if {[file isfile $filepath]} {
-         APViz::Source $filepath $Data(Tab)
-         set Data(ConfigPath) $filepath
-      } else {
-         puts "$filepath not a file"
-      }
-   }
-}
-
-proc APViz::FetchConfigPaths { } {
-   global env
-   
-   puts "Fetching config paths"
-   #----- Get SPI_APVIZ env variable to locate configuration files
-   if { [info exists env(SPI_APVIZ)] } {
-      puts "Env SPI_APVIZ exists "
-      set env(SPI_APVIZ) [join [lsort -unique [split $env(SPI_APVIZ) :]] :]
-      
-      foreach path [split $env(SPI_APVIZ) :] {
-         if { [file isdirectory $path] } {
-            foreach configPath [lsort [glob -nocomplain $path/Config/*]] {
-               set name [file tail [file rootname $configPath]]
-               puts "Name: $name"
-            }
-         }
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::FetchDates>
+# Nom      : <APViz::DateBinding>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : 	Construire la liste de dates disponibles pour afficher dans l'interface
+# But      : Valider la date et initialiser les variables si valide
 #
-# Parametres	:
-#       <Product> : Le nom du produit selectionne (aussi le namespace) 
-#	<Path>  : Path du parent du dossier
-#	<Name>	: Nom du dossier
+# Parametres :
 #
 # Retour:
 #
@@ -2069,35 +1648,97 @@ proc APViz::FetchConfigPaths { } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::FetchDates { Product Model Src } {
+proc APViz::DateBinding { } {
    variable Data
-   variable DataSrc
    
-   set dateList {}
+   set result [APViz::ValidateDate $Data(Date)] 
+   if {$result} {
+      APViz::InitializeVars
+   }
+}
 
-   if {$Product ne ""} {
-      if {$Src eq "BURP"} {
-         set path $DataSrc(OBS,$Model)/
-      } else {
-         set path $DataSrc(${Model},${Src})/
-      }
-      
-      #----- Check for the last 30 dates if a file exists for that date
-      set fileList [glob -nocomplain -tails -path $path *]      
-      set seconds [clock seconds]
-      
-      for {set i 0} {$i < 30} {incr i} {
-         set seconds [expr $seconds -86400]
-         set date [clock format $seconds -format %Y%m%d]
-         if {[lsearch -glob $fileList $date*] >= 0} {
-            lappend dateList $date
-         }
-      }
-      
-      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
+#----------------------------------------------------------------------------
+# Nom      : <APViz::DeleteWidget>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Supprime le widget et ses enfants
+#
+# Parametres    :
+#       <Widget>        : Widget a supprimer
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::DeleteWidget { Widget } {
+   if [winfo exists $Widget] {
+      eval destroy [winfo children $Widget]
+      destroy $Widget
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::Draw...>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonctions de manipulation sur la projection
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::DrawInit { Frame VP } {
+   variable Data
+
+   set Data(Lat0)   $Viewport::Map(LatCursor)
+   set Data(Lon0)   $Viewport::Map(LonCursor)
+}
+
+proc APViz::Draw { Frame VP } {
+   variable Data
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete APVIZ
    }
 
-   return $dateList
+   set Data(Lat1)   $Viewport::Map(LatCursor)
+   set Data(Lon1)   $Viewport::Map(LonCursor)
+
+   set Data(Canvas) $Frame.page.canvas
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+
+   APViz::UpdateItems $Frame
+}
+
+proc APViz::DrawDone { Frame VP } {
+   variable Data
+
+   if { $Data(Lat0)>$Data(Lat1) } {
+      set tmp $Data(Lat1)
+      set Data(Lat1) $Data(Lat0)
+      set Data(Lat0) $tmp
+   }
+
+   if { $Data(Lon0)>$Data(Lon1) } {
+      set tmp $Data(Lon1)
+      set Data(Lon1) $Data(Lon0)
+      set Data(Lon0) $tmp
+   }
+
+   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
+      set Data(Coo) ""
+   } else {
+      set Data(Coo) "$Data(Lat0),$Data(Lon0) - $Data(Lat1),$Data(Lon1)"
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -2188,6 +1829,54 @@ proc APViz::FetchAllDates { Product } {
       
       set Data(Dates) $finalDateLst
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::FetchDates>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire la liste de dates disponibles pour afficher dans l'interface
+#
+# Parametres    :
+#       <Product> : Le nom du produit selectionne (aussi le namespace) 
+#       <Path>  : Path du parent du dossier
+#       <Name>  : Nom du dossier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::FetchDates { Product Model Src } {
+   variable Data
+   variable DataSrc
+   
+   set dateList {}
+
+   if {$Product ne ""} {
+      if {$Src eq "BURP"} {
+         set path $DataSrc(OBS,$Model)/
+      } else {
+         set path $DataSrc(${Model},${Src})/
+      }
+      
+      #----- Check for the last 30 dates if a file exists for that date
+      set fileList [glob -nocomplain -tails -path $path *]      
+      set seconds [clock seconds]
+      
+      for {set i 0} {$i < 30} {incr i} {
+         set seconds [expr $seconds -86400]
+         set date [clock format $seconds -format %Y%m%d]
+         if {[lsearch -glob $fileList $date*] >= 0} {
+            lappend dateList $date
+         }
+      }
+      
+      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
+   }
+
+   return $dateList
 }
 
 #----------------------------------------------------------------------------
@@ -2288,290 +1977,75 @@ proc APViz::GenerateConfigFile { Path } {
    }
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteRanges>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetAllFieldsWithOp>
+# Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
 #
-# But      : Ecrire la section des ranges dans le fichier de config
+# But      :    Calculer une expression de fields et l'afficher sur le VP
 #
-# Parametres    :
-#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
-#       <FileID>      : Identifiant du fichier dans lequel ecrire
-#
+# Parametres          :
+#       <Operator>    : L'operateur de calcul (+-*/)
+#       <OnlyChecked> : Bool indiquand si on n'inclut que les variables selectionnees 
+#       
 # Retour:
 #
 # Remarques :
 #
-#----------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 
-proc APViz::WriteRanges { Product FileID } {
-   variable ${Product}::Range
-   variable FieldList
-   
-   #----- Copy the range configs
-   puts $FileID "\#----- Ranges"
-   foreach rangeConfig [array names Range] {
-      if {[lsearch -exact [array names FieldList] $rangeConfig] < 0} {
-         set rangeValues $Range($rangeConfig)
-         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
-      }
-   }
-
-}
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteVariableConfigs>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Ecrire la section des configurations de variables dans le fichier de config
-#
-# Parametres    :
-#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
-#       <FileID>      : Identifiant du fichier dans lequel ecrire
-#       <DataSource>  : Liste contenant le contenu du fichier de config source
-#       <ColormapLst> : Liste des colormaps associees aux variables
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
-   #----- Get current configs
-   puts $FileID "\#----- Variable Style Configurations"
-   set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
-   
-   foreach config $configLst {
-      puts $FileID $config
-   }
-   
-   #----- Copy the general configs
-   foreach content $DataSource {
-      #----- Copy only if not already defined
-      set configName [string range $content [string first \( $content] [string first \) $content]]
-      set index [lsearch -glob $configLst "*$configName*"]
-      
-      if {($index < 0) && ($content ne "")} {
-         puts $FileID $content
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteCalcLayers>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de projection et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteCalcLayers { Product FileID } {
+proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
    variable Data
    variable ${Product}::Value
    variable ${Product}::RowID
 
-   puts $FileID "\#----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)"
-   puts $FileID "set CalcLayers \{"
-   
-   #----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)
-   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
-      if {[set rowID $RowID(Calc$i)] >= 0} {
-         #----- Get all params
-         set toggle             $Value(CalcToggle,$i)
-         set rowA               [lsearch -exact $Data(LayerIDs) $Value(VarA,$i)]
-         set rowB               [lsearch -exact $Data(LayerIDs) $Value(VarB,$i)]
-         set vp                 $Value(CalcVP,$i)
-         
-         #----- Get formula name from formula
-         set formulaName [APViz::GetFormulaName $Value(UneditedFormula,$i)]
-         puts "   $toggle:$formulaName:$rowA:$rowB:$vp"
-         puts $FileID "   $toggle:$formulaName:$rowA:$rowB:$vp"
-      }
-   }
-   puts $FileID "\}"
-}
+   set fieldString ""
 
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteLayers>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de projection et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteLayers { Product FileID } {
-   variable Data
-   variable ${Product}::Value
-   variable ${Product}::RowID
-
-   puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)"
-   puts $FileID "set Layers \{"
-   #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {[set rowID $RowID(Layer$i)] >= 0} {
-         puts $FileID "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
-      }
-   }
-   puts $FileID "\}"
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteDefaultValues>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de projection et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteDefaultValues { Product FileID } {
-   variable ${Product}::Value
-   variable ${Product}::RowID
-   
-   puts $FileID "\#----- Default Values"
-   puts $FileID "set DefaultValues \{"
-   
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {[set rowID $RowID(Layer$i)] >= 0} {
-         #----- Ajouter Layer
-         set checked 	[expr {$Value(Toggle,$i)?True:False}]
-         set model 	$Value(Models,$i)
-         set var	$Value(Vars,$i)
-         set lev	$Value(Levels,$i)
-         set run	$Value(Runs,$i)
-         set hour	$Value(Hours,$i)
-         set src	$Value(Sources,$i)
-         
-         if {[info exists Value(IP3,$i)]} {
-            set ip3 $Value(IP3,$i)
-         } else {
-            set ip3 ""
+   if {!$OnlyChecked} {
+      foreach ID $Data(LayerIDs) {
+         if {[fstdfield is $ID]} { 
+            set fieldString [string cat $fieldString $ID$Operator] 
          }
-         
-         if {[info exists Value(Viewports,$i)]} {
-            set vp $Value(Viewports,$i)
-         } else {
-            set vp ""
-         }
-         
-         set layer "   $checked:$model:$run:$hour:$src:$var:$lev:$ip3:$vp"
-         puts $FileID $layer
       }
-   }
-   
-   puts $FileID "\}"
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::ManageColormaps>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Gerer les colormaps pour les fichiers de config et en creer des 
-#               nouvelles s'il y a eu des modifications
-#
-# Parametres    :
-#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::ManageColormaps { Product Path } {
-   global env
-   variable Data
-   variable DataSrc
-   variable ${Product}::Value
-   variable ${Product}::RowID
-
-   set colorLst {}
-
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {[set rowID $RowID(Layer$i)] >= 0} {
-         set ID [lindex $Data(LayerIDs) $rowID]
-         if {[fstdfield is $ID]} {
-            set name [fstdfield configure $ID -colormap]	
-            set isModified [colormap modified $name]
-            set initialColormap [APViz::GetInitialColormap $name]
-            
-            if {$isModified} {
-               #-----Create new name by adding nunmber or changing number at the end of the original name
-               #----- Find same colormap folder to save modified colormap
-               puts "---- Looking for Colormap in $Path"
-
-               set colormapPath [file dirname $Path]
-               
-               #----- What if no Colormap directory was found?
-               while {![file isdirectory ${colormapPath}/Colormap] && ([string length colormapPath] > 0)} {
-                  if {![file isdirectory $colormapPath]} {
-                     set colormapPath [file dirname $colormapPath]
-                  } else {
-                     #----- Remove / if ends with /
-                     if {[string index $colormapPath [expr [string length $colormapPath] -1]] eq "/"} {
-                        set colormapPath [string range $colormapPath 0 [expr [string length $colormapPath] -2]]
-                     }
-                     set lastSeperator [string last "/" $colormapPath]
-                     regsub -start $lastSeperator [file tail $colormapPath] $colormapPath "" colormapPath
-                  }
-                  
-                  if {$colormapPath eq "."} {
-                     puts "Saving new colormap in .spi/Colormap"
-                     set colormapPath $env(HOME)/.spi
-                     break
-                  }
-               }
-               
-               set path ${colormapPath}/Colormap
-               set derivatives [glob -nocomplain -tails -path $path $initialColormap*.rgba]
-               
-               set nbr 1
-               set newName ${initialColormap}$nbr
-               while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
-                  incr nbr
-                  set newName ${initialColormap}$nbr
-               }
-
-               colormap create $newName
-               colormap copy $newName $name
-               colormap write $newName $path/${newName}.rgba
-               
-               #----- Append name to the list
-               lappend colorLst $newName
-            } else {
-               lappend colorLst $initialColormap
+   } else {
+      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+         if { ($RowID(Layer$i) >= 0) && $Value(Toggle,$i)} {
+            set ID [lindex $Data(LayerIDs) $RowID(Layer$i)]
+            if {[fstdfield is $ID]} {
+               set fieldString [string cat $fieldString $ID$Operator]
             }
          }
       }
    }
 
-   return $colorLst
+   set fieldString [string range $fieldString 0 [expr [string length $fieldString] - 2]]
+   return $fieldString
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::GetFormulaName>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Retourner le nom de la formule
+#
+# Parametres    :
+#       <Formula> : Formule non modifiee
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::GetFormulaName { Formula } {
+   variable Data
+   
+   set formulaName ""
+   set index [lsearch -exact $Data(Formulas) $Formula]
+   if {$index >= 0} {
+      set formulaName [lindex $Data(FormulaNames) $index]
+   }
+   
+   return $formulaName
 }
 
 #-------------------------------------------------------------------------------
@@ -2597,6 +2071,59 @@ proc APViz::GetInitialColormap { Colormap } {
          return [lindex $pair 1]
       }
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetLevelType>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : 	Retourner le type de niveau correspondant 
+#
+# Parametres 	 :
+#	<Source> : Provenance des donnees
+#	
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetLevelType { Source } {
+   switch $Source {
+      "PRES"	{ return PRESSURE }
+      "ETA"	{ return ETA }
+      "HYB"	{ return HYBRID }
+      "DIAG"	{ return PRESSURE }
+   }
+
+   puts "Cannot determine level with source $Source."
+   return ""	; # Format non reconnu
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetTreeId>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creer l'identification de la branche
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetTreeId { Tree Branch Leaf } {
+
+   upvar $Leaf leaf
+   set leaf [$Tree isleaf $Branch]
+   
+   set id [$Tree get $Branch name]
+   return $id
 }
 
 #----------------------------------------------------------------------------
@@ -2676,148 +2203,61 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
    return $configLst
 }
 
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteCameraConfigs>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de camera et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteCameraConfigs { FileID } {
-   variable Data
-
-   puts $FileID "set Params(Camera) \{${::ProjCam::Data(Name)}\}"
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteProjectionConfigs>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de projection et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteProjectionConfigs { FileID } {
-   variable Data
-
-   set projID ${::APViz::Data(Frame)}
-   set params "set Params(Projection) \{"
-   set paramLst [list type scale mask mapcoast maplake mapriver mappolit mapadmin mapcity  maproad  mapplace maptopo mapbath maptext mapcoord minsize]
-   
-   foreach param $paramLst {
-      set value [projection configure $projID -$param]
-      set paramConfig "-$param $value"
-      set params [concat $params $paramConfig]
-   }
-   
-   set params [concat $params "\}"]
-   puts $FileID $params
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteViewportConfigs>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      :    Recupere les parametres de projection et les ecrire dans le 
-#               fichier de config
-#
-# Parametres    :
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteViewportConfigs { FileID } {
-   variable Data
-   
-   set params "set Params(Viewport) \{"
-   set paramLst [list crowd font bg bd colorcoast colorlake colorfillcoast colorfilllake colorriver colorpolit coloradmin colorcity colorroad colorplace colorcoord]
-   set vp [lindex [Page::Registered ${::APViz::Data(Frame)} Viewport] 0]
-
-   foreach param $paramLst {
-      set value [${::APViz::Data(Frame)}.page.canvas itemconfigure $vp -$param]
-      set paramConfig "-$param [lindex $value [expr [llength $value] - 1]]"
-      set params [concat $params $paramConfig]
-   }
-   
-   set params [concat $params "\}"]   
-   puts $FileID $params
-   
-   #TODO: Save right nb of vps
-   puts $FileID "set Params(ViewportNb) $Data(VPCount)"
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::WriteConfigSection>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Retourner une liste des configurations pour chaque variable
-#
-# Parametres    :
-#       <FileID>     : Identifiant du fichier dans lequel ecrire
-#       <DataSource> : Liste contenant le contenu du fichier de config source
-#       <StartIndex> : Index a partir duquel copier les lignes dans le nouveau fichier
-#       <EndIndex>   : Index de la derniere ligne a recopier dans le nouveau fichier
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::WriteConfigSection { FileID DataSource } { 
-
-   foreach line $DataSource {
-      puts $FileID $line
-   }
-}
-
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::GetLevelType>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
+# Nom      : <APViz::GetVarsNb>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
 #
-# But      : 	Retourner le type de niveau correspondant 
+# But      :    Retourner le nombre de variables assignees au VP d'un type
 #
-# Parametres 	 :
-#	<Source> : Provenance des donnees
-#	
+# Parametres      :
+#       <Dict>    : Dictionnaire contenant le nombre de variable pour chaque type de variable
+#       <VarType> : Type de variable (ex: GZ, TT, UU)
+#       
 # Retour:
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::GetLevelType { Source } {
-   switch $Source {
-      "PRES"	{ return PRESSURE }
-      "ETA"	{ return ETA }
-      "HYB"	{ return HYBRID }
-      "DIAG"	{ return PRESSURE }
+proc APViz::GetVarsNb { Dict VarType } {
+   upvar 1 $Dict vDict
+   
+   set nb ""
+   catch {
+      if {[dict exists $vDict $VarType]} {
+         set nb [dict get $vDict $VarType]
+      }
    }
-
-   puts "Cannot determine level with source $Source."
-   return ""	; # Format non reconnu
+   
+   return $nb
 }
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetVPId>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      :    Retourner l'id du VP
+#
+# Parametres      :
+#       <VPno>    : Numero du vp lu dans le fichier de config
+#       
+# Retour:
+#
+# Remarques :   Si le parametre recu n'est pas un chiffre, renvoyer l'identifiant du 
+#               vp courant
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetVPId { VPno } {
+   variable Data
+   
+   if {![string is digit $VPno] || ($VPno eq "") || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
+      return $Viewport::Data(VP)
+   } else {
+      set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
+      return $vpNumber
+   }
+} 
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::InitializeVars>
@@ -2850,6 +2290,155 @@ proc APViz::InitializeVars { } {
          APViz::AssignVariable $product $idx
       }	
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ManageColormaps>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Gerer les colormaps pour les fichiers de config et en creer des 
+#               nouvelles s'il y a eu des modifications
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ManageColormaps { Product Path } {
+   global env
+   variable Data
+   variable DataSrc
+   variable ${Product}::Value
+   variable ${Product}::RowID
+
+   set colorLst {}
+
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+         set ID [lindex $Data(LayerIDs) $rowID]
+         if {[fstdfield is $ID]} {
+            set name [fstdfield configure $ID -colormap]        
+            set isModified [colormap modified $name]
+            set initialColormap [APViz::GetInitialColormap $name]
+            
+            if {$isModified} {
+               #-----Create new name by adding nunmber or changing number at the end of the original name
+               #----- Find same colormap folder to save modified colormap
+               puts "---- Looking for Colormap in $Path"
+
+               set colormapPath [file dirname $Path]
+               
+               #----- What if no Colormap directory was found?
+               while {![file isdirectory ${colormapPath}/Colormap] && ([string length colormapPath] > 0)} {
+                  if {![file isdirectory $colormapPath]} {
+                     set colormapPath [file dirname $colormapPath]
+                  } else {
+                     #----- Remove / if ends with /
+                     if {[string index $colormapPath [expr [string length $colormapPath] -1]] eq "/"} {
+                        set colormapPath [string range $colormapPath 0 [expr [string length $colormapPath] -2]]
+                     }
+                     set lastSeperator [string last "/" $colormapPath]
+                     regsub -start $lastSeperator [file tail $colormapPath] $colormapPath "" colormapPath
+                  }
+                  
+                  if {$colormapPath eq "."} {
+                     puts "Saving new colormap in .spi/Colormap"
+                     set colormapPath $env(HOME)/.spi
+                     break
+                  }
+               }
+               
+               set path ${colormapPath}/Colormap
+               set derivatives [glob -nocomplain -tails -path $path $initialColormap*.rgba]
+               
+               set nbr 1
+               set newName ${initialColormap}$nbr
+               while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
+                  incr nbr
+                  set newName ${initialColormap}$nbr
+               }
+
+               colormap create $newName
+               colormap copy $newName $name
+               colormap write $newName $path/${newName}.rgba
+               
+               #----- Append name to the list
+               lappend colorLst $newName
+            } else {
+               lappend colorLst $initialColormap
+            }
+         }
+      }
+   }
+
+   return $colorLst
+}
+
+proc APViz::MoveInit { Frame VP } {
+   variable Data
+
+   set Data(LonD) $Viewport::Map(LonCursor)
+   set Data(LatD) $Viewport::Map(LatCursor)
+}
+
+proc APViz::Move { Frame VP } {
+   variable Data
+
+   #----- Effectuer la translation
+
+   set lat0 [expr $Data(Lat0) + $Viewport::Map(LatCursor) - $Data(LatD)]
+   set lat1 [expr $Data(Lat1) + $Viewport::Map(LatCursor) - $Data(LatD)]
+
+   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
+
+      set Data(Lat0) $lat0
+      set Data(Lat1) $lat1
+      eval set Data(Lon0) [Viewport::CheckCoord [expr $Data(Lon0) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+      eval set Data(Lon1) [Viewport::CheckCoord [expr $Data(Lon1) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+   }
+
+   #----- Reaffecter le point de reference de translation
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete APVIZ
+   }
+
+   set Data(LonD)   $Viewport::Map(LonCursor)
+   set Data(LatD)   $Viewport::Map(LatCursor)
+
+   set Data(Canvas) $Frame.page.canvas
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+
+   APViz::UpdateItems $Frame
+}
+
+proc APViz::MoveDone { Frame VP } {
+   variable Data
+
+   APViz::DrawDone $Frame $VP
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::PageActivate>
+# Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils
+#            lors d'un changement de page par l'usager.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::PageActivate { Frame } {
 }
 
 #----------------------------------------------------------------------------
@@ -3017,6 +2606,54 @@ proc APViz::SaveConfigFile { } {
    }
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::SelectFiletreeBranch>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Selection d'une branche de l'arborescence
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::SelectFiletreeBranch { Tree Branch Open } {
+   global GDefs
+   variable Data
+   variable Lbl
+
+   if { ![info exist Viewport::Data(Data$Page::Data(Frame))] } {
+      return
+   }
+
+   set Data(Select) $Branch
+   set filepath [$Tree get $Branch path]
+   
+   if {$filepath ne ""} {
+      #----- Call selection function
+      APViz::ReinitializeVP
+      APViz::CloseFiles
+
+      if {$Data(AutoUpdateEventID) ne ""} {
+         after cancel $Data(AutoUpdateEventID)
+         set Data(AutoUpdateEventID) ""
+      }
+
+      if {[file isfile $filepath]} {
+         APViz::Source $filepath $Data(Tab)
+         set Data(ConfigPath) $filepath
+      } else {
+         puts "$filepath not a file"
+      }
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <APViz::SetParam>
 # Creation : Juin 2018 - C. Nguyen - CMC/CMOE
@@ -3048,6 +2685,49 @@ proc APViz::SetParam { Index Product {IsCalcLayer False}} {
    } elseif {[metobs is $id]} {
       ::Obs::ParamUpdate $id
    }   
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::Start>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : Sourcer les fichiers APViz_Data.tcl des repertoires de config 
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::Start { } {
+   global env
+   variable Param
+   variable DataSrc
+   
+   if { [info exists env(SPI_APVIZ)] } {
+      foreach path [split $env(SPI_APVIZ) :] {
+         lappend Param(ConfigPath) $path
+         #----- Getting config files path
+         if {[file isfile ${path}/APViz_Data.tcl]} {
+            if {[catch {source ${path}/APViz_Data.tcl} error]} {
+               lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
+               lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
+               ::Dialog::Info . $msg
+            }
+         } else {
+            lappend msg "Fichier APViz_Data.tcl manquant de $path"
+            lappend msg "File APViz_Data.tcl containing paths missing from $path"
+            ::Dialog::Info . $msg
+         }
+         
+         #----- Getting colormaps
+         if {[file isdirectory ${path}/Colormap/]} {
+            lappend DataSrc(Colormaps) ${path}/Colormap/
+         }
+      }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -3089,6 +2769,51 @@ proc APViz::TranslateExpression { Product Expr } {
    return $Expr
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::Update>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" de l'outils apres une mise a jour dans SPI
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::Update { Frame } {
+   variable Data
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::UpdateItems>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
+#            la projection.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <VP>     : Identificateur du Viewport
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::UpdateItems { Frame } {
+   global   GDefs
+   variable Data
+
+   $Data(Canvas) delete APVIZ
+
+   if { $Data(VP)!="" } {
+      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) APVIZ red
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <APViz::UpdateProductInterface>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE
@@ -3110,7 +2835,6 @@ proc APViz::UpdateProductInterface { FileName Path } {
    #----- Verify if already exist
    if {![FILETREE exists $FileName]} {
       #----- Add new node
-      puts "CREATING NEW NODE $FileName"
       FILETREE insert $parentNode end $FileName
    }
 
@@ -3209,3 +2933,320 @@ proc APViz::UpdateAvailableDates { Product } {
 
    set Data(AutoUpdateEventID) [after [expr {1000*60*1}] APViz::UpdateAvailableDates $Product] ; # Update a chaque 10min:1000*60*10
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteCalcLayers>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteCalcLayers { Product FileID } {
+   variable Data
+   variable ${Product}::Value
+   variable ${Product}::RowID
+
+   puts $FileID "\#----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)"
+   puts $FileID "set CalcLayers \{"
+   
+   #----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $RowID(Calc$i)] >= 0} {
+         #----- Get all params
+         set toggle             $Value(CalcToggle,$i)
+         set rowA               [lsearch -exact $Data(LayerIDs) $Value(VarA,$i)]
+         set rowB               [lsearch -exact $Data(LayerIDs) $Value(VarB,$i)]
+         set vp                 $Value(CalcVP,$i)
+         
+         #----- Get formula name from formula
+         set formulaName [APViz::GetFormulaName $Value(UneditedFormula,$i)]
+         puts $FileID "   $toggle:$formulaName:$rowA:$rowB:$vp"
+      }
+   }
+   puts $FileID "\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteCameraConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de camera et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteCameraConfigs { FileID } {
+   variable Data
+
+   puts $FileID "set Params(Camera) \{${::ProjCam::Data(Name)}\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteConfigSection>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Retourner une liste des configurations pour chaque variable
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#       <DataSource> : Liste contenant le contenu du fichier de config source
+#       <StartIndex> : Index a partir duquel copier les lignes dans le nouveau fichier
+#       <EndIndex>   : Index de la derniere ligne a recopier dans le nouveau fichier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteConfigSection { FileID DataSource } { 
+
+   foreach line $DataSource {
+      puts $FileID $line
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteDefaultValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteDefaultValues { Product FileID } {
+   variable ${Product}::Value
+   variable ${Product}::RowID
+   
+   puts $FileID "\#----- Default Values"
+   puts $FileID "set DefaultValues \{"
+   
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+         #----- Ajouter Layer
+         set checked    [expr {$Value(Toggle,$i)?True:False}]
+         set model      $Value(Models,$i)
+         set var        $Value(Vars,$i)
+         set lev        $Value(Levels,$i)
+         set run        $Value(Runs,$i)
+         set hour       $Value(Hours,$i)
+         set src        $Value(Sources,$i)
+         
+         if {[info exists Value(IP3,$i)]} {
+            set ip3 $Value(IP3,$i)
+         } else {
+            set ip3 ""
+         }
+         
+         if {[info exists Value(Viewports,$i)]} {
+            set vp $Value(Viewports,$i)
+         } else {
+            set vp ""
+         }
+         
+         set layer "   $checked:$model:$run:$hour:$src:$var:$lev:$ip3:$vp"
+         puts $FileID $layer
+      }
+   }
+   
+   puts $FileID "\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteLayers>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteLayers { Product FileID } {
+   variable Data
+   variable ${Product}::Value
+   variable ${Product}::RowID
+
+   puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)"
+   puts $FileID "set Layers \{"
+   #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $RowID(Layer$i)] >= 0} {
+         puts $FileID "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
+      }
+   }
+   puts $FileID "\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteProjectionConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteProjectionConfigs { FileID } {
+   variable Data
+
+   set projID ${::APViz::Data(Frame)}
+   set params "set Params(Projection) \{"
+   set paramLst [list type scale mask mapcoast maplake mapriver mappolit mapadmin mapcity  maproad  mapplace maptopo mapbath maptext mapcoord minsize]
+   
+   foreach param $paramLst {
+      set value [projection configure $projID -$param]
+      set paramConfig "-$param $value"
+      set params [concat $params $paramConfig]
+   }
+   
+   set params [concat $params "\}"]
+   puts $FileID $params
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteRanges>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Ecrire la section des ranges dans le fichier de config
+#
+# Parametres    :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>      : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteRanges { Product FileID } {
+   variable ${Product}::Range
+   variable FieldList
+   
+   #----- Copy the range configs
+   puts $FileID "\#----- Ranges"
+   foreach rangeConfig [array names Range] {
+      if {[lsearch -exact [array names FieldList] $rangeConfig] < 0} {
+         set rangeValues $Range($rangeConfig)
+         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+      }
+   }
+
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteVariableConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Ecrire la section des configurations de variables dans le fichier de config
+#
+# Parametres    :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>      : Identifiant du fichier dans lequel ecrire
+#       <DataSource>  : Liste contenant le contenu du fichier de config source
+#       <ColormapLst> : Liste des colormaps associees aux variables
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
+   #----- Get current configs
+   puts $FileID "\#----- Variable Style Configurations"
+   set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
+   
+   foreach config $configLst {
+      puts $FileID $config
+   }
+   
+   #----- Copy the general configs
+   foreach content $DataSource {
+      #----- Copy only if not already defined
+      set configName [string range $content [string first \( $content] [string first \) $content]]
+      set index [lsearch -glob $configLst "*$configName*"]
+      
+      if {($index < 0) && ($content ne "")} {
+         puts $FileID $content
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteViewportConfigs>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteViewportConfigs { FileID } {
+   variable Data
+   
+   set params "set Params(Viewport) \{"
+   set paramLst [list crowd font bg bd colorcoast colorlake colorfillcoast colorfilllake colorriver colorpolit coloradmin colorcity colorroad colorplace colorcoord]
+   set vp [lindex [Page::Registered ${::APViz::Data(Frame)} Viewport] 0]
+
+   foreach param $paramLst {
+      set value [${::APViz::Data(Frame)}.page.canvas itemconfigure $vp -$param]
+      set paramConfig "-$param [lindex $value [expr [llength $value] - 1]]"
+      set params [concat $params $paramConfig]
+   }
+   
+   set params [concat $params "\}"]   
+   puts $FileID $params
+   
+   #TODO: Save right nb of vps
+   puts $FileID "set Params(ViewportNb) $Data(VPCount)"
+}
+
