@@ -26,13 +26,19 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set ops $env(CMCGRIDF)/prog
-set par $env(CMCGRIDF)/../par/dbase/prog
+set ops /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/dbase
+set par /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/par/dbase
 
-set names  { "RDPS" "HRDPS National" "HRDPS North" "GEM-MACH" "RIOPS" "GSL"  "WAMREG"                            "SHOP" "WEBTIDE"}
-set vars   {  P0     P0               P0           P0         GL      GL     WH                                  TM      M2      }
-set subs   {  { "" } { "" }           { "" }       { "" }     { "" }  { "" } { arc eri gsl hur nat ont pac sup } { "" } { arctic9 hudson ne_pac4 nwatl sshelf h3o stle400 } }
-set models [list $ops/reghyb $ops/lam/nat.model $ops/lam/nord.model $ops/mach $ops/riops.native $ops/gsloce $ops/wamreg /fs/cetusops/fs1/prod/hubs/suites/ops/shop/gridpt/anal/shop/stlawrence/ $env(WEBTIDE_DATA)]
+set anal     $ops/anal
+set prog     $ops/prog
+set prog_par $par/prog
+
+#                 0             1                    2                     3                   4                 5             6                   7                      8
+set names  {     "RDPS"        "HRDPS National"     "HRDPS Caps"          "CAPSOCE"           "GLSOCE"          "GSL"         "RIOPS"             "SHOP"                 "WEBTIDE"}
+set vars   {      P0            P0                   P0                    GL                  GL                GL            GL                  TM                     M2      }
+#                 0             1                    2                     3                   4                 5             6                   7                        8       9       10    11     12  13
+set subs   {      { "" }        { "" }               { "" }                { "" }              { "" }            { "" }        { "" }              { "" }                 { arctic9 ne_pac4 nwatl sshelf h3o stle400 } }
+set models [list  $prog/reghyb  $prog/lam/nat.model  $prog/lam/caps.model  $prog/lam/caps.oce  $prog_par/glsoce  $prog/gsloce  $prog/riops.native  $anal/shop/stlawrence  $env(WEBTIDE_DATA)]
 
 set nb 0
 foreach s $subs { incr nb [llength $s] }
@@ -68,7 +74,7 @@ foreach model $models sub $subs var $vars name $names {
       if { $name=="WEBTIDE"} {
          set file [glob -nocomplain $model/$s/*.fstd]
       } else {
-         set file [lindex [lsort -dictionary -increasing [glob -nocomplain $model/$s/??????????_000*]] end]
+         set file [lindex [lsort -dictionary -increasing [glob -nocomplain $model/$s/\[1-2\]?????????_000*]] end]
       }
       if { ![llength $file] } {
          Log::Print WARNING "No data is available of model $model/$s"

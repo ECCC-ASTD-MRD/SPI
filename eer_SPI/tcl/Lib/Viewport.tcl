@@ -668,7 +668,7 @@ proc Viewport::ConfigSet { Frame } {
    }
 
    set Map(Type$Frame)   [lindex [split $Map(Type) :] 0]
-   set Map(GeoRef$Frame) $Map(GeoRef)
+   set Map(GeoRef$Frame) [lindex [split $Map(Type) :] 1]
    set Map(Draw$Frame)   $Map(Draw)
 
    #----- Check for grid type definition
@@ -2961,7 +2961,7 @@ proc Viewport::Setup { Frame } {
 
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
-   set Map(GeoRef$Frame)            $Map(GeoRef)   ;#Georef associee
+   set Map(GeoRef$Frame)            [lindex [split $Map(Type) :] 1]     ;#Georef associee
    set Data(Seconds$Frame)          0              ;#Frame per second counter
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
@@ -3187,6 +3187,8 @@ proc Viewport::UpdateData { Frame { VP { } } } {
 
 proc Viewport::Write { Frame File } {
    variable Data
+   variable Map
+   variable MapDef
 
    set vps [Page::Registered $Frame Viewport]
 
@@ -3196,7 +3198,13 @@ proc Viewport::Write { Frame File } {
       puts $File "   #----- Affichage des Viewports"
       puts $File ""
 
-      puts $File "   set Viewport::Map(Type)        \"[projection configure $Frame -type]\""
+      if { $Map(GeoRef$Frame)!="" } {
+         set def $Map(GeoRef$Frame)
+         puts $File "   set Viewport::MapDef($def) \{ $MapDef($def) \}"
+         puts $File "   set Viewport::Map(Type) \"grid:$def\""
+      } else {
+         puts $File "   set Viewport::Map(Type)        \"[projection configure $Frame -type]\""
+      }
       puts $File "   set Viewport::Map(Perspective) \"[projection configure $Frame -perspective]\""
       puts $File "   set Viewport::Map(Data)        \"[projection configure $Frame -data]\""
       puts $File "   set Viewport::Map(Elev)        \"[projection configure $Frame -scale]\""
