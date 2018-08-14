@@ -256,7 +256,7 @@ proc APViz::AddLayerWindow { } {
       frame .addLayerBox.layers.layerGrid
       label .addLayerBox.layers.layerGrid.valueLbl -text "Default Value \n(Required)"
       label .addLayerBox.layers.layerGrid.rangeLbl -text "Range \n(Optional)"
-      button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {puts "Adding new range" ; APViz::CreateRangeWindow }
+      button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {APViz::CreateRangeWindow }
       
       Bubble::Create .addLayerBox.layers.layerGrid.addRange $Bubble(AddRange)
       Bubble::Create .addLayerBox.layers.layerGrid.valueLbl $Bubble(DefaultValue)
@@ -401,7 +401,7 @@ proc APViz::CreateRangeWindow { } {
       #TODO: Effacer la selection 
       unset -nocomplain rangeType
       catch {ComboBox::DelAll .addRangeBox.range.category.cb True}
-      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 30 8 "puts {combolist selected}"
+      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 30 8 ""
       pack .addRangeBox.range.category.lbl .addRangeBox.range.category.cb -side left
    pack .addRangeBox.range.category -side top -fill x
    
@@ -447,7 +447,7 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
       puts "All fields filled : $RangeName | $RangeCategory | $RangeValues"
       
       #----- Make sure that the range name is unique
-      if { [lsearch -exact [dict get $APViz::Data(RangeNames) $RangeCategory] $RangeName] < 0} {
+      if { [lsearch -exact [dict get $Data(RangeNames) $RangeCategory] $RangeName] < 0} {
          #----- Create range
          if {[set product $Data(CurrentProduct)] ne ""} {
             eval set ${product}::Range($RangeName) \{$RangeValues\}
@@ -597,8 +597,9 @@ proc APViz::SetDefaultValue { Option } {
    variable Data
    variable FieldList
    
+   #TODO: Update combobox list?
    #----- Putting first list element as default value 
-   if {[lsearch -exact [array names FieldList] $Data(Range,$Option)] >= 0} {
+   if {($Option eq "Vars") && ([lsearch -exact [array names FieldList] $Data(Range,$Option)] >= 0)} {
       set values [split $FieldList($Data(Range,$Option)) " "]
       if {($Data(AddLayer$Option,Value) eq "") || ([lsearch -exact $values $Data(AddLayer$Option,Value)] < 0)} {
          set Data(AddLayer$Option,Value) [lindex [split $values " "] 0]
@@ -606,7 +607,8 @@ proc APViz::SetDefaultValue { Option } {
    } elseif {[set value [lindex [set values [split $Data(Range,$Option) " "]] 0]] ne "NONE"} {
       if {($Data(AddLayer$Option,Value) eq "") || ([lsearch -exact $values $Data(AddLayer$Option,Value)] < 0) } {
          #----- Remove brackets
-         regsub \(\{|\}\) $value "" value
+         regsub \{ $value "" value
+         regsub \} $value "" value
          set Data(AddLayer$Option,Value) $value
       }
    }

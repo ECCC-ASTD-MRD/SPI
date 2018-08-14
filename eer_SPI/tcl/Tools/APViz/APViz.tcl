@@ -320,6 +320,7 @@ proc APViz::AsProject { File } {
 
 proc APViz::Source { Path Widget } {
    variable Data
+   variable CalcLayers
    set product [file rootname [file tail $Path]]
 
    #----- Create product namespace
@@ -327,6 +328,7 @@ proc APViz::Source { Path Widget } {
       variable Layers
       variable Range
       variable DefaultValues
+      variable CalcLayers
       variable Label
       variable Value
       variable Params
@@ -371,6 +373,7 @@ proc APViz::Source { Path Widget } {
       
       proc Load { Path Product Widget } {
          global GDefs
+         variable CalcLayers
          variable Label
          variable Value
          variable Range
@@ -453,7 +456,7 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
          
-         #----- Creation des ransges de variables
+         #----- Creation des ranges de variables
          CreateVariableRanges
          
          #----- Creation des couches         
@@ -500,6 +503,60 @@ proc APViz::Source { Path Widget } {
          
          #----- Create formula lists
          APViz::CreateFormulaLists
+         
+         #----- Create calcul layers
+         #CreateCalcLayers $Product $Widget $CalcLayers
+      }
+      
+      proc CreateCalcLayers { Product Widget } {
+         variable Value
+         variable CalcLayers
+         
+         foreach layer $CalcLayers {
+            set calcIndex [AddCalcLayer $Product $Widget]
+            lassign [split $layer :] toggle formulaName rowA rowB vp
+
+            #----- Set defaults
+            if {[winfo exists $Widget.calc.$calcIndex.check]} {
+               if {$toggle} {
+                  $Widget.calc.$calcIndex.check select
+               } else {
+                  $Widget.calc.$calcIndex.check deselect
+               }
+            }
+            
+            if {($vp <= ${APViz::Data(VPCount)}) && [winfo exists $Widget.calc.$calcIndex.vp]} {
+               set APViz::${Product}::Value(CalcVP,$calcIndex) $vp
+            }
+            
+            #----- Verify if formula is defined
+            if {[set index [lsearch -exact ${APViz::Data(FormulaNames)} $formulaName]] >= 0} {
+               set APViz::${Product}::Value(Formula,$calcIndex) [lindex ${APViz::Data(Formulas)} $index]
+            } else {
+               break
+            }
+            
+            #----- Verify that rowA and rowB are < NbLayers (Directly use index as no rows have been deleted)
+            if {($rowA < $Value(NbLayers)) && ($rowB < $Value(NbLayers))} {
+               #----- set A and B field IDs 
+               set fieldA [lindex ${::APViz::Data(LayerIDs)} $rowA]
+               set fieldB [lindex ${::APViz::Data(LayerIDs)} $rowB]
+               
+               if {[fstdfield is $fieldA] && [fstdfield is $fieldB]} {
+                  set APViz::${Product}::Value(VarA,$calcIndex) $fieldA
+                  set APViz::${Product}::Value(VarB,$calcIndex) $fieldB
+               } else {
+                  break
+               }
+            } else {
+               break
+            }
+            
+            #----- Update formula and create calc layer
+            set Value(UneditedFormula,$calcIndex) $Value(Formula,$calcIndex)
+            APViz::${Product}::SetFormula $calcIndex True
+            APViz::CalculateExpression $Product $calcIndex
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -956,7 +1013,7 @@ proc APViz::Source { Path Widget } {
             
             label $Widget.calc.$no.lblA	-text "A:"
             label $Widget.calc.$no.lblB	-text "B:"
-            
+            puts "##### Layer IDs are: ${::APViz::Data(LayerIDs)}"
             spinbox $Widget.calc.$no.varA	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True \
                -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
             spinbox $Widget.calc.$no.varB	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True \
@@ -967,7 +1024,7 @@ proc APViz::Source { Path Widget } {
             for {set i 1} {$i <= $APViz::Data(VPCount)} {incr i} {
                lappend vpLst $i
             }
-            puts "LIST: $vpLst"
+
             spinbox $Widget.calc.$no.vp -values $vpLst -width 1 -textvariable APViz::${Product}::Value(CalcVP,$no) -wrap True \
                -command "APViz::CalculateExpression $Product $no"
             
@@ -986,6 +1043,7 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajouter le ID a la liste
          lappend ${::APViz::Data(CalcIDs)} CALC$RowID(Calc$no)
+         return $no
       }
       
       #-------------------------------------------------------------------------------
@@ -1050,6 +1108,8 @@ proc APViz::Source { Path Widget } {
    set Data(AutoUpdateEventID) [after [expr {1000*60*10}] APViz::UpdateAvailableDates $product]	; # Update a chaque 10min:1000*60*10
    
    APViz::InitializeVars
+   #----- Create Calclayers
+   ${product}::CreateCalcLayers $product $Widget
 }
 
 #-------------------------------------------------------------------------------
