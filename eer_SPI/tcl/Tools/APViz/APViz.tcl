@@ -6,25 +6,66 @@
 #
 # Projet   : Package d'interface pour SPI
 # Fichier  : APViz.tcl
-# Creation : Juin 2003
+# Creation : May 2018
 #
 # Description:
-#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
-#    a l'interface SPI. Ces fichiers representent la structure standard de SPI. Une
-#    fonctionnalite de base de selection est implantee pour fin de demonstration.
+#   Outil développé pour A&P permettant de visualiser les données météorologiques 
+#   de façon dynamique.
+# 
+# Fonctions:
 #
-#    Toutes les fonctions decrites sont le minimum necessaire au fonctionnement d'un
-#    outils a travers l'interface SPI
+#   APViz::Source { Path Widget }
+#   APViz::AreFieldsFilled { Model Var Level Run Hour Source Date }
+#   APViz::AssignVariable { Product Index }
+#   APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType }
+#   APViz::CalculateExpression { Product Index}
+#   APViz::Check { Product Index {IsCalc False}}
+#   APViz::CheckExpression { Expr VarType }
+#   APViz::Close { }
+#   APViz::CloseFiles { }
+#   APViz::ConstructTreeBranches { Tree ParentNode Path Level }
+#   APViz::CreateColormaps { }
+#   APViz::CreateFileTree { Path }
+#   APViz::CreateFormulaLists { }
+#   APViz::DateBinding { }
+#   APViz::DeleteWidget { Widget }
+#   APViz::FetchAllDates { Product }
+#   APViz::FetchDates { Product Model Src }
+#   APViz::FilePathDefine { Path }
+#   APViz::GenerateConfigFile { Path }
+#   APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} }
+#   APViz::GetFormulaName { Formula }
+#   APViz::GetInitialColormap { Colormap }
+#   APViz::GetLevelType { Source }
+#   APViz::GetTreeId { Tree Branch Leaf }
+#   APViz::GetVariableConfigs { Product ColorMaps }
+#   APViz::GetVarsNb { Dict VarType }
+#   APViz::GetVPId { VPno }
+#   APViz::InitializeVars { }
+#   APViz::ManageColormaps { Product Path }
+#   APViz::ReinitializeVP { }
+#   APViz::RemoveVariableFromVP { IDList Index }
+#   APViz::SaveConfigFile { }
+#   APViz::SelectFiletreeBranch { Tree Branch Open }
+#   APViz::SetParam { Index Product {IsCalcLayer False}}
+#   APViz::Start { }
 #
-#    Pour creer un nouvel outil, il suffit de renommer ces fichiers (tcl,int,txt,ctes) au nom
-#    de l'outils que vous desirez et de remplacer "YourToolHere" et "yourtoolhere" par le
-#    meme nom.
 #
-#    Par la suite il suffit d'inserer la ligne suivante dans le fichier $HOME/.spi/SPI
+# Fonctions pour le produit Product:
 #
-#       SPI::ToolDef <path>/APViz.tcl
+#   APViz::Product::AddCalcLayer { Product Widget }
+#   APViz::Product::AdjustIDBubble { Widget Index }
+#   APViz::Product::AdjustLockedValues { Option Index Product }
+#   APViz::Product::AdjustSpinboxValues { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } }
+#   APViz::Product::CreateCalcLayers { Product Widget }
+#   APViz::Product::CreateLayers { Product Layers Widget { DefaultValues {} } {IsAddedLayer False} {LayerType 0}}
+#   APViz::Product::CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
+#   APViz::Product::CreateVariableRanges { }
+#   APViz::Product::DeleteCalcLayer { Widget Index Product }
+#   APViz::Product::DeleteLayer { Widget Index Product Src }
+#   APViz::Product::Load { Path Product Widget }
+#   APViz::Product::SetFormula { Index {IsInit False}}
 #
-#    et de modifier les references au <path> dans les 3 lignes ci-bas pour sourcer le tout.
 #
 #===============================================================================
 
@@ -1473,7 +1514,7 @@ proc APViz::CloseFiles { } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
+proc APViz::ConstructTreeBranches { Tree ParentNode Path Level } {
    variable Data
 
    #----- Get file and folders list
@@ -1676,68 +1717,6 @@ proc APViz::DeleteWidget { Widget } {
    if [winfo exists $Widget] {
       eval destroy [winfo children $Widget]
       destroy $Widget
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::Draw...>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonctions de manipulation sur la projection
-#
-# Parametres :
-#  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur du Viewport
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::DrawInit { Frame VP } {
-   variable Data
-
-   set Data(Lat0)   $Viewport::Map(LatCursor)
-   set Data(Lon0)   $Viewport::Map(LonCursor)
-}
-
-proc APViz::Draw { Frame VP } {
-   variable Data
-
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete APVIZ
-   }
-
-   set Data(Lat1)   $Viewport::Map(LatCursor)
-   set Data(Lon1)   $Viewport::Map(LonCursor)
-
-   set Data(Canvas) $Frame.page.canvas
-   set Data(Frame)  $Frame
-   set Data(VP)     $VP
-
-   APViz::UpdateItems $Frame
-}
-
-proc APViz::DrawDone { Frame VP } {
-   variable Data
-
-   if { $Data(Lat0)>$Data(Lat1) } {
-      set tmp $Data(Lat1)
-      set Data(Lat1) $Data(Lat0)
-      set Data(Lat0) $tmp
-   }
-
-   if { $Data(Lon0)>$Data(Lon1) } {
-      set tmp $Data(Lon1)
-      set Data(Lon1) $Data(Lon0)
-      set Data(Lon0) $tmp
-   }
-
-   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
-      set Data(Coo) ""
-   } else {
-      set Data(Coo) "$Data(Lat0),$Data(Lon0) - $Data(Lat1),$Data(Lon1)"
    }
 }
 
@@ -1972,7 +1951,7 @@ proc APViz::GenerateConfigFile { Path } {
 
       close $fileID
       
-      #----- TODO: UPDATE FILETREE
+      #----- Update file tree
       APViz::UpdateProductInterface $filename $Path
    }
 }
