@@ -1024,7 +1024,7 @@ proc APViz::Source { Path Widget } {
             
             label $Widget.calc.$no.lblA	-text "A:"
             label $Widget.calc.$no.lblB	-text "B:"
-            puts "##### Layer IDs are: ${::APViz::Data(LayerIDs)}"
+
             spinbox $Widget.calc.$no.varA	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarA,$no) -wrap True \
                -command "APViz::${Product}::SetFormula $no ; APViz::CalculateExpression $Product $no"
             spinbox $Widget.calc.$no.varB	-values ${::APViz::Data(LayerIDs)} -width 7 -textvariable APViz::${Product}::Value(VarB,$no) -wrap True \
@@ -1505,12 +1505,11 @@ proc APViz::CalculateExpression { Product Index} {
    variable ${Product}::RowID
 
    set expression $Value(Formula,$Index)
-   puts "-------------- Calculating Expr: $expression"
 
    if {$expression ne ""} {
 
       #----- Substitute expressions
-      puts "transformed expr: [set expression [TranslateExpression $Product $expression]]"
+      set expression [TranslateExpression $Product $expression]
       
       if {[fstdfield is [lindex $Data(CalcIDs) $RowID(Calc$Index)]]} {
          APViz::RemoveVariableFromVP $Data(CalcIDs) $RowID(Calc$Index)		; # Enlever la variable courante du VP pour cette couche

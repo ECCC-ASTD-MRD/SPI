@@ -417,6 +417,7 @@ proc APViz::CreateRangeWindow { } {
    pack .addRangeBox.range.num -side top -fill x
    
    Bubble::Create .addRangeBox.range.values $Bubble(RangeValues)
+   Bubble::Create .addRangeBox.range.num.calcul $Bubble(RangeNum)
    
    frame .addRangeBox.par -relief raised -bd 1
    pack .addRangeBox.par -side top -padx 5 -fill x
@@ -431,6 +432,24 @@ proc APViz::CreateRangeWindow { } {
    grab .addRangeBox
    
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::CalculateNumericalRange>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation d'une range numerique
+#
+# Parametres :
+#       <Widget> : Le widget du entry affichant la range
+#       <Max>    : Valeur max de la range
+#       <Min>    : Valeurs min de la range
+#       <Step>   : Le pas entre chaque chiffre
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
 
 proc APViz::CalculateNumericalRange { Widget Max Min Step } {
    variable Lbl
