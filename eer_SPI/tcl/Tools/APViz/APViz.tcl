@@ -30,35 +30,6 @@
 
 #----- Lire les sources d'execution
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
-
-#----- TODO: Sourcer seulement a louverture de loutil
-set comment {
-if { [info exists env(SPI_APVIZ)] } {
-   foreach path [split $env(SPI_APVIZ) :] {
-      lappend APViz::Param(ConfigPath) $path
-      #----- Getting config files path
-      set comment {
-      if {[file isfile ${path}/APViz_Data.tcl]} {
-         if {[catch {source ${path}/APViz_Data.tcl} error]} {
-            lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
-            lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
-            ::Dialog::Info . $msg
-         }
-      } else {
-         lappend msg "Fichier APViz_Data.tcl manquant de $path"
-         lappend msg "File APViz_Data.tcl containing paths missing from $path"
-         ::Dialog::Info . $msg
-      }
-      }
-      
-      #----- Getting colormaps
-      if {[file isdirectory ${path}/Colormap/]} {
-         lappend APViz::DataSrc(Colormaps) ${path}/Colormap/
-      }
-   }
-}
-}
-
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
@@ -66,6 +37,19 @@ namespace eval APViz {
    ::struct::tree FILETREE
 }
 
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::Start>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
+#
+# But      : Sourcer les fichiers APViz_Data.tcl des repertoires de config 
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
 
 proc APViz::Start { } {
    global env
@@ -93,23 +77,6 @@ proc APViz::Start { } {
             lappend DataSrc(Colormaps) ${path}/Colormap/
          }
       }
-   }
-   
-   set comment {
-   foreach path $Param(ConfigPath) {
-      puts "For path: $path"
-      if {[file isfile ${path}/APViz_Data.tcl]} {
-         if {[catch {source ${path}/APViz_Data.tcl} error]} {
-            lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
-            lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
-            ::Dialog::Info . $msg
-         }
-      } else {
-         lappend msg "Fichier APViz_Data.tcl manquant de $path"
-         lappend msg "File APViz_Data.tcl containing paths missing from $path"
-         ::Dialog::Info . $msg
-      }
-   }
    }
 }
 
@@ -582,30 +549,24 @@ proc APViz::Source { Path Widget } {
             #----- Verify if formula is defined
             if {[set index [lsearch -exact ${APViz::Data(FormulaNames)} $formulaName]] >= 0} {
                set APViz::${Product}::Value(Formula,$calcIndex) [lindex ${APViz::Data(Formulas)} $index]
-            } else {
-               break
-            }
-            
-            #----- Verify that rowA and rowB are < NbLayers (Directly use index as no rows have been deleted)
-            if {($rowA < $Value(NbLayers)) && ($rowB < $Value(NbLayers))} {
-               #----- set A and B field IDs 
-               set fieldA [lindex ${::APViz::Data(LayerIDs)} $rowA]
-               set fieldB [lindex ${::APViz::Data(LayerIDs)} $rowB]
                
-               if {[fstdfield is $fieldA] && [fstdfield is $fieldB]} {
-                  set APViz::${Product}::Value(VarA,$calcIndex) $fieldA
-                  set APViz::${Product}::Value(VarB,$calcIndex) $fieldB
-               } else {
-                  break
+               #----- Verify that rowA and rowB are < NbLayers (Directly use index as no rows have been deleted)
+               if {($rowA < $Value(NbLayers)) && ($rowB < $Value(NbLayers))} {
+                  #----- set A and B field IDs 
+                  set fieldA [lindex ${::APViz::Data(LayerIDs)} $rowA]
+                  set fieldB [lindex ${::APViz::Data(LayerIDs)} $rowB]
+                  
+                  if {[fstdfield is $fieldA] && [fstdfield is $fieldB]} {
+                     set APViz::${Product}::Value(VarA,$calcIndex) $fieldA
+                     set APViz::${Product}::Value(VarB,$calcIndex) $fieldB
+                  }
                }
-            } else {
-               break
+               
+               #----- Update formula and create calc layer
+               set Value(UneditedFormula,$calcIndex) $Value(Formula,$calcIndex)
+               APViz::${Product}::SetFormula $calcIndex True
+               APViz::CalculateExpression $Product $calcIndex
             }
-            
-            #----- Update formula and create calc layer
-            set Value(UneditedFormula,$calcIndex) $Value(Formula,$calcIndex)
-            APViz::${Product}::SetFormula $calcIndex True
-            APViz::CalculateExpression $Product $calcIndex
          }
       }
       
@@ -1574,7 +1535,7 @@ proc APViz::CalculateExpression { Product Index} {
          }
          
          set resultFieldID CALC$RowID(Calc$Index)_$formulaName
-         puts "Expression: $expression"
+
          #----- Calculer l'expression
          vexpr $resultFieldID $expression
          
@@ -1935,9 +1896,18 @@ proc APViz::CreateFormulaLists { } {
          lappend Data(Formulas) [lindex $formulaPair 1]
       }
    }
+}
+
+proc APViz::GetFormulaName { Formula } {
+   variable Data
    
-   puts "FormulaNames: $Data(FormulaNames)"
-   puts "Formulas: $Data(Formulas)"
+   set formulaName ""
+   set index [lsearch -exact $Data(Formulas) $Formula]
+   if {$index >= 0} {
+      set formulaName [lindex $Data(FormulaNames) $index]
+   }
+   
+   return $formulaName
 }
 
 #----------------------------------------------------------------------------
@@ -2309,10 +2279,9 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteDefaultValues $product $fileID
       
       #----- Write CalcLayers
-      set comment {
       puts -nonewline $fileID "\n"
       APViz::WriteCalcLayers $product $fileID
-      }
+
       close $fileID
       
       #----- TODO: UPDATE FILETREE
@@ -2418,12 +2387,14 @@ proc APViz::WriteCalcLayers { Product FileID } {
    for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
       if {[set rowID $RowID(Calc$i)] >= 0} {
          #----- Get all params
-         set toggle $Value(CalcToggle,$rowID)           ;#HERREEEE
-         set formulaName       ""
-         set rowA              ""
-         set rowB              ""
-         set vp                ""
+         set toggle             $Value(CalcToggle,$i)
+         set rowA               [lsearch -exact $Data(LayerIDs) $Value(VarA,$i)]
+         set rowB               [lsearch -exact $Data(LayerIDs) $Value(VarB,$i)]
+         set vp                 $Value(CalcVP,$i)
          
+         #----- Get formula name from formula
+         set formulaName [APViz::GetFormulaName $Value(UneditedFormula,$i)]
+         puts "   $toggle:$formulaName:$rowA:$rowB:$vp"
          puts $FileID "   $toggle:$formulaName:$rowA:$rowB:$vp"
       }
    }
