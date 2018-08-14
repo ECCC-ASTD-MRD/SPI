@@ -78,6 +78,7 @@ namespace eval APViz {
    set Data(RangeNames)         {}
    set Data(Ranges)             {}
    set Data(ColNames)           [list Models Runs Hours Sources Vars Levels IP3 Viewports]
+   set Data(DefaultColormap)    ""
    
    set FieldList(ALL)           {PN GZ ES TT HR HU QQ QR UU VV WW NW RT RC PR PC RN SN PE FR SR BE BI BS D3 EP HL IH IL NT RE REMN SW TVE-TRW-SVR TVE-TRW-MSVR TVE-TRW-LGT \
                                  TVE-CRT-SVR TVE-CRT-MSVR TVE-CRT-LGT TD TW T7 T8 HMX HMXX UV UVMX EI DZ WA WF Z9 AL HD LTG ME MG TS SD DN XA LG TP I5 FC FS FV ZET GL TM EV \

@@ -31,16 +31,17 @@
 #----- Lire les sources d'execution
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
 
-#----- TODO: lire de plusieurs paths
+#----- TODO: Sourcer seulement a louverture de loutil
+set comment {
 if { [info exists env(SPI_APVIZ)] } {
    foreach path [split $env(SPI_APVIZ) :] {
       lappend APViz::Param(ConfigPath) $path
-      puts "Path is: $path"
       #----- Getting config files path
-      if {[file isfile ${path}APViz_Data.tcl]} {
-         if {[catch {source ${path}APViz_Data.tcl} error]} {
-            lappend msg "Erreur de lecture dans ${path}APViz_Data.tcl  : $error"
-            lappend msg "Sourcing error in ${path}APViz_Data.tcl : $error"
+      set comment {
+      if {[file isfile ${path}/APViz_Data.tcl]} {
+         if {[catch {source ${path}/APViz_Data.tcl} error]} {
+            lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
+            lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
             ::Dialog::Info . $msg
          }
       } else {
@@ -48,13 +49,14 @@ if { [info exists env(SPI_APVIZ)] } {
          lappend msg "File APViz_Data.tcl containing paths missing from $path"
          ::Dialog::Info . $msg
       }
-      
+      }
       
       #----- Getting colormaps
-      if {[file isdirectory ${path}Colormap/]} {
-         lappend APViz::DataSrc(Colormaps) ${path}Colormap/
+      if {[file isdirectory ${path}/Colormap/]} {
+         lappend APViz::DataSrc(Colormaps) ${path}/Colormap/
       }
    }
+}
 }
 
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
@@ -62,6 +64,53 @@ source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
 
 namespace eval APViz {
    ::struct::tree FILETREE
+}
+
+
+proc APViz::Start { } {
+   global env
+   variable Param
+   variable DataSrc
+   
+   if { [info exists env(SPI_APVIZ)] } {
+      foreach path [split $env(SPI_APVIZ) :] {
+         lappend Param(ConfigPath) $path
+         #----- Getting config files path
+         if {[file isfile ${path}/APViz_Data.tcl]} {
+            if {[catch {source ${path}/APViz_Data.tcl} error]} {
+               lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
+               lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
+               ::Dialog::Info . $msg
+            }
+         } else {
+            lappend msg "Fichier APViz_Data.tcl manquant de $path"
+            lappend msg "File APViz_Data.tcl containing paths missing from $path"
+            ::Dialog::Info . $msg
+         }
+         
+         #----- Getting colormaps
+         if {[file isdirectory ${path}/Colormap/]} {
+            lappend DataSrc(Colormaps) ${path}/Colormap/
+         }
+      }
+   }
+   
+   set comment {
+   foreach path $Param(ConfigPath) {
+      puts "For path: $path"
+      if {[file isfile ${path}/APViz_Data.tcl]} {
+         if {[catch {source ${path}/APViz_Data.tcl} error]} {
+            lappend msg "Erreur de lecture dans ${path}/APViz_Data.tcl  : $error"
+            lappend msg "Sourcing error in ${path}/APViz_Data.tcl : $error"
+            ::Dialog::Info . $msg
+         }
+      } else {
+         lappend msg "Fichier APViz_Data.tcl manquant de $path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $path"
+         ::Dialog::Info . $msg
+      }
+   }
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -503,14 +552,15 @@ proc APViz::Source { Path Widget } {
          
          #----- Create formula lists
          APViz::CreateFormulaLists
-         
-         #----- Create calcul layers
-         #CreateCalcLayers $Product $Widget $CalcLayers
       }
       
       proc CreateCalcLayers { Product Widget } {
          variable Value
          variable CalcLayers
+         
+         if {![info exists CalcLayers]} {
+            return
+         }
          
          foreach layer $CalcLayers {
             set calcIndex [AddCalcLayer $Product $Widget]
@@ -1357,7 +1407,7 @@ proc APViz::GetVPId { VPno } {
 # But      :    Retourner le nombre de variables assignees au VP d'un type
 #
 # Parametres      :
-#       <Dict>    : Dictionnaire contenant le nombre de varaible pour chaque type de variable
+#       <Dict>    : Dictionnaire contenant le nombre de variable pour chaque type de variable
 #       <VarType> : Type de variable (ex: GZ, TT, UU)
 #       
 # Retour:
@@ -1524,6 +1574,7 @@ proc APViz::CalculateExpression { Product Index} {
          }
          
          set resultFieldID CALC$RowID(Calc$Index)_$formulaName
+         puts "Expression: $expression"
          #----- Calculer l'expression
          vexpr $resultFieldID $expression
          
@@ -1847,6 +1898,7 @@ proc APViz::DeleteWidget { Widget } {
 proc APViz::CreateFileTree { Path } {
    variable Data
    variable Param 
+   variable DataSrc
    
    #----- Verify if tree already exist
    if { [llength [FILETREE children root]] } {
@@ -1855,7 +1907,7 @@ proc APViz::CreateFileTree { Path } {
       struct::tree FILETREE
       
       #----- Read APViz_Data.tcl file
-      if {[catch { source ${Path}APViz_Data.tcl }]} {
+      if {[catch { source ${Path}/APViz_Data.tcl }]} {
          lappend msg "Fichier APViz_Data.tcl manquant de $Path"
          lappend msg "File APViz_Data.tcl containing paths missing from $Path"
          ::Dialog::Info . $msg
@@ -1926,12 +1978,12 @@ proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
             $Tree set $file open False
          }
          
-         if {[file isdirectory [set newPath ${Path}$file/]]} {
+         if {[file isdirectory [set newPath ${Path}/$file/]]} {
             #----- Appel recursif
             APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
             $Tree set $file path ""
          } else {
-            $Tree set $file path ${Path}$file
+            $Tree set $file path ${Path}/$file
          }
       }
    }
@@ -2007,43 +2059,6 @@ proc APViz::SelectFiletreeBranch { Tree Branch Open } {
          set Data(ConfigPath) $filepath
       } else {
          puts "$filepath not a file"
-      }
-   }
-}
-
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::FetchFiles>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : 	Construire les listes pour les fichiers de configuration de facon recursive
-#
-# Parametres	:
-#	<Path>  : Path du parent du dossier
-#	<Name>	: Nom du dossier
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::FetchFiles { Path Name } {
-   variable Data
-
-   set Data($Name,Files)   {}
-   set Data($Name,Folders) {}
-   set Path ${Path}${Name}/
-   set fileList [glob -nocomplain -tails -path $Path *]
-
-   foreach file $fileList {
-      if {[file isdirectory ${Path}$file] && ($file ne "Colormap")} {
-         lappend Data($Name,Folders) $file
-         
-         #----- Appel recursif
-         APViz::FetchFiles $Path $file
-      } else {
-         lappend Data($Name,Files) [lindex [split $file .] 0]
       }
    }
 }
@@ -2203,8 +2218,6 @@ proc APViz::FetchAllDates { Product } {
       }
       
       set Data(Dates) $finalDateLst
-      
-
    }
 }
 
@@ -2295,6 +2308,11 @@ proc APViz::GenerateConfigFile { Path } {
       puts -nonewline $fileID "\n"
       APViz::WriteDefaultValues $product $fileID
       
+      #----- Write CalcLayers
+      set comment {
+      puts -nonewline $fileID "\n"
+      APViz::WriteCalcLayers $product $fileID
+      }
       close $fileID
       
       #----- TODO: UPDATE FILETREE
@@ -2371,6 +2389,46 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteCalcLayers>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de projection et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteCalcLayers { Product FileID } {
+   variable Data
+   variable ${Product}::Value
+   variable ${Product}::RowID
+
+   puts $FileID "\#----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)"
+   puts $FileID "set CalcLayers \{"
+   
+   #----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $RowID(Calc$i)] >= 0} {
+         #----- Get all params
+         set toggle $Value(CalcToggle,$rowID)           ;#HERREEEE
+         set formulaName       ""
+         set rowA              ""
+         set rowB              ""
+         set vp                ""
+         
+         puts $FileID "   $toggle:$formulaName:$rowA:$rowB:$vp"
+      }
+   }
+   puts $FileID "\}"
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::WriteLayers>
@@ -2394,7 +2452,7 @@ proc APViz::WriteLayers { Product FileID } {
    variable ${Product}::Value
    variable ${Product}::RowID
 
-   puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level)"
+   puts $FileID "\#----- Layers (On:Model:Run:Hour:Source:Var:Level:IP3:VP)"
    puts $FileID "set Layers \{"
    #----- Layers (On:Model:Var:Level:Hour:Interval:Run:Source)
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
