@@ -367,36 +367,15 @@ proc APViz::CreateRangeWindow { } {
    toplevel .addRangeBox
    wm protocol  .addRangeBox WM_DELETE_WINDOW { APViz::DeleteWidget .addRangeBox }
    wm transient .addRangeBox $Data(Frame)
-   wm geom      .addRangeBox 370x160
+   wm geom      .addRangeBox 390x160
    
    TabFrame::Create .addRangeBox.tab 1 ""
    pack .addRangeBox.tab -side top -fill both -expand false -padx 5 -pady 5
    
    wm title     .addRangeBox "Create New Range"
    
-   #TODO: Save range in list to copy in config file 
-   #TODO: Update range lists
-   
    labelframe .addRangeBox.range
    pack .addRangeBox.range -side top -fill x -padx 5 -ipady 2 -anchor n
-
-   #----- Range name (Entry)
-   frame .addRangeBox.range.name
-      label .addRangeBox.range.name.lbl -text "Range Name:" -width 15 -anchor w
-      entry .addRangeBox.range.name.entry -bg white -width 32 -textvariable rangeName
-      .addRangeBox.range.name.entry delete 0 [string length [.addRangeBox.range.name.entry get]]
-      pack .addRangeBox.range.name.lbl .addRangeBox.range.name.entry -side left
-   pack .addRangeBox.range.name -side top -fill x
-     
-   #----- Range values (Entry)
-   frame .addRangeBox.range.values
-      label .addRangeBox.range.values.lbl -text "Range Values:" -width 15 -anchor w
-      entry .addRangeBox.range.values.entry -bg white -width 32 -textvariable rangeValues
-      .addRangeBox.range.values.entry delete 0 [string length [.addRangeBox.range.values.entry get]]
-      pack .addRangeBox.range.values.lbl .addRangeBox.range.values.entry -side left
-   pack .addRangeBox.range.values -side top -fill x
-   
-   Bubble::Create .addRangeBox.range.values $Bubble(RangeValues)
    
    #----- Range category (ComboBox)
    frame .addRangeBox.range.category
@@ -404,9 +383,40 @@ proc APViz::CreateRangeWindow { } {
       #TODO: Effacer la selection 
       unset -nocomplain rangeType
       catch {ComboBox::DelAll .addRangeBox.range.category.cb True}
-      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 30 8 ""
+      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 34 8 ""
       pack .addRangeBox.range.category.lbl .addRangeBox.range.category.cb -side left
    pack .addRangeBox.range.category -side top -fill x
+   
+   #----- Range name (Entry)
+   frame .addRangeBox.range.name
+      label .addRangeBox.range.name.lbl -text "Range Name:" -width 15 -anchor w
+      entry .addRangeBox.range.name.entry -bg white -width 36 -textvariable rangeName
+      .addRangeBox.range.name.entry delete 0 [string length [.addRangeBox.range.name.entry get]]
+      pack .addRangeBox.range.name.lbl .addRangeBox.range.name.entry -side left
+   pack .addRangeBox.range.name -side top -fill x
+     
+   #----- Range values (Entry)
+   frame .addRangeBox.range.values
+      label .addRangeBox.range.values.lbl -text "Range Values:" -width 15 -anchor w
+      entry .addRangeBox.range.values.entry -bg white -width 36 -textvariable rangeValues
+      .addRangeBox.range.values.entry delete 0 [string length [.addRangeBox.range.values.entry get]]
+      pack .addRangeBox.range.values.lbl .addRangeBox.range.values.entry -side left
+   pack .addRangeBox.range.values -side top -fill x
+   
+   frame .addRangeBox.range.num
+      label .addRangeBox.range.num.space -text "" -width 15 -anchor w
+      label .addRangeBox.range.num.minLbl -text "Min:" -width 4 -anchor w
+      entry .addRangeBox.range.num.minEntry -bg white -width 6 -textvariable min
+      label .addRangeBox.range.num.maxLbl -text "Max:" -width 4 -anchor w
+      entry .addRangeBox.range.num.maxEntry -bg white -width 6 -textvariable max
+      label .addRangeBox.range.num.stepLbl -text "Step:" -width 4 -anchor w
+      entry .addRangeBox.range.num.stepEntry -bg white -width 6 -textvariable step
+      button .addRangeBox.range.num.calcul -image CALC -bd 1 -relief flat -overrelief raised -command "APViz::CalculateNumericalRange .addRangeBox.range.values.entry \$max \$min \$step"
+      pack .addRangeBox.range.num.space  .addRangeBox.range.num.minLbl .addRangeBox.range.num.minEntry .addRangeBox.range.num.maxLbl \
+         .addRangeBox.range.num.maxEntry .addRangeBox.range.num.stepLbl .addRangeBox.range.num.stepEntry .addRangeBox.range.num.calcul -side left
+   pack .addRangeBox.range.num -side top -fill x
+   
+   Bubble::Create .addRangeBox.range.values $Bubble(RangeValues)
    
    frame .addRangeBox.par -relief raised -bd 1
    pack .addRangeBox.par -side top -padx 5 -fill x
@@ -420,6 +430,24 @@ proc APViz::CreateRangeWindow { } {
    raise .addRangeBox
    grab .addRangeBox
    
+}
+
+proc APViz::CalculateNumericalRange { Widget Max Min Step } {
+   variable Lbl
+   
+   #----- Verify if all are digits
+   if {[string is digit $Max] && ($Max ne "") && [string is digit $Min] && ($Min ne "") && [string is digit $Step] && ($Step ne "") } {
+      set range ""
+      set num $Min
+      while {$num <= $Max} {
+         set range [concat $range $num]
+         set num [expr $num + $Step]
+      }
+      $Widget delete 0 [string length [$Widget get]]
+      $Widget insert 0 $range
+   } else {
+      ::Dialog::Info . $Lbl(Digits)
+   }
 }
 
 #----------------------------------------------------------------------------

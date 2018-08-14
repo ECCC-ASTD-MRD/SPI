@@ -46,6 +46,7 @@ namespace eval APViz {
    set Lbl(RangeDesc)		{ "Sélectionner les rangées pour lesquelles les options de valeurs variables doivent être conservées." "Select the rows for which to save the range configurations." }
    set Lbl(EmptyFields)         { "Tous les champs doivent être remplis." "All fields must be filled." }
    set Lbl(CreateNewLayer)      { "Créer une nouvelle couche" "Create new layer" }
+   set Lbl(Digits)              { "Doivents toutes être des entrées numériques" "Must all be digits"}
    
    #----- Messages
 
