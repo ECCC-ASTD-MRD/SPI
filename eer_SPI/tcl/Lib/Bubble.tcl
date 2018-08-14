@@ -202,7 +202,7 @@ proc Bubble::Create { Widget Hlp { WrapLen 0 } } {
    variable Resources
 
    #----- Creer la bulle d'aide
-
+ 
    if { [winfo exists .bubble] != 1 } {
       toplevel .bubble -background ""
 
@@ -213,6 +213,10 @@ proc Bubble::Create { Widget Hlp { WrapLen 0 } } {
       label .bubble.hlp -anchor w -justify left -bg $Resources(Background) -fg $Resources(Foreground)\
          -bd $Resources(Border) -relief $Resources(Relief) -font $Resources(Font) -wraplength $WrapLen
       pack .bubble.hlp -fill both -expand true
+   }
+   
+   if {($WrapLen > 0) && [winfo exists .bubble.hlp]} { 
+      .bubble.hlp configure -wraplength $WrapLen
    }
 
    #----- Verifier si le widget en question est deja dans la liste

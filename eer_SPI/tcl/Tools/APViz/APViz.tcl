@@ -33,28 +33,36 @@ source $GDefs(Dir)/tcl/Tools/APViz/APViz.ctes
 
 #----- TODO: lire de plusieurs paths
 if { [info exists env(SPI_APVIZ)] } {
-   set APViz::Param(ConfigPath) $env(SPI_APVIZ)
-   
-   #----- Getting config files path
-   if {[catch { source ${APViz::Param(ConfigPath)}APViz_Data.tcl }]} {
-      lappend msg "Fichier APViz_Data.tcl manquant de ${APViz::Param(ConfigPath)}"
-      lappend msg "File APViz_Data.tcl containing paths missing from ${APViz::Param(ConfigPath)}"
-      ::Dialog::Info . $msg
-   }
-   
-   if {[file isdirectory ${APViz::Param(ConfigPath)}Config/]} {
-      set APViz::Param(InitPath) ${APViz::Param(ConfigPath)}Config/
-      set APViz::Param(Path) ${APViz::Param(ConfigPath)}Config/
-   }
-   
-   #----- Getting colormaps
-   if {[file isdirectory ${APViz::Param(ConfigPath)}Colormap/]} {
-      set APViz::DataSrc(Colormaps) ${APViz::Param(ConfigPath)}Colormap/
+   foreach path [split $env(SPI_APVIZ) :] {
+      lappend APViz::Param(ConfigPath) $path
+      puts "Path is: $path"
+      #----- Getting config files path
+      if {[file isfile ${path}APViz_Data.tcl]} {
+         if {[catch {source ${path}APViz_Data.tcl} error]} {
+            lappend msg "Erreur de lecture dans ${path}APViz_Data.tcl  : $error"
+            lappend msg "Sourcing error in ${path}APViz_Data.tcl : $error"
+            ::Dialog::Info . $msg
+         }
+      } else {
+         lappend msg "Fichier APViz_Data.tcl manquant de $path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $path"
+         ::Dialog::Info . $msg
+      }
+      
+      
+      #----- Getting colormaps
+      if {[file isdirectory ${path}Colormap/]} {
+         lappend APViz::DataSrc(Colormaps) ${path}Colormap/
+      }
    }
 }
 
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.txt
 source $GDefs(Dir)/tcl/Tools/APViz/APViz.int
+
+namespace eval APViz {
+   ::struct::tree FILETREE
+}
 
 #-------------------------------------------------------------------------------
 # Nom      : <APViz::Close>
@@ -296,51 +304,6 @@ proc APViz::AsProject { File } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <APViz::MacroCategory>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Changement des parametres de l'interface selon le type de grille.
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::MacroCategory { } {
-   variable Data
-   
-   set macroCategory $Data(MacroCategory)
-   if {[info exists Data($macroCategory,Files)]} {
-    set Data(MacroTypes) $Data($macroCategory,Files)
-   }
-}
-
-
-#-------------------------------------------------------------------------------
-# Nom      : <APViz::AddToListBox>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
-#
-# But      : Ajouter (afficher) une liste d'elements a la liste
-#
-# Parametres 	:
-#	<lst>	: Liste d'elements a ajouter dans la listBox 
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc APViz::AddToListBox { lst } {
-  variable Data
-
-  set Data(MacroTypes) [split $lst]
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <APViz::Source>
 # Creation : Mai 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -490,6 +453,9 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
          
+         #----- Creation des ransges de variables
+         CreateVariableRanges
+         
          #----- Creation des couches         
          if {[info exists DefaultValues]} {
             #----- Default values exist
@@ -531,6 +497,9 @@ proc APViz::Source { Path Widget } {
          
          labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
          pack $Widget.calc -side bottom -fill both -expand True
+         
+         #----- Create formula lists
+         APViz::CreateFormulaLists
       }
       
       #-------------------------------------------------------------------------------
@@ -650,7 +619,6 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
             CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
-            # ICIIII!!!
             CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no Viewports false 2 $defaultVP
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
@@ -698,6 +666,20 @@ proc APViz::Source { Path Widget } {
          set Value(NbLayers) $no
          
          AdjustSpinboxValues $Widget False
+      }
+      
+      proc CreateVariableRanges { } {
+         variable ::APViz::FieldList
+         variable Range
+
+         foreach variableType [array names FieldList] {
+            set Range($variableType) $FieldList($variableType)
+            #----- Add to dictionary
+            if {[lsearch -exact [dict get $APViz::Data(RangeNames) Vars] $variableType] < 0} {
+               dict lappend APViz::Data(RangeNames) Vars $variableType
+               dict lappend APViz::Data(Ranges) Vars $variableType
+            }
+         }
       }
 
       #-------------------------------------------------------------------------------
@@ -1151,18 +1133,12 @@ proc APViz::AssignVariable { Product Index } {
          dict incr Data(VarsDict) $var
          
          #----- Apply variable configs from config file 
-         if { [info exist Params(${var}$index)] } {
-            catch { 
-               eval dataspec configure $obsID $Params(${var}$index)
+         if {[catch {eval dataspec configure $obsID $Params(${var}$index)}]} {
+            if {[catch {eval dataspec configure $obsID $Params($var) }]} {
+               #----- Configurations par defaut TODO: CHoose a colormap that exists
+               dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
+                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
-         } elseif { [info exist Params($var)] } {
-            catch { 
-               eval dataspec configure $obsID $Params($var) 
-            }
-         } else {
-            #----- Configurations par defaut
-            dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap COB_Seq_MHue_RdPu \
-               -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
          }
          
          dataspec configure $obsID -desc "$model (${timestamp}_)" -active $Value(Toggle,$Index)
@@ -1239,23 +1215,21 @@ proc APViz::AssignVariable { Product Index } {
             dict incr Data(VarsDict) $var
             
             #----- Apply variable configs from config file 
-            if { [info exist Params(${var}$index)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params(${var}$index)
+            if {[catch {eval fstdfield configure $fieldID $Params(${var}$index)}]} {
+               if {[catch {eval fstdfield configure $fieldID $Params($var)}]} {
+                  #----- Valeur par defaut
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
                }
-            } elseif { [info exist Params($var)] } {
-               catch { 
-                  eval fstdfield configure $fieldID $Params($var)
-               }
-            } else {
-               #----- Valeur par defaut
-               fstdfield configure $fieldID -colormap REC_Rainbow -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
             }
             
             #----- Si la colormap n'existe pas deja, creer la bonne colormap
             set colormapName $var$Index
             if {[lsearch -exact $Data(Colormaps) $colormapName] < 0} {
                set configColormap [fstdfield configure $fieldID -colormap]
+               if {$configColormap eq ""} {
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap)
+                  set configColormap $Data(DefaultColormap)
+               }
                colormap create $colormapName
                colormap copy $colormapName $configColormap
                
@@ -1709,17 +1683,27 @@ proc APViz::CloseFiles { } {
 proc APViz::CreateColormaps { } {
    global env
    variable DataSrc
+   variable Data
    variable ::MapBox::Param
-
-   set path $DataSrc(Colormaps)
-   set colormapLst [glob -nocomplain -tails -path $path *.rgba]
    
-   #----- TODO: fetch all colormap paths and save in list
-   #----- Create colormaps
-   foreach colormap $colormapLst {
-      regsub .rgba $colormap "" colormapName
-      if {![colormap is $colormapName]} {
-         colormap create $colormapName -file ${path}/$colormap
+   if {[info exists DataSrc(Colormaps)]} {
+      foreach path $DataSrc(Colormaps) {
+         set colormapLst [glob -nocomplain -tails -path $path *.rgba]
+
+         #----- Create colormaps
+         foreach colormap $colormapLst {
+            regsub .rgba $colormap "" colormapName
+            if {![colormap is $colormapName]} {
+               colormap create $colormapName -file ${path}/$colormap
+               if {$Data(DefaultColormap) eq ""} {
+                  set Data(DefaultColormap) $colormapName
+               }
+            }
+         }
+         
+         #----- Add folder to MapBox paths
+         regsub /Colormap/ $path "" colormapPath
+         set Param(Paths) [concat $colormapPath $Param(Paths)]
       }
    }
    
@@ -1731,52 +1715,11 @@ proc APViz::CreateColormaps { } {
          regsub .rgba $colormap "" colormapName
          if {![colormap is $colormapName]} {
             colormap create $colormapName -file ${spiPath}/$colormap
+            if {$Data(DefaultColormap) eq ""} {
+               set Data(DefaultColormap) $colormapName
+            }
          }
       }
-   }
-   
-   #----- Add folder to MapBox paths
-   regsub /Colormap/ $path "" colormapPath
-   set Param(Paths) [concat $colormapPath $Param(Paths)]
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::CreateRangeInterface>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : 	Creer l'onterface des variables ranges
-#
-# Parametres	:
-#	<Lst>  	: Liste des differents Types
-#	<Index>	: Index de l'item choisi
-#	<Dir>	: Dossier dans lequel se trouve le fichier de config
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::CreateRangeInterface { Lst Index Dir } {
-   global GDefs
-   variable Data
-   variable Param
-
-   APViz::ReinitializeVP
-   APViz::CloseFiles
-
-   if {$Data(AutoUpdateEventID) ne ""} {
-      after cancel $Data(AutoUpdateEventID)
-      set Data(AutoUpdateEventID) ""
-   }
-
-   set selected [lindex $Lst $Index]
-   set filepath "$Param(ConfigPath)/Config/${Data(Folder)}/$Dir/$selected.tcl"
-   if {[file isfile $filepath]} {
-      APViz::Source $filepath $Data(Tab)
-      set Data(ConfigPath) $filepath
-   } else {
-      puts "$filepath"
    }
 }
 
@@ -1826,13 +1769,14 @@ proc APViz::DeleteWidget { Widget } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <APViz::FetchConfigFiles>
-# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+# Nom      : <APViz::CreateFileTree>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : 	Construire les listes pour les fichiers de configuration
+# But      :    Construire l'arborescence de fichiers de config selon le 
+#               dossier selectionne
 #
-# Parametres	:
-#	<Widget>  	: Widget a supprimer
+# Parametres    :
+#       <Path>  : Path vers le fichier de config
 #
 # Retour:
 #
@@ -1840,22 +1784,173 @@ proc APViz::DeleteWidget { Widget } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::FetchConfigFiles { } {
-   global GDefs
-   global env
+proc APViz::CreateFileTree { Path } {
    variable Data
-   variable Param
-
-   set dir Config
-   #set path $GDefs(Dir)/tcl/Tools/APViz/
-   set comment {
-   if { [info exists env(SPI_APVIZ)] } {
-      set Param(ConfigPath) $env(SPI_APVIZ)
-   }
+   variable Param 
+   
+   #----- Verify if tree already exist
+   if { [llength [FILETREE children root]] } {
+      #----- Reinitialize tree
+      FILETREE destroy
+      struct::tree FILETREE
+      
+      #----- Read APViz_Data.tcl file
+      if {[catch { source ${Path}APViz_Data.tcl }]} {
+         lappend msg "Fichier APViz_Data.tcl manquant de $Path"
+         lappend msg "File APViz_Data.tcl containing paths missing from $Path"
+         ::Dialog::Info . $msg
+      }
    }
    
-   APViz::FetchFiles $Param(ConfigPath) $dir
+   #----- Construct tree with all files and directories from configs path
+   APViz::ConstructTreeBranches FILETREE root $Path 0
+
+   CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
+      IdCmd APViz::GetTreeId \
+      SelectCmd APViz::SelectFiletreeBranch
 }
+
+proc APViz::CreateFormulaLists { } {
+   variable Data
+
+   #----- Construct formula lists
+   set Data(FormulaNames) {}
+   set Data(Formulas) {}
+
+   foreach formulaPair $Data(FormulaDefinitions) {
+      if {[lsearch -exact $Data(FormulaNames) [lindex $formulaPair 0]] < 0} {
+         lappend Data(FormulaNames) [lindex $formulaPair 0]
+         lappend Data(Formulas) [lindex $formulaPair 1]
+      }
+   }
+   
+   puts "FormulaNames: $Data(FormulaNames)"
+   puts "Formulas: $Data(Formulas)"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::ConstructTreeBranches>
+# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Construire les embranchements de l'arborescence de fichiers
+#
+# Parametres    :
+#       <Tree>       : Identifiant de l'arbre
+#       <ParentNode> : Le noeud parent
+#       <Path>       : Le path vers le fichier
+#       <Level>      : Niveau de l'arborescence (Pour determiner si open est a True ou False)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::ConstructTreeBranches { Tree ParentNode Path Level} {
+   variable Data
+
+   #----- Get file and folders list
+   set fileList [glob -nocomplain -tails -path $Path *]
+   
+   foreach file $fileList {
+      if {($file ne "Colormap") && ($file ne "APViz_Data.tcl")} {
+         #----- Create node
+         $Tree insert $ParentNode end $file
+
+         #----- Set node attributes
+         $Tree set $file name $file
+         
+         if {$Level < 3} {
+            $Tree set $file open True
+         } else {
+            $Tree set $file open False
+         }
+         
+         if {[file isdirectory [set newPath ${Path}$file/]]} {
+            #----- Appel recursif
+            APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
+            $Tree set $file path ""
+         } else {
+            $Tree set $file path ${Path}$file
+         }
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::GetTreeId>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creer l'identification de la branche
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetTreeId { Tree Branch Leaf } {
+
+   upvar $Leaf leaf
+   set leaf [$Tree isleaf $Branch]
+   
+   set id [$Tree get $Branch name]
+   return $id
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::SelectFiletreeBranch>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Selection d'une branche de l'arborescence
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::SelectFiletreeBranch { Tree Branch Open } {
+   global GDefs
+   variable Data
+   variable Lbl
+
+   if { ![info exist Viewport::Data(Data$Page::Data(Frame))] } {
+      return
+   }
+
+   set Data(Select) $Branch
+   set filepath [$Tree get $Branch path]
+   
+   if {$filepath ne ""} {
+      #----- Call selection function
+      APViz::ReinitializeVP
+      APViz::CloseFiles
+
+      if {$Data(AutoUpdateEventID) ne ""} {
+         after cancel $Data(AutoUpdateEventID)
+         set Data(AutoUpdateEventID) ""
+      }
+
+      if {[file isfile $filepath]} {
+         APViz::Source $filepath $Data(Tab)
+         set Data(ConfigPath) $filepath
+      } else {
+         puts "$filepath not a file"
+      }
+   }
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::FetchFiles>
@@ -2099,10 +2194,7 @@ proc APViz::GenerateConfigFile { Path } {
       variable ${product}::RowID
       
       #----- Verify if colormaps have changed
-      set colormapLst [APViz::ManageColormaps $product]
-      
-      set filename [file tail $Path]
-      set fileID [open $Path w]
+      set colormapLst [APViz::ManageColormaps $product $Path]
       
       #----- Get data from original config file
       set origFileID [open $Data(ConfigPath) r]
@@ -2112,15 +2204,16 @@ proc APViz::GenerateConfigFile { Path } {
       set origData [split $origFileData "\n"]
       
       #----- Get section indexes
-      set geoStartIndex [lsearch -glob $origData "*\#*Geography*"]
+      set geoStartIndex   [lsearch -glob $origData "*\#*Geography*"]
       set styleStartIndex [lsearch -glob $origData "*\#*Style*"]
       set rangeStartIndex [lsearch -glob $origData "*\#*Ranges*"]
-      set layerStartIndex [lsearch -glob $origData "*\#*Layers*"]
-
+      
+      set filename [file tail $Path]
+      set fileID [open $Path w]
       
       #----- Copy from original til Geo configs
       APViz::WriteConfigSection $fileID [lrange $origData 0 $geoStartIndex]
-      
+
       #----- Write Geo params
       APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
@@ -2132,9 +2225,10 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Ranges :
       puts -nonewline $fileID "\n"
-      APViz::WriteConfigSection $fileID [lrange $origData $rangeStartIndex [expr $layerStartIndex - 1]]
+      APViz::WriteRanges $product $fileID
 
       #----- Write Layers
+      puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
       
       #----- Write Default Values
@@ -2143,10 +2237,41 @@ proc APViz::GenerateConfigFile { Path } {
       
       close $fileID
       
-      APViz::UpdateProductInterface
+      #----- TODO: UPDATE FILETREE
+      APViz::UpdateProductInterface $filename $Path
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteRanges>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Ecrire la section des ranges dans le fichier de config
+#
+# Parametres    :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>      : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteRanges { Product FileID } {
+   variable ${Product}::Range
+   variable FieldList
+   
+   #----- Copy the range configs
+   puts $FileID "\#----- Ranges"
+   foreach rangeConfig [array names Range] {
+      if {[lsearch -exact [array names FieldList] $rangeConfig] < 0} {
+         set rangeValues $Range($rangeConfig)
+         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+      }
+   }
+
+}
 #----------------------------------------------------------------------------
 # Nom      : <APViz::WriteVariableConfigs>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
@@ -2291,7 +2416,7 @@ proc APViz::WriteDefaultValues { Product FileID } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::ManageColormaps { Product } {
+proc APViz::ManageColormaps { Product Path } {
    global env
    variable Data
    variable DataSrc
@@ -2310,8 +2435,34 @@ proc APViz::ManageColormaps { Product } {
             
             if {$isModified} {
                #-----Create new name by adding nunmber or changing number at the end of the original name
-               set derivatives [glob -nocomplain -tails -path $DataSrc(Colormaps) $initialColormap*.rgba]
+               #----- Find same colormap folder to save modified colormap
+               puts "---- Looking for Colormap in $Path"
 
+               set colormapPath [file dirname $Path]
+               
+               #----- What if no Colormap directory was found?
+               while {![file isdirectory ${colormapPath}/Colormap] && ([string length colormapPath] > 0)} {
+                  if {![file isdirectory $colormapPath]} {
+                     set colormapPath [file dirname $colormapPath]
+                  } else {
+                     #----- Remove / if ends with /
+                     if {[string index $colormapPath [expr [string length $colormapPath] -1]] eq "/"} {
+                        set colormapPath [string range $colormapPath 0 [expr [string length $colormapPath] -2]]
+                     }
+                     set lastSeperator [string last "/" $colormapPath]
+                     regsub -start $lastSeperator [file tail $colormapPath] $colormapPath "" colormapPath
+                  }
+                  
+                  if {$colormapPath eq "."} {
+                     puts "Saving new colormap in .spi/Colormap"
+                     set colormapPath $env(HOME)/.spi
+                     break
+                  }
+               }
+               
+               set path ${colormapPath}/Colormap
+               set derivatives [glob -nocomplain -tails -path $path $initialColormap*.rgba]
+               
                set nbr 1
                set newName ${initialColormap}$nbr
                while {[lsearch -exact $derivatives $newName.rgba] >= 0} {
@@ -2321,7 +2472,7 @@ proc APViz::ManageColormaps { Product } {
 
                colormap create $newName
                colormap copy $newName $name
-               colormap write $newName $DataSrc(Colormaps)/${newName}.rgba
+               colormap write $newName $path/${newName}.rgba
                
                #----- Append name to the list
                lappend colorLst $newName
@@ -2404,7 +2555,7 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
          dict incr vDict $var
          
          set params "set Params(${var}$index) \""
-         set paramLst [list colormap color font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema value]
+         set paramLst [list font width dash rendercontour rendertexture rendervalue rendergrid renderlabel renderparticle rendervector mapall intervalmode interlabels extrema value colormap color]
 
          foreach param $paramLst {
             if {$param eq "colormap"} {
@@ -2524,6 +2675,7 @@ proc APViz::WriteViewportConfigs { FileID } {
    set params [concat $params "\}"]   
    puts $FileID $params
    
+   #TODO: Save right nb of vps
    puts $FileID "set Params(ViewportNb) $Data(VPCount)"
 }
 
@@ -2546,16 +2698,9 @@ proc APViz::WriteViewportConfigs { FileID } {
 #----------------------------------------------------------------------------
 
 proc APViz::WriteConfigSection { FileID DataSource } { 
-   #puts "Start index at: $StartIndex for line: [lindex $DataSource $StartIndex] til [lindex $DataSource $EndIndex]"
-   
+
    foreach line $DataSource {
       puts $FileID $line
-   }
-   
-   set comment {
-   for {set i $StartIndex} {$i < $EndIndex} {incr i} {
-      puts $FileID [lindex $DataSource $i]
-   }
    }
 }
 
@@ -2576,10 +2721,10 @@ proc APViz::WriteConfigSection { FileID DataSource } {
 
 proc APViz::GetLevelType { Source } {
    switch $Source {
-      "pres"	{ return PRESSURE }
-      "eta"	{ return ETA }
-      "hyb"	{ return HYBRID }
-      "diag"	{ return PRESSURE }
+      "PRES"	{ return PRESSURE }
+      "ETA"	{ return ETA }
+      "HYB"	{ return HYBRID }
+      "DIAG"	{ return PRESSURE }
    }
 
    puts "Cannot determine level with source $Source."
@@ -2637,6 +2782,7 @@ proc APViz::InitializeVars { } {
 
 proc APViz::ReinitializeVP { } {
    variable Data
+   variable FieldList
 
    for {set i 1} {$i <= $Data(VPCount)} {incr i} {
       Viewport::UnAssign $Data(Frame) VP$i
@@ -2700,6 +2846,11 @@ proc APViz::ReinitializeVP { } {
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
       dict lappend Data(Ranges) $column NONE
+      
+      if {$column eq "Vars"} {
+         dict lappend Data(RangeNames) $column "ALL"
+         dict lappend Data(Ranges) $column "ALL"
+      }
    }
 }
 
@@ -2775,31 +2926,6 @@ proc APViz::SaveConfigFile { } {
          set Param(FullName) $Param(FullName).tcl
       }
       APViz::GenerateConfigFile $Param(FullName)
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::SelectFolder>
-# Creation : July 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Selectionner le dossier et afficher les choix de macro categories correspondantes
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::SelectFolder { } {
-   variable Data
-
-   set selectedFolder $Data(Folder)
-   if {[info exists Data($selectedFolder,Folders)]} {
-      set APViz::Data(MacroCategories) $Data($selectedFolder,Folders)
-      ComboBox::DelAll $Data(MacroCatDropdown)
-      ComboBox::AddList $Data(MacroCatDropdown) $Data($selectedFolder,Folders)
    }
 }
 
@@ -2889,36 +3015,22 @@ proc APViz::TranslateExpression { Product Expr } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::UpdateProductInterface { } { 
+proc APViz::UpdateProductInterface { FileName Path } { 
    variable Data
-
-   #----- Mise a jour des listes
-   APViz::FetchConfigFiles
-   APViz::MacroCategory
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <APViz::UpdateRange>
-# Creation : Mai 2018 - C. Nguyen - CMC/CMOE
-#
-# But      : Mise a jour de la section Range de l'interface
-#
-# Parametres :
-#
-# Retour:
-#
-# Remarques :
-#
-#----------------------------------------------------------------------------
-
-proc APViz::UpdateRange { } { 
-   variable Data
-
-   set selection [$Data(TypeListBox) curselection]	; # Index de l'option selectionne
-   set macroCategory $Data(MacroCategory)
-   if {[info exists Data($macroCategory,Files)] && ([llength $Data($macroCategory,Files)] > 0) } {
-      APViz::CreateRangeInterface $Data($macroCategory,Files) $selection $macroCategory
+   
+   set parentNode [file tail [file dirname $Path]]
+   #----- Verify if already exist
+   if {![FILETREE exists $FileName]} {
+      #----- Add new node
+      puts "CREATING NEW NODE $FileName"
+      FILETREE insert $parentNode end $FileName
    }
+
+   FILETREE set $FileName open False
+   FILETREE set $FileName name $FileName
+   FILETREE set $FileName path $Path
+
+   CVTree::Render $Data(Tab).filetree.canvas APViz::FILETREE
 }
 
 #----------------------------------------------------------------------------

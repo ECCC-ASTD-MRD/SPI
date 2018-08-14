@@ -21,7 +21,7 @@ namespace eval APViz {
    global GDefs
    variable Data
    variable Param
-   variable DataSrc
+   variable FieldList
 
    set Param(Title)   { "APViz" "APViz" }
    set Param(Version) 1.0
@@ -30,10 +30,6 @@ namespace eval APViz {
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
    
    #----- For FileBox
-   set Param(InitPath)	$GDefs(Dir)/tcl/Tools/APViz/Config/
-   set Param(Path)	$GDefs(Dir)/tcl/Tools/APViz/Config/
-   set Param(Filename)	config
-   set Param(FullName)	$APViz::Param(Path)$APViz::Param(Filename)
    set Param(Formats) 	{{Tcl {*.tcl}}}
    
    set Param(ConfigPath) ""
@@ -49,8 +45,6 @@ namespace eval APViz {
    set Data(Lon1)   0
    
    #----- Widgets
-   set Data(MacroCatDropdown)	""	; #ComboBox listant les types de macro (level 2)
-   set Data(TypeListBox)	""	; #Boite listant les choix de types de la macro
    set Data(RangeSection)	""	; #Section des variables
    set Data(DateCBWidget)	""
    
@@ -63,9 +57,6 @@ namespace eval APViz {
    set Data(MacroCategories)	{}
    
    #----- LEVEL 3
-   set Data(MacroType)		""
-   set Data(MacroTypes)		{}	; #Liste les configuration files 
-
    set Data(OpenedFiles)	""
    set Data(LayerIDs)		""
    set Data(CalcIDs)		""
@@ -86,6 +77,10 @@ namespace eval APViz {
    set Data(VPCount)               1
    set Data(RangeNames)         {}
    set Data(Ranges)             {}
-   set Data(NewRanges)          {}
    set Data(ColNames)           [list Models Runs Hours Sources Vars Levels IP3 Viewports]
+   
+   set FieldList(ALL)           {PN GZ ES TT HR HU QQ QR UU VV WW NW RT RC PR PC RN SN PE FR SR BE BI BS D3 EP HL IH IL NT RE REMN SW TVE-TRW-SVR TVE-TRW-MSVR TVE-TRW-LGT \
+                                 TVE-CRT-SVR TVE-CRT-MSVR TVE-CRT-LGT TD TW T7 T8 HMX HMXX UV UVMX EI DZ WA WF Z9 AL HD LTG ME MG TS SD DN XA LG TP I5 FC FS FV ZET GL TM EV \
+                                 I0 I1 I2 I3 I4 I6 I7 I8 I9 AC AF N2 NO O3 S2 AQHI WH WTP PD ECCH ECCM ECCL ECC TCC PRMM RNMM SNMM PEMM FRMM KT SDNO DNNO N0 O1 WGE WGN WGX \
+                                 SLQR SNLR ZR SND S2L RS2L L1 TTI KI}
 }
