@@ -2802,6 +2802,10 @@ proc APViz::Start { } {
             lappend DataSrc(Colormaps) ${path}/Colormap/
          }
       }
+      
+      if {[llength $Param(ConfigPath)] <= 0} {
+         ::Dialog::Info . $Lbl(envSPI_APVIZ)
+      }
    } else {
       ::Dialog::Info . $Lbl(envSPI_APVIZ)
    }
