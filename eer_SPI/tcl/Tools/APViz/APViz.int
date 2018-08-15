@@ -22,6 +22,7 @@
 #   APViz::AddNewLayer { Widget }
 #   APViz::AddRangeBubbleInfo { Widget Option }
 #   APViz::ClearAddLayerValues { }
+#   APViz::SaveImageAsWindow { }
 #   APViz::SaveAsWindow { }
 #   APViz::SetAvailableVarsList { Model Widget }
 #   APViz::SetDefaultValue { Option }
@@ -85,7 +86,13 @@ proc APViz::Window { } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
-         button $Data(Tab).head.saveImg -image CAMSAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveImg }
+         button $Data(Tab).head.saveImg -image CAMSAVE -bd 1 -relief flat -overrelief raised -width 28 -anchor w -command { APViz::SaveImg }
+         
+         menubutton $Data(Tab).head.saveImg.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.saveImg.down.menu
+         place $Data(Tab).head.saveImg.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
+         menu $Data(Tab).head.saveImg.down.menu
+         $Data(Tab).head.saveImg.down.menu add command -label [lindex $Lbl(SaveAs) $GDefs(Lang)] -command "APViz::SaveImageAsWindow"
+         
          pack $Data(Tab).head.mode $Data(Tab).head.save $Data(Tab).head.saveImg -side left -padx 2
          
          #----- Configurable date
@@ -93,7 +100,6 @@ proc APViz::Window { } {
             label $Data(Tab).head.dateConfig.lbl -text "Date: " -anchor e 
             ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars"
             set APViz::Data(DateCBWidget) $Data(Tab).head.dateConfig.cb
-            #set dateList [APViz::FetchDates $Data(CurrentProduct) "" ""]
             set dateList [APViz::FetchAllDates $Data(CurrentProduct)]
             set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
             
@@ -579,6 +585,31 @@ proc APViz::ClearAddLayerValues { } {
       set Data(Range,$type) ""
       set Data(AddLayer$type,Value) ""
    }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveImageAsWindow>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Creation de la fenetre "Enregistrer Image Sous"
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::SaveImageAsWindow { } {
+   variable Data
+   
+   #----- Get the path
+   set ::PrintBox::Param(Path) [APViz::GetImageDirPath]
+
+   set ::PrintBox::Param(Filename) $Data(CurrentProduct)_[clock format [clock seconds] -format %Y%m%d_%H%M%S]
+   ::PrintBox::Create $Data(Frame) SAVE
+   
 }
 
 #----------------------------------------------------------------------------

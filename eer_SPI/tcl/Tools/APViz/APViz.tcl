@@ -35,6 +35,7 @@
 #   APViz::GenerateConfigFile { Path }
 #   APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} }
 #   APViz::GetFormulaName { Formula }
+#   APViz::GetImageDirPath { }
 #   APViz::GetInitialColormap { Colormap }
 #   APViz::GetLevelType { Source }
 #   APViz::GetTreeId { Tree Branch Leaf }
@@ -2029,6 +2030,52 @@ proc APViz::GetFormulaName { Formula } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <APViz::GetImageDirPath>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Retourner le chemin vers le dossier d'image
+#
+# Parametres :
+#  <Tree>    : Arbre
+#  <Branch>  : Branche
+#
+# Retour    :
+#  <Id>     : Identification
+#
+# Remarque :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::GetImageDirPath { } {
+   variable Data
+   variable Lbl
+
+   set path ""
+   
+   #----- Verify if exists
+   if {![info exists Data(SaveImageDir)]} {
+      #---- TODO: If missing, ask if in EC or SCIENCE : set default paths
+      ::Dialog::Info . $Lbl(MissingImgPath)
+   }
+   
+   #----- Get path to image directory 
+   if { [catch {set path [file readlink $Data(SaveImageDir)]}] } {
+      #----- If not a symbolic link, verify if is folder
+      if {[file isdirectory $Data(SaveImageDir)]} {
+         set path $Data(SaveImageDir)
+      } else {
+         set message {}
+         foreach msg $Lbl(InvalidImgPath) {
+            lappend message [concat $msg $Data(SaveImageDir)]
+         }
+         ::Dialog::Info . $message
+      }
+   }
+   
+   return $path
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <APViz::GetInitialColormap>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE -
 #
@@ -2600,40 +2647,26 @@ proc APViz::SaveConfigFile { } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::SaveImg { } {
+proc APViz::SaveImg { {FileName ""} } {
    global GDefs
 
    variable Data
    variable Lbl
    
-   #----- Verify if exists
-   if {![info exists Data(SaveImageDir)]} {
-      #---- TODO: If missing, ask if in EC or SCIENCE : set default paths
-      ::Dialog::Info . $Lbl(MissingImgPath)
+   set path [APViz::GetImageDirPath]
+   
+   if {$path eq ""} {
       return
    }
    
-   #----- Get path to image directory 
-   if { [catch {set path [file readlink $Data(SaveImageDir)]}] } {
-      #----- If not a symbolic link, verify if is folder
-      if {[file isdirectory $Data(SaveImageDir)]} {
-         set path $Data(SaveImageDir)
-      } else {
-         set message {}
-         foreach msg $Lbl(InvalidImgPath) {
-            lappend message [concat $msg $Data(SaveImageDir)]
-         }
-         ::Dialog::Info . $message
-         return
-      }
-   }
-   
    #----- Generate name (if necessary)
-   set filename $Data(CurrentProduct)_[clock format [clock seconds] -format %Y%m%d_%H%M%S]
+   if {$FileName eq ""} {
+      set FileName $Data(CurrentProduct)_[clock format [clock seconds] -format %Y%m%d_%H%M%S]
+   }
    
    #----- Set parameters to save image as using the PrintBox::Print procedure
    set ::PrintBox::Param(Path)     $path
-   set ::PrintBox::Param(FullName) $path/${filename}.png
+   set ::PrintBox::Param(FullName) $path/${FileName}.png
    set ::PrintBox::Print(Type)     SAVE
    set ::PrintBox::Print(Device)   png
    set ::PrintBox::Print(WEBSite)  ""

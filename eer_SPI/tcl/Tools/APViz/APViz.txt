@@ -50,6 +50,7 @@ namespace eval APViz {
    set Lbl(MissingImgPath)      { "Le path vers le dossier de sauvegarde d'images est manquant. \nVeuillez le définir dans le fichier APViz_Config.tcl dans la variable Data(SaveImageDir)" <
                                   "The provided path to the image directory is missing.\n Please define it in the APViz_Config.tcl file, in the Data(SaveImageDir) variable." }
    set Lbl(SavingImage)         { "Image sauvegardée" "Saving image" }
+   set Lbl(SaveAs)              { "Enregistrer sous" "Save As" }
    
    #----- Messages
 
