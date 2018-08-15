@@ -46,6 +46,7 @@
 #   APViz::ReinitializeVP { }
 #   APViz::RemoveVariableFromVP { IDList Index }
 #   APViz::SaveConfigFile { }
+#   APViz::SaveImg { }
 #   APViz::SelectFiletreeBranch { Tree Branch Open }
 #   APViz::SetParam { Index Product {IsCalcLayer False}}
 #   APViz::Start { }
@@ -2582,6 +2583,67 @@ proc APViz::SaveConfigFile { } {
          set Param(FullName) $Param(FullName).tcl
       }
       APViz::GenerateConfigFile $Param(FullName)
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::SaveImg>
+# Creation : Aout 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Sauvegarder une image dans le path fourni dans le fichier APViz_Data.tcl
+#
+# Parametres        :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::SaveImg { } {
+   global GDefs
+
+   variable Data
+   variable Lbl
+   
+   #----- Verify if exists
+   if {![info exists Data(SaveImageDir)]} {
+      #---- TODO: If missing, ask if in EC or SCIENCE : set default paths
+      ::Dialog::Info . $Lbl(MissingImgPath)
+      return
+   }
+   
+   #----- Get path to image directory 
+   if { [catch {set path [file readlink $Data(SaveImageDir)]}] } {
+      #----- If not a symbolic link, verify if is folder
+      if {[file isdirectory $Data(SaveImageDir)]} {
+         set path $Data(SaveImageDir)
+      } else {
+         set message {}
+         foreach msg $Lbl(InvalidImgPath) {
+            lappend message [concat $msg $Data(SaveImageDir)]
+         }
+         ::Dialog::Info . $message
+         return
+      }
+   }
+   
+   #----- Generate name (if necessary)
+   set filename $Data(CurrentProduct)_[clock format [clock seconds] -format %Y%m%d_%H%M%S]
+   
+   #----- Set parameters to save image as using the PrintBox::Print procedure
+   set ::PrintBox::Param(Path)     $path
+   set ::PrintBox::Param(FullName) $path/${filename}.png
+   set ::PrintBox::Print(Type)     SAVE
+   set ::PrintBox::Print(Device)   png
+   set ::PrintBox::Print(WEBSite)  ""
+   
+   #----- Save image to path
+   puts "Saving image to: $path"
+   if { [::PrintBox::Print $Data(Frame) 0 0 [Page::CanvasWidth $Data(Frame)] [Page::CanvasHeight $Data(Frame)]] } {
+      .apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]
+      .apviz.dock.coo insert 0 [lindex $Lbl(SavingImage) $GDefs(Lang)]
+      after [expr {1000*30}] ".apviz.dock.coo delete 0 [string length [.apviz.dock.coo get]]"
    }
 }
 

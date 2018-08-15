@@ -9,10 +9,22 @@
 # Creation : Mai 2018
 #
 # Description:
-#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
-#    a l'interface SPI
+#   Description des interfaces pour l'outil APViz
 #
-#    Description des interfaces
+# Fonctions: 
+#
+#   APViz::Window { }
+#   APViz::AddLayerWindow { }
+#   APViz::CalculateNumericalRange { Widget Max Min Step }
+#   APViz::CreateAddLayerRow { Widget Type Row }
+#   APViz::CreateRange { Widget RangeName RangeValues RangeCategory }
+#   APViz::CreateRangeWindow { }
+#   APViz::AddNewLayer { Widget }
+#   APViz::AddRangeBubbleInfo { Widget Option }
+#   APViz::ClearAddLayerValues { }
+#   APViz::SaveAsWindow { }
+#   APViz::SetAvailableVarsList { Model Widget }
+#   APViz::SetDefaultValue { Option }
 #
 #===============================================================================
 
@@ -73,7 +85,8 @@ proc APViz::Window { } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
-         pack $Data(Tab).head.mode $Data(Tab).head.save -side left -padx 2
+         button $Data(Tab).head.saveImg -image CAMSAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveImg }
+         pack $Data(Tab).head.mode $Data(Tab).head.save $Data(Tab).head.saveImg -side left -padx 2
          
          #----- Configurable date
          frame $Data(Tab).head.dateConfig

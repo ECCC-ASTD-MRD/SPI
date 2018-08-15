@@ -36,8 +36,7 @@ namespace eval APViz {
    set Lbl(InvalidFile)		{ "Fichier non disponible : " "File not available : "}
    set Lbl(UpdatingDate)	{ "Mise à jour de la date" "Updating date"}
    set Lbl(FetchingDates)	{ "Mise à jour des dates disponibles" "Updating available dates"}
-   
-   
+    
    set Lbl(Save)       		{ "Sauvegarder" "Save" }
    set Lbl(File)       		{ "Fichier" "File" }
    set Lbl(Close)      		{ "Fermer" "Close" }
@@ -47,6 +46,10 @@ namespace eval APViz {
    set Lbl(EmptyFields)         { "Tous les champs doivent être remplis." "All fields must be filled." }
    set Lbl(CreateNewLayer)      { "Créer une nouvelle couche" "Create new layer" }
    set Lbl(Digits)              { "Min, Max et Step doivent être des entrées numériques" "Min, Max and Step must be digits"}
+   set Lbl(InvalidImgPath)      { "Le path vers le dossier de sauvegarde d'images est invalide :" "The provided path to the image directory is invalid :" }
+   set Lbl(MissingImgPath)      { "Le path vers le dossier de sauvegarde d'images est manquant. \nVeuillez le définir dans le fichier APViz_Config.tcl dans la variable Data(SaveImageDir)" <
+                                  "The provided path to the image directory is missing.\n Please define it in the APViz_Config.tcl file, in the Data(SaveImageDir) variable." }
+   set Lbl(SavingImage)         { "Image sauvegardée" "Saving image" }
    
    #----- Messages
 
