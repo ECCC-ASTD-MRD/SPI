@@ -2779,6 +2779,7 @@ proc APViz::Start { } {
    global env
    variable Param
    variable DataSrc
+   variable Lbl
    
    if { [info exists env(SPI_APVIZ)] } {
       foreach path [split $env(SPI_APVIZ) :] {
@@ -2801,6 +2802,8 @@ proc APViz::Start { } {
             lappend DataSrc(Colormaps) ${path}/Colormap/
          }
       }
+   } else {
+      ::Dialog::Info . $Lbl(envSPI_APVIZ)
    }
 }
 
