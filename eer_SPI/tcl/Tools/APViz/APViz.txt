@@ -51,9 +51,9 @@ namespace eval APViz {
                                   "The provided path to the image directory is missing.\n Please define it in the APViz_Config.tcl file, in the Data(SaveImageDir) variable." }
    set Lbl(SavingImage)         { "Image sauvegardée" "Saving image" }
    set Lbl(SaveAs)              { "Enregistrer sous" "Save As" }
-   set Lbl(envSPI_APVIZ)        { "Variable d'environnement SPI_APVIZ (chemins vers les dossiers de configuration) non définie. \n \
+   set Lbl(envSPI_APVIZ)        { "Variable d'environnement SPI_APVIZ (chemins vers les dossiers de configuration) non définie ou vide. \n \
                                     Veuillez fermer l'application et définir cette variable avant d'utiliser APViz." \
-                                    "Environnement variable SPI_APVIZ (configuration paths) not defined. \n Please close SPI and define SPI_AVIZ before using APViz." }
+                                    "Environnement variable SPI_APVIZ (configuration paths) not defined or empty. \n Please close SPI and define SPI_AVIZ before using APViz." }
    
    #----- Messages
 
