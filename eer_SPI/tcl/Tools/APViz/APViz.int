@@ -158,8 +158,10 @@ proc APViz::Window { } {
    raise  .apviz
    
    APViz::CreateColormaps
-   set APViz::Data(Repertoire) [lindex $Param(ConfigPath) 0]
-   APViz::CreateFileTree [lindex $Param(ConfigPath) 0]
+   if {[llength $Param(ConfigPath)] > 0} {
+      set APViz::Data(Repertoire) [lindex $Param(ConfigPath) 0]
+      APViz::CreateFileTree [lindex $Param(ConfigPath) 0]
+   }
 }
 
 #----------------------------------------------------------------------------
