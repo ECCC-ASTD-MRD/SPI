@@ -66,6 +66,7 @@
 #   APViz::Product::DeleteCalcLayer { Widget Index Product }
 #   APViz::Product::DeleteLayer { Widget Index Product Src }
 #   APViz::Product::Load { Path Product Widget }
+#   APViz::Product::SetEtiketBubble { Widget Index }
 #   APViz::Product::SetFormula { Index {IsInit False}}
 #
 #
@@ -221,7 +222,7 @@ proc APViz::Source { Path Widget } {
       proc AdjustIDBubble { Widget Index } {
          variable RowID
          
-         set itemList [list toggle model var level run hour dataSrc param delete]       
+         set itemList [list toggle model var level run hour dataSrc param ip3 vp delete]       
          set Widget [lindex [split $Widget _] 0]
 
          foreach item $itemList {
@@ -426,8 +427,8 @@ proc APViz::Source { Path Widget } {
          set no $Value(NbLayers)
          foreach layer $Layers default $DefaultValues {
             #----- Extract layer parts
-            lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp
-            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel defaultIP3 defaultVP
+            lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
+            lassign [split $default :] defaultToggle defaultModel defaultRun defaultHour defaultDataSrc defaultVar defaultLevel defaultIP3 defaultVP defaultEtiket
             
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) \
@@ -447,17 +448,11 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models false 5 $defaultModel
             CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 4 $defaultHour
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 3 $defaultRun
-            CreateRangeWidget $Product $ip3  $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
-            CreateRangeWidget $Product $vp  $Widget.range.variableGrid.layer${no}_vp       $no Viewports false 2 $defaultVP
+            CreateRangeWidget $Product $ip3     $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 $defaultIP3
+            CreateRangeWidget $Product $vp      $Widget.range.variableGrid.layer${no}_vp        $no Viewports false 2 $defaultVP
+            #CreateRangeWidget $Product $etiket  $Widget.range.variableGrid.layer${no}_etiket    $no Etiket false 2 $defaultEtiket
             set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars false -1 $defaultVar]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1 $defaultDataSrc]
-            
-            #----- For DZ, level choices are LEV1-LEV2
-            if {$defaultVariable eq "DZ"} {
-               set levelWidth 8
-            } else {
-               set levelWidth 5
-            }
             
             CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels false -1 $defaultLevel
             
@@ -470,15 +465,21 @@ proc APViz::Source { Path Widget } {
             button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
             button $Widget.range.variableGrid.layer${no}_param  -image PARAMS -bd 1 -relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
             
+            #----- Create entry for etiket and bind
+            entry $Widget.range.variableGrid.layer${no}_etiket -width 5 -textvariable APViz::${Product}::Value(Etiket,$no)
+            bind $Widget.range.variableGrid.layer${no}_etiket <Return> "APViz::${Product}::SetEtiketBubble $Widget.range.variableGrid.layer${no}_etiket $no; APViz::AssignVariable $Product $no"
+            
             set RowID(Layer$no) [expr $no - $RowID(LayerAdjustment)]
             
             #----- Place widgets in grid        
-            set itemList [list toggle model run hour dataSrc var level ip3 vp param delete]
+            set itemList [list toggle model run hour dataSrc var level ip3 vp etiket param delete]
             set colNb 0
             foreach item $itemList {
                grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
                set fieldIDTemp FLD$RowID(Layer$no)_$defaultVariable
-               Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
+               if {$item ne "etiket"} {
+                  Bubble::Create $Widget.range.variableGrid.layer${no}_$item $fieldIDTemp
+               }
                incr colNb
             }
             
@@ -666,7 +667,7 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajustement du rowID
          incr RowID(LayerAdjustment)
-         set itemList [list toggle model var level run hour dataSrc ip3 vp param delete]
+         set itemList [list toggle model var level run hour dataSrc ip3 vp etiket param delete]
             
          #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
          for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -771,12 +772,13 @@ proc APViz::Source { Path Widget } {
          frame $Widget.range.variableGrid       ; #Frame pour le grid
          
          #----- Column titles
-         label $Widget.range.variableGrid.mod   -text [lindex $Label(Model) $GDefs(Lang)]
-         label $Widget.range.variableGrid.var   -text [lindex $Label(Variable) $GDefs(Lang)]
-         label $Widget.range.variableGrid.lev   -text [lindex $Label(Level) $GDefs(Lang)] 
-         label $Widget.range.variableGrid.src   -text [lindex $Label(Source) $GDefs(Lang)]
-         label $Widget.range.variableGrid.ip3   -text "IP3"
-         label $Widget.range.variableGrid.vp    -text "VP"
+         label $Widget.range.variableGrid.mod    -text [lindex $Label(Model) $GDefs(Lang)]
+         label $Widget.range.variableGrid.var    -text [lindex $Label(Variable) $GDefs(Lang)]
+         label $Widget.range.variableGrid.lev    -text [lindex $Label(Level) $GDefs(Lang)] 
+         label $Widget.range.variableGrid.src    -text [lindex $Label(Source) $GDefs(Lang)]
+         label $Widget.range.variableGrid.ip3    -text "IP3"
+         label $Widget.range.variableGrid.vp     -text "VP"
+         label $Widget.range.variableGrid.etiket -text "Etiket"
          
          checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
                -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
@@ -790,15 +792,16 @@ proc APViz::Source { Path Widget } {
          Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
          Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
          
-         grid $Widget.range.variableGrid        -column 0 -row 1 -padx 0.2
-         grid $Widget.range.variableGrid.mod    -column 1 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.runLock -column 2 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.hrLock -column 3 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.src    -column 4 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.var    -column 5 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.lev    -column 6 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.ip3    -column 7 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.vp    -column 8 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid          -column 0 -row 1 -padx 0.2
+         grid $Widget.range.variableGrid.mod      -column 1 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.runLock  -column 2 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.hrLock   -column 3 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.src      -column 4 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.var      -column 5 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.lev      -column 6 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.ip3      -column 7 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.vp       -column 8 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.etiket   -column 9 -row 0 -padx 0.2
          
          #----- Creation des ranges de variables
          CreateVariableRanges
@@ -847,6 +850,29 @@ proc APViz::Source { Path Widget } {
          
          #----- Create formula lists
          APViz::CreateFormulaLists
+      }
+      
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::SetEtiketBubble>
+      # Creation : Aout 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Ajouter une bulle de description de l'etiket
+      # Parametres       :
+      #         <Widget> : Widget du entry etiket       
+      #         <Index>  : L'index de la couche
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      
+      proc SetEtiketBubble { Widget Index } {
+         variable Value
+         if {[winfo exists $Widget]} {
+            #----- Set message
+            Bubble::Create $Widget $Value(Etiket,$Index)
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -1006,7 +1032,17 @@ proc APViz::AssignVariable { Product Index } {
    set hour	$Value(Hours,$Index)
    set src	$Value(Sources,$Index)
    set vp       $Value(Viewports,$Index)
-   #set date	[clock format [clock seconds] -format %Y%m%d]				; # Today's date in format AAAAMMDD
+   set ip3      $Value(IP3,$Index)
+   set etiket   $Value(Etiket,$Index)
+
+   #----- Setting optional fields 
+   if {$ip3 eq "-" || $ip3 eq ""} {
+      set ip3 -1
+   }
+   
+   if {$etiket eq "-"} {
+      set etiket ""
+   }
    
    set date $Data(Date)
 
@@ -1094,14 +1130,15 @@ proc APViz::AssignVariable { Product Index } {
             set fieldID FLD$RowID(Layer$Index)_${var}
             
             switch $var {
-               "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType }
+               "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType $ip3 $etiket}
                
                "PR"     { 
-                           if {[catch {fstdfield read $fieldID $fileID -1 "" -1 -1 $Value(IP3,$Index) "" $var }]} {
+                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket -1 -1 $ip3 "" $var }]} {
                               ::Dialog::Info . $Lbl(InvalidField)
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
                               return
                            } else {
+                              #----- Set fieldfactor and timestamp (For osbervations)
                               fstdfield configure $fieldID -factor 1e3
                               set Data(PR_timestamp) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) $fieldID]
@@ -1109,7 +1146,7 @@ proc APViz::AssignVariable { Product Index } {
                         }
                
                default  {  
-                           if {[catch {fstdfield read $fieldID $fileID -1 "" [subst {$lev $levelType}] -1 -1 "" $var }]} {
+                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket [subst {$lev $levelType}] -1 $ip3 "" $var }]} {
                               ::Dialog::Info . $Lbl(InvalidField)
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $RowID(Layer$Index) $RowID(Layer$Index) FLD$RowID(Layer$Index)]
                               return
@@ -1204,7 +1241,7 @@ proc APViz::AssignVariable { Product Index } {
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
+proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 Etiket } {
    variable Data
    variable ${Product}::Value
    variable ${Product}::RowID
@@ -1225,9 +1262,9 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType } {
       fstdfield free $fieldIDGZ2
    }
 
-   if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 "" [subst {$lev1 $LevelType}] -1 -1 "" GZ}]} {
+   if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket [subst {$lev1 $LevelType}] -1 $Ip3 "" GZ}]} {
       puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
-   } elseif {[catch {fstdfield read $fieldIDGZ2 $FileID -1 "" [subst {$lev2 $LevelType}] -1 -1 "" GZ}]} {
+   } elseif {[catch {fstdfield read $fieldIDGZ2 $FileID -1 $Etiket [subst {$lev2 $LevelType}] -1 $Ip3 "" GZ}]} {
       puts "fieldIDGZ2: $fieldIDGZ2 failed for level $lev2"
    } else {
       lappend Data(DZ_GZpairs) [list $fieldIDGZ1 $fieldIDGZ2]
