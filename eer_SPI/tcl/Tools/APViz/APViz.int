@@ -13,19 +13,19 @@
 #
 # Fonctions: 
 #
-#   APViz::Window { }
-#   APViz::AddLayerWindow { }
-#   APViz::CalculateNumericalRange { Widget Max Min Step }
-#   APViz::CreateAddLayerRow { Widget Type Row }
-#   APViz::CreateRange { Widget RangeName RangeValues RangeCategory }
-#   APViz::CreateRangeWindow { }
-#   APViz::AddNewLayer { Widget }
-#   APViz::AddRangeBubbleInfo { Widget Option }
-#   APViz::ClearAddLayerValues { }
-#   APViz::SaveImageAsWindow { }
-#   APViz::SaveAsWindow { }
-#   APViz::SetAvailableVarsList { Model Widget }
-#   APViz::SetDefaultValue { Option }
+#   APViz::Window                   { }
+#   APViz::AddLayerWindow           { }
+#   APViz::CalculateNumericalRange  { Widget Max Min Step }
+#   APViz::CreateAddLayerRow        { Widget Type Row }
+#   APViz::CreateRange              { Widget RangeName RangeValues RangeCategory }
+#   APViz::CreateRangeWindow        { }
+#   APViz::AddNewLayer              { Widget }
+#   APViz::AddRangeBubbleInfo       { Widget Option }
+#   APViz::ClearAddLayerValues      { }
+#   APViz::SaveImageAsWindow        { }
+#   APViz::SaveAsWindow             { }
+#   APViz::SetAvailableVarsList     { Model Widget }
+#   APViz::SetDefaultValue          { Option }
 #
 #===============================================================================
 
@@ -488,7 +488,7 @@ proc APViz::AddNewLayer { Widget } {
    
    #------ Verify if all mandatory fields are filled (optional: IP3 and VP)
    foreach type $Data(ColNames) {
-      if {($type ne "IP3")} {
+      if {($type ne "IP3") && ($type ne "Etiket")} {
          if {![info exists APViz::Data(AddLayer$type,Value)] || ($APViz::Data(AddLayer$type,Value) eq "")} {
             ::Dialog::Info . $Lbl(EmptyFields)
             return

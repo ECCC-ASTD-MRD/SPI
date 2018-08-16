@@ -14,60 +14,60 @@
 # 
 # Fonctions:
 #
-#   APViz::Source { Path Widget }
-#   APViz::AreFieldsFilled { Model Var Level Run Hour Source Date }
-#   APViz::AssignVariable { Product Index }
-#   APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType }
-#   APViz::CalculateExpression { Product Index}
-#   APViz::Check { Product Index {IsCalc False}}
-#   APViz::CheckExpression { Expr VarType }
-#   APViz::Close { }
-#   APViz::CloseFiles { }
-#   APViz::ConstructTreeBranches { Tree ParentNode Path Level }
-#   APViz::CreateColormaps { }
-#   APViz::CreateFileTree { Path }
-#   APViz::CreateFormulaLists { }
-#   APViz::DateBinding { }
-#   APViz::DeleteWidget { Widget }
-#   APViz::FetchAllDates { Product }
-#   APViz::FetchDates { Product Model Src }
-#   APViz::FilePathDefine { Path }
-#   APViz::GenerateConfigFile { Path }
-#   APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} }
-#   APViz::GetFormulaName { Formula }
-#   APViz::GetImageDirPath { }
-#   APViz::GetInitialColormap { Colormap }
-#   APViz::GetLevelType { Source }
-#   APViz::GetTreeId { Tree Branch Leaf }
-#   APViz::GetVariableConfigs { Product ColorMaps }
-#   APViz::GetVarsNb { Dict VarType }
-#   APViz::GetVPId { VPno }
-#   APViz::InitializeVars { }
-#   APViz::ManageColormaps { Product Path }
-#   APViz::ReinitializeVP { }
-#   APViz::RemoveVariableFromVP { IDList Index }
-#   APViz::SaveConfigFile { }
-#   APViz::SaveImg { }
-#   APViz::SelectFiletreeBranch { Tree Branch Open }
-#   APViz::SetParam { Index Product {IsCalcLayer False}}
-#   APViz::Start { }
+#   APViz::Source                 { Path Widget }
+#   APViz::AreFieldsFilled        { Model Var Level Run Hour Source Date }
+#   APViz::AssignVariable         { Product Index }
+#   APViz::AssignDZ               { Product Index Model Var Lev FileID FieldID LevelType }
+#   APViz::CalculateExpression    { Product Index}
+#   APViz::Check                  { Product Index {IsCalc False}}
+#   APViz::CheckExpression        { Expr VarType }
+#   APViz::Close                  { }
+#   APViz::CloseFiles             { }
+#   APViz::ConstructTreeBranches  { Tree ParentNode Path Level }
+#   APViz::CreateColormaps        { }
+#   APViz::CreateFileTree         { Path }
+#   APViz::CreateFormulaLists     { }
+#   APViz::DateBinding            { }
+#   APViz::DeleteWidget           { Widget }
+#   APViz::FetchAllDates          { Product }
+#   APViz::FetchDates             { Product Model Src }
+#   APViz::FilePathDefine         { Path }
+#   APViz::GenerateConfigFile     { Path }
+#   APViz::GetAllFieldsWithOp     { Product Operator {OnlyChecked False} }
+#   APViz::GetFormulaName         { Formula }
+#   APViz::GetImageDirPath        { }
+#   APViz::GetInitialColormap     { Colormap }
+#   APViz::GetLevelType           { Source }
+#   APViz::GetTreeId              { Tree Branch Leaf }
+#   APViz::GetVariableConfigs     { Product ColorMaps }
+#   APViz::GetVarsNb              { Dict VarType }
+#   APViz::GetVPId                { VPno }
+#   APViz::InitializeVars         { }
+#   APViz::ManageColormaps        { Product Path }
+#   APViz::ReinitializeVP         { }
+#   APViz::RemoveVariableFromVP   { IDList Index }
+#   APViz::SaveConfigFile         { }
+#   APViz::SaveImg                { }
+#   APViz::SelectFiletreeBranch   { Tree Branch Open }
+#   APViz::SetParam               { Index Product {IsCalcLayer False}}
+#   APViz::Start                  { }
 #
 #
 # Fonctions pour le produit Product:
 #
-#   APViz::Product::AddCalcLayer { Product Widget }
-#   APViz::Product::AdjustIDBubble { Widget Index }
-#   APViz::Product::AdjustLockedValues { Option Index Product }
-#   APViz::Product::AdjustSpinboxValues { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } }
-#   APViz::Product::CreateCalcLayers { Product Widget }
-#   APViz::Product::CreateLayers { Product Layers Widget { DefaultValues {} } {IsAddedLayer False} {LayerType 0}}
-#   APViz::Product::CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
+#   APViz::Product::AddCalcLayer         { Product Widget }
+#   APViz::Product::AdjustIDBubble       { Widget Index }
+#   APViz::Product::AdjustLockedValues   { Option Index Product }
+#   APViz::Product::AdjustSpinboxValues  { Widget IsDueToLayerDeletion { DeletedPrevRowID 0 } }
+#   APViz::Product::CreateCalcLayers     { Product Widget }
+#   APViz::Product::CreateLayers         { Product Layers Widget { DefaultValues {} } {IsAddedLayer False} {LayerType 0}}
+#   APViz::Product::CreateRangeWidget    { Product Style Path Index Options IsSpinBox Width Default}
 #   APViz::Product::CreateVariableRanges { }
-#   APViz::Product::DeleteCalcLayer { Widget Index Product }
-#   APViz::Product::DeleteLayer { Widget Index Product Src }
-#   APViz::Product::Load { Path Product Widget }
-#   APViz::Product::SetEtiketBubble { Widget Index }
-#   APViz::Product::SetFormula { Index {IsInit False}}
+#   APViz::Product::DeleteCalcLayer      { Widget Index Product }
+#   APViz::Product::DeleteLayer          { Widget Index Product Src }
+#   APViz::Product::Load                 { Path Product Widget }
+#   APViz::Product::SetEtiketBubble      { Widget Index }
+#   APViz::Product::SetFormula           { Index {IsInit False}}
 #
 #
 #===============================================================================
@@ -467,6 +467,7 @@ proc APViz::Source { Path Widget } {
             
             #----- Create entry for etiket and bind
             entry $Widget.range.variableGrid.layer${no}_etiket -width 5 -textvariable APViz::${Product}::Value(Etiket,$no)
+            set APViz::${Product}::Value(EtiketWidget,$no) $Widget.range.variableGrid.layer${no}_etiket
             bind $Widget.range.variableGrid.layer${no}_etiket <Return> "APViz::${Product}::SetEtiketBubble $Widget.range.variableGrid.layer${no}_etiket $no; APViz::AssignVariable $Product $no"
             
             set RowID(Layer$no) [expr $no - $RowID(LayerAdjustment)]
@@ -740,7 +741,9 @@ proc APViz::Source { Path Widget } {
             set ::APViz::Data(VPCount) 1
          }
          
-         #----- Get frame params
+         #----- Set frame params
+         set ::QuickLayout::Param(VPActive) 0                   ; # Do not display vp icons
+         set ::QuickLayout::Param(Method) "PreferColumns"
          set ::QuickLayout::Data(Frame) ${::APViz::Data(Frame)}
          ::QuickLayout::LayoutGrid
          
@@ -1019,6 +1022,7 @@ proc APViz::AssignVariable { Product Index } {
    global env
    variable Data
    variable DataSrc
+   variable Etiket
    variable Lbl
    variable ${Product}::Value
    variable ${Product}::Params
@@ -1034,20 +1038,36 @@ proc APViz::AssignVariable { Product Index } {
    set vp       $Value(Viewports,$Index)
    set ip3      $Value(IP3,$Index)
    set etiket   $Value(Etiket,$Index)
+   
+   set date $Data(Date)
+   if {![APViz::ValidateDate $date]} {
+      return
+   }
 
-   #----- Setting optional fields 
-   if {$ip3 eq "-" || $ip3 eq ""} {
+   #----- Setting optional IP3
+   if {($ip3 eq "-") || ($ip3 eq "")} {
       set ip3 -1
    }
    
-   if {$etiket eq "-"} {
+   #----- Assign etiket
+   if {($etiket eq "-") || ($etiket eq "")} {
+      #----- Verify if defined
+      if {[info exists Etiket(${model}${src})]} {
+         set etiket $Etiket(${model}${src})
+      } elseif {[info exists Etiket(${model})]} {
+         set etiket $Etiket($model)
+      }
+      
+      #----- Display in widget
+      if {[winfo exists $Value(EtiketWidget,$Index)]} {
+         $Value(EtiketWidget,$Index) delete 0 [string length [$Value(EtiketWidget,$Index) get]]
+         $Value(EtiketWidget,$Index) insert 0 $etiket
+         
+         #----- Create bubble
+         Bubble::Create $Value(EtiketWidget,$Index) $etiket
+      }
+   } else {
       set etiket ""
-   }
-   
-   set date $Data(Date)
-
-   if {![APViz::ValidateDate $date]} {
-      return
    }
    
    #----- Verifier si tous les champs sont remplis
@@ -1398,9 +1418,9 @@ proc APViz::Check { Product Index {IsCalc False}} {
       set var [string range $ID $startIndex [string length $ID]]
       metmodel configure [metobs define $ID -MODEL] $var -active $isActivated 
    }
-
+   
+   #TODO:: Update vpID
    Viewport::UpdateData $Data(Frame) $vpID
-   #Viewport::UpdateData $Data(Frame) $Viewport::Data(VP)
 }
 
 #-------------------------------------------------------------------------------
@@ -2314,12 +2334,18 @@ proc APViz::GetVarsNb { Dict VarType } {
 
 proc APViz::GetVPId { VPno } {
    variable Data
-   
+
    if {![string is digit $VPno] || ($VPno eq "") || [expr {$Data(VPCount) eq 1}] || [expr $VPno > $Data(VPCount)] || [expr $VPno < 0]} {
       return $Viewport::Data(VP)
    } else {
       set vpNumber VP[expr $Viewport::Data(VPNb) - [expr $Data(VPCount) - $VPno]]
-      return $vpNumber
+
+      #----- Verify if VPID exists
+      if {[lsearch -exact [Page::Registered $Data(Frame) Viewport] $vpNumber] >= 0} {
+         return $vpNumber
+      } else {
+         return $Viewport::Data(VP)
+      }
    }
 } 
 
