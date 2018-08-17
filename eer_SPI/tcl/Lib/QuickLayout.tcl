@@ -33,6 +33,7 @@ namespace eval QuickLayout {
 
     set Param(Expand)       0
     set Param(Method)       OptimizePerimeter
+    set Param(VPActive)     1                   ; # Display VP icons
 
     #----- Labels
 
@@ -424,7 +425,7 @@ proc QuickLayout::LayoutGrid { { Clear True } } {
             #----- Create the viewport and position the hypothetical colormap
 
             if { $Clear } {
-               set Data(VP$n) [Viewport::Create $Data(Frame) $x $y $w $h 1 0]
+               set Data(VP$n) [Viewport::Create $Data(Frame) $x $y $w $h $Param(VPActive) 0]
             } else {
                set x1 [expr $x+$w]
                set y1 [expr $y+$h]
