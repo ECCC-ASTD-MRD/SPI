@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.12.3"
+VERSION="8.0.0"
 MAINTAINER="Jean-Philippe Gauthier"
 BUILDINFO=`git describe --always`
 
