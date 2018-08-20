@@ -683,8 +683,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ValFactor));
             } else {
-               val=1.0;
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&val)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
                if (val==0.0) val=1.0;
                if (val!=Spec->ValFactor) {
                   Spec->ValFactor=val;
@@ -697,8 +698,9 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(Spec->ValDelta));
             } else {
-               val=0.0;
-               Tcl_GetDoubleFromObj(Interp,Objv[++i],&val);
+               if (Tcl_GetDoubleFromObj(Interp,Objv[++i],&val)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
                if (val!=Spec->ValDelta) {
                   Spec->ValDelta=val;
                   internew=1;
