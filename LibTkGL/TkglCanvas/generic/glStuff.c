@@ -1198,7 +1198,8 @@ GLushort glDash(Tk_Dash *Dash) {
       array = (char*)(Dash->number>sizeof(char*)?Dash->pattern.pt:Dash->pattern.array);
       nb=Dash->number;
    } else {
-     return 0;
+      glDisable(GL_LINE_STIPPLE);
+      return 0;
    }
 
 

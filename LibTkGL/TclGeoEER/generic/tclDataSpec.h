@@ -118,6 +118,7 @@ typedef struct TDataSpec {
    double          Inter[DATASPEC_MAX]; // Intervalles de contours
    Tcl_Obj        *InterLabels;         // Libelle des intervalles
    Tcl_Obj        *InterVals;           // Intervalles
+   Tcl_Obj        *InterSpecs;          // Per interval config { { {intervals} color width dash } ... }
    Tcl_Obj        *OGRMask;             // Masque vectoriel
    int             Mask;                // Masque binaire
    int             InterNb;             // Nombre d'intervalles de contour
@@ -178,6 +179,15 @@ typedef struct TDataSpec {
    int             PosNb;
 } TDataSpec;
 
+/*
+typedef TContourSpec {
+   double         *Values;  // Contour Values
+   Tk_Dash         Dash;    // Pointille
+   XColor         *Color;   // Couleur des segments
+   int             Width;   // Largeur
+} TContourSpec;
+*/
+
 TDataSpec* DataSpec_Create(Tcl_Interp *Interp,char *Name);
 TDataSpec* DataSpec_New();
 TDataSpec* DataSpec_Get(char *Name);
@@ -192,7 +202,8 @@ void       DataSpec_Wipe();
 void       DataSpec_Format(TDataSpec *Spec,double Val,char *Str);
 void       DataSpec_Intervals(TDataSpec *Spec,double Min,double Max);
 int        DataSpec_Incr(TDataSpec *Spec);
-
+int        DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj *Obj,XColor **Color);
+   
 TIcon* Icon_Parse(Tcl_Interp *Interp,Tcl_Obj *List);
 void   Icon_Free(TIcon *Icon);
 

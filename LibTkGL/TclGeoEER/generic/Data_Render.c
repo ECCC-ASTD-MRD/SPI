@@ -36,6 +36,7 @@
 #include "RPN.h"
 #include "Triangle.h"
 
+#include "tkglCanvas.h"
 #include "Data_FF.h"
 
 void  Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,Projection *Proj);
@@ -431,6 +432,91 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <Data_ContourSpecSet>
+ * Creation : Aout 2018 - J.P. Gauthier - CMC/CMOE
+ *
+ * But      : Selection des parametres d'affichage sp/cifique a un contour (interspecs).
+ *
+ * Parametres :
+ *  <Interp>  : Interpreteur TCL
+ *  <VP>      : Parametres du viewport
+ *  <Spec>    : Objet de configuration
+ *  <Interval>: Interval a rechercher
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,double Interval) {
+   
+   double      val;
+   char        buf[256];
+   int         nobj,nobjv,ii,iiv,width;
+   XColor     *color=NULL;
+   Tcl_Interp *interp;
+   Tcl_Obj    *obj=NULL,*objv=NULL,*objs=NULL;
+   Tk_Dash     dash;
+   
+   // Use the VP interpreter as the one passed in parameters is used to detect postscrip mode
+   interp=((TkCanvas*)VP->canvas)->interp;
+   Tcl_ListObjLength(interp,Spec->InterSpecs,&nobj);
+   
+   // Loop on the contour specification
+   for (ii=0;ii<nobj;ii++){
+      Tcl_ListObjIndex(interp,Spec->InterSpecs,ii,&obj);
+      Tcl_ListObjIndex(interp,obj,0,&objv);
+      Tcl_ListObjLength(interp,objv,&nobjv);
+      
+      // Loop on the interval values of this contour specification
+      for (iiv=0;iiv<nobjv;iiv++){
+         Tcl_ListObjIndex(interp,objv,iiv,&objs);
+         Tcl_GetDoubleFromObj(interp,objs,&val);
+         
+         // If the value exists
+         objs=NULL;
+         if (val==Interval) {
+            objs=obj;
+            break;
+         }
+      }
+   }
+   
+   // If a contour specification has been found
+   if (objs) {
+      Tcl_ListObjIndex(interp,objs,1,&objv);
+      if (DataSpec_GetColor(interp,objv,&color)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+      
+      Tcl_ListObjIndex(interp,objs,2,&objv);
+      if (Tcl_GetIntFromObj(interp,objv,&width)!=TCL_OK) {
+         return(TCL_ERROR);         
+      }
+      
+      Tcl_ListObjIndex(interp,objs,3,&objv);
+      if (Tk_GetDash(interp,Tcl_GetString(objv),&dash)!=TCL_OK) {
+         return(TCL_ERROR);
+      }
+      
+      if (Interp) {
+         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",width-1);
+         Tcl_AppendResult(Interp,buf,(char*)NULL);
+         if (color) Tk_CanvasPsColor(Interp,VP->canvas,color);
+         glPostscriptDash(Interp,&dash,width);
+      } else {
+         if (color) glColor4us(color->red,color->green,color->blue,Spec->Alpha*655.35);
+         glLineWidth(width);
+         glDash(&dash);
+      }
+      if (color) GLRender?Tk_FreeColor(color):free(color);
+      return(1);  
+   }
+   return(0);
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <Data_RenderContour>
  * Creation : Mars 2000 - J.P. Gauthier - CMC/CMOE
  *
@@ -447,11 +533,10 @@ void Data_RenderBarbule(TDataSpecVECTOR Type,int Flip,float Axis,float Lat,float
  * Remarques :
  *
  *----------------------------------------------------------------------------
-*/
-
+ */
 void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projection *Proj){
 
-   char     buf[256];
+   char     buf[256],spset=0;
    TList   *list;
    T3DArray *array;
 
@@ -489,16 +574,13 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
          Tcl_AppendResult(Interp,buf,(char*)NULL);
          if (Field->Spec->Outline)
             Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
-      }
-
-      if (Interp) {
          glPostscriptDash(Interp,&Field->Spec->Dash,Field->Spec->Width);
       } else {
+         glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+         glLineWidth(Field->Spec->Width);
          glDash(&Field->Spec->Dash);
       }
-      glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
-      glLineWidth(Field->Spec->Width);
-
+      
       // Do we need transparency
       if ((Field->Spec->MapAll && Field->Spec->Map && Field->Spec->Map->Alpha) || Field->Spec->Alpha<100) {
          glEnable(GL_BLEND);
@@ -518,12 +600,29 @@ void Data_RenderContour(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Project
          if (Field->Spec->MapAll) {
             DataSpec_ColorSet(Interp,Field->Spec,array->Value);
          }
-                
+         if (Field->Spec->InterSpecs) {
+            // Check for contour specific params
+            spset=Data_ContourSpecSet(Interp,VP,Field->Spec,array->Value);
+         }
          Proj->Type->Render(Proj,0,array->Data,NULL,NULL,NULL,Field->GRef->Grid[0]=='M'?GL_LINES:GL_LINE_STRIP,array->Size,0,NULL,NULL);
 
          if (Interp)
             glFeedbackProcess(Interp,GL_2D);
 
+         if (spset) {
+            // If contour specific params have been used, reset to default params
+            if (Interp) {
+               sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",Field->Spec->Width-1);
+               Tcl_AppendResult(Interp,buf,(char*)NULL);
+               if (Field->Spec->Outline)
+                  Tk_CanvasPsColor(Interp,VP->canvas,Field->Spec->Outline);
+               glPostscriptDash(Interp,&Field->Spec->Dash,Field->Spec->Width);
+            } else {
+               glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
+               glLineWidth(Field->Spec->Width);            
+               glDash(&Field->Spec->Dash);
+            }
+         }
          list=list->Next;
       }
 

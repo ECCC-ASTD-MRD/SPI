@@ -150,7 +150,7 @@ void DataSpec_PutColor(Tcl_Interp *Interp,XColor *Color) {
  *
  *----------------------------------------------------------------------------
 */
-int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj  *Obj,XColor **Color) {
+int DataSpec_GetColor(Tcl_Interp *Interp,Tcl_Obj *Obj,XColor **Color) {
 
    int r,g,b,t;
 
@@ -373,14 +373,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-renderboundary","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
-                                 "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-positions",
+                                 "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-interspecs","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask","-extrema",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERBOUNDARY,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,HIGHDASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
-                     ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,POSITIONS,
+                     ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,INTERSPECS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,FLAT,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
                      INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK,OGRMASK,EXTREMA };
@@ -469,7 +469,7 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Spec->RenderContour=Spec->RenderContour<0?0:Spec->RenderContour>3?3:Spec->RenderContour;
             }
             break;
-
+            
          case RENDERLABEL:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderLabel));
@@ -1058,6 +1058,15 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Spec->InterNb=nobj;
                Spec->InterVals=Tcl_DuplicateObj(Objv[i]);
                Tcl_IncrRefCount(Spec->InterVals);
+            }
+            break;
+
+         case INTERSPECS:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Spec->InterSpecs);
+            } else {
+               Spec->InterSpecs=Tcl_DuplicateObj(Objv[++i]);
+               Tcl_IncrRefCount(Spec->InterSpecs);
             }
             break;
 
@@ -1761,6 +1770,11 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       to->InterVals=Tcl_DuplicateObj(from->InterVals);
       Tcl_IncrRefCount(to->InterVals);
    }
+   if (from->InterSpecs) {
+      to->InterSpecs=Tcl_DuplicateObj(from->InterSpecs);
+      Tcl_IncrRefCount(to->InterSpecs);
+   }
+   
    if (from->OGRMask) {
       to->OGRMask=Tcl_DuplicateObj(from->OGRMask);
       Tcl_IncrRefCount(to->OGRMask);
@@ -1869,6 +1883,7 @@ TDataSpec *DataSpec_New(){
       spec->InterMode=0;
       spec->InterLabels=NULL;
       spec->InterVals=NULL;
+      spec->InterSpecs=NULL;
       spec->InterModeParam=0.0;
       spec->InterO=0;
       spec->InterM=-1;
@@ -2012,6 +2027,7 @@ void DataSpec_Clear(TDataSpec *Spec) {
 
       if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);   Spec->InterLabels=NULL;
       if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;
+      if (Spec->InterSpecs)  Tcl_DecrRefCount(Spec->InterSpecs);    Spec->InterSpecs=NULL;
       if (Spec->OGRMask)     Tcl_DecrRefCount(Spec->OGRMask);       Spec->OGRMask=NULL;
 
       if (Spec->Map)         CMap_Free(Spec->Map);
