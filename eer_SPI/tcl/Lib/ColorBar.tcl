@@ -242,7 +242,7 @@ proc ColorBar::Set { Frame VP No Id Field } {
       }
 
       $Frame.page.canvas create colorbar -x $x -y $y -width $w -height $h \
-         -data $Field -tags "PAGE CB$VP VPINTRUDE $tag" -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
+         -data $Field -tags "PAGE CB CB$VP VPINTRUDE $tag" -barsplit $Data(Split$tag) -barside $Data(Side$tag) \
          -barborder $Data(Border$tag) -barwidth $Data(Width$tag) -bg $Data(BG$tag) -transparency $Data(Alpha$tag) -showfactor $Data(Factor$tag)
 
       menubutton $Frame.bo$tag -bg $GDefs(ColorFrame) -bitmap @$GDefs(Dir)/share/bitmap/cvmenu.xbm -cursor hand1 -bd 1 -relief raised \
@@ -382,6 +382,31 @@ proc ColorBar::Move { Canvas Tag } {
    set Data(Full$Tag) False
 }
 
+proc ColorBar::Fit { Frame } {
+   variable Data
+
+   set width  [Page::CanvasWidth $Frame]
+   set height [Page::CanvasHeight $Frame]
+
+   foreach cb [$Frame.page.canvas find withtag CB] {
+      set tag [lindex [$Frame.page.canvas itemcget $cb -tags] end]
+      set t   [lindex [split $tag :] end]
+      
+      set x [$Frame.page.canvas itemcget $tag -x]
+      set y [$Frame.page.canvas itemcget $tag -y]
+      set w [$Frame.page.canvas itemcget $tag -width]
+      set h [$Frame.page.canvas itemcget $tag -height]
+      
+      switch [lindex $Data($t) end] {
+         "UL" { }
+         "UR" { set x [expr $width-$w-$Legend::Param(Spacing)] }
+         "LL" { set y [expr $height-$h-$Legend::Param(Spacing)] }
+         "LR" { set x [expr $width-$w-$Legend::Param(Spacing)]; set y [expr $height-$h-$Legend::Param(Spacing)] }
+      }
+      $Frame.page.canvas itemconfigure $tag -x $x -y $y -width $w -height $h
+      set Data($t) [lreplace $Data($t) 0 3 $x $y $w $h]
+   }
+}
 #------------------------------------------------------------------------------
 # Nom      : <ColorBar::Full>
 # Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE -
@@ -562,6 +587,7 @@ proc ColorBar::Update { Frame { State -1 } } {
       }
    }
 
+   ColorBar::Fit $Frame
 
    if { [info exist Data(List$Frame)] } {
       foreach id $Data(List$Frame) {

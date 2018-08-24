@@ -241,6 +241,7 @@ package require tls; ::http::register https 443 ::tls::socket
 package require tdom
 package require struct::tree
 
+package require Legend
 package require Icons
 package require Page
 package require Viewport
@@ -723,7 +724,6 @@ proc SPI::LayoutLoad { Frame Layout } {
       Log::Print ERROR "Invalid Layout"
       return 0
    }
-
    $Frame.page.canvas config -cursor watch
    . config -cursor watch
    update idletasks
@@ -1001,7 +1001,10 @@ proc SPI::LayoutFit { Frame } {
       }
       set Data(Fiting) False
    }
+   Legend::Fit $Frame  
+   ColorBar::Fit $Frame
 }
+
 
 #-------------------------------------------------------------------------------
 # Nom      : <SPI::Locate>
