@@ -174,7 +174,9 @@ proc SPI::CommandLine { { Args {} }} {
    -side left|right|top|bottom       : Side on wich to put the secondary panes
    -geom WxH+X+Y                     : Global window size\n
    -help                             : Help information (about SPI and macro)
-   -verbose ERROR,WARNING,INFO,DEBUG : Verbose level\n"
+   -verbose ERROR,WARNING,INFO,DEBUG : Verbose level
+   
+   +*                                : User defined arguments for use within macro and tools (specify last)\n"
 
    catch {
       foreach script $SPI::Param(Script) {
@@ -217,7 +219,13 @@ for { set i 0 } { $i < $argc } { incr i } {
       "project"   { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
       "tool"      { set i [Args::ParseDo $argv $argc $i 0 1 ""] }
 
-      default     { SPI::CommandLine [lindex $argv $i] }
+      default     { if { [string index [lindex $argv $i] 0]=="+" } { 
+                       set arg [string trimleft [lindex $argv $i] "+"]
+                       set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Args($arg)"]
+                    } else {
+                       SPI::CommandLine [lindex $argv $i]
+                    }
+                 }
    }
 }
 
@@ -2490,6 +2498,14 @@ for { set i 0 } { $i < $argc } { incr i } {
       "layout"    { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Layout)"] }
       "project"   { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Project)"] }
       "tool"      { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Tool)"] }
+      
+      default     { if { [string index [lindex $argv $i] 0]=="+" } { 
+                       set arg [string trimleft [lindex $argv $i] "+"]
+                       set i [Args::ParseDo $argv $argc $i 1 0 ""]
+                    } else {
+                       SPI::CommandLine [lindex $argv $i]
+                    }
+                 }
    }
 }
 

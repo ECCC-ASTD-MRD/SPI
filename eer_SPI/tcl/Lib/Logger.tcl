@@ -133,7 +133,7 @@ proc Args::ParseDo { Argv Argc No Multi Must Cmd } {
    set files ""
 
    #----- Parcourir les arguments du token specifie
-   while { ([llength [lindex $Argv $No]]>1 || [string is double [lindex $Argv $No]] || [string index [lindex $Argv $No] 0]!="-")  && $No < $Argc } {
+   while { ([llength [lindex $Argv $No]]>1 || [string is double [lindex $Argv $No]] || ([string index [lindex $Argv $No] 0] ni { "-" "+" })) && $No < $Argc } {
 
       if { $Cmd!="" } {
          if { $Multi } {
