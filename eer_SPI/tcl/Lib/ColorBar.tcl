@@ -382,6 +382,21 @@ proc ColorBar::Move { Canvas Tag } {
    set Data(Full$Tag) False
 }
 
+#------------------------------------------------------------------------------
+# Nom      : <ColorBar::Fit>
+# Creation : Aout 2018 - J.P. Gauthier - CMC/CMOE -
+#
+# But     : Ajuster la position des colorbars selon le sticky mode (UL,UR,LL,LR)
+#
+# Parametres :
+#   <Frame>  : Page
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
 proc ColorBar::Fit { Frame } {
    variable Data
 
@@ -391,20 +406,22 @@ proc ColorBar::Fit { Frame } {
    foreach cb [$Frame.page.canvas find withtag CB] {
       set tag [lindex [$Frame.page.canvas itemcget $cb -tags] end]
       set t   [lindex [split $tag :] end]
-      
-      set x [$Frame.page.canvas itemcget $tag -x]
-      set y [$Frame.page.canvas itemcget $tag -y]
-      set w [$Frame.page.canvas itemcget $tag -width]
-      set h [$Frame.page.canvas itemcget $tag -height]
-      
-      switch [lindex $Data($t) end] {
-         "UL" { }
-         "UR" { set x [expr $width-$w-$Legend::Param(Spacing)] }
-         "LL" { set y [expr $height-$h-$Legend::Param(Spacing)] }
-         "LR" { set x [expr $width-$w-$Legend::Param(Spacing)]; set y [expr $height-$h-$Legend::Param(Spacing)] }
+
+      if { $t!="current" } {
+         set x [$Frame.page.canvas itemcget $tag -x]
+         set y [$Frame.page.canvas itemcget $tag -y]
+         set w [$Frame.page.canvas itemcget $tag -width]
+         set h [$Frame.page.canvas itemcget $tag -height]
+         
+         switch [lindex $Data($t) end] {
+            "UL" { }
+            "UR" { set x [expr $width-$w-$Legend::Param(Spacing)] }
+            "LL" { set y [expr $height-$h-$Legend::Param(Spacing)] }
+            "LR" { set x [expr $width-$w-$Legend::Param(Spacing)]; set y [expr $height-$h-$Legend::Param(Spacing)] }
+         }
+         $Frame.page.canvas itemconfigure $tag -x $x -y $y -width $w -height $h
+         set Data($t) [lreplace $Data($t) 0 3 $x $y $w $h]
       }
-      $Frame.page.canvas itemconfigure $tag -x $x -y $y -width $w -height $h
-      set Data($t) [lreplace $Data($t) 0 3 $x $y $w $h]
    }
 }
 #------------------------------------------------------------------------------
