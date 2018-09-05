@@ -63,6 +63,7 @@ typedef struct TGraphItem {
    double         Size;                       /*Icon Size*/
    char          *Orient;                     /*Orientation (X,Y,Z,XY,YZ,XZ)*/
    char          *Fit;                        /*Fitting type*/
+   int            Avg;                        /*Disaply average line*/
    int            Icon;                       /*Icone*/
    int            Value;                      /*Affichage des valeurs*/
    int            Alpha;                      /*Transparence */

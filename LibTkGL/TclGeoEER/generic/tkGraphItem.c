@@ -304,8 +304,8 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
    int         i,j,idx;
 
 
-   static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-iconxshowvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-origin",NULL };
-   enum                opt { ANCHOR,COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,ICONXSHOWVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,WINDPRES,PRESSURE,DRYBULB,WETBULB,DEWPOINT,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,ORIGIN };
+   static CONST char *sopt[] = { "-anchor","-colors","-outline","-fill","-iconoutline","-iconfill","-iconxfillvalue","-iconxshowvalue","-font","-width","-size","-stipple","-bitmap","-image","-icon","-type","-orient","-data","-xdata","-ydata","-zdata","-speed","-dir","-windpres","-pressure","-drybulb","-wetbulb","-dewpoint","-error","-high","-low","-median","-min","-max","-waxis","-xaxis","-yaxis","-zaxis","-mixaxis","-taxis","-thaxis","-paxis","-desc","-tag","-transparency","-dash","-value","-fit","-avg","-origin",NULL };
+   enum                opt { ANCHOR,COLORS,OUTLINE,FILL,ICONOUTLINE,ICONFILL,ICONXFILLVALUE,ICONXSHOWVALUE,FONT,WIDTH,SIZE,STIPPLE,BITMAP,IMAGE,ICON,TYPE,ORIENT,DATA,XDATA,YDATA,ZDATA,SPEED,DIR,WINDPRES,PRESSURE,DRYBULB,WETBULB,DEWPOINT,ERRORDATA,HIGHDATA,LOWDATA,MEDIANDATA,MINDATA,MAXDATA,WAXIS,XAXIS,YAXIS,ZAXIS,MIXAXIS,TAXIS,THAXIS,PAXIS,DESC,TAG,TRANSPARENCY,DASH,VALUE,FIT,AVG,ORIGIN };
    item=GraphItem_Get(Name);
    if (!item) {
       Tcl_AppendResult(Interp,"\n   GraphItem_Config: unknown object: \"",Name,"\"",(char*)NULL);
@@ -780,6 +780,14 @@ static int GraphItem_Config(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONS
             }
             break;
 
+         case AVG:
+            if (Objc==1) {
+               Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(item->Avg));
+            } else {
+               Tcl_GetBooleanFromObj(Interp,Objv[++i],&item->Avg);
+            }
+            break;
+            
          case ORIGIN:
             if (Objc==1) {
                if (item->Origin!=HUGE_VAL) {
@@ -846,6 +854,7 @@ static int GraphItem_Create(Tcl_Interp *Interp,char *Name) {
    item->Value=0;
    item->Orient=strdup("X");
    item->Fit=NULL;
+   item->Avg=0;
    item->Desc=NULL;
    item->DescItem=NULL;
    item->Text=NULL;
@@ -1468,7 +1477,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    TVector       *vecx,*vecy,*vecl,*vecs,*vecd,*val;
    Vect3d        *v=NULL,*vl=NULL,v0,v1,vt;
    char           buf[32];
-   double        *vm,x,y,db,dh,x0,y0,sz;
+   double        *vm,x,y,db,dh,x0,y0,sz,avg;
    int            i,j,n,vn,px,py,pw,hd;
 
    vecx=Vector_Get(Item->XData);
@@ -1481,7 +1490,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    if (!(n=vecx->N<vecy->N?vecx->N:vecy->N))
       return;
 
-   /* Histograms may have on more value in the axis orientation side*/
+   // Histograms may have on more value in the axis orientation side
    if (Item->Type==HISTOGRAM) {
       hd=Item->Orient[0]=='X'?(vecx->N>vecy->N):(vecx->N<vecy->N);
    } else {
@@ -1499,19 +1508,20 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       }
    }
    
-   /* Compute graph curve points */
+   // Compute graph curve points
    db=1000.0;
    vn=0;
-   x=x0=y0=0.0;
+   avg=x=x0=y0=0.0;
    val=NULL;
    for(i=0;i<n+hd;i++) {
-      /* Histograms check*/
+      // Histograms check
       if (i==n) {
          x=Item->Orient[0]=='X'?vecx->V[i]:vecx->V[n-1];
          y=Item->Orient[0]=='Y'?vecy->V[i]:vecy->V[n-1];
       } else {
          x=vecx->V[i];
          y=vecy->V[i];
+         avg+=(Item->Orient[0]=='X'?vecy->V[i]:vecx->V[i]);
       }
 
       if (x!=vecx->NoData && y!=vecy->NoData) {
@@ -1537,7 +1547,9 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          vn++;
       }
    }
-   /* Compute item spacing and width for bar and histogram graph */
+   avg/=n;
+   
+   // Compute item spacing and width for bar and histogram graph
    switch(Item->Type) {
       case WIDEBAR   : db=db/(Graph->NSide+1)*0.5; dh=db*2.0*(Graph->NSide*0.5-Graph->ISide-0.5); break;
       case HISTOGRAM : db*=0.50;                   dh=-db;                                        break;
@@ -1545,7 +1557,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       default        : db=0.0;                     dh=0.0;                                        break;
    }
 
-   /* In case we fill, we need to close the path */
+   // In case we fill, we need to close the path
    if (Item->Orient[0]=='X') {
       y0=Item->Origin==HUGE_VAL?Y0:Y0+AXISVALUE(AxisY,Item->Origin);
       v0[0]=v[0][0];
@@ -1568,7 +1580,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glEnable(GL_BLEND);
    }
 
-   /* Display graph filling */
+   // Display graph filling 
    if (Item->Fill) {
       if (Item->Stipple) {
          glEnable(GL_POLYGON_STIPPLE);
@@ -1645,7 +1657,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
          gluTessBeginPolygon(GLRender->GLTess,NULL);
          gluTessBeginContour(GLRender->GLTess);
 
-         /* Begin the tesselation */
+         // Begin the tesselation
          gluTessVertex(GLRender->GLTess,v0,v0);
          for(i=0;i<vn;i++) {
             gluTessVertex(GLRender->GLTess,v[i],v[i]);
@@ -1668,7 +1680,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glDisable(GL_POLYGON_STIPPLE);
    }
 
-   /* Display graph outline */
+   // Display graph outline
    if (Item->Outline && Item->Width) {
       glDash(&Item->Dash);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
@@ -1762,7 +1774,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       }
    }
 
-   /* Display Icons */
+   // Display Icons
    if (Item->Icon && Item->Size>0.0) {
       sz=(Item->Size+Item->Width)*0.5;
       glLineWidth(Item->Width);
@@ -1800,7 +1812,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       glDisableClientState(GL_VERTEX_ARRAY);
    }
 
-   /* Display Values */
+   // Display Values
    if (Item->Value && Item->Font && GLMode==GL_RENDER) {
       glFontUse(Tk_Display(Tk_CanvasTkwin(Graph->canvas)),Item->Font);
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
@@ -1847,7 +1859,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       }
    }
 
-   /* Display bitmaps and images */
+   // Display bitmaps and images
    if (Item->Bitmap) {
       glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,Item->Alpha*Graph->Alpha*0.01*655);
       for(i=0;i<vn-hd;i++) {
@@ -1870,7 +1882,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       handle=Tk_FindPhoto(((TkCanvas*)Graph->canvas)->interp,Item->ImageString);
       Tk_PhotoGetImage(handle,&data);
 
-      /*We have to flip the image data along the Y axis*/
+      // We have to flip the image data along the Y axis
       if (!(pixel=(GLubyte*)malloc(data.width*data.height*data.pixelSize))) {
          App_Log(ERROR,"%s: Memory allocation error",__func__);
          return;
@@ -1892,7 +1904,27 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       free(pixel);
    }
 
-   /* Display Fit curve */
+   // Display AVG line
+   if (Item->Avg && vn>1 && GLMode==GL_RENDER) {     
+      if (Item->Outline) {
+         glEnable(GL_BLEND);
+         glLineWidth(Item->Width);
+         glColor4us(Item->Outline->red,Item->Outline->green,Item->Outline->blue,0.25);
+         glBegin(GL_LINES);
+         if (Item->Orient[0]=='X') {
+            avg=Y0+AXISVALUE(AxisY,avg);
+            glVertex2f(v[0][0] ,avg);
+            glVertex2f(v[vn-1][0],avg);
+         } else {
+            avg=X0+AXISVALUE(AxisX,avg);
+            glVertex2f(avg,v[0][1] );
+            glVertex2f(avg,v[vn-1][1] );          
+         }
+         glEnd();
+      }
+   }
+   
+   // Display Fit curve
    if (Item->Fit && vn>1 && GLMode==GL_RENDER) {
       switch(Item->Fit[0]) {
          case 'L' : vn=GraphItem_FitLinear(v,vecx,vecy,AxisX,AxisY,AxisZ,X0,Y0,X1,Y1); break;
@@ -1918,7 +1950,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    }
 
    glDisable(GL_BLEND);
-
+   
    if (v)  free(v);
    if (vl) free(vl);
 }
