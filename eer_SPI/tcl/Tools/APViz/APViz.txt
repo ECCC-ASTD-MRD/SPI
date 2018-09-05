@@ -19,6 +19,7 @@
 namespace eval APViz {
    variable Lbl
    variable Msg
+   variable Error
    variable Bubble
    
    set Lbl(Description)		{ "Description" "Description" }
@@ -54,6 +55,8 @@ namespace eval APViz {
    set Lbl(envSPI_APVIZ)        { "Variable d'environnement SPI_APVIZ (chemins vers les dossiers de configuration) non définie ou vide.\
                                     \nVeuillez fermer l'application et définir cette variable avant d'utiliser APViz." \
                                    "Environnement variable SPI_APVIZ (configuration paths) not defined or empty. \nPlease close SPI and define SPI_AVIZ before using APViz." }
+   
+   set Error(Product)           { "Produit invalide" " Invalid product" }
    
    #----- Messages
 

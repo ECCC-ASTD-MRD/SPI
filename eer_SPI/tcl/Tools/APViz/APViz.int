@@ -87,18 +87,19 @@ proc APViz::Window { } {
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
          button $Data(Tab).head.saveImg -image CAMSAVE -bd 1 -relief flat -overrelief raised -width 28 -anchor w -command { APViz::SaveImg }
+         checkbutton $Data(Tab).head.play -image VCRPLAYF -indicatoron False -variable Animator::Play(Stop) -onvalue 0 -offvalue 1 -bd 1 -relief sunken -overrelief raised -offrelief flat -command { APViz::GetPlayList $APViz::Data(CurrentProduct); set Animator::Play(Dir) 1; Animator::Play }
          
          menubutton $Data(Tab).head.saveImg.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.saveImg.down.menu
          place $Data(Tab).head.saveImg.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.saveImg.down.menu
          $Data(Tab).head.saveImg.down.menu add command -label [lindex $Lbl(SaveAs) $GDefs(Lang)] -command "APViz::SaveImageAsWindow"
          
-         pack $Data(Tab).head.mode $Data(Tab).head.save $Data(Tab).head.saveImg -side left -padx 2
+         pack $Data(Tab).head.mode $Data(Tab).head.save $Data(Tab).head.saveImg $Data(Tab).head.play -side left -padx 2
          
          #----- Configurable date
          frame $Data(Tab).head.dateConfig
             label $Data(Tab).head.dateConfig.lbl -text "Date: " -anchor e 
-            ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 14 5 "APViz::InitializeVars"
+            ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 8 5 "APViz::InitializeVars"
             set APViz::Data(DateCBWidget) $Data(Tab).head.dateConfig.cb
             set dateList [APViz::FetchAllDates $Data(CurrentProduct)]
             set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
@@ -119,12 +120,13 @@ proc APViz::Window { } {
       labelframe $Data(Tab).filetree -text "Filetree"
          frame $Data(Tab).filetree.repertoire
             label $Data(Tab).filetree.repertoire.lbl -text "Config folder: "
-            ComboBox::Create $Data(Tab).filetree.repertoire.cb APViz::Data(Repertoire) editclose sorted double -1 $Param(ConfigPath) 36 5 "APViz::CreateFileTree \$APViz::Data(Repertoire)"
-            pack $Data(Tab).filetree.repertoire.lbl $Data(Tab).filetree.repertoire.cb -side left
+            ComboBox::Create $Data(Tab).filetree.repertoire.cb APViz::Data(Repertoire) editclose sorted double -1 $Param(ConfigPath) 6 5 "APViz::CreateFileTree \$APViz::Data(Repertoire)"
+            pack $Data(Tab).filetree.repertoire.lbl -side left
+            pack $Data(Tab).filetree.repertoire.cb -side left -fill x -expand True
          pack $Data(Tab).filetree.repertoire -side top -fill x
 
          canvas $Data(Tab).filetree.canvas -bg white -relief sunken -bd 1 -yscrollcommand "$Data(Tab).filetree.scrolly set" \
-           -xscrollcommand "$Data(Tab).filetree.scrollx set" -scrollregion "1 1 250 500" -width 1 -height 1
+           -xscrollcommand "$Data(Tab).filetree.scrollx set" -scrollregion "1 1 200 500" -width 1 -height 1
          scrollbar $Data(Tab).filetree.scrolly -orient vertical -bd 1 -width 10 -command "$Data(Tab).filetree.canvas yview"
          scrollbar $Data(Tab).filetree.scrollx -orient horizontal -bd 1 -width 10 -command "$Data(Tab).filetree.canvas xview"
          pack $Data(Tab).filetree.scrollx -side bottom -fill x
@@ -147,7 +149,7 @@ proc APViz::Window { } {
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 58 -bd 1
+         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 55 -bd 1
          pack .apviz.dock.sel .apviz.dock.del -side left
          pack .apviz.dock.coo -side left -fill both -expand true
       pack .apviz.dock -side bottom -fill x
@@ -162,6 +164,7 @@ proc APViz::Window { } {
       set APViz::Data(Repertoire) [lindex $Param(ConfigPath) 0]
       APViz::CreateFileTree [lindex $Param(ConfigPath) 0]
    }
+   APViz::StartBatch
 }
 
 #----------------------------------------------------------------------------
