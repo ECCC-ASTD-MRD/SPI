@@ -179,6 +179,7 @@ namespace eval Graph {
    set Item(Width)       1
    set Item(Size)        1
    set Item(Value)       False
+   set Item(Avg)         False
    set Item(Type)        LINE
    set Item(Dash)        ""
    set Item(Font)        [font create -family courier -size -10  -weight bold]
@@ -1276,11 +1277,16 @@ proc Graph::ParamsItem { Parent } {
          button $Parent.item.value.font -bitmap @$GDefs(Dir)/share/bitmap/font.ico  -relief groove \
             -command "FontBox::Create $Parent.item.value.font { Graph::ItemConfigure \$Graph::Data(Graph) \$Graph::Data(Type) \$Graph::Data(Item) } $Graph::Item(Font)"
          pack $Parent.item.value.lbl $Parent.item.value.sel $Parent.item.value.font -side left
+      frame $Parent.item.avg
+         label $Parent.item.avg.lbl -text [lindex $Lbl(Average) $GDefs(Lang)] -width 12 -anchor w
+         checkbutton $Parent.item.avg.sel -variable Graph::Item(Avg) -relief raised -bd 1 -onvalue True -offvalue False  -selectcolor "" -relief groove -bd 1\
+            -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
+         pack $Parent.item.avg.lbl $Parent.item.avg.sel -side left
 
       Option::Create $Parent.item.type [lindex $Lbl(Type) $GDefs(Lang)] ::Graph::Item(Type) 0 -1 \
          $Graph::Item(Types) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item) }
 
-      pack $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value -side top -fill x -padx 2
+      pack $Parent.item.sel $Parent.item.type $Parent.item.line $Parent.item.fill $Parent.item.icon $Parent.item.value $Parent.item.avg -side top -fill x -padx 2
 
       Bubble::Create $Parent.item.sel.list $Bubble(ItemList)
       Bubble::Create $Parent.item.line     $Bubble(ItemLine)
@@ -1656,7 +1662,7 @@ proc Graph::ItemConfigure { Graph Type Item } {
 #   set Graph::Item(Image)  MODEL
 
    graphitem configure $Item -outline $Graph::Item(Outline) -fill $fill -iconoutline $Graph::Item(Outline) -iconfill $fill -transparency $Graph::Item(Tranparency) \
-      -width $Graph::Item(Width) -size $Graph::Item(Size) -value $Graph::Item(Value) -dash $Graph::Item(Dash) \
+      -width $Graph::Item(Width) -size $Graph::Item(Size) -value $Graph::Item(Value) -avg $Graph::Item(Avg) -dash $Graph::Item(Dash) \
       -type $Graph::Item(Type) -font $Graph::Item(Font) -icon $icon \
       -bitmap $Graph::Item(Bitmap) -stipple $stipple -image $Graph::Item(Image)
 
@@ -1693,6 +1699,7 @@ proc Graph::ItemSelect { Item } {
    set Graph::Item(Width)       [graphitem configure $Item -width]
    set Graph::Item(Size)        [expr int([graphitem configure $Item -size])]
    set Graph::Item(Value)       [graphitem configure $Item -value]
+   set Graph::Item(Avg)         [graphitem configure $Item -avg]
    set Graph::Item(Type)        [graphitem configure $Item -type]
    set Graph::Item(Dash)        [graphitem configure $Item -dash]
    set Graph::Item(Icon)        [graphitem configure $Item -icon]

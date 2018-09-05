@@ -247,6 +247,7 @@ proc Graph::Time::Graph { GR } {
       set data(Dates) [concat $data(Dates) [vector get $item.X]]
       set min [vector stats $item.Y -min]
       set max [vector stats $item.Y -max]
+      set avg [vector stats $item.Y -avg]
       set data(YMin) [expr $min<$data(YMin)?$min:$data(YMin)]
       set data(YMax) [expr $max>$data(YMax)?$max:$data(YMax)]
    }
