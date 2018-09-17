@@ -51,7 +51,7 @@ namespace eval Info {
                         Backward AdvectType Mode Meteo Delta Scale Grid DiffKernel CritAge ModelTimeStep DtMin DtOverTl WindDiffFactor
                         VarMesoscale Timescale SrcType FMLimit OutputTimeStepMin OutDT OutCV OutAV OutVar ReflectionLevel Seed Scenario IsoChain
                         Aerosol WetScaMode DryDepMode
-                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindFetch WindCoeff CurrentCoeff Depth Weteo }
+                        OilFate OilBeach OilEntrainment OilEmulsion OilEvaporation WindCoeff CurrentCoeff Depth Weteo InputUnits InputQty }
 
    set Token(MLCD)    { Model State NoExp NoSim NoPrev NameExp Name Lat Lon Event By Blame Click AccSecs MetSecs DurMin
                         Meteo ObsNbLevels OutputTimeStepMin ModelTimeStepMin IsConc GridType GridAlgo GridDomain VerticalLevels IsSigma
@@ -240,10 +240,11 @@ namespace eval Info {
    set Lbl(OilEntrainment)       { "Entrainement" "Entrainment" }
    set Lbl(OilEmulsion)          { "Émulsion" "Emulsion" }
    set Lbl(OilEvaporation)       { "Évaporation" "Evaporation" }
-   set Lbl(WindFetch)            { "Etendue vent (m)" "Wind fetch (m)" }
    set Lbl(WindCoeff)            { "Facteur vent" "Wind factor" }
    set Lbl(CurrentCoeff)         { "Facteur courant" "Current factor" }
    set Lbl(Depth)                { "Profondeur max (m)" "Max depth (m)" }
+   set Lbl(InputQty)             { "Quantitée entrée à l'interface" "User input quantity" }
+   set Lbl(InputUnits)           { "Unités entrées à l'interface" "User input units" }
 
    set Lbl(AdvectType)           { "Méthode d'advection" "Advection method" }
    set Lbl(DtMin)                { "Valeur minimum du temps de diffusion (s)" "Diffusion time step min value (s)" }
