@@ -1100,6 +1100,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                                  return
                               } else {
                                  set Value(Etiket,$Index) ""
+                                 Bubble::Create $Value(EtiketWidget,$Index) $etiket
                               }
                            }   
                            
@@ -1118,6 +1119,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                                  return
                               } else {
                                  set Value(Etiket,$Index) ""
+                                 Bubble::Create $Value(EtiketWidget,$Index) $etiket
                               }
                            }                           
                            set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
@@ -1601,13 +1603,13 @@ proc APViz::CreateFileTree { Path } {
       #----- Reinitialize tree
       FILETREE destroy
       struct::tree FILETREE
-      
-      #----- Read APViz_Data.tcl file
-      if {[catch { source ${Path}/APViz_Data.tcl }]} {
-         lappend msg "Fichier APViz_Data.tcl manquant de $Path"
-         lappend msg "File APViz_Data.tcl containing paths missing from $Path"
-         ::Dialog::Error . $msg
-      }
+   }
+   
+   #----- Source APViz_Data.tcl file
+   if {[catch { source ${Path}/APViz_Data.tcl }]} {
+      lappend msg "Fichier APViz_Data.tcl manquant de $Path"
+      lappend msg "File APViz_Data.tcl containing paths missing from $Path"
+      ::Dialog::Error . $msg
    }
 
    #----- Construct tree with all files and directories from configs path
