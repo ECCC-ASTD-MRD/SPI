@@ -156,7 +156,10 @@ proc APViz::Source { Path Widget } {
          
          set no $Value(NbCalcLayers)
          frame $Widget.calc.$no
-            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
+            set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbLayers)]]
+            dict set APViz::Data(AlphaDict) $alpha C$no         
+            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -text $alpha -command "APViz::Check $Product $no True" \
+               -indicatoron False -overrelief raised -offrelief flat
             
             Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 -1 ${::APViz::Data(FormulaNames)} \
                "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)}; APViz::CalculateExpression $Product $no" \
@@ -353,7 +356,7 @@ proc APViz::Source { Path Widget } {
             }
          }
          
-         foreach layer $Layers alpha $APViz::Data(Alphas) {
+         foreach layer $Layers {
             if  { $layer=="" } {
               break
             }
@@ -362,6 +365,8 @@ proc APViz::Source { Path Widget } {
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
             
             #----- Toggle On/Off
+            set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
+            dict set APViz::Data(AlphaDict) $alpha L$no
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) -text $alpha \
                -command "APViz::Check $Product $no" -indicatoron False -overrelief raised -offrelief flat
                
@@ -1320,7 +1325,7 @@ proc APViz::CalculateExpression { Product Index } {
       }
       
       set resultFieldID CALC$Value(RowIDCalc$Index)_$formulaName
-
+      
       #----- Calculer l'expression
       vexpr $resultFieldID $expression
       
@@ -2513,9 +2518,13 @@ proc APViz::ReinitializeVP { } {
    set Data(Colormaps) {}
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
+   
+   #----- Reinitialize dicts
    set Data(VarsDict) ""
+   set Data(VarParamsDict) ""
    set Data(RangeNames) ""
    set Data(Ranges) ""
+   set Data(AlphaDict) ""
    
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
@@ -2846,10 +2855,19 @@ proc APViz::TranslateExpression { Product Expr } {
    if { [regexp {sum\(CHECKED\)} $Expr] } { regsub -all {sum\(CHECKED\)} $Expr  [GetAllFieldsWithOp $Product + True] Expr }
    if { [regexp {avg\(ALL\)} $Expr] }     { regsub -all {avg\(ALL\)} $Expr      \([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
    if { [regexp {avg\(CHECKED\)} $Expr] } { regsub -all {avg\(CHECKED\)} $Expr  \([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
-
-   foreach layer $Data(LayerIDs) letter $Data(Alphas) {
-      regsub -all $letter $Expr $layer Expr
-   } 
+   
+   #---- For all key-value from AlphaDict, replace letters with field ids
+   dict for {alpha layerNo} $APViz::Data(AlphaDict) {
+      set no [string range $layerNo 1 [string length $layerNo]]
+      
+      if {[string equal L [string index $layerNo 0]]} {
+         set id [lindex $Data(LayerIDs) $Value(RowIDLayer$no)]
+      } else {
+         set id [lindex $Data(CalcIDs) $Value(RowIDCalc$no)]
+      }
+      regsub -all $alpha $Expr $id Expr
+   }
+   
    return $Expr
 }
 
