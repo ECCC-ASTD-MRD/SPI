@@ -968,8 +968,6 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    set ip3      $Value(IP3,$Index)
    set etiket   $Value(Etiket,$Index)
    
-   puts "====== IN AssignVariable $Product $Index $Refresh for $var $lev"
-   
    set date $Data(Date)
    if { ![APViz::ValidateDate $date] } {
       return
@@ -1093,7 +1091,6 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType $ip3 $etiket}
                
                "PR"     { 
-                           puts "= in PR"
                            if {[catch {fstdfield read $fieldID $fileID -1 $etiket -1 -1 $ip3 "" $var }]} {
                               #----- Etiket might be wrong 
                               set etiket ""
@@ -1102,18 +1099,13 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                                  set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
                                  return
                               } else {
-                                 puts "= Setting etiket to blank"
                                  set Value(Etiket,$Index) ""
-                                 puts "= succesful"
                               }
                            }   
                            
-                           #----- Set fieldfactor and timestamp (For osbervations)
-                           puts "= just read field : [fstdfield is $fieldID]"
+                           #----- Set timestamp (For osbervations)
                            set Data(PR_timestamp) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
-                           puts "= set PR_timestamp"
                            set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
-                           puts "= finished PR config"
                         }
                
                default  {  
@@ -1131,12 +1123,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                            set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
                         }
             }
-            puts "= out of switch"
+            
             #----- In case DZ assignation failed
             if { ![fstdfield is $fieldID] } {
                return
             }
-            puts "= fstdfield read successful for $var $lev"
+
             #----- Verify if a variable param config has been saved for this row
             if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
                set index [dict get $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)]
@@ -2465,9 +2457,9 @@ proc APViz::ReinitializeVP { } {
    
    #----- Liberer les ID
    foreach ID $Data(LayerIDs) {
-      if {[regexp FLD $ID]} {
+      if {[fstdfield is $ID]} {
          fstdfield free $ID
-      } else {
+      } elseif {[metobs is $ID]} {
          metobs free $ID
       }
    }
@@ -2552,13 +2544,13 @@ proc APViz::ReinitializeVP { } {
 
 proc APViz::RemoveVariableFromVP { IDList Index } {
    variable Data
-   puts "===== IN RemoveVariableFromVP"
+
    set ID [lindex $IDList $Index]
    set dataType ""
-   set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
-   puts "= just got vartype and is: $varType"
+   #set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
+
    #----- Decrement from vartype total in VarsDict
-   dict incr Data(VarsDict) $varType -1
+   #dict incr Data(VarsDict) $varType -1
 
    if {[fstdfield is $ID]} {
       set vp [lindex [fstdfield stats $ID -tag] 1]
