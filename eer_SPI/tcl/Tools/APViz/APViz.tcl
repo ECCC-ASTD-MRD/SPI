@@ -1021,7 +1021,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)
          }
 
-         set obsID OBS$Value(RowIDLayer$Index)_${var}
+         set obsID obs$Value(RowIDLayer$Index)
          
          #----- In case id alreayd exists
          if { [metobs is $obsID] } {
@@ -1063,7 +1063,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $obsID]
          
          if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $obsID] eq -1} {
-            Viewport::Assign $Data(Frame) $vpID $obsID -1
+            Viewport::Assign $Data(Frame) $vpID $obsID 1
          }      
       } else {
                   
@@ -2908,10 +2908,20 @@ proc APViz::UpdateItems { Frame } {
       set no 0
       foreach layer $Data(LayerIDs) {
          set fld fld$Value(RowIDLayer$no)
-         set col [fstdfield configure $fld -color]
-         set eti [fstdfield define $fld -ETIKET]
+         if {[fstdfield is $fld]} {
+            set col [fstdfield configure $fld -color]
+            set eti [fstdfield define $fld -ETIKET]
+         } else {
+            set obs obs$Value(RowIDLayer$no)
+            if {[metobs is $obs]} {               
+               # Get param
+               set col [metmodel configure [metobs define $obs -MODEL] $Value(Vars,$no) -color]
+               set eti ""
+            }
+         }
+         
          #----- Levels can be int, float and string (ex: for DZ -> 800-250)
-         set lbl [format "$no- %-5s %-13s %-4s %-3smb %-3sH" $Value(Models,$no) $eti $Value(Vars,$no) $Value(Levels,$no) $Value(Hours,$no)]
+         set lbl [format "$no- %-5s %-13s %-5s %-4smb %-3sH" $Value(Models,$no) $eti $Value(Vars,$no) $Value(Levels,$no) $Value(Hours,$no)]
          Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
          incr no
       }
