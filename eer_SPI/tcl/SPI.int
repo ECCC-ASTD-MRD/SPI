@@ -66,12 +66,11 @@ proc SPI::Splash { { Msg "" } } {
 
             wm geometry .splash ${iw}x${ih}+${x}+${y}
 
-            pack .splash.c -side top -fill both
+            pack .splash.c -side top -fill both -expand True
 
             wm withdraw .
          }
          .splash.c itemconfigure LOADING -text "$Msg"
-
       } else {
          destroy .splash
       }
