@@ -247,6 +247,7 @@ package require tkdnd
 package require http
 package require tls; ::http::register https 443 ::tls::socket
 package require tdom
+package require base64
 package require struct::tree
 
 package require Legend
