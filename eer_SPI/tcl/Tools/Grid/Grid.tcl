@@ -70,17 +70,14 @@ proc Grid::Close { } {
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
 
-
 proc Grid::Switch { } {
    variable Param
    variable Data
-
-   #----- Kind of a hack, but let's use the widget's internal previous value
-   set no $Option::Data(Pre$Data(Tab).grid.sel.no)
-   lset Data(GridParams) $no [array get Grid::Param]
   
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
    set Data(GridId) MODELGRID$Data(GridNo)
+   set Data(GridDepend) $Data(GridNo)
+   set Param(LockCenter) [expr $Data(GridNo)>0?True:False]
    
    Grid::WindowSet $Data(Tab).grid
    Grid::ConfigGet $Data(GridId)
@@ -90,12 +87,13 @@ proc Grid::Add { } {
    variable Param
    variable Data
    
-   set Data(GridNo) [incr Data(GridNb)]
-
-   lappend Data(Grids) $Data(GridNo)
+   set Data(GridNo) [llength $Data(GridParams)]
    lappend Data(GridParams) [array get Grid::Param]
 
-   Option::Set $Data(Tab).grid.sel.no $Data(Grids)
+   set Param(LockCenter) [expr $Data(GridNo)>0?True:False]
+   
+   for { set i 0 } { $i<[llength $Data(GridParams)] } { incr i } { lappend grids $i }
+   Option::Set $Data(Tab).grid.sel.no $grids
    $Data(Tab).grid.sel.no.b.m invoke end
    
    set Param(GridColor) [lindex $Data(GridColors) $Data(GridNo)]
@@ -107,13 +105,12 @@ proc Grid::Del { } {
    variable Param
    variable Data
    
-   if { [llength $Data(Grids)]>1 } {
+   if { [llength $Data(GridParams)]>1 } {
       Viewport::UnAssign $Data(Frame) $Data(VP) $Data(GridId)
+      set Data(GridParams) [lreplace $Data(GridParams) $Data(GridNo) $Data(GridNo)]
 
-      set idx [lsearch -exact $Data(Grids) $Data(GridNo)]
-      set Data(Grids) [lreplace $Data(Grids) $idx $idx]
-
-      Option::Set $Data(Tab).grid.sel.no $Data(Grids)      
+      for { set i 0 } { $i<[llength $Data(GridParams)] } { incr i } { lappend grids $i }
+      Option::Set $Data(Tab).grid.sel.no $grids
       $Data(Tab).grid.sel.no.b.m invoke end     
    }
 }
@@ -178,26 +175,33 @@ proc Grid::Reset { } {
    variable Param
    variable Data
 
-   set Param(NI)       0                                                         ;# Number of gridpoint in I
-   set Param(NJ)       0                                                         ;# Number of gridpoint in J
-   set Param(Lat0)     0                                                         ;# Latitude of first bbox corner
-   set Param(Lat1)     0                                                         ;# Latitude of second bbox corner
-   set Param(Lon0)     0                                                         ;# Longitude of first bbox corner
-   set Param(Lon1)     0                                                         ;# Longitude of second bbox corner
-   set Param(LatM)     0                                                         ;# Delta on latitute translating grid
-   set Param(LonM)     0                                                         ;# Delta on longitude whehn translating grid
-   set Param(PGSM)     ""                                                        ;# Grid description for PGSM
-   set Param(GridInfo) ""                                                        ;# General grid description
-   set Param(LatR)     0.0                                                       ;
-   set Param(LonR)     180.0                                                     ;
-   set Param(MaxCfl)   10                                                        ;
-   set Param(XLat1)    0                                                         ;# Center latitude
-   set Param(XLon1)    0                                                         ;# Center longitude
-   set Param(XLat2)    0                                                         ;# Rotation axis latitude
-   set Param(XLon2)    90                                                        ;# Rotation axis longitude
-   set Param(Angle)    0                                                         ;# Rotation angle
-   set Param(Extend)   0                                                         ;# Internal extension
+   set Param(NI)         0                                                         ;# Number of gridpoint in I
+   set Param(NJ)         0                                                         ;# Number of gridpoint in J
+   set Param(Lat0)       0                                                         ;# Latitude of first bbox corner
+   set Param(Lat1)       0                                                         ;# Latitude of second bbox corner
+   set Param(Lon0)       0                                                         ;# Longitude of first bbox corner
+   set Param(Lon1)       0                                                         ;# Longitude of second bbox corner
+   set Param(LatD0)      0                                                         ;# Latitude delta relative to inside grid
+   set Param(LatD1)      0                                                         ;# Latitude delta relative to inside grid
+   set Param(LonD0)      0                                                         ;# Longitude delta relative to inside grid
+   set Param(LonD1)      0                                                         ;# Longitude delta relative to inside grid
+   set Param(LatM)       0                                                         ;# Delta on latitute translating grid
+   set Param(LonM)       0                                                         ;# Delta on longitude whehn translating grid
+   set Param(PGSM)       ""                                                        ;# Grid description for PGSM
+   set Param(GridInfo)   ""                                                        ;# General grid description
+   set Param(LatR)       0.0                                                       ;
+   set Param(LonR)       180.0                                                     ;
+   set Param(MaxCFL)     10                                                        ;
+   set Param(XLat1)      0                                                         ;# Center latitude
+   set Param(XLon1)      0                                                         ;# Center longitude
+   set Param(XLat2)      0                                                         ;# Rotation axis latitude
+   set Param(XLon2)      90                                                        ;# Rotation axis longitude
+   set Param(Angle)      0                                                         ;# Rotation angle
+   set Param(Extend)     0                                                         ;# Internal extension
+   set Param(LockCenter) False                                                     ;# Fixe the grid center
    
+   lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
+
    fstdfield free $Data(GridId) ${Data(GridId)}TIC ${Data(GridId)}TAC ${Data(GridId)}PROJ ${Data(GridId)}MTRX
 }
 
@@ -274,8 +278,7 @@ proc Grid::Center { Lat Lon { Update True } } {
    }
 
    if { $Update} {
-      Grid::Create $Data(GridId)
-   
+      Grid::Create $Data(GridId) 
    }
 }
 
@@ -295,7 +298,6 @@ proc Grid::Center { Lat Lon { Update True } } {
 #----------------------------------------------------------------------------
 
 proc Grid::BBoxOrder { } {
-   variable Param
 
    uplevel {
       set Lat0 [expr $Lat0+$Param(LatM)]
@@ -313,6 +315,15 @@ proc Grid::BBoxOrder { } {
          set tmp $Lon0
          set Lon0 $Lon1
          set Lon1 $tmp
+      }
+            
+      #----- If this is a cascaded grid, store the size differences
+      if { [set idx [lsearch $Grid::Data(GridParams) $Grid::Data(GridNo)]]>0 } {
+         array set grid [lindex $Grid::Data(GridParams) [expr $idx-1]]
+         set Param(LatD0) [expr $Lat0-$grid(Lat0)]
+         set Param(LatD1) [expr $Lat1-$grid(Lat1)]
+         set Param(LonD0) [expr $Lon0-$grid(Lon0)]
+         set Param(LonD1) [expr $Lon1-$grid(Lon1)]
       }
    }
 }
@@ -332,7 +343,6 @@ proc Grid::BBoxOrder { } {
 #----------------------------------------------------------------------------
 
 proc Grid::NIJ { } {
-   variable Param
    variable Msg
    variable Lbl
 
@@ -350,6 +360,24 @@ proc Grid::NIJ { } {
 
          set Param(NI) $ni
          set Param(NJ) $nj
+
+         #----- Check inclusiveness
+         if { $Data(GridNo)>0 } {
+            array set gridp [lindex $Data(GridParams) [expr $Data(GridNo)-1]]
+            
+            #----- Make sure the grid encloses completely the previous grid
+            if { $Param(NI)<$gridp(NI) } { set Param(NI) $gridp(NI) }
+            if { $Param(NJ)<$gridp(NJ) } { set Param(NJ) $gridp(NJ) }
+
+            if { $Data(GridNo)>$Data(GridDepend) } {
+               set Param(NI)   [expr $gridp(NI)+$Param(DNI)]
+               set Param(NJ)   [expr $gridp(NJ)+$Param(DNJ)]            
+            } else {
+               set Param(DNI)   [expr $Param(NI)-$gridp(NI)]
+               set Param(DNJ)   [expr $Param(NJ)-$gridp(NJ)]
+            }
+         }
+
       } else {
          set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Res]]
          set Param(Lon1) [set Lon1 [expr $Lon0+$Param(NI)*$Res]]
@@ -358,6 +386,89 @@ proc Grid::NIJ { } {
       set Param(XLon1) [expr ($Lon0+$Lon1)*0.5]
    }
 }
+
+proc Grid::Apply { } {
+   Grid::Create $Grid::Data(GridId)
+   Grid::Cascade
+}
+
+proc Grid::Cascade { } {
+   variable Param
+   variable Data
+  
+   if { [llength $Data(GridParams)]==0 || $Param(Type)!="ZE" } {
+      return
+   }
+   
+   #----- Loop on cascaded grids
+   set pno $Data(GridNo)
+   for { set no [expr $pno+1] } { $no<[llength $Data(GridParams)] } { incr no } {
+      array set gridp [lindex $Data(GridParams) [expr $no-1]]
+      array set Grid::Param [lindex $Data(GridParams) $no]
+      set Param(XLat1) $gridp(XLat1)
+      set Param(XLon1) $gridp(XLon1)
+      set Param(Angle) $gridp(Angle)
+      
+      set Param(NI) [expr $Param(DNI)+$gridp(NI)]
+      set Param(NJ) [expr $Param(DNJ)+$gridp(NJ)]
+      set Data(GridNo) $no
+      Grid::Create MODELGRID$no
+   }
+   set Data(GridNo) $pno
+   array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
+}
+
+proc Grid::SettingsBuild { } {
+   variable Data
+   
+   foreach grid $Data(GridParams) {
+      array set param $grid
+      switch $Param(Type) {
+         "ZE"    { append settings [format "&grid
+  Grd_typ_S  = 'LU',
+  Grd_ni     = %i, Grd_nj     = %i,
+  Grd_dx     = %.4f, Grd_dy     = %.4f,
+  Grd_lonr   = %9.4f, Grd_latr  = %8.4f,
+  Grd_xlon1  = %9.4f, Grd_xlat1 = %8.4f,
+  Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
+  Grd_maxcfl = %i\n\n" \
+            $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
+         }
+      }
+   }
+
+   $Data(Tab).settings.text delete 0.0 end
+   $Data(Tab).settings.text insert 0.0 $settings
+}
+
+proc Grid::Launch { Path } {
+   variable Data
+
+   if { $Path=="" } {
+      return
+   }
+   
+   #----- Create job file
+   set f [open ${Path}/jobfile.txt w 755]
+   puts $f "#!/bin/bash"
+
+   set no 0
+   foreach grid $Data(GridParams) {
+   
+      #----- Write RPN grid file
+      fstdfile open FILE write ${Path}/grid$no.fstd 
+      Grid::Write FILE MODELGRID$no $no $no $no True
+      fstdfile close FILE     
+
+      #----- Add GenphysX call
+      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target GDPS_5.1 -result ${Path}/geo$0 -batch -mach ppp1 -t 72000 -cm 100G"
+     
+      incr no
+   }
+   
+   close $f
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::Create>
@@ -376,7 +487,7 @@ proc Grid::NIJ { } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::Create { { ID MODELGRID }  { GridInfo {} } } {
+proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
    variable Param
    variable Data
 
@@ -384,7 +495,7 @@ proc Grid::Create { { ID MODELGRID }  { GridInfo {} } } {
       scan $GridInfo "%s %i %i %f %f %f %f %f %f" Param(Type) Param(NI) Param(NJ) Param(Lat0) Param(Lon0) Param(Lat1) Param(Lon1) Param(ResM) Param(ResLL)
    }
 
-   if { $Data(LockCenter) } {
+   if { $Param(LockCenter) } {
       Grid::Center $Param(XLat1) $Param(XLon1) False
    }
    if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
@@ -400,18 +511,20 @@ proc Grid::Create { { ID MODELGRID }  { GridInfo {} } } {
       }
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
 
-      if { [info exists ::tk_version] } {
+      if { [info exists ::tk_version] } {         
          set Data(Frame)  $Page::Data(Frame)
          set Data(Canvas) $Page::Data(Canvas)
          set Data(VP)     $Viewport::Data(VP)
-
+         
          Grid::ConfigSet $ID
-         Viewport::Assign $Data(Frame) $Data(VP) $ID
+         Viewport::Assign $Data(Frame) $Data(VP) $ID False 0
          Grid::UpdateItems $Page::Data(Frame)
+         
+         Grid::SettingsBuild
       }
    }
 }
- 
+
 #----------------------------------------------------------------------------
 # Nom      : <Grid::Decode>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
@@ -571,6 +684,7 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 
 proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    variable Param
+   variable Data
 
    Grid::BBoxOrder
    Grid::NIJ
@@ -609,6 +723,7 @@ proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 }
 proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    variable Param
+   variable Data
 
    Grid::BBoxOrder
    Grid::NIJ
@@ -666,11 +781,14 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } } {
+proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check True } } {
    variable Param
+   variable Data
 
-   Grid::BBoxOrder
-   Grid::NIJ
+   if { $Check } {
+      Grid::BBoxOrder
+      Grid::NIJ
+   }
 
    set ll [projection function $Page::Data(Frame) -circle $Param(XLat1) $Param(XLon1) [expr $Res*1852.0*60*0.75*$Param(NI)] [expr $Angle-90.0]]
    set Param(XLat2) [lindex $ll 0]
@@ -680,8 +798,8 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } } {
    georef free ${ID}
    
    #----- Create the grid 
-   georef create ${ID}
-   georef define ${ID} -rpn $Param(NI) $Param(NJ) $Res $Res $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2) $Param(MaxCfl)
+   catch { georef create ${ID} }
+   georef define ${ID} -rpn $Param(NI) $Param(NJ) $Res $Res $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2) $Param(MaxCFL)
 
    #----- Get size, it is possible that the grid build algorithm adjusts the nixnj
    set sz [georef define ${ID} -size]
@@ -721,6 +839,7 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } } {
 
 proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    variable Param
+   variable Data
    variable Msg
    variable Lbl
 
@@ -878,13 +997,13 @@ proc Grid::Move { Frame VP } {
    variable Param
    variable Data
 
-   if { !$Data(LockCenter) } {
+   if { !$Param(LockCenter) } {
       set Data(VP)    $VP
 
       set Param(LatM) $Viewport::Map(LatD)
       set Param(LonM) $Viewport::Map(LonD)
 
-      Grid::Create $Data(GridId)
+      Grid::Apply 
    }
 }
 
@@ -926,7 +1045,7 @@ proc Grid::Draw     { Canvas VP } {
       set Param(Lon0) $Viewport::Map(LonCursor)
    }
 
-   Grid::Create $Data(GridId)
+   Grid::Apply 
 }
 
 proc Grid::DrawDone { Canvas VP } {
@@ -947,6 +1066,8 @@ proc Grid::DrawDone { Canvas VP } {
       set Param(Lon0) $Param(Lon1)
       set Param(Lon1) $tmp
    }
+   
+   Grid::Create $Data(GridId)
 }
 
 #-------------------------------------------------------------------------------
@@ -1004,7 +1125,10 @@ proc Grid::UpdateItems { Frame } {
       
 #      Viewport::DrawRange $Data(Frame) $Data(VP) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) GRIDMAKER red
       if { $Grid::Param(Type)=="ZE" } {
-         Viewport::DrawLine $Data(Frame) $Data(VP) [list $Grid::Param(XLat1) $Grid::Param(XLon1) 0.0 $Grid::Param(XLat2) $Grid::Param(XLon2) 0.0] GRIDMAKER blue 2 TRUE
+         Viewport::DrawLine $Data(Frame) $Data(VP) [list $Grid::Param(XLat1) $Grid::Param(XLon1) 0.0 $Grid::Param(XLat2) $Grid::Param(XLon2) 0.0] [list GRIDMAKER GRIDMAKERROT PAGE$Data(VP)] [lindex $Data(GridColors) 0] 2 TRUE
+#         $Data(Frame).page.canvas bind GRIDMAKERROT <Enter>     "$Data(Frame).page.canvas config -cursor exchange"
+#         $Data(Frame).page.canvas bind GRIDMAKERROT <Leave>     "$Data(Frame).page.canvas config -cursor hand1"
+#         $Data(Frame).page.canvas bind GRIDMAKERROT <B1-Motion> "set Grid::Param(XLat1) $Viewport::Map(LonCursor);set Grid::Param(XLat2) $Viewport::Map(LatCursor); puts stderr [expr [projection function $Page::Data(Frame) -bearing $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2)]+90.0]"
       }
    }
 }

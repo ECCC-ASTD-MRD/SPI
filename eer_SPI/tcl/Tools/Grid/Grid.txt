@@ -37,7 +37,7 @@ namespace eval Grid {
    set Lbl(RotLL)      { "Axe de rotation   " "Rotation axis     " }
    set Lbl(LL0)        { "Premier coin      " "First corner      " }
    set Lbl(LL1)        { "Deuxième coin     " "Second corner     " }
-   set Lbl(MaxCfl)     { "MaxCFL            " "MaxCFL            " }
+   set Lbl(MaxCFL)     { "MaxCFL            " "MaxCFL            " }
 
    #----- Messages
 
@@ -46,7 +46,10 @@ namespace eval Grid {
 
    #----- Bulles d'aides
    
-   set Bubble(Mode)    { "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Mode)      { "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(GridAdd)   { "Ajouter une grille" "Add a grid" }
+   set Bubble(GridDel)   { "Supprimer la grille courante" "Delete current grid" }
+   set Bubble(GridRun)   { "Exécuter la modélisation" "Run the modeling" }
    set Bubble(Types)     { "Sélection du type de grille:\n\tPS  : Polaire stéréographique\n\tPS_N: Polaire stéréographique centrée au pôle nord\n\tPS_S: Polaire stéréographique centrée au pôle sud\n\tLL  : LatLon traditionelle (GRTYP=L)\n\tZL  : LatLon utilisant des ^^ << (GRTYP=Z)\n\tZE  : Grille Tournée GEM ^^ << (GRTYP=Z)\n\tUTM : Universelle mercator transveralle (GRTYP=Z)"
                           "Grid type selection:\n\tPS  : Polar stereographic\n\tPS_N: Polar stereographic centered on north pole\n\tPS_S: Polar stereographic centered on south pole\n\tLL  : LatLon traditionnal (GRTYP=L)\n\tZL  : LatLon using ^^ << (GRTYP=Z)\n\tZL  : GEM Rotated LatLon using ^^ << (GRTYP=Z)\n\tUTM : Universal transverse mercator (GRTYP=Z)" }
    set Bubble(ResM)      { "Résolution en mètres (selon l'axe des latitudes pour les grilles latlon)" "Resolution in meters (on the latutide axis for latlon grids)" }

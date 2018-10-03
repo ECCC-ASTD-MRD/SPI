@@ -58,7 +58,6 @@ proc Grid::Window { } {
       
       TabFrame::Create .gridmaker.tab 1 ""
       set Data(Tab) [TabFrame::Add .gridmaker.tab 1 [lindex $Param(Title_Tab1) $GDefs(Lang)] True]
-      set Data(Tab2) [TabFrame::Add .gridmaker.tab 1 [lindex $Param(Title_Tab2) $GDefs(Lang)] True]
       pack .gridmaker.tab -side top -fill both -expand true
       TabFrame::Select .gridmaker.tab 0
 
@@ -66,13 +65,22 @@ proc Grid::Window { } {
          checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue Grid -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab).head.add -image PLUS -relief flat -bd 1 -overrelief raised -command "Grid::Add"
-         button $Data(Tab).head.del -image MINUS -relief flat -bd 1 -overrelief raised -command "Grid::Del"
+         button $Data(Tab).head.add -image GRIDADD -relief flat -bd 1 -overrelief raised -command { Grid::Add }
+         button $Data(Tab).head.del -image GRIDDEL -relief flat -bd 1 -overrelief raised -command { Grid::Del }
+         button $Data(Tab).head.run -image GRIDRUN -relief flat -bd 1 -overrelief raised -command { Grid::Launch [FileBox::Create . "" Path {}] }
          pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.del -side left -padx 2
+         pack $Data(Tab).head.run -side right
       pack $Data(Tab).head -side top -fill x -padx 2 -pady 2
  
       Grid::Frame $Data(Tab) True
       
+      frame $Data(Tab).settings
+         text $Data(Tab).settings.text -relief sunken -bd 1 -yscrollcommand "$Data(Tab).settings.scroll set" -bg $GDefs(ColorLight) -wrap none -undo True
+         scrollbar $Data(Tab).settings.scroll -relief sunken -command "$Data(Tab).settings.text yview" -bd 1 -width 10
+         pack $Data(Tab).settings.text -side left -fill both -expand true
+         pack $Data(Tab).settings.scroll -side left -fill y     
+      pack $Data(Tab).settings -side top -fill both -expand True -padx 2 -pady 2
+
       frame .gridmaker.dock -relief raised -bd 1
          button .gridmaker.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Grid }
          button .gridmaker.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Grid::Close
@@ -82,6 +90,9 @@ proc Grid::Window { } {
       pack .gridmaker.dock -side bottom -fill x
 
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.add  $Bubble(GridAdd)
+      Bubble::Create $Data(Tab).head.del  $Bubble(GridDel)
+      Bubble::Create $Data(Tab).head.run  $Bubble(GridRun)
    }
    
    Grid::WindowSet $Data(Tab).grid
@@ -122,30 +133,31 @@ proc Grid::Frame { Frame { Multi False } } {
    
       if { $Multi } {
          frame $Frame.grid.sel
-            Option::Create $Frame.grid.sel.no [lindex $Lbl(GridNo) $GDefs(Lang)] Grid::Data(GridNo) 0 -1 $Data(Grids) "Grid::Switch"
+            Option::Create $Frame.grid.sel.no [lindex $Lbl(GridNo) $GDefs(Lang)] Grid::Data(GridNo) 0 -1 0 "Grid::Switch"
             IcoMenu::Create $Frame.grid.sel.size $GDefs(Dir)/share/bitmap \
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm" "0 1 2 3 4 5 6" \
                Grid::Param(GridSize) "Grid::ConfigSet \$Grid::Data(GridId)" 0 -relief groove -bd 2
                ColorBox::CreateSel $Frame.grid.sel.col { Grid::Param(GridColor) Grid::Param(GridAlpha) } Grid::ConfigSet \$Grid::Data(GridId)
-               pack $Frame.grid.sel.no -side left -fill x -expand True
-               pack $Frame.grid.sel.size $Frame.grid.sel.col -side left
-            pack $Frame.grid.sel -side top -fill x
-         }   
+            pack $Frame.grid.sel.no -side left -fill x -expand True
+            pack $Frame.grid.sel.size $Frame.grid.sel.col -side left
+         pack $Frame.grid.sel -side top -fill x
+         IcoMenu::Set $Frame.grid.sel.size   $Param(GridSize)
+      }   
 
       Option::Create $Frame.grid.type  [lindex $Lbl(GridType) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame.grid"
-      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create \$Grid::Data(GridId)"
-      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create \$Grid::Data(GridId)"
+      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply"
+      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
-         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Create $Grid::Data(GridId); set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
          label $Frame.grid.dim.x -text x
-         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Create $Grid::Data(GridId); set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
          entry $Frame.grid.dim.ext -textvariable Grid::Param(Extend) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
          pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.ext -side left
       frame $Frame.grid.maxcfl
-            label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCfl) $GDefs(Lang)]
-            entry $Frame.grid.maxcfl.maxcfl -relief sunken -bd 1 -textvariable Grid::Param(MaxCfl) -width 5 -bg $GDefs(ColorLight)
-            pack $Frame.grid.maxcfl.lbl $Frame.grid.maxcfl.maxcfl -side left
+         label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
+         spinbox $Frame.grid.maxcfl.val -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(MaxCFL) -width 3 -from 0 -to 20 -increment 1 -command { Grid::Apply }
+         pack $Frame.grid.maxcfl.lbl $Frame.grid.maxcfl.val -side left
       label $Frame.grid.spc -text ""
       pack $Frame.grid.type $Frame.grid.reskm $Frame.grid.resll $Frame.grid.dim $Frame.grid.maxcfl $Frame.grid.spc -side top -fill x -expand True
    pack $Frame.grid -side top -fill x -padx 2 -pady 2
@@ -157,13 +169,13 @@ proc Grid::Frame { Frame { Multi False } } {
       pack $Frame.grid.ll.lbl $Frame.grid.ll.lat $Frame.grid.ll.lon -side left
    frame $Frame.grid.ll0
       label $Frame.grid.ll0.lbl -text  [lindex $Lbl(LL0) $GDefs(Lang)]
-      spinbox $Frame.grid.ll0.lat -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat0) -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Create $Grid::Data(GridId) }
-      spinbox $Frame.grid.ll0.lon -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon0) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Create $Grid::Data(GridId) }
+      spinbox $Frame.grid.ll0.lat -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat0) -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Apply }
+      spinbox $Frame.grid.ll0.lon -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon0) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Apply }
       pack $Frame.grid.ll0.lbl $Frame.grid.ll0.lat $Frame.grid.ll0.lon -side left
    frame $Frame.grid.ll1
       label $Frame.grid.ll1.lbl -text  [lindex $Lbl(LL1) $GDefs(Lang)]
-      spinbox $Frame.grid.ll1.lat -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat1) -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Create $Grid::Data(GridId) }
-      spinbox $Frame.grid.ll1.lon -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon1) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Create $Grid::Data(GridId) }
+      spinbox $Frame.grid.ll1.lat -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lat1) -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Apply }
+      spinbox $Frame.grid.ll1.lon -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Lon1) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Apply }
       pack $Frame.grid.ll1.lbl $Frame.grid.ll1.lat $Frame.grid.ll1.lon -side left 
    frame $Frame.grid.ref
       label $Frame.grid.ref.lbl -text [lindex $Lbl(Reference) $GDefs(Lang)]
@@ -172,36 +184,37 @@ proc Grid::Frame { Frame { Multi False } } {
       pack $Frame.grid.ref.lbl $Frame.grid.ref.latr $Frame.grid.ref.lonr -side left
    frame $Frame.grid.mid
          label $Frame.grid.mid.lbl -text [lindex $Lbl(Center) $GDefs(Lang)]
-         spinbox $Frame.grid.mid.xlat1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat1) -width 8 -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Create $Grid::Data(GridId) }
-         spinbox $Frame.grid.mid.xlon1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLon1) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Create $Grid::Data(GridId) }
+         spinbox $Frame.grid.mid.xlat1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat1) -width 8 -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Apply }
+         spinbox $Frame.grid.mid.xlon1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLon1) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Apply }
          checkbutton $Frame.grid.mid.lock -image LINK -height 17 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorLight) \
-            -command {  } -variable Grid::Data(LockCenter) -onvalue True -offvalue False -indicatoron False
+            -command {  } -variable Grid::Param(LockCenter) -onvalue True -offvalue False -indicatoron False
          pack $Frame.grid.mid.lbl $Frame.grid.mid.xlat1 $Frame.grid.mid.xlon1 $Frame.grid.mid.lock -side left
    frame $Frame.grid.rot
          label $Frame.grid.rot.lbl -text [lindex $Lbl(RotLL) $GDefs(Lang)]
          entry $Frame.grid.rot.xlat2 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat2) -width 8 -state disabled
          entry $Frame.grid.rot.xlon2 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLon2) -width 9 -state disabled
-         spinbox $Frame.grid.rot.angle -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Angle) -width 3 -from 0 -to 180 -increment 1 -command { Grid::Create $Grid::Data(GridId) }
+         spinbox $Frame.grid.rot.angle -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Angle) -width 3 -from 0 -to 180 -increment 1 -command { Grid::Apply }
          pack $Frame.grid.rot.lbl $Frame.grid.rot.xlat2 $Frame.grid.rot.xlon2 $Frame.grid.rot.angle -side left
 
    pack $Frame.grid.ll $Frame.grid.ll0 $Frame.grid.ll1 $Frame.grid.mid $Frame.grid.rot $Frame.grid.ref -side top -fill x
 
-   bind $Frame.grid.reskm.e   <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.resll.e   <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.dim.ni    <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Create \$Grid::Data(GridId); set Grid::Param(GetNIJ) True}"
-   bind $Frame.grid.dim.nj    <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Create \$Grid::Data(GridId); set Grid::Param(GetNIJ) True}"
-   bind $Frame.grid.ll0.lat   <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.ll0.lon   <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.ll1.lat   <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.ll1.lon   <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
+   bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.dim.ni     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
+   bind $Frame.grid.dim.nj     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
+   bind $Frame.grid.ll0.lat    <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.ll0.lon    <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.ll1.lat    <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.ll1.lon    <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.maxcfl.val <Return> "catch { Grid::Apply }"
 
-   bind $Frame.grid.mid.xlat1 <Return> "catch { Grid::Center \$Grid::Param(XLat1) \$Grid::Param(XLon1); Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.mid.xlon1 <Return> "catch { Grid::Center \$Grid::Param(XLat1) \$Grid::Param(XLon1); Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.rot.xlat2 <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.rot.xlon2 <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.rot.angle <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.ref.latr  <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
-   bind $Frame.grid.ref.lonr  <Return> "catch { Grid::Create \$Grid::Data(GridId) }"
+   bind $Frame.grid.mid.xlat1  <Return> "catch { Grid::Center \$Grid::Param(XLat1) \$Grid::Param(XLon1); Grid::Apply }"
+   bind $Frame.grid.mid.xlon1  <Return> "catch { Grid::Center \$Grid::Param(XLat1) \$Grid::Param(XLon1); Grid::Apply }"
+   bind $Frame.grid.rot.xlat2  <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.rot.xlon2  <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.rot.angle  <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.ref.latr   <Return> "catch { Grid::Apply }"
+   bind $Frame.grid.ref.lonr   <Return> "catch { Grid::Apply }"
    
    set Param(SizeWarn) True
    set Param(ResLL)    [expr $Param(ResM)/$Param(LL2M)]
@@ -210,8 +223,6 @@ proc Grid::Frame { Frame { Multi False } } {
    Bubble::Create $Frame.grid.reskm $Bubble(ResM)
    Bubble::Create $Frame.grid.resll $Bubble(ResLL)
    Bubble::Create $Frame.grid.dim   $Bubble(Dimension)
-   Bubble::Create $Frame.grid.bbox  $Bubble(Coverage)
-   Bubble::Create $Frame.grid.bbox  $Bubble(Coverage)
 }
 
 #----------------------------------------------------------------------------
@@ -232,14 +243,18 @@ proc Grid::Frame { Frame { Multi False } } {
 
 proc Grid::WindowSet { Frame } {
    variable Param
+   variable Data
    
-   $Frame.ll0.lat configure -state normal 
-   $Frame.ll0.lon configure -state normal 
-   $Frame.ll1.lat configure -state normal 
-   $Frame.ll1.lon configure -state normal 
-   $Frame.dim.ni     configure -state normal 
-   $Frame.dim.nj     configure -state normal 
-   $Frame.rot.angle  configure -state disabled
+   $Frame.ll0.lat   configure -state normal 
+   $Frame.ll0.lon   configure -state normal 
+   $Frame.ll1.lat   configure -state normal 
+   $Frame.ll1.lon   configure -state normal 
+   $Frame.dim.ni    configure -state normal 
+   $Frame.dim.nj    configure -state normal 
+   $Frame.mid.xlat1 configure -state disabled 
+   $Frame.mid.xlon1 configure -state disabled
+   $Frame.mid.lock  configure -state disabled
+   $Frame.rot.angle configure -state disabled
    
    switch $Param(Type) {
       "PS"   - 
@@ -247,7 +262,12 @@ proc Grid::WindowSet { Frame } {
       "PS_S" { $Frame.ll1.lat configure -state disabled 
                $Frame.ll1.lon configure -state disabled 
              }  
-      "ZE"   { $Frame.rot.angle  configure -state normal
+      "ZE"   { if { $Data(GridNo)==0 } { 
+                  $Frame.rot.angle configure -state normal
+                  $Frame.mid.xlat1 configure -state normal
+                  $Frame.mid.xlon1 configure -state normal
+                  $Frame.mid.lock  configure -state normal
+               }
              }
       "UTM"  { $Frame.dim.ni configure -state disabled 
                $Frame.dim.nj configure -state disabled 
