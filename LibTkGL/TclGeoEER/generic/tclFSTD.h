@@ -85,6 +85,7 @@ int    FSTD_FieldReadVLevels(TData *Field);
 int    FSTD_FieldStat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]);
 void   FSTD_FieldSetTo(TData *FieldTo,TData *FieldFrom);
 int    FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewrite,int Compress);
+int    FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket);
 int    FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress);
 void   FSTD_FieldSet(TData *Data);
 int    FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType);

@@ -2898,6 +2898,52 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    }
 }
 
+int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
+   
+   TRPNFile   *file;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
+   float       tmp[6];
+   char        *e,*etiket[13]="GRID        ";
+   
+   // Verifier l'existence du champs
+   if (!Field) {
+      Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   
+   file=FSTD_FileGet(Interp,Id);
+   if (FSTD_FileSet(Interp,file)<0)
+      return(TCL_ERROR);
+   
+   e=Eticket?Eticket:etiket; 
+   switch(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid) {
+      case 'Z': if (!field->GRef->AX || !field->GRef->AX) {
+                   Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptior not defined",(char*)NULL);
+                   return(TCL_ERROR);       
+                }
+                ok=c_fstecr(field->GRef->AX,NULL,-1,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
+                   head->IG1,head->IG2,head->IG3,"X",">>",e,'E',Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,133,1);                  
+                ok=c_fstecr(field->GRef->AY,NULL,-1,file->Id,head->DATEO,0,0,1,Field->Def->NJ,1,1,
+                   head->IG1,head->IG2,head->IG3,"X",">>",e,'E',Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,133,1);                  
+                break;
+      case 'W': if (!field->GRef->Transform || !field->GRef->String) {
+                   Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid transform and/or WKT definition not defined",(char*)NULL);
+                   return(TCL_ERROR);       
+                }
+                for(i=0;i<6;i++) {
+                   tmp[i]=field->GRef->Transform[i];
+                }
+                ok=c_fstecr(tmp,NULL,-1,file->Id,head->DATEO,0,0,6,1,1,
+                   head->IG1,head->IG2,head->IG3,"X","MTRX",e,'X',Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1); 
+                c_fst_data_length(TDef_Size[2]);
+                ok=c_fstecr(field->GRef->String,NULL,-1,file->Id,head->DATEO,0,0,strlen(field->GRef->String),1,1,1,
+                   head->IG1,head->IG2,head->IG3,"X","PROJ",e,'X',Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,2,1);                  
+                break;
+
+   } 
+   return(TCL_OK);
+}
+
 int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress) {
 
    TRPNFile    *file;
