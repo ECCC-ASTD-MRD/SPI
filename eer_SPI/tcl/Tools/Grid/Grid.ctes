@@ -40,7 +40,13 @@ namespace eval Grid {
    set Data(GridId)       MODELGRID                                                ;# Grid identificator 
    set Data(GridParams)   { "" }
    set Data(GridColors)   { black blue red yellow green white }                    ;# Multiple grid color list
-
+   
+   set Data(GenPhysX_Host)   ppp1
+   set Data(GenPhysX_Target) GDPS_5.1
+   set Data(GenPhysX_Time)   21600
+   set Data(GenPhysX_Memory) 100G
+   set Data(GenPhysX_CPU)    8
+   
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field
    set Param(Type)       "ZL"                                                      ;# Current grid type

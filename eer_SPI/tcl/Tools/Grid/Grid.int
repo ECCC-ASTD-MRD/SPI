@@ -74,7 +74,7 @@ proc Grid::Window { } {
  
       Grid::Frame $Data(Tab) True
       
-      frame $Data(Tab).settings
+      labelframe $Data(Tab).settings -text "Namelist"
          text $Data(Tab).settings.text -relief sunken -bd 1 -yscrollcommand "$Data(Tab).settings.scroll set" -bg $GDefs(ColorLight) -wrap none -undo True
          scrollbar $Data(Tab).settings.scroll -relief sunken -command "$Data(Tab).settings.text yview" -bd 1 -width 10
          pack $Data(Tab).settings.text -side left -fill both -expand true

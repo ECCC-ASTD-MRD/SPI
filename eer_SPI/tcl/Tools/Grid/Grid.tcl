@@ -365,16 +365,21 @@ proc Grid::NIJ { } {
          if { $Data(GridNo)>0 } {
             array set gridp [lindex $Data(GridParams) [expr $Data(GridNo)-1]]
             
+            set si  [expr $Param(NI)*$Param(ResM)]
+            set sj  [expr $Param(NJ)*$Param(ResM)]
+            set spi [expr $gridp(NI)*$gridp(ResM)]
+            set spj [expr $gridp(NJ)*$gridp(ResM)]
+            
             #----- Make sure the grid encloses completely the previous grid
-            if { $Param(NI)<$gridp(NI) } { set Param(NI) $gridp(NI) }
-            if { $Param(NJ)<$gridp(NJ) } { set Param(NJ) $gridp(NJ) }
+            if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResM)+1] }
+            if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResM)+1] }
 
             if { $Data(GridNo)>$Data(GridDepend) } {
-               set Param(NI)   [expr $gridp(NI)+$Param(DNI)]
-               set Param(NJ)   [expr $gridp(NJ)+$Param(DNJ)]            
+               set Param(NI) [expr ($spi+$Param(DNI))/$Param(ResM)]
+               set Param(NJ) [expr ($spj+$Param(DNJ))/$Param(ResM)]
             } else {
-               set Param(DNI)   [expr $Param(NI)-$gridp(NI)]
-               set Param(DNJ)   [expr $Param(NJ)-$gridp(NJ)]
+               set Param(DNI) [expr $si - $spi]
+               set Param(DNJ) [expr $sj - $spj]
             }
          }
 
@@ -390,6 +395,7 @@ proc Grid::NIJ { } {
 proc Grid::Apply { } {
    Grid::Create $Grid::Data(GridId)
    Grid::Cascade
+   Grid::Settings
 }
 
 proc Grid::Cascade { } {
@@ -418,27 +424,32 @@ proc Grid::Cascade { } {
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
 }
 
-proc Grid::SettingsBuild { } {
-   variable Data
+proc Grid::SettingsBuild { Params } {
    
-   foreach grid $Data(GridParams) {
-      array set param $grid
-      switch $Param(Type) {
-         "ZE"    { append settings [format "&grid
+   array set param $Params
+   switch $param(Type) {
+         "ZE"    { return [format "&grid
   Grd_typ_S  = 'LU',
   Grd_ni     = %i, Grd_nj     = %i,
   Grd_dx     = %.4f, Grd_dy     = %.4f,
   Grd_lonr   = %9.4f, Grd_latr  = %8.4f,
   Grd_xlon1  = %9.4f, Grd_xlat1 = %8.4f,
   Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
-  Grd_maxcfl = %i\n\n" \
-            $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
-         }
+  Grd_maxcfl = %i\n" \
+         $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
       }
    }
+}
 
+proc Grid::Settings { } {
+   variable Param
+   variable Data
+   
    $Data(Tab).settings.text delete 0.0 end
-   $Data(Tab).settings.text insert 0.0 $settings
+
+   foreach grid $Data(GridParams) {
+      $Data(Tab).settings.text insert end [Grid::SettingsBuild $grid]\n
+   }
 }
 
 proc Grid::Launch { Path } {
@@ -449,19 +460,22 @@ proc Grid::Launch { Path } {
    }
    
    #----- Create job file
-   set f [open ${Path}/jobfile.txt w 755]
+   set f [open ${Path}/jobfile.txt w 0755]
    puts $f "#!/bin/bash"
 
    set no 0
    foreach grid $Data(GridParams) {
    
+      #----- Write namelist
+      exec echo [Grid::SettingsBuild $grid] > ${Path}/grid$no.nml
+      
       #----- Write RPN grid file
       fstdfile open FILE write ${Path}/grid$no.fstd 
-      Grid::Write FILE MODELGRID$no $no $no $no True
+      Grid::Write FILE MODELGRID$no
       fstdfile close FILE     
 
       #----- Add GenphysX call
-      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target GDPS_5.1 -result ${Path}/geo$0 -batch -mach ppp1 -t 72000 -cm 100G"
+      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target $Data(GenPhysX_Target) -result ${Path}/geo$0 -batch -mach $Data(GenPhysX_Host) -t $Data(GenPhysX_Time) -cm $Data(GenPhysX_Memory) -cpus $Data(GenPhysX_CPU)"
      
       incr no
    }
@@ -518,9 +532,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
          
          Grid::ConfigSet $ID
          Viewport::Assign $Data(Frame) $Data(VP) $ID False 0
-         Grid::UpdateItems $Page::Data(Frame)
-         
-         Grid::SettingsBuild
+         Grid::UpdateItems $Page::Data(Frame)       
       }
    }
 }
@@ -921,6 +933,7 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 #   <IP1>    : IP1 des descripteurs
 #   <IP2>    : IP2 des descripteurs
 #   <IP3>    : IP3 des descripteurs
+#   <ETIKET> : ETIKET des descripteurs
 #   <Grid>   : Write field on grid
 #
 # Retour:
