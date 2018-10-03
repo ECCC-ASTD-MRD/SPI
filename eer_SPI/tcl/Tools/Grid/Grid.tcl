@@ -891,14 +891,14 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 
    georef define $ID -transform $transform
 
-   #----- Create projection and transform field
-   fstdfield create ${ID}PROJ [string length $wkt] 1 1 UByte
-   fstdfield define ${ID}PROJ -NOMVAR "PROJ" -ETIKET "GRID" -TYPVAR X -GRTYP X
-   fstdfield define ${ID}PROJ -DATA [binary format A* $wkt]
-
-   fstdfield create ${ID}MTRX 6 1 1 Float32
-   fstdfield define ${ID}MTRX -NOMVAR "MTRX" -ETIKET "GRID" -TYPVAR X -GRTYP X
-   fstdfield define ${ID}MTRX -DATA [binary format f* $transform]
+#    #----- Create projection and transform field
+#    fstdfield create ${ID}PROJ [string length $wkt] 1 1 UByte
+#    fstdfield define ${ID}PROJ -NOMVAR "PROJ" -ETIKET "GRID" -TYPVAR X -GRTYP X
+#    fstdfield define ${ID}PROJ -DATA [binary format A* $wkt]
+# 
+#    fstdfield create ${ID}MTRX 6 1 1 Float32
+#    fstdfield define ${ID}MTRX -NOMVAR "MTRX" -ETIKET "GRID" -TYPVAR X -GRTYP X
+#    fstdfield define ${ID}MTRX -DATA [binary format f* $transform]
 
    #----- Create the grid ans assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
@@ -930,7 +930,7 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
+proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { ETIKET GRID } { Grid True }} {
 
    set dateo [fstdstamp fromseconds [clock seconds]]
 
@@ -940,32 +940,17 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { Grid True }} {
       set IP2 [string range $dateo 3 5]
       set IP3 [string range $dateo 6 9]
    }
-   
+    
    switch [fstdfield define $ID -GRTYP] {
-      "Z" {
-         fstdfield define ${ID}TIC -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
-         fstdfield define ${ID}TAC -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
-         fstdfield define ${ID}    -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0
-
-         fstdfield write ${ID}TIC $FILE -32 True
-         fstdfield write ${ID}TAC $FILE -32 True
-
-        }
-      "W" {
-         fstdfield define ${ID}PROJ -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
-         fstdfield define ${ID}MTRX -DATEO $dateo -IP1 $IP1 -IP2 $IP2 -IP3 $IP3
-         fstdfield define ${ID}     -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0
-
-         fstdfield write ${ID}PROJ $FILE 0 True
-         fstdfield write ${ID}MTRX $FILE -32 True
-      }
-      default {
-         fstdfield define ${ID}     -DATEO $dateo 
-      }
+      "Z"     { fstdfield define ${ID} -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0 }
+      "W"     { fstdfield define ${ID} -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0 }
+      default { fstdfield define ${ID} -DATEO $dateo }
    }
 
+   fstdfield writegeo $ID $FILE $ETIKET
+   
    if { $Grid } {
-      fstdfield write ${ID}    $FILE -8 True
+      fstdfield write ${ID} $FILE -8 True
    }
 }
 
