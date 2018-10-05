@@ -166,6 +166,9 @@ proc APViz::Source { Path Widget } {
                "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)}; APViz::CalculateExpression $Product $no" \
                ${::APViz::Data(Formulas)}
             
+            #----- Set widget information
+            set Value(FormulaEntryWidget,$no) $Widget.calc.$no.formula.e
+            
             set Value(UneditedFormula,$no) ""
             catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
             
@@ -1347,7 +1350,21 @@ proc APViz::CalculateExpression { Product Index } {
       set resultFieldID CALC$Value(RowIDCalc$Index)_$formulaName
       
       #----- Calculer l'expression
-      vexpr $resultFieldID $expression
+      if {[catch {eval vexpr $resultFieldID $expression}]} {
+         #----- Afficher message d'erreur et effacer le contenu du widget
+         foreach msg $Lbl(InvalidExpression) {
+            lappend msgList [string cat $msg $expression]
+         }
+         
+         if {[winfo exists $Value(FormulaEntryWidget,$Index)]} {
+            $Value(FormulaEntryWidget,$Index) delete 0 [string length [$Value(FormulaEntryWidget,$Index) get]]
+            set APViz::${Product}::Value(UneditedFormula,$Index) ""
+            set APViz::${Product}::Value(Formula,$Index) ""
+         }
+         
+         ::Dialog::Error . $msgList
+      }
+      
       
       if {[fstdfield is $resultFieldID]} {
          set isActivated $Value(CalcToggle,$Index)
