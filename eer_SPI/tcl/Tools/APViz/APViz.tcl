@@ -67,6 +67,7 @@
 #   APViz::Product::DeleteLayer          { Widget Index Product Src }
 #   APViz::Product::Load                 { Path }
 #   APViz::Product::Build                { Product Widget }
+#   APViz::Product::RemoveFromLetterDict { Letter }
 #   APViz::Product::SetEtiketBubble      { Widget Index }
 #
 #===============================================================================
@@ -814,6 +815,25 @@ proc APViz::Source { Path Widget } {
             #----- Set message
             Bubble::Create $Widget $Value(Etiket,$Index)
          }
+      }
+
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::RemoveFromLetterDict>
+      # Creation : Octobre 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Enlever la lettre du dictionnaire (AlphaDict) utilise pour remplacer
+      #            la valeur des champs dans les formules
+      # Parametres       :
+      #         <Lettre> : Lettre a enlever du dictionnaire
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      proc RemoveFromLetterDict { Letter } {
+         #Enlever la lettre du dictionnaire
+         dict unset APViz::Data(AlphaDict) $Letter
       }
    }
    
