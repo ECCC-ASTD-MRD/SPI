@@ -1705,13 +1705,13 @@ proc APViz::DeleteWidget { Widget } {
 proc APViz::FetchAllDates { Product } {
    variable Data
    
-   if {$Product ne ""} {
+   if { $Product ne "" } {
       variable ${Product}::Value
       
       set selectedDate $Data(Date)
 
-      set  sourceLst {}
-      set dateLst {}
+      set sourceLst {}
+      set dateLst   {}
       for {set i 0} {$i < $Value(NbLayers)} {incr i} {
          if {[set rowID $Value(RowIDLayer$i)] >= 0} {
             set model $Value(Models,$i)
@@ -1725,7 +1725,7 @@ proc APViz::FetchAllDates { Product } {
          }
       }
 
-      if {[set nbDateLst [llength $dateLst]] > 1} {
+      if { [set nbDateLst [llength $dateLst]] > 1 } {
          
          #----- Find the shortest list
          set shortestLst [lindex $dateLst 0]
@@ -1763,11 +1763,11 @@ proc APViz::FetchAllDates { Product } {
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
       }
 
-      if {($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
-         if {$selectedDate ne "" } {
+      if { ($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
+         if { $selectedDate ne "" } {
             set Data(Date) $selectedDate
          } else {
-            set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
+            set Data(Date) [lindex $Data(Dates) end]
          }
       }
       
@@ -1798,6 +1798,25 @@ proc APViz::FetchDates { Product Model Src } {
    
    set dateList {}
 
+   if { $Product ne "" } {
+      if { $Src eq "BURP" } {
+         set path $DataSrc(OBS,$Model)/
+      } else {
+         set path $DataSrc(${Model},${Src})/
+      }
+      
+      set fileList [glob -nocomplain -tails -path $path *_000]
+      set dates [lsort [lmap a $fileList {string range $a 0 7}]] 
+   }
+   return $dates
+}
+
+proc APViz::FetchDatesori { Product Model Src } {
+   variable Data
+   variable DataSrc
+   
+   set dateList {}
+
    if {$Product ne ""} {
       if {$Src eq "BURP"} {
          set path $DataSrc(OBS,$Model)/
@@ -1816,7 +1835,7 @@ proc APViz::FetchDates { Product Model Src } {
             lappend dateList $date
          }
       }
-      
+ 
       set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
    }
 
