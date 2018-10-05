@@ -1806,40 +1806,9 @@ proc APViz::FetchDates { Product Model Src } {
       }
       
       set fileList [glob -nocomplain -tails -path $path *_000]
-      set dates [lsort [lmap a $fileList {string range $a 0 7}]] 
+      set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
    }
    return $dates
-}
-
-proc APViz::FetchDatesori { Product Model Src } {
-   variable Data
-   variable DataSrc
-   
-   set dateList {}
-
-   if {$Product ne ""} {
-      if {$Src eq "BURP"} {
-         set path $DataSrc(OBS,$Model)/
-      } else {
-         set path $DataSrc(${Model},${Src})/
-      }
-      
-      #----- Check for the last 30 dates if a file exists for that date
-      set fileList [glob -nocomplain -tails -path $path *]      
-      set seconds [clock seconds]
-      
-      for {set i 0} {$i < 30} {incr i} {
-         set seconds [expr $seconds -86400]
-         set date [clock format $seconds -format %Y%m%d]
-         if {[lsearch -glob $fileList $date*] >= 0} {
-            lappend dateList $date
-         }
-      }
- 
-      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
-   }
-
-   return $dateList
 }
 
 #----------------------------------------------------------------------------
