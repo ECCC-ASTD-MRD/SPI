@@ -67,7 +67,7 @@
 #   APViz::Product::DeleteLayer          { Widget Index Product Src }
 #   APViz::Product::Load                 { Path }
 #   APViz::Product::Build                { Product Widget }
-#   APViz::Product::RemoveFromLetterDict { Letter }
+#   APViz::Product::RemoveFromAlphaDict  { Index {IsLayer true} }
 #   APViz::Product::SetEtiketBubble      { Widget Index }
 #
 #===============================================================================
@@ -164,10 +164,7 @@ proc APViz::Source { Path Widget } {
             
             Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 -1 ${::APViz::Data(FormulaNames)} \
                "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)}; APViz::CalculateExpression $Product $no" \
-               ${::APViz::Data(Formulas)}
-            
-            #----- Set widget information
-            set Value(FormulaEntryWidget,$no) $Widget.calc.$no.formula.e
+#                ${::APViz::Data(Formulas)}
             
             set Value(UneditedFormula,$no) ""
             catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
@@ -422,7 +419,6 @@ proc APViz::Source { Path Widget } {
             
             if {$IsAddedLayer} {
                APViz::AssignVariable $Product $no
-               APViz::Refresh $Product
                set APViz::${Product}::Value(LayerType,$no) $LayerType
                APViz::FetchAllDates $Product
             } else {
@@ -432,6 +428,9 @@ proc APViz::Source { Path Widget } {
             incr no
          }
          set Value(NbLayers) $no
+         if {$IsAddedLayer} {
+            APViz::Refresh $Product
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -566,6 +565,9 @@ proc APViz::Source { Path Widget } {
          set Value(RowIDCalc$Index) -1							; # Index supprime, n'est plus affiche
          set ::APViz::Data(CalcIDs) [lreplace ${::APViz::Data(CalcIDs)} $lastIndex $lastIndex ]
          
+         #----- Elever la lettre attribuee au field du dictionnaire AlphaDict
+         RemoveFromAlphaDict $Index false 
+         
          #----- Detruire les widgets
          ::APViz::DeleteWidget $Widget
       }
@@ -622,6 +624,9 @@ proc APViz::Source { Path Widget } {
                destroy $Widget.range.variableGrid.layer${Index}_$item
             }
          }
+         
+         #----- Enlever du dictionnaire AlphaDict
+         RemoveFromAlphaDict $Index
                  
          APViz::FetchAllDates $Product
       }
@@ -821,7 +826,7 @@ proc APViz::Source { Path Widget } {
       }
 
       #-------------------------------------------------------------------------------
-      # Nom      : <APViz::$product::RemoveFromLetterDict>
+      # Nom      : <APViz::$product::RemoveFromAlphaDict>
       # Creation : Octobre 2018 - C. Nguyen - CMC/CMOE -
       #
       # But      : Enlever la lettre du dictionnaire (AlphaDict) utilise pour remplacer
@@ -834,9 +839,16 @@ proc APViz::Source { Path Widget } {
       # Remarques :
       #
       #-------------------------------------------------------------------------------
-      proc RemoveFromLetterDict { Letter } {
-         #Enlever la lettre du dictionnaire
-         dict unset APViz::Data(AlphaDict) $Letter
+      proc RemoveFromAlphaDict { Index {IsLayer true} } {
+         #---- Recuper la lettre associee au field 
+         set type [string cat [expr $IsLayer?"L":"C"] $Index]
+         
+         dict for {alpha layerNo} $::APViz::Data(AlphaDict) {
+            if {$layerNo eq $type} {
+                #---- Enlever la lettre du dictionnaire
+                dict unset ::APViz::Data(AlphaDict) $alpha
+            }
+         }
       }
    }
    
@@ -1351,15 +1363,9 @@ proc APViz::CalculateExpression { Product Index } {
       
       #----- Calculer l'expression
       if {[catch {eval vexpr $resultFieldID $expression}]} {
-         #----- Afficher message d'erreur et effacer le contenu du widget
+         #----- Afficher message d'erreur
          foreach msg $Lbl(InvalidExpression) {
             lappend msgList [string cat $msg $expression]
-         }
-         
-         if {[winfo exists $Value(FormulaEntryWidget,$Index)]} {
-            $Value(FormulaEntryWidget,$Index) delete 0 [string length [$Value(FormulaEntryWidget,$Index) get]]
-            set APViz::${Product}::Value(UneditedFormula,$Index) ""
-            set APViz::${Product}::Value(Formula,$Index) ""
          }
          
          ::Dialog::Error . $msgList
@@ -2893,7 +2899,8 @@ proc APViz::TranslateExpression { Product Expr } {
    if { [regexp {avg\(ALL\)} $Expr] }     { regsub -all {avg\(ALL\)} $Expr      \([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
    if { [regexp {avg\(CHECKED\)} $Expr] } { regsub -all {avg\(CHECKED\)} $Expr  \([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
    
-   #---- For all key-value from AlphaDict, replace letters with field ids
+   #---- For all key-value from AlphaDict, replace letters with field ids (alpha is dictionary key)
+   #---- Parcourir le dictionaire AlphaDict et remplacer chaque terme
    dict for {alpha layerNo} $APViz::Data(AlphaDict) {
       set no [string range $layerNo 1 [string length $layerNo]]
       
@@ -2902,6 +2909,7 @@ proc APViz::TranslateExpression { Product Expr } {
       } else {
          set id [lindex $Data(CalcIDs) $Value(RowIDCalc$no)]
       }
+      
       regsub -all $alpha $Expr $id Expr
    }
    
@@ -2963,6 +2971,8 @@ proc APViz::UpdateItems { Frame } {
       set no 0
       foreach layer $Data(LayerIDs) {
          set fld fld$Value(RowIDLayer$no)
+         set col ""
+         set eti ""
          if {[fstdfield is $fld]} {
             set col [fstdfield configure $fld -color]
             set eti [fstdfield define $fld -ETIKET]
@@ -2971,7 +2981,6 @@ proc APViz::UpdateItems { Frame } {
             if {[metobs is $obs]} {               
                # Get param
                set col [metmodel configure [metobs define $obs -MODEL] $Value(Vars,$no) -color]
-               set eti ""
             }
          }
          
