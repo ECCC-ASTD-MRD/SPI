@@ -254,10 +254,15 @@ proc APViz::Source { Path Widget } {
          if { $Value(${lockType}Lock) } {
             set newValue $Value($Option,$Index)
             #----- Change all other values
-            for { set i 0 } { ($i < $Value(NbLayers)) } { incr i } {
+            for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
                set opts [split [lindex $Layers $i] :] 
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
-                  set Value($Option,$i) $newValue
+                  #----- Check if a delta is defined (ex:<Hours>+06)
+                 if { [info exists ::APViz::${Product}::Value(Delta$Option,$i)] } {
+                     eval set Value($Option,$i) \[format %03i \[expr [string trimleft $newValue 0]$Value(Delta$Option,$i)\]\]
+                  } else {
+                     set Value($Option,$i) $newValue
+                  }
                   APViz::AssignVariable $Product $i
                }
             }
@@ -360,7 +365,7 @@ proc APViz::Source { Path Widget } {
             
             #----- Extract layer parts
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
-            
+                        
             #----- Toggle On/Off
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) -text $alpha \
                -command "APViz::Check $Product $no" -indicatoron False -overrelief raised -offrelief flat
@@ -448,8 +453,19 @@ proc APViz::Source { Path Widget } {
          global GDefs
          variable Range
          variable Value
-         
+                  
          if { [string index $Style 0] eq "<" } {
+            #----- Check for hour delta
+            catch { unset Value(Delta$Options,$Index) }
+            if { [set delta [lindex [set st [split $Style +]] end]]!=$Style } {
+               set Value(Delta$Options,$Index) +[string trimleft $delta 0]
+               set Style [lindex $st 0]
+            }
+            if { [set delta [lindex [set st [split $Style -]] end]]!=$Style } {
+               set Value(Delta$Options,$Index) -[string trimleft $delta 0]
+               set Style [lindex $st 0]
+            }
+            
             set rangeType [string trim $Style {< >}]
             set range     [string range $rangeType 0 end-1]
             
@@ -457,8 +473,9 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(RangeNames) $Options $rangeType
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
-
-            if $IsSpinBox {
+            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+               entry $Path -textvariable APViz::${Product}::Value($Options,$Index) -width $Width -bg $GDefs(ColorLight) -state disabled
+            } elseif { $IsSpinBox } {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
                
@@ -828,6 +845,7 @@ proc APViz::Execute { Product Widget } {
    ${Product}::Build $Product $Widget
    APViz::InitializeVars
    ${Product}::CreateCalcLayers $Product $Widget
+   APViz::Refresh $Product
 
    eval set proc \[info procs ::APViz::${Product}::Post\]
    if { $proc!="" } {
@@ -2877,7 +2895,7 @@ proc APViz::UpdateItems { Frame } {
          set fld fld$Value(RowIDLayer$no)
          set col [fstdfield configure $fld -color]
          set eti [fstdfield define $fld -ETIKET]
-         set lbl [format "$no- %-5s %-13s %-4s %-3imb %-3sH" $Value(Models,$no) $eti $Value(Vars,$no) $Value(Levels,$no) $Value(Hours,$no)]
+         set lbl [format "$no- %-5s %-13s %-4s %-3smb %-3sH" $Value(Models,$no) $eti $Value(Vars,$no) $Value(Levels,$no) $Value(Hours,$no)]
          Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
          incr no
       }
