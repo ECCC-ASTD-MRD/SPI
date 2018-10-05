@@ -258,10 +258,15 @@ proc APViz::Source { Path Widget } {
          if { $Value(${lockType}Lock) } {
             set newValue $Value($Option,$Index)
             #----- Change all other values
-            for { set i 0 } { ($i < $Value(NbLayers)) } { incr i } {
+            for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
                set opts [split [lindex $Layers $i] :] 
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
-                  set Value($Option,$i) $newValue
+                  #----- Check if a delta is defined (ex:<Hours>+06)
+                 if { [info exists ::APViz::${Product}::Value(Delta$Option,$i)] } {
+                     eval set Value($Option,$i) \[format %03i \[expr [string trimleft $newValue 0]$Value(Delta$Option,$i)\]\]
+                  } else {
+                     set Value($Option,$i) $newValue
+                  }
                   APViz::AssignVariable $Product $i
                }
             }
@@ -364,7 +369,7 @@ proc APViz::Source { Path Widget } {
             
             #----- Extract layer parts
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
-            
+                        
             #----- Toggle On/Off
             set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
             dict set APViz::Data(AlphaDict) $alpha L$no
@@ -456,8 +461,19 @@ proc APViz::Source { Path Widget } {
          global GDefs
          variable Range
          variable Value
-         
+                  
          if { [string index $Style 0] eq "<" } {
+            #----- Check for hour delta
+            catch { unset Value(Delta$Options,$Index) }
+            if { [set delta [lindex [set st [split $Style +]] end]]!=$Style } {
+               set Value(Delta$Options,$Index) +[string trimleft $delta 0]
+               set Style [lindex $st 0]
+            }
+            if { [set delta [lindex [set st [split $Style -]] end]]!=$Style } {
+               set Value(Delta$Options,$Index) -[string trimleft $delta 0]
+               set Style [lindex $st 0]
+            }
+            
             set rangeType [string trim $Style {< >}]
             # Ne fonctionne que si l'usager suit la regle
             set range     [string range $rangeType 0 end-1]
@@ -466,8 +482,9 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(RangeNames) $Options $rangeType
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
-
-            if $IsSpinBox {
+            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+               entry $Path -textvariable APViz::${Product}::Value($Options,$Index) -width $Width -bg $GDefs(ColorLight) -state disabled
+            } elseif { $IsSpinBox } {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
                
@@ -488,6 +505,11 @@ proc APViz::Source { Path Widget } {
                set APViz::${Product}::Value($Options,$Index) [lindex $Range($range) $Index]
             }
             
+            #----- Add increment if defined
+            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+               eval set Value($Options,$Index) \[format %03i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
+            }
+
          } else {
             label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
@@ -870,6 +892,7 @@ proc APViz::Execute { Product Widget } {
    ${Product}::Build $Product $Widget
    APViz::InitializeVars
    ${Product}::CreateCalcLayers $Product $Widget
+   APViz::Refresh $Product
 
    eval set proc \[info procs ::APViz::${Product}::Post\]
    if { $proc!="" } {
@@ -1762,13 +1785,13 @@ proc APViz::DeleteWidget { Widget } {
 proc APViz::FetchAllDates { Product } {
    variable Data
    
-   if {$Product ne ""} {
+   if { $Product ne "" } {
       variable ${Product}::Value
       
       set selectedDate $Data(Date)
 
-      set  sourceLst {}
-      set dateLst {}
+      set sourceLst {}
+      set dateLst   {}
       for {set i 0} {$i < $Value(NbLayers)} {incr i} {
          if {[set rowID $Value(RowIDLayer$i)] >= 0} {
             set model $Value(Models,$i)
@@ -1782,7 +1805,7 @@ proc APViz::FetchAllDates { Product } {
          }
       }
 
-      if {[set nbDateLst [llength $dateLst]] > 1} {
+      if { [set nbDateLst [llength $dateLst]] > 1 } {
          
          #----- Find the shortest list
          set shortestLst [lindex $dateLst 0]
@@ -1820,11 +1843,11 @@ proc APViz::FetchAllDates { Product } {
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
       }
 
-      if {($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
-         if {$selectedDate ne "" } {
+      if { ($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
+         if { $selectedDate ne "" } {
             set Data(Date) $selectedDate
          } else {
-            set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
+            set Data(Date) [lindex $Data(Dates) end]
          }
       }
       
@@ -1855,29 +1878,17 @@ proc APViz::FetchDates { Product Model Src } {
    
    set dateList {}
 
-   if {$Product ne ""} {
-      if {$Src eq "BURP"} {
+   if { $Product ne "" } {
+      if { $Src eq "BURP" } {
          set path $DataSrc(OBS,$Model)/
       } else {
          set path $DataSrc(${Model},${Src})/
       }
       
-      #----- Check for the last 30 dates if a file exists for that date
-      set fileList [glob -nocomplain -tails -path $path *]      
-      set seconds [clock seconds]
-      
-      for {set i 0} {$i < 30} {incr i} {
-         set seconds [expr $seconds -86400]
-         set date [clock format $seconds -format %Y%m%d]
-         if {[lsearch -glob $fileList $date*] >= 0} {
-            lappend dateList $date
-         }
-      }
-      
-      set dateList [lreplace [lsort $dateList] 0 0] ; #Furthest dates dont have all runs
+      set fileList [glob -nocomplain -tails -path $path *_000]
+      set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
    }
-
-   return $dateList
+   return $dates
 }
 
 #----------------------------------------------------------------------------
@@ -2331,6 +2342,7 @@ proc APViz::InitializeVars { } {
          APViz::AssignVariable $product $idx
       }	
    }
+   APViz::Refresh $product
 }
 
 #----------------------------------------------------------------------------
