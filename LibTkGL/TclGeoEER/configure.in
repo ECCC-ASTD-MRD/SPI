@@ -19,7 +19,7 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([TclGeoEER], [7.12.3])
+AC_INIT([TclGeoEER], [8.0.0])
 
 PKG_CFLAGS="-D_GNU_SOURCE -D_BSD_SOURCE"
 
@@ -46,10 +46,10 @@ if test "$HAVE_GDB" = "yes"; then
 fi
 
 # ---------------------------------------------------------------------------
-# Check for GRIB
+# Check for ECCODES
 # ---------------------------------------- -----------------------------------
 
-AX_LIB_GRIB()
+AX_LIB_ECCODES()
  
 if test "$HAVE_GRIB" = "yes"; then
    PKG_LIBS="$PKG_LIBS $GRIB_LDFLAGS"
@@ -227,7 +227,7 @@ TEA_ADD_SOURCES([generic/Data_Calc.c \
                  generic/tkGraphTephi.c \
                  generic/Data_External.c])
 
-TEA_ADD_HEADERS([generic/Data_Calc.h
+TEA_ADD_HEADERS([generic/Data_Calc.h \
                  generic/Data_FF.h \
                  generic/Data_Funcs.h \
                  generic/Data_Matrix.h \
@@ -260,7 +260,7 @@ TEA_ADD_HEADERS([generic/Data_Calc.h
                  generic/tkGraphAxis.h \
                  generic/tkGraphItem.h])
 
-TEA_ADD_INCLUDES([-Igeneric])
+TEA_ADD_INCLUDES([-Igeneric -I${prefix}/include])
 TEA_ADD_LIBS([-lc -lexpat -lGL -lGLU -ltk8.6 -L${TCL_BIN_DIR}/TkglCanvas8.6 -lTkglCanvas8.6])
 TEA_ADD_CFLAGS([])
 TEA_ADD_STUB_SOURCES([])

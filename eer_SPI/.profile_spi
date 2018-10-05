@@ -1,11 +1,11 @@
 #----- Versions
 export TCL_VERSION=8.6
 
-export SPI_MAJOR=7
-export SPI_MINOR=12
-export SPI_PATCHLEVEL=3
+export SPI_MAJOR=8
+export SPI_MINOR=0
+export SPI_PATCHLEVEL=0
 export SPI_STATE=""
-export SPI_DATE="2018/06/19"
+export SPI_DATE="2018/10/06"
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
