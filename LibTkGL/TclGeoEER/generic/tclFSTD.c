@@ -599,7 +599,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_AppendResult(Interp,"FSTD_FieldCmd: Invalid field (",Tcl_GetString(Objv[2]),")",(char*)NULL);
             return(TCL_ERROR);
          }
-         return(FSTD_FieldWriteGeo(Interp,Tcl_GetString(Objv[3]),field0,(Objc==5?Tcl_GetString(Objv[4]):NULL));
+         return(FSTD_FieldWriteGeo(Interp,Tcl_GetString(Objv[3]),field0,(Objc==5?Tcl_GetString(Objv[4]):NULL)));
          break;
 
       case WRITETILED:

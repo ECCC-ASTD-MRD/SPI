@@ -470,6 +470,7 @@ proc Grid::Launch { Path } {
       exec echo [Grid::SettingsBuild $grid] > ${Path}/grid$no.nml
       
       #----- Write RPN grid file
+      file delete -force ${Path}/grid$no.fstd 
       fstdfile open FILE write ${Path}/grid$no.fstd 
       Grid::Write FILE MODELGRID$no
       fstdfile close FILE     
@@ -763,7 +764,7 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
    
    #----- Create the grid ans assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
-   fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z
+   fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZL
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
 
    set Param(PGSM) ""
@@ -820,7 +821,7 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check Tru
    set Param(Extend) [expr $ni-$Param(NI)]
    
    fstdfield create ${ID} $ni $nj 1 $Param(Data)
-   fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X
+   fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
    set Param(PGSM) ""
 
