@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
+#-----    Check for new versions of dict and burf in $CMCCONST
 
 #----- SSM specifics
 NAME="libSPI"
@@ -179,7 +180,7 @@ if [[ $EXT -eq 1 ]]; then
    cp -frd $EXT_LIB_PATH/$RMN/include/* $LIB_PATH/include
    mkdir -p $LIB_PATH/share/rmn
    cd $AFSISIO/datafiles/constants/
-   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.1.dtd iso-lat1.ent $LIB_PATH/share/rmn
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml ops.variable_dictionary.xml.20180510 dict-2.2.dtd $LIB_PATH/share/rmn
 
    #----- EZSCINT, copies libs
    echo "Copying precompiled $EZSCINT"
