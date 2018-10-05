@@ -495,6 +495,10 @@ proc APViz::Source { Path Widget } {
             } else {
                set APViz::${Product}::Value($Options,$Index) [lindex $Range($range) $Index]
             }
+            #----- Add increment if defined
+            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+               eval set Value($Options,$Index) \[format %03i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
+            }
          } else {
             label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
@@ -2262,6 +2266,7 @@ proc APViz::InitializeVars { } {
          APViz::AssignVariable $product $idx
       }	
    }
+   APViz::Refresh $product
 }
 
 #----------------------------------------------------------------------------
