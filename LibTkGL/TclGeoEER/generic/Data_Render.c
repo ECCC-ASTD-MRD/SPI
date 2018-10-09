@@ -476,7 +476,7 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
          
          // If the value exists
          objs=NULL;
-         if (val==Interval) {
+         if (SPEC2VAL(Spec,val)==Interval) {
             objs=obj;
             break;
          }
