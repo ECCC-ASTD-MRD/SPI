@@ -19,7 +19,7 @@
 #   APViz::AssignVariable         { Product Index }
 #   APViz::AssignDZ               { Product Index Model Var Lev FileID FieldID LevelType }
 #   APViz::CalculateExpression    { Product Index}
-#   APViz::Check                  { Product Index {IsCalc False}}
+#   APViz::Check                  { Product Index { IsCalc False }}
 #   APViz::Close                  { }
 #   APViz::CloseFiles             { }
 #   APViz::ConstructTreeBranches  { Tree ParentNode Path Level }
@@ -32,7 +32,7 @@
 #   APViz::FetchDates             { Product Model Src }
 #   APViz::FilePathDefine         { Path }
 #   APViz::GenerateConfigFile     { Path }
-#   APViz::GetAllFieldsWithOp     { Product Operator {OnlyChecked False} }
+#   APViz::GetAllFieldsWithOp     { Product Nb Operator Interpolator { OnlyChecked False } }
 #   APViz::GetFormulaName         { Formula }
 #   APViz::GetImageDirPath        { }
 #   APViz::GetInitialColormap     { Colormap }
@@ -49,7 +49,7 @@
 #   APViz::SaveConfigFile         { }
 #   APViz::SaveImg                { }
 #   APViz::SelectFiletreeBranch   { Tree Branch Open }
-#   APViz::SetParam               { Index Product {IsCalcLayer False}}
+#   APViz::SetParam               { Index Product { IsCalcLayer False }}
 #   APViz::Start                  { }
 #   APViz::StartBatch             { }
 #
@@ -263,9 +263,12 @@ proc APViz::Source { Path Widget } {
                   } else {
                      set Value($Option,$i) $newValue
                   }
-                  APViz::AssignVariable $Product $i
+#                  APViz::AssignVariable $Product $i
                }
             }
+            for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
+                  APViz::AssignVariable $Product $i
+                  }
          } else {
             APViz::AssignVariable $Product $Index
          }
@@ -453,7 +456,7 @@ proc APViz::Source { Path Widget } {
          global GDefs
          variable Range
          variable Value
-                  
+
          if { [string index $Style 0] eq "<" } {
             #----- Check for hour delta
             catch { unset Value(Delta$Options,$Index) }
@@ -993,14 +996,17 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       return
    }
 
-   set Value(DATEO) [clock scan $date -timezone :UTC]
-   if { $Value(Runs,$Index)!="-" } {
-      set Value(DATEO) [clock add [clock scan $date -timezone :UTC] $Value(Runs,$Index) hours -timezone :UTC]
-   }
-   if { [set hours [string trimleft $Value(Hours,$Index) 0]]!="" && $hours!="-" } {
-      set Value(DATEV) [clock add $Value(DATEO) $hours hours -timezone :UTC]
-   } else {
-      set Value(DATEV) $Value(DATEO) 
+   if { ![info exists Value(DeltaHours,$Index)] } {
+      set Value(DATEO) [clock scan $date -timezone :UTC]
+      if { $Value(Runs,$Index)!="-" } {
+         set Value(DATEO) [clock add [clock scan $date -timezone :UTC] $Value(Runs,$Index) hours -timezone :UTC]
+      }
+
+      if { [set hours [string trimleft $Value(Hours,$Index) 0]]!="" && $hours!="-" } {
+         set Value(DATEV) [clock add $Value(DATEO) $hours hours -timezone :UTC]
+      } else {
+         set Value(DATEV) $Value(DATEO) 
+      }
    }
 
    #----- Setting optional IP3
@@ -1105,7 +1111,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)  	; # Enlever la variable courante du VP pour cette couche
             }
             
-            set levelType [ APViz::GetLevelType $src ]
+            set levelType [APViz::GetLevelType $src]
 #            set fieldID FLD$Value(RowIDLayer$Index)_${var}_${timestamp}
             set fieldID fld$Value(RowIDLayer$Index)
             
@@ -1297,7 +1303,6 @@ proc APViz::CalculateExpression { Product Index } {
 
       #----- Substitute expressions
       set expression [TranslateExpression $Product $expression]
-      
       if {[fstdfield is [lindex $Data(CalcIDs) $Value(RowIDCalc$Index)]]} {
          APViz::RemoveVariableFromVP $Data(CalcIDs) $Value(RowIDCalc$Index)		; # Enlever la variable courante du VP pour cette couche
       }
@@ -1307,7 +1312,7 @@ proc APViz::CalculateExpression { Product Index } {
          return
       }
           
-      #----- Creer un id unique
+      #----- Creer un id unique (TODO: check to use letter name instead)
       set formulaName ""
       set formulaID [lsearch -exact $Data(Formulas) $Value(UneditedFormula,$Index)]
       if {$formulaID >= 0} {
@@ -1808,9 +1813,14 @@ proc APViz::FetchDates { Product Model Src } {
       } else {
          set path $DataSrc(${Model},${Src})/
       }
-      
-      set fileList [glob -nocomplain -tails -path $path *_000]
-      set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
+      puts ${Model}.${Src}.$DataSrc(${Model},${Src}).
+      if { ![llength [set fileList [glob -nocomplain -tails -path $path *_000]]] } {
+         set fileList [glob -nocomplain -tails -path $path ??????????_*]
+         set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
+      } else {
+         set dates    [lsort [lmap a $fileList {string range $a 0 7}]]
+         puts $dates
+      }
    }
    return $dates
 }
@@ -1915,7 +1925,10 @@ proc APViz::GenerateConfigFile { Path } {
 # But      :    Calculer une expression de fields et l'afficher sur le VP
 #
 # Parametres          :
+#       <Product>     : Le nom du produit selectionne (aussi le namespace) 
+#       <Nb>          : Nombre de champs trouve
 #       <Operator>    : L'operateur de calcul (+-*/)
+#       <Interpolator>: L'operateur d'interpolation (Interpolator<<)
 #       <OnlyChecked> : Bool indiquand si on n'inclut que les variables selectionnees 
 #       
 # Retour:
@@ -1924,31 +1937,42 @@ proc APViz::GenerateConfigFile { Path } {
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::GetAllFieldsWithOp { Product Operator {OnlyChecked False} } {
+proc APViz::GetAllFieldsWithOp { Product Nb Operator Interpolator { OnlyChecked False } } {
    variable Data
    variable ${Product}::Value
+   upvar $Nb nb
 
    set fieldString ""
+   set nb 0
 
-   if {!$OnlyChecked} {
-      foreach ID $Data(LayerIDs) {
-         if {[fstdfield is $ID]} { 
-            set fieldString [string cat $fieldString $ID$Operator] 
+   if { $OnlyChecked } {
+      for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
+         if { ($Value(RowIDLayer$i)>=0) && $Value(Toggle,$i)} {
+            set ID [lindex $Data(LayerIDs) $Value(RowIDLayer$i)]
+            if { [fstdfield is $ID] } {
+               incr nb
+               if { $Interpolator!="" } {
+                  append fieldString (${Interpolator}<<$ID)$Operator
+               } else {
+                  append fieldString $ID$Operator]
+               }
+            }
          }
       }
    } else {
-      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-         if { ($Value(RowIDLayer$i) >= 0) && $Value(Toggle,$i)} {
-            set ID [lindex $Data(LayerIDs) $Value(RowIDLayer$i)]
-            if {[fstdfield is $ID]} {
-               set fieldString [string cat $fieldString $ID$Operator]
+      foreach ID $Data(LayerIDs) {
+         if { [fstdfield is $ID] } { 
+            incr nb
+            if { $Interpolator!="" } {
+               append fieldString (${Interpolator}<<$ID)$Operator
+            } else {
+               append fieldString $ID$Operator]
             }
          }
       }
    }
 
-   set fieldString [string range $fieldString 0 [expr [string length $fieldString] - 2]]
-   return $fieldString
+   return [string range $fieldString 0 [expr [string length $fieldString] - 2]]
 }
 
 #----------------------------------------------------------------------------
@@ -2794,11 +2818,12 @@ proc APViz::StartBatch {} {
 # Nom      : <APViz::TranslateExpression>
 # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
 #
-# But      : 	Calculer une expression de fields et l'afficher sur le VP
+# But      : 	Translate an expression by replacing the letters with the 
+#               corresponding fields
 #
 # Parametres 	  :
 #	<Product> : Le nom du produit selectionne (aussi le namespace) 
-#	<Index>	  : Index de la couche 
+#	<Expr>	  : Expression to translate 
 #	
 # Retour:
 #
@@ -2808,26 +2833,24 @@ proc APViz::StartBatch {} {
 
 proc APViz::TranslateExpression { Product Expr } {
    variable Data
-   variable ${Product}::Value
 
-   set totalLayerIDs [llength $Data(LayerIDs)]
-   if { $totalLayerIDs <= 0 } { set totalLayerIDs 1 }
+   set nb 0
+   set interp ""
+   
+   #----- check for global interpolator operator
+   if { [regexp {interp\([A-Z]\)} $Expr] } { set interp [string index $Expr 7]; puts stderr $interp; regsub -all {interp\([A-Z]\)} $Expr "" Expr }
+   
+   #----- Apply predefined grouping
+   if { [regexp {sum\(ALL\)} $Expr] }     { regsub -all {sum\(ALL\)} $Expr      [GetAllFieldsWithOp $Product nb + $interp] Expr }
+   if { [regexp {sum\(CHECKED\)} $Expr] } { regsub -all {sum\(CHECKED\)} $Expr  [GetAllFieldsWithOp $Product nb + $interp True] Expr }
+   if { [regexp {avg\(ALL\)} $Expr] }     { regsub -all {avg\(ALL\)} $Expr      \([GetAllFieldsWithOp $Product nb + $interp]\)/$nb Expr }
+   if { [regexp {avg\(CHECKED\)} $Expr] } { regsub -all {avg\(CHECKED\)} $Expr  \([GetAllFieldsWithOp $Product nb + $interp True]\)/$nb Expr }
 
-   set totalCheckedLayerIDs 0
-   for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
-      if { ($Value(RowIDLayer$i) >= 0) && $Value(Toggle,$i)} {
-         incr totalCheckedLayerIDs
-      }
-   }
-
-   if { [regexp {sum\(ALL\)} $Expr] }     { regsub -all {sum\(ALL\)} $Expr      [GetAllFieldsWithOp $Product +] Expr }
-   if { [regexp {sum\(CHECKED\)} $Expr] } { regsub -all {sum\(CHECKED\)} $Expr  [GetAllFieldsWithOp $Product + True] Expr }
-   if { [regexp {avg\(ALL\)} $Expr] }     { regsub -all {avg\(ALL\)} $Expr      \([GetAllFieldsWithOp $Product +]\)/$totalLayerIDs Expr }
-   if { [regexp {avg\(CHECKED\)} $Expr] } { regsub -all {avg\(CHECKED\)} $Expr  \([GetAllFieldsWithOp $Product + True]\)/$totalCheckedLayerIDs Expr }
-
+   #----- Replace letters by fields
    foreach layer $Data(LayerIDs) letter $Data(Alphas) {
       regsub -all $letter $Expr $layer Expr
    } 
+
    return $Expr
 }
 
@@ -2876,20 +2899,37 @@ proc APViz::UpdateItems { Frame } {
       #----- Get DATEO and DATEV from assigned fields (because of possible animation)
       if { [set vp [Page::Registered $Data(Frame) Viewport]]!="" } {
          if { [set fld [lindex [Viewport::Assigned $Data(Frame) $vp fstdfield] 0]]!="" } {
-            set Value(DATEO) [fstdstamp toseconds [fstdfield define $fld -DATEO]]
-            set Value(DATEV) [fstdstamp toseconds [fstdfield define $fld -DATEV]]
+#            set Value(DATEO) [fstdstamp toseconds [fstdfield define $fld -DATEO]]
+#            set Value(DATEV) [fstdstamp toseconds [fstdfield define $fld -DATEV]]
          }
       }
 
       Legend::Delete $Frame  
       
       set no 0
-      foreach layer $Data(LayerIDs) {
-         set fld fld$Value(RowIDLayer$no)
-         set col [fstdfield configure $fld -color]
-         set eti [fstdfield define $fld -ETIKET]
-         set lbl [format "$no- %-5s %-13s %-4s %-3smb %-3sH" $Value(Models,$no) $eti $Value(Vars,$no) $Value(Levels,$no) $Value(Hours,$no)]
-         Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
+      foreach fld $Data(LayerIDs) {
+         if { [fstdfield configure $fld -active] } {         
+            set col [fstdfield configure $fld -color]
+            set eti [fstdfield define $fld -ETIKET]
+            set var [fstdfield define $fld -NOMVAR]
+            set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
+            set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
+            set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" $Value(Models,$no) $eti $var $lvl $hr]
+            Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
+         }
+         incr no
+      }
+      
+      foreach fld $Data(CalcIDs) {
+         if { [fstdfield configure $fld -active] } {         
+            set col [fstdfield configure $fld -color]
+            set eti [fstdfield define $fld -ETIKET]
+            set var [fstdfield define $fld -NOMVAR]
+            set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
+            set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
+            set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" "" $eti $var $lvl $hr]
+            Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
+         }
          incr no
       }
       
