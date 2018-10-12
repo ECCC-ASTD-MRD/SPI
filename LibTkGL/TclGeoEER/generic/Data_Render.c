@@ -474,10 +474,11 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
          Tcl_ListObjIndex(interp,objv,iiv,&objs);
          Tcl_GetDoubleFromObj(interp,objs,&val);
          
-         // If the value exists
+         // If the value exists, exit the loops
          objs=NULL;
          if (SPEC2VAL(Spec,val)==Interval) {
             objs=obj;
+            ii=nobj;
             break;
          }
       }
