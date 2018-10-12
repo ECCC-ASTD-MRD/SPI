@@ -273,8 +273,8 @@ proc APViz::Source { Path Widget } {
                }
             }
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
-                  APViz::AssignVariable $Product $i
-                  }
+               APViz::AssignVariable $Product $i
+            }
          } else {
             APViz::AssignVariable $Product $Index
          }
@@ -1420,12 +1420,6 @@ proc APViz::CalculateExpression { Product Index } {
       if {[fstdfield is $resultFieldID]} {
          set isActivated $Value(CalcToggle,$Index)
          
-         set vpID [GetVPId $Value(CalcVP,$Index)]
-         #----- Assigner au ViewPort
-         if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $resultFieldID] eq -1} {
-            Viewport::Assign $Data(Frame) $vpID $resultFieldID
-         }
-         
          #----- Verify if a variable param config has been saved for this row
          set var [fstdfield define $resultFieldID -NOMVAR]
          if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
@@ -1439,13 +1433,25 @@ proc APViz::CalculateExpression { Product Index } {
          dict incr Data(VarsDict) $var
          
          #----- Apply variable configs from config file 
-         if { [catch {eval fstdfield configure $resultFieldID $Param(${var}$index)} ]} {
-            if { [catch {eval fstdfield configure $resultFieldID $Param($var)}] } {
-               #----- Valeur par defaut
-               fstdfield configure $resultFieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
+         #----- Verify if configs for calc was specified first
+         if { [catch {eval fstdfield configure $resultFieldID $Param(CALC)} ]} {
+            if { [catch {eval fstdfield configure $resultFieldID $Param(${var}$index)} ]} {
+               if { [catch {eval fstdfield configure $resultFieldID $Param($var)}] } {
+                  #----- Valeur par defaut
+                  fstdfield configure $resultFieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+               }
             }
          }
-         fstdfield configure $resultFieldID -active $isActivated -set 1       
+         
+         fstdfield configure $resultFieldID -active $isActivated -set 1
+         
+         set vpID [GetVPId $Value(CalcVP,$Index)]
+         #----- Assigner au ViewPort
+         if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $resultFieldID] eq -1} {
+            Viewport::Assign $Data(Frame) $vpID $resultFieldID
+         }
+         
+         
             
          set Data(CalcIDs) [lreplace $Data(CalcIDs) $Value(RowIDCalc$Index) $Value(RowIDCalc$Index) $resultFieldID]
       }
