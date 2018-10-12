@@ -67,6 +67,7 @@
 #   APViz::Product::DeleteLayer          { Widget Index Product Src }
 #   APViz::Product::Load                 { Path }
 #   APViz::Product::Build                { Product Widget }
+#   APViz::Product::RemoveFromAlphaDict  { Index {IsLayer true} }
 #   APViz::Product::SetEtiketBubble      { Widget Index }
 #
 #===============================================================================
@@ -156,11 +157,14 @@ proc APViz::Source { Path Widget } {
          
          set no $Value(NbCalcLayers)
          frame $Widget.calc.$no
-            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -command "APViz::Check $Product $no True"
+            set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbLayers)]]
+            dict set APViz::Data(AlphaDict) $alpha C$no         
+            checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -text $alpha -command "APViz::Check $Product $no True" \
+               -indicatoron False -overrelief raised -offrelief flat
             
             Option::Create $Widget.calc.$no.formula "" "APViz::${Product}::Value(Formula,$no) APViz::${Product}::Value(Formula,$no)" 1 -1 ${::APViz::Data(FormulaNames)} \
                "eval set APViz::${Product}::Value(UneditedFormula,$no) \${APViz::${Product}::Value(Formula,$no)}; APViz::CalculateExpression $Product $no" \
-               ${::APViz::Data(Formulas)}
+                #${::APViz::Data(Formulas)}
             
             set Value(UneditedFormula,$no) ""
             catch { Bubble::Create $Widget.calc.$no.formula.e "Formule"}
@@ -249,7 +253,8 @@ proc APViz::Source { Path Widget } {
             "Runs"      { set lockType Run; set idx 2 }
             "Hours"     { set lockType Hour; set idx 3 }
             "Levels"    { set lockType Level; set idx 6 }
-            default     { return }
+            default     {  APViz::AssignVariable $Product $Index
+                           return }
          }
          
          if { $Value(${lockType}Lock) } {
@@ -362,7 +367,7 @@ proc APViz::Source { Path Widget } {
             }
          }
          
-         foreach layer $Layers alpha $APViz::Data(Alphas) {
+         foreach layer $Layers {
             if  { $layer=="" } {
               break
             }
@@ -371,10 +376,14 @@ proc APViz::Source { Path Widget } {
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
                         
             #----- Toggle On/Off
-            set Value(Letter,$no) $alpha
-            checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) -text $Value(Letter,$no) \
+            
+            set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
+            dict set APViz::Data(AlphaDict) $alpha L$no
+            checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) -text $alpha \
                -command "APViz::Check $Product $no" -indicatoron False -overrelief raised -offrelief flat
-               
+            
+            set Value(Letter,$no) $alpha
+            
             if { !$toggle } {
                $Widget.range.variableGrid.layer${no}_toggle deselect
             } elseif {!$IsAddedLayer} {
@@ -387,7 +396,7 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 2 
             CreateRangeWidget $Product $ip3     $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 
             CreateRangeWidget $Product $vp      $Widget.range.variableGrid.layer${no}_vp        $no Viewports false 2
-            #CreateRangeWidget $Product $etiket  $Widget.range.variableGrid.layer${no}_etiket    $no Etiket false 2
+
             set defaultVariable [CreateRangeWidget $Product $var $Widget.range.variableGrid.layer${no}_var       $no Vars false -1]
             set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1]
             
@@ -423,7 +432,6 @@ proc APViz::Source { Path Widget } {
             
             if {$IsAddedLayer} {
                APViz::AssignVariable $Product $no
-               APViz::Refresh $Product
                set APViz::${Product}::Value(LayerType,$no) $LayerType
                APViz::FetchAllDates $Product
             } else {
@@ -433,6 +441,9 @@ proc APViz::Source { Path Widget } {
             incr no
          }
          set Value(NbLayers) $no
+         if {$IsAddedLayer} {
+            APViz::Refresh $Product
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -472,6 +483,7 @@ proc APViz::Source { Path Widget } {
             }
             
             set rangeType [string trim $Style {< >}]
+            # Ne fonctionne que si l'usager suit la regle
             set range     [string range $rangeType 0 end-1]
             
             if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
@@ -500,10 +512,12 @@ proc APViz::Source { Path Widget } {
             } else {
                set APViz::${Product}::Value($Options,$Index) [lindex $Range($range) $Index]
             }
+            
             #----- Add increment if defined
             if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
                eval set Value($Options,$Index) \[format %03i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
             }
+
          } else {
             label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
@@ -581,6 +595,9 @@ proc APViz::Source { Path Widget } {
          set Value(RowIDCalc$Index) -1							; # Index supprime, n'est plus affiche
          set ::APViz::Data(CalcIDs) [lreplace ${::APViz::Data(CalcIDs)} $lastIndex $lastIndex ]
          
+         #----- Elever la lettre attribuee au field du dictionnaire AlphaDict
+         RemoveFromAlphaDict $Index false 
+         
          #----- Detruire les widgets
          ::APViz::DeleteWidget $Widget
       }
@@ -637,6 +654,9 @@ proc APViz::Source { Path Widget } {
                destroy $Widget.range.variableGrid.layer${Index}_$item
             }
          }
+         
+         #----- Enlever du dictionnaire AlphaDict
+         RemoveFromAlphaDict $Index
                  
          APViz::FetchAllDates $Product
       }
@@ -835,6 +855,32 @@ proc APViz::Source { Path Widget } {
             Bubble::Create $Widget $Value(Etiket,$Index)
          }
       }
+
+      #-------------------------------------------------------------------------------
+      # Nom      : <APViz::$product::RemoveFromAlphaDict>
+      # Creation : Octobre 2018 - C. Nguyen - CMC/CMOE -
+      #
+      # But      : Enlever la lettre du dictionnaire (AlphaDict) utilise pour remplacer
+      #            la valeur des champs dans les formules
+      # Parametres       :
+      #         <Lettre> : Lettre a enlever du dictionnaire
+      #
+      # Retour:
+      #
+      # Remarques :
+      #
+      #-------------------------------------------------------------------------------
+      proc RemoveFromAlphaDict { Index {IsLayer true} } {
+         #---- Recuper la lettre associee au field 
+         set type [string cat [expr $IsLayer?"L":"C"] $Index]
+         
+         dict for {alpha layerNo} $::APViz::Data(AlphaDict) {
+            if {$layerNo eq $type} {
+                #---- Enlever la lettre du dictionnaire
+                dict unset ::APViz::Data(AlphaDict) $alpha
+            }
+         }
+      }
    }
    
    ${product}::Load $Path
@@ -994,6 +1040,8 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    set ip3      $Value(IP3,$Index)
    set etiket   $Value(Etiket,$Index)
    
+   puts "Assigning variable for $model $var"
+   
    set date $Data(Date)
    if { ![APViz::ValidateDate $date] } {
       return
@@ -1017,31 +1065,29 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       set ip3 -1
    }
    
-   #----- Assign etiket
-   if { ($etiket eq "-") || ($etiket eq "") } {
-      #----- Verify if defined
-      if { [info exists Etiket(${model}${src})] } {
-         set etiket $Etiket(${model}${src})
-      } elseif { [info exists Etiket(${model})] } {
-         set etiket $Etiket($model)
-      }
-      
-      #----- Display in widget
-      if { [winfo exists $Value(EtiketWidget,$Index)] } {
-         $Value(EtiketWidget,$Index) delete 0 [string length [$Value(EtiketWidget,$Index) get]]
-         $Value(EtiketWidget,$Index) insert 0 $etiket
-         
-         #----- Create bubble
-         Bubble::Create $Value(EtiketWidget,$Index) $etiket
-      }
-   } else {
-      set etiket ""
-   }
+   #----- Assign etiket if not set
+#    if { ($etiket eq "-") || ($etiket eq "") } {
+#       #----- Verify if defined
+#       if { [info exists Etiket(${model}${src})] } {
+#          set etiket $Etiket(${model}${src})
+#       } elseif { [info exists Etiket(${model})] } {
+#          set etiket $Etiket($model)
+#       }
+#       
+#       #----- Display in widget
+#       if { [winfo exists $Value(EtiketWidget,$Index)] } {
+#          $Value(EtiketWidget,$Index) delete 0 end
+#          $Value(EtiketWidget,$Index) insert 0 $etiket
+#          
+#          #----- Create bubble
+#          Bubble::Create $Value(EtiketWidget,$Index) $etiket
+#       }
+#    }
    
    #----- Verifier si tous les champs sont remplis
    if { [APViz::AreFieldsFilled $model $var $lev $run $hour $src $date] } {
       set vpID [APViz::GetVPId $vp]
-   
+      
       if { $src eq "BURP" } {
          set timestamp ${date}${run}_
          set filepath $DataSrc(OBS,$model)/$timestamp
@@ -1052,7 +1098,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)
          }
 
-         set obsID OBS$Value(RowIDLayer$Index)_${var}
+         set obsID obs$Value(RowIDLayer$Index)
          
          #----- In case id alreayd exists
          if { [metobs is $obsID] } {
@@ -1081,12 +1127,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          if { [catch {eval dataspec configure $obsID $Param(${var}$index)}] } {
             if { [catch {eval dataspec configure $obsID $Param($var) }] } {
                #----- Configurations par defaut TODO: CHoose a colormap that exists
-               dataspec configure $obsID -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
+               dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
                   -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
          }
          
-         dataspec configure $obsID -desc "$model (${timestamp}_)" -active $Value(Toggle,$Index)
+         dataspec configure $obsID -active $Value(Toggle,$Index)
 
          set lst [list [list 0 0 $var { }]]
          metmodel define [metobs define $obsID -MODEL] -items $lst -spacing 10
@@ -1094,7 +1140,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $obsID]
          
          if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $obsID] eq -1} {
-            Viewport::Assign $Data(Frame) $vpID $obsID -1
+            Viewport::Assign $Data(Frame) $vpID $obsID 1
          }      
       } else {
                   
@@ -1103,9 +1149,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set filepath $DataSrc($model,$src)/$timestamp					; # Format: AAAAMMDDRR_HHH
          set fileID FILE_${model}_${src}_$timestamp
          
-         if { $Animator::Play(Stop) && [fstdfield is [lindex $Data(LayerIDs) $Value(RowIDLayer$Index)]] } {
-            APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)     ; # Enlever la variable courante du VP pour cette couche
+         set fieldID fld$Value(RowIDLayer$Index)
+
+         if {[fstdfield is $fieldID]} {
+            APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)
          }
+               puts "STANDARD FILE - $fileID    $filepath"
          
          #----- Verifier la validite du fichier standard
          if { [fstdfile is $filepath] } {
@@ -1114,17 +1163,15 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                puts "STANDARD FILE - Opening $fileID	$filepath"
             }
             
-            
-            set levelType [APViz::GetLevelType $src]
-#            set fieldID FLD$Value(RowIDLayer$Index)_${var}_${timestamp}
-            set fieldID fld$Value(RowIDLayer$Index)
-            
+            set levelType [APViz::GetLevelType $src]            
+
             switch $var {
                "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType $ip3 $etiket}
                
                "PR"     { 
                            if {[catch {fstdfield read $fieldID $fileID -1 $etiket -1 -1 $ip3 "" $var }]} {
                               APViz::LayerToggle ${Index} Layer False
+
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
                               return
@@ -1149,12 +1196,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                            }
                         }
             }
-
+            
             #----- In case DZ assignation failed
             if { ![fstdfield is $fieldID] } {
                return
             }
-            
+
             #----- Verify if a variable param config has been saved for this row
             if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
                set index [dict get $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)]
@@ -1182,9 +1229,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                   fstdfield configure $fieldID -colormap $Data(DefaultColormap)
                   set configColormap $Data(DefaultColormap)
                }
-               colormap create $colormapName
-               colormap copy $colormapName $configColormap
                
+               colormap create $colormapName
+               if {[catch {eval colormap copy $colormapName $configColormap}]} {
+                  puts "Colormap $configColormap does not exist"
+               }
+
                #----- Ajouter dans la liste des colormaps pour retrouver l'original
                lappend Data(ColormapPairs) [list $colormapName $configColormap]
                lappend Data(Colormaps) $colormapName
@@ -1192,7 +1242,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             
             fstdfield configure $fieldID -colormap $colormapName
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
-            
+
             if { !$Animator::Play(Stop) } {
                set secs [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
                lappend Animator::Play(Frames) $secs
@@ -1201,7 +1251,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             } else {
                #----- Assigner seulement si n'est pas assigne
                if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $fieldID] eq -1} {
-                  Viewport::Assign $Data(Frame) $vpID $fieldID -1
+                  Viewport::Assign $Data(Frame) $vpID $fieldID 1
                }
             }
          } else {
@@ -1275,11 +1325,26 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 
    if {[fstdfield is $fieldIDGZ2]} {
       fstdfield free $fieldIDGZ2
    }
-
+   
+   #----- GZ1 field
    if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket [subst {$lev1 $LevelType}] -1 $Ip3 "" GZ}]} {
-      puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
-   } elseif {[catch {fstdfield read $fieldIDGZ2 $FileID -1 $Etiket [subst {$lev2 $LevelType}] -1 $Ip3 "" GZ}]} {
+      #----- Etiket might be wrong
+      puts "Etiket was wrong for DZ, changing to blank"
+      set Etiket ""
+      if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket [subst {$lev1 $LevelType}] -1 $Ip3 "" GZ}]} {
+         puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
+         ::Dialog::Error . $Lbl(InvalidField)
+         set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
+         return
+      }
+   } 
+   
+   #----- GZ2 field
+   if {[catch {fstdfield read $fieldIDGZ2 $FileID -1 $Etiket [subst {$lev2 $LevelType}] -1 $Ip3 "" GZ}]} {
       puts "fieldIDGZ2: $fieldIDGZ2 failed for level $lev2"
+      ::Dialog::Error . $Lbl(InvalidField)
+      set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
+      return
    } else {
       lappend Data(DZ_GZpairs) [list $fieldIDGZ1 $fieldIDGZ2]
    }
@@ -1345,7 +1410,7 @@ proc APViz::CalculateExpression { Product Index } {
       }
       
       set resultFieldID CALC$Value(RowIDCalc$Index)_$formulaName
-
+      
       #----- Calculer l'expression
       if { [catch { vexpr $resultFieldID $expression } err] } {
          APViz::LayerToggle ${Index} Calc False
@@ -1630,12 +1695,18 @@ proc APViz::CreateFileTree { Path } {
       #----- Reinitialize tree
       FILETREE destroy
       struct::tree FILETREE
-      
-      #----- Read APViz_Data.tcl file
-      if {[catch { source ${Path}/APViz_Data.tcl }]} {
-         lappend msg "Fichier APViz_Data.tcl manquant de $Path"
-         lappend msg "File APViz_Data.tcl containing paths missing from $Path"
-         ::Dialog::Error . $msg
+   }
+   
+   #----- Source APViz_Data.tcl file
+   set oldDefaultColormap $Data(DefaultColormap)
+   if {[catch { source ${Path}/APViz_Data.tcl }]} {
+      lappend msg "Fichier APViz_Data.tcl manquant de $Path"
+      lappend msg "File APViz_Data.tcl containing paths missing from $Path"
+      ::Dialog::Error . $msg
+   } else {
+      if {$Data(DefaultColormap) eq ""} {
+         #----- Find an existing colormap
+         set Data(DefaultColormap) $oldDefaultColormap
       }
    }
 
@@ -1840,7 +1911,7 @@ proc APViz::FetchDates { Product Model Src } {
       } else {
          set path $DataSrc(${Model},${Src})/
       }
-      puts stderr ${Model}.${Src}.$DataSrc(${Model},${Src}).
+      puts stderr ${Model}.${Src}.$path.
       if { ![llength [set fileList [glob -nocomplain -tails -path $path *_000]]] } {
          set fileList [glob -nocomplain -tails -path $path ??????????_*]
          set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
@@ -2333,7 +2404,7 @@ proc APViz::ManageColormaps { Product Path } {
             set initialColormap [APViz::GetInitialColormap $name]
             
             if {$isModified} {
-               #-----Create new name by adding nunmber or changing number at the end of the original name
+               #-----Create new name by adding number or changing number at the end of the original name
                #----- Find same colormap folder to save modified colormap
                puts "---- Looking for Colormap in $Path"
 
@@ -2474,9 +2545,9 @@ proc APViz::ReinitializeVP { } {
    
    #----- Liberer les ID
    foreach ID $Data(LayerIDs) {
-      if {[regexp FLD $ID]} {
+      if {[fstdfield is $ID]} {
          fstdfield free $ID
-      } else {
+      } elseif {[metobs is $ID]} {
          metobs free $ID
       }
    }
@@ -2499,6 +2570,11 @@ proc APViz::ReinitializeVP { } {
       
       if {[array exists Param]} {
          array unset Param
+      }
+      
+      #----- Reset etiket value
+      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+         set Value(Etiket,$i) ""
       }
    }
    
@@ -2523,9 +2599,14 @@ proc APViz::ReinitializeVP { } {
    set Data(Colormaps) {}
    set Data(ColormapPairs) {}
    set Data(DZ_GZpairs) {}
+   
+   #----- Reinitialize dicts
    set Data(VarsDict) ""
+   set Data(VarParamsDict) ""
    set Data(RangeNames) ""
    set Data(Ranges) ""
+   set Data(AlphaDict) ""
+   
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
       dict lappend Data(Ranges) $column NONE
@@ -2558,10 +2639,10 @@ proc APViz::RemoveVariableFromVP { IDList Index } {
 
    set ID [lindex $IDList $Index]
    set dataType ""
-   set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
-   
+   #set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
+
    #----- Decrement from vartype total in VarsDict
-   dict incr Data(VarsDict) $varType -1
+   #dict incr Data(VarsDict) $varType -1
 
    if {[fstdfield is $ID]} {
       set vp [lindex [fstdfield stats $ID -tag] 1]
@@ -2840,10 +2921,11 @@ proc APViz::StartBatch {} {
 
 proc APViz::TranslateExpression { Product Expr } {
    variable Data
-
+   variable ${Product}::Value
+   
    set nb 0
    set interp ""
-   
+
    #----- check for global interpolator operator
    if { [regexp {interp\([A-Z]\)} $Expr] } { set interp [string index $Expr 7]; regsub -all {interp\([A-Z]\)} $Expr "" Expr }
    
@@ -2855,16 +2937,26 @@ proc APViz::TranslateExpression { Product Expr } {
 
    #----- Replace letters by fields
    set interp [lindex $Data(LayerIDs) [lsearch -exact $Data(Alphas) $interp]]
-   foreach layer $Data(LayerIDs) letter $Data(Alphas) {
-      if { [fstdfield is $layer] } {
+   
+   #---- For all key-value from AlphaDict, replace letters with field ids (alpha is dictionary key)
+   #---- Parcourir le dictionaire AlphaDict et remplacer chaque terme
+   dict for {alpha layerNo} $APViz::Data(AlphaDict) {
+      set no [string range $layerNo 1 [string length $layerNo]]
+      
+      if {[string equal L [string index $layerNo 0]]} {
+         set id [lindex $Data(LayerIDs) $Value(RowIDLayer$no)]
+      } else {
+         set id [lindex $Data(CalcIDs) $Value(RowIDCalc$no)]
+      }
+      
+      if {[fstdfield is $id]} {
          if { $interp!="" } {
-            regsub -all $letter $Expr ($interp<<$layer) Expr
+            regsub -all $alpha $Expr ($interp<<$id) Expr
          } else {
-            regsub -all $letter $Expr $layer Expr
+            regsub -all $alpha $Expr $id Expr
          }
       }
-   } 
-   puts EXPR:$Expr
+   }
    return $Expr
 }
 
@@ -2921,6 +3013,7 @@ proc APViz::UpdateItems { Frame } {
       Legend::Delete $Frame  
       
       set no 0
+
       foreach fld $Data(LayerIDs) {
          if { [fstdfield is $fld] && [fstdfield configure $fld -active] } {         
             set col [fstdfield configure $fld -color]
@@ -2929,6 +3022,13 @@ proc APViz::UpdateItems { Frame } {
             set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
             set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
             set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" $Value(Models,$no) $eti $var $lvl $hr]
+            Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
+         } elseif { [metobs is $fld] && [dataspec configure $fld -active] } {         
+            set col [dataspec configure $fld -color]
+            set eti Obs
+            set var [dataspec configure $fld -desc]
+            set lvl Surface
+            set lbl [format "$no: %-5s %-13s %-4s %-s" $Value(Models,$no) $eti $var $lvl]
             Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
          }
          incr no
@@ -2944,6 +3044,7 @@ proc APViz::UpdateItems { Frame } {
             set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" "" $eti $var $lvl $hr]
             Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
          }
+
          incr no
       }
       
