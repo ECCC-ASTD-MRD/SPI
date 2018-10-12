@@ -3040,6 +3040,7 @@ proc APViz::UpdateItems { Frame } {
             set col [fstdfield configure $fld -color]
             set eti [fstdfield define $fld -ETIKET]
             set var [fstdfield define $fld -NOMVAR]
+            #----- TODO: Recuperer la formule pour decrire le calcul
             set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
             set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
             set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" "" $eti $var $lvl $hr]
