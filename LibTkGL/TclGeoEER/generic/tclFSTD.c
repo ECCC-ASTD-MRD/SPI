@@ -624,7 +624,10 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          FSTD_FileSet(Interp,file);
          FSTD_FileSet(Interp,((TRPNHeader*)field0->Head)->File);
-         RPN_CopyDesc(file->Id,field0->Head);
+         if (!RPN_CopyDesc(file->Id,field0->Head)) {
+            Tcl_AppendResult(Interp,"\nFSTD_FieldCmd: Descriptor not copied, source file is not open/accessible for field ",Tcl_GetString(Objv[2]),(char*)NULL);
+            return(TCL_ERROR);           
+         }
          FSTD_FileUnset(Interp,((TRPNHeader*)field0->Head)->File);
          FSTD_FileUnset(Interp,file);
          break;
