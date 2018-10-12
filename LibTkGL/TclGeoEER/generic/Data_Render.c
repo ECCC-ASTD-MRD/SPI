@@ -453,7 +453,7 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
    
    double      val;
    char        buf[256];
-   int         nobj,nobjv,ii,iiv,width;
+   int         nobj,nobjv,ii,iiv,width=0;
    XColor     *color=NULL;
    Tcl_Interp *interp;
    Tcl_Obj    *obj=NULL,*objv=NULL,*objs=NULL;
@@ -476,7 +476,7 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
          
          // If the value exists
          objs=NULL;
-         if (val==Interval) {
+         if (SPEC2VAL(Spec,val)==Interval) {
             objs=obj;
             break;
          }
@@ -496,21 +496,22 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
       }
       
       Tcl_ListObjIndex(interp,objs,3,&objv);
+      dash.number=0;
       if (Tk_GetDash(interp,Tcl_GetString(objv),&dash)!=TCL_OK) {
          return(TCL_ERROR);
       }
       
       if (Interp) {
-         sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",width-1);
-         Tcl_AppendResult(Interp,buf,(char*)NULL);
-         if (color) Tk_CanvasPsColor(Interp,VP->canvas,color);
-         glPostscriptDash(Interp,&dash,width);
+         if (width)        { sprintf(buf,"%% Postscript des contours\n%i setlinewidth 1 setlinecap 1 setlinejoin\n",width-1); Tcl_AppendResult(Interp,buf,(char*)NULL); }
+         if (color)        Tk_CanvasPsColor(Interp,VP->canvas,color);
+         if (dash.number)  glPostscriptDash(Interp,&dash,width);
       } else {
-         if (color) glColor4us(color->red,color->green,color->blue,Spec->Alpha*655.35);
-         glLineWidth(width);
-         glDash(&dash);
+         if (color)        glColor4us(color->red,color->green,color->blue,Spec->Alpha*655.35);
+         if (width)        glLineWidth(width);
+         if (dash.number)  glDash(&dash);
       }
       if (color) GLRender?Tk_FreeColor(color):free(color);
+
       return(1);  
    }
    return(0);
@@ -982,23 +983,29 @@ void Data_RenderBoundary(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projec
 */
 void Data_RenderMark(Tcl_Interp *Interp,TDataSpec *Spec,ViewportItem *VP,int X,int Y,char *Id,char* Val){
 
-   int            txth,dtx;
-
-   if (!Spec->Font) {
+   int     txth,dtx;
+   Tk_Font font;
+   
+   if (Spec->EFont) {
+      font=Spec->EFont;
+      txth=Spec->ETKM.linespace*2;
+      dtx=Spec->ETKM.ascent*0.5;
+   } else if (Spec->Font) {
+      font=Spec->Font;
+      txth=Spec->TKM.linespace*2;
+      dtx=Spec->TKM.ascent*0.5;      
+   } else {
       return;
    }
 
-   txth=Spec->TKM.linespace*2;
-   dtx=Spec->TKM.ascent*0.5;
-
    if (Interp) {
-      glPostscriptText(Interp,VP->canvas,"*",X-Tk_TextWidth(Spec->Font,"*",1)/2,Y-dtx,0,Spec->Outline,0.0,0.5,0.0);
-      glPostscriptText(Interp,VP->canvas,Id,X-Tk_TextWidth(Spec->Font,Id,strlen(Id))/2,Y-dtx+txth/2,0,Spec->Outline,0.0,0.5,0.0);
-      glPostscriptText(Interp,VP->canvas,Val,X-Tk_TextWidth(Spec->Font,Val,strlen(Val))/2,Y-dtx-txth/3,0,Spec->Outline,0.0,0.5,0.0);
+      glPostscriptText(Interp,VP->canvas,"*",X-Tk_TextWidth(font,"*",1)/2,Y-dtx,0,Spec->Outline,0.0,0.5,0.0);
+      glPostscriptText(Interp,VP->canvas,Id,X-Tk_TextWidth(font,Id,strlen(Id))/2,Y-dtx+txth/2,0,Spec->Outline,0.0,0.5,0.0);
+      glPostscriptText(Interp,VP->canvas,Val,X-Tk_TextWidth(font,Val,strlen(Val))/2,Y-dtx-txth/3,0,Spec->Outline,0.0,0.5,0.0);
    } else {
-      glDrawString(X-Tk_TextWidth(Spec->Font,"*",1)/2,Y-dtx,0,"*",1,0,0);
-      glDrawString(X-Tk_TextWidth(Spec->Font,Id,strlen(Id))/2,Y-dtx+txth/2,0,Id,strlen(Id),0,0);
-      glDrawString(X-Tk_TextWidth(Spec->Font,Val,strlen(Val))/2,Y-dtx-txth/3,0,Val,strlen(Val),0,0);
+      glDrawString(X-Tk_TextWidth(font,"*",1)/2,Y-dtx,0,"*",1,0,0);
+      glDrawString(X-Tk_TextWidth(font,Id,strlen(Id))/2,Y-dtx+txth/2,0,Id,strlen(Id),0,0);
+      glDrawString(X-Tk_TextWidth(font,Val,strlen(Val))/2,Y-dtx-txth/3,0,Val,strlen(Val),0,0);
    }
 }
 
@@ -1833,7 +1840,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
       glEnable(GL_BLEND);
    }
    glColor4us(Field->Spec->Outline->red,Field->Spec->Outline->green,Field->Spec->Outline->blue,Field->Spec->Alpha*655.35);
-   glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->Font);
+   glFontUse(Tk_Display(Tk_CanvasTkwin(VP->canvas)),Field->Spec->EFont?Field->Spec->EFont:Field->Spec->Font);
    glDisable(GL_STENCIL_TEST);
 
    posa=Field->GPos->Pos[Field->Def->Level];
@@ -1852,12 +1859,13 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
       }
    } else {
 
-      Tile-=1;
-
       // ichk and jchk indicates the covering area under which the extrema is to be evaluated 
-      ichk=Field->Def->NI/Tile;ichk=(2>=ichk?2:(2*Tile-1<=ichk?2*Tile-1:ichk));
-      jchk=Field->Def->NJ/Tile;jchk=(2>=jchk?2:(2*Tile-1<=jchk?2*Tile-1:jchk));
+//      ichk=Field->Def->NI/Tile;ichk=(2>=ichk?2:(2*Tile-1<=ichk?2*Tile-1:ichk));
+//      jchk=Field->Def->NJ/Tile;jchk=(2>=jchk?2:(2*Tile-1<=jchk?2*Tile-1:jchk));
 
+      ichk=Tile;
+      jchk=ichk;
+      
       // loop in all the lines
       for (ip=0;ip<Field->Def->NI-1;ip++) {
 

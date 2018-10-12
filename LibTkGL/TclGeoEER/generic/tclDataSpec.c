@@ -373,14 +373,14 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
    static CONST char *sopt[] = { "-active","-rendertexture","-renderparticle","-rendergrid","-renderboundary","-rendercontour","-renderlabel","-rendercoord","-rendervector",
                                  "-rendervalue","-rendervolume","-renderface","-min","-max","-topography","-topographyfactor","-extrude","-extrudefactor",
                                  "-interpdegree","-extrapdegree","-factor","-delta","-dash","-activedash","-stipple","-width","-activewidth","-transparency","-noselecttransparency","-color","-fill",
-                                 "-activefill","-outline","-activeoutline","-font","-value","-ranges","-intervals","-interlabels","-interspecs","-positions",
+                                 "-activefill","-outline","-activeoutline","-font","-efont","-value","-ranges","-intervals","-interlabels","-interspecs","-positions",
                                  "-intervalmode","-val2map","-map2val","-colormap","-showmap","-desc","-unit","-sample","-sampletype","-step","-ztype","-gridvector",
                                  "-icon","-mark","-style","-flat","-mapall","-mapabove","-mapbellow","-mapbelow","-set","-cube","-axis","-texsample","-texsize","-texres",
                                  "-interpolation","-light","-sprite","-wmo","-size","-sizerange","-sizemin","-sizemax","-sizevar","-mapvar","-labelvar","-mask","-ogrmask","-extrema",NULL };
    enum        opt { ACTIVE,RENDERTEXTURE,RENDERPARTICLE,RENDERGRID,RENDERBOUNDARY,RENDERCONTOUR,RENDERLABEL,RENDERCOORD,RENDERVECTOR,
                      RENDERVALUE,RENDERVOLUME,RENDERFACE,MIN,MAX,TOPOGRAPHY,TOPOGRAPHYFACTOR,EXTRUDE,EXTRUDEFACTOR,
                      INTERPDEGREE,EXTRAPDEGREE,FACTOR,DELTA,DASH,HIGHDASH,STIPPLE,WIDTH,ACTWIDTH,TRANSPARENCY,NOSELECTTRANSPARENCY,COLOR,FILL,
-                     ACTFILL,OUTLINE,ACTOUTLINE,FONT,VALUE,RANGES,INTERVALS,INTERLABELS,INTERSPECS,POSITIONS,
+                     ACTFILL,OUTLINE,ACTOUTLINE,FONT,EFONT,VALUE,RANGES,INTERVALS,INTERLABELS,INTERSPECS,POSITIONS,
                      INTERVALMODE,VAL2MAP,MAP2VAL,COLORMAP,SHOWMAP,DESC,UNIT,SAMPLE,SAMPLETYPE,STEP,ZTYPE,GRIDVECTOR,
                      ICON,MARK,STYLE,FLAT,MAPALL,MAPABOVE,MAPBELLOW,MAPBELOW,SET,CUBE,AXIS,TEXSAMPLE,TEXSIZE,TEXRES,
                      INTERPOLATION,LIGHT,SPRITE,WMO,SIZE,SIZERANGE,SIZEMIN,SIZEMAX,SIZEVAR,MAPVAR,LABELVAR,MASK,OGRMASK,EXTREMA };
@@ -869,6 +869,24 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             }
             break;
 
+         case EFONT:
+            if (Objc==1) {
+               if (Spec->EFont)
+                  Tcl_SetObjResult(Interp,Tcl_NewStringObj(Tk_NameOfFont(Spec->EFont),-1));
+            } else {
+               if (Spec->EFont) Tk_FreeFont(Spec->EFont);
+               i++;
+               Spec->EFont=NULL;
+               if (strlen(Tcl_GetString(Objv[i]))) {
+                  if (!(Spec->EFont=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Objv[i]))) {
+                     Tcl_AppendResult(Interp,"DataSpec_Config: Invalid font ",Tcl_GetString(Objv[i]),(char*)NULL);
+                     return(TCL_ERROR);
+                  }
+                  Tk_GetFontMetrics(Spec->EFont,&Spec->ETKM);
+               }
+            }
+            break;
+            
          case WIDTH:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->Width));
@@ -1803,6 +1821,11 @@ int DataSpec_Copy(Tcl_Interp *Interp,char *To,char *From){
       Tk_GetFontMetrics(to->Font,&to->TKM);
    }
 
+   if (from->EFont) {
+      to->EFont=Tk_AllocFontFromObj(Interp,Tk_MainWindow(Interp),Tcl_NewStringObj(Tk_NameOfFont(from->EFont),-1));
+      Tk_GetFontMetrics(to->EFont,&to->ETKM);
+   }
+   
    if (from->Topo)
       to->Topo=strdup(from->Topo);
 
@@ -1868,6 +1891,7 @@ TDataSpec *DataSpec_New(){
       spec->HighFill=NULL;
       spec->HighLine=NULL;
       spec->Font=NULL;
+      spec->EFont=NULL;
       spec->Desc=NULL;
       spec->Unit=NULL;
       spec->Sprite=NULL;
@@ -2018,12 +2042,12 @@ void DataSpec_Clear(TDataSpec *Spec) {
       if (Spec->MapVar)       free(Spec->MapVar);                                Spec->MapVar=NULL;
       if (Spec->Extrema)      free(Spec->Extrema);                               Spec->Extrema=NULL;
       if (Spec->Font)         GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font); Spec->Font=NULL;
-
+      if (Spec->EFont)        GLRender?Tk_FreeFont(Spec->EFont):free(Spec->EFont); Spec->EFont=NULL;
+      
       if (Spec->Outline)     GLRender?Tk_FreeColor(Spec->Outline):free(Spec->Outline);   Spec->Outline=NULL;
       if (Spec->Fill)        GLRender?Tk_FreeColor(Spec->Fill):free(Spec->Fill);         Spec->Fill=NULL;
       if (Spec->HighLine)    GLRender?Tk_FreeColor(Spec->HighLine):free(Spec->HighLine); Spec->HighLine=NULL;
       if (Spec->HighFill)    GLRender?Tk_FreeColor(Spec->HighFill):free(Spec->HighFill); Spec->HighFill=NULL;
-      if (Spec->Font)        GLRender?Tk_FreeFont(Spec->Font):free(Spec->Font);          Spec->Font=NULL;
 
       if (Spec->InterLabels) Tcl_DecrRefCount(Spec->InterLabels);   Spec->InterLabels=NULL;
       if (Spec->InterVals)   Tcl_DecrRefCount(Spec->InterVals);     Spec->InterVals=NULL;

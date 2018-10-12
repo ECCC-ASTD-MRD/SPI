@@ -38,7 +38,8 @@ namespace eval APViz {
    set Data(Canvas) ""       ;#Canvas Actif
    set Data(Frame)  ""       ;#Frame actif
    set Data(VP)     ""       ;#Viewport actif
-
+   set Data(Tab)    ""       ;#Onglet de l'outils
+   
    set Data(Lat0)   0        ;#Coordonnees de la boite de selection
    set Data(Lon0)   0
    set Data(Lat1)   0

@@ -99,13 +99,13 @@ proc APViz::Window { } {
          #----- Configurable date
          frame $Data(Tab).head.dateConfig
             label $Data(Tab).head.dateConfig.lbl -text "Date: " -anchor e 
-            ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 8 5 "APViz::InitializeVars"
+            ComboBox::Create $Data(Tab).head.dateConfig.cb APViz::Data(Date) editclose sorted nodouble -1 {} 10 5 "APViz::InitializeVars"
             set APViz::Data(DateCBWidget) $Data(Tab).head.dateConfig.cb
             set dateList [APViz::FetchAllDates $Data(CurrentProduct)]
             set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
             
             checkbutton $Data(Tab).head.dateConfig.dateLock -variable ::APViz::Data(dateLock) -onvalue True -offvalue False \
-               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor IndianRed1
+               -image VCRLOCK -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorHighLight)
             Bubble::Create $Data(Tab).head.dateConfig.dateLock $APViz::Bubble(BlockDate)
             $Data(Tab).head.dateConfig.dateLock select
 
@@ -134,6 +134,9 @@ proc APViz::Window { } {
          pack $Data(Tab).filetree.scrolly -side left -fill y
       pack $Data(Tab).filetree -side top -fill both -expand True
       
+      bind $Data(Tab).filetree.canvas <Button-4> "$Data(Tab).filetree.canvas yview scroll -1 units"
+      bind $Data(Tab).filetree.canvas <Button-5> "$Data(Tab).filetree.canvas yview scroll 1 units"
+
       #----- Description
       labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
 	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
@@ -149,7 +152,7 @@ proc APViz::Window { } {
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .apviz.dock.coo -textvariable APViz::Data(Coo) -bg $GDefs(ColorLight) -width 55 -bd 1
+         entry .apviz.dock.coo -textvariable APViz::Data(Msg) -bg $GDefs(ColorLight) -width 55 -bd 1
          pack .apviz.dock.sel .apviz.dock.del -side left
          pack .apviz.dock.coo -side left -fill both -expand true
       pack .apviz.dock -side bottom -fill x
