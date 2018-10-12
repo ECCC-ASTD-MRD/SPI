@@ -1124,12 +1124,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                
                "PR"     { 
                            if {[catch {fstdfield read $fieldID $fileID -1 $etiket -1 -1 $ip3 "" $var }]} {
-                              APViz::LayerToggle ${Index} False
+                              APViz::LayerToggle ${Index} Layer False
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
                               return
                            } else {
-                              APViz::LayerToggle ${Index} True
+                              APViz::LayerToggle ${Index} Layer True
                               #----- Set fieldfactor and timestamp (For osbervations)
                               fstdfield configure $fieldID -factor 1e3
                               set Data(PR_timestamp) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
@@ -1139,12 +1139,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                
                default  {  
                            if {[catch {fstdfield read $fieldID $fileID -1 $etiket [subst {$lev $levelType}] -1 $ip3 "" $var }]} {                                       
-                              APViz::LayerToggle ${Index} False
+                              APViz::LayerToggle ${Index} Layer False
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
                               return
                            } else {
-                              APViz::LayerToggle ${Index} True
+                              APViz::LayerToggle ${Index} Layer True
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
                            }
                         }
@@ -1205,7 +1205,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                }
             }
          } else {
-            APViz::LayerToggle ${Index} False
+            APViz::LayerToggle ${Index} Layer False
             set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
             
             #----- Concatener le path du fichier au message d'erreur
@@ -1213,20 +1213,25 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
 #            ::Dialog::Error . $Lbl(InvalidFile) $filepath
          }
       }
-
    } else {
       puts "Missing values"
    }
 }
 
-proc APViz::LayerToggle { Index Active } {
+proc APViz::LayerToggle { Index Type Active } {
    global GDefs
    variable Data
    
-   if { $Active } {
-      $Data(Tab).range.variableGrid.layer${Index}_toggle configure -state normal -selectcolor $GDefs(ColorHighLight)
+   if { $Type=="Layer" } {
+      set widget  $Data(Tab).range.variableGrid.layer${Index}_toggle
    } else {
-      $Data(Tab).range.variableGrid.layer${Index}_toggle configure -state disabled -selectcolor red
+      set widget  $Data(Tab).calc.$Index.check 
+   }
+   
+   if { $Active } {
+      $widget configure -state normal -background $GDefs(ColorFrame) -selectcolor $GDefs(ColorHighLight)
+   } else {
+      $widget configure -state disabled -selectcolor red -background red
    }
 }
 
@@ -1283,11 +1288,11 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 
    vexpr $FieldID "$fieldIDGZ1-$fieldIDGZ2"
    
    if { [fstdfield is $FieldID] } {      
-      APViz::LayerToggle ${Index} True
+      APViz::LayerToggle ${Index} Layer True
       #----- Add ID to Data(LayersID)
       set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $FieldID]
    } else {
-      APViz::LayerToggle ${Index} False
+      APViz::LayerToggle ${Index} Layer False
       set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
       puts "DZ FAILED"
       set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
@@ -1316,6 +1321,7 @@ proc APViz::CalculateExpression { Product Index } {
    variable ${Product}::Value
    variable ${Product}::Param
 
+   APViz::LayerToggle ${Index} Calc True
    set expression $Value(Formula,$Index)
 
    if { $expression ne "" } {
@@ -1341,7 +1347,9 @@ proc APViz::CalculateExpression { Product Index } {
       set resultFieldID CALC$Value(RowIDCalc$Index)_$formulaName
 
       #----- Calculer l'expression
-      vexpr $resultFieldID $expression
+      if { [catch { vexpr $resultFieldID $expression } err] } {
+         APViz::LayerToggle ${Index} Calc False
+      }
       
       if {[fstdfield is $resultFieldID]} {
          set isActivated $Value(CalcToggle,$Index)
@@ -2848,12 +2856,15 @@ proc APViz::TranslateExpression { Product Expr } {
    #----- Replace letters by fields
    set interp [lindex $Data(LayerIDs) [lsearch -exact $Data(Alphas) $interp]]
    foreach layer $Data(LayerIDs) letter $Data(Alphas) {
-      if { $interp!="" } {
-         regsub -all $letter $Expr ($interp<<$layer) Expr
-      } else {
-         regsub -all $letter $Expr $layer Expr
+      if { [fstdfield is $layer] } {
+         if { $interp!="" } {
+            regsub -all $letter $Expr ($interp<<$layer) Expr
+         } else {
+            regsub -all $letter $Expr $layer Expr
+         }
       }
    } 
+   puts EXPR:$Expr
    return $Expr
 }
 
