@@ -69,9 +69,7 @@ TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #-----
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_3.3.2${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 EXT_LIB_PATH=${EXT_LIB_PATH}/${ORDENV_PLAT}
-
-EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/20180820/ubuntu-14.04-amd64-64/lib
-EXT_BIN=/fs/ssm/eccc/cmd/cmds/extsup/20180820/ubuntu-14.04-amd64-64/bin
+EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/shared/master/ubuntu-14.04-amd64-64
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -114,12 +112,9 @@ if [[ $EXT -eq 1 ]]; then
    TKDND=tkdnd2.8
    TDOM=tdom-master
 
-   FLT=fltlib-1.0.0
    MYSQL=mysql-5.1
-   ODBC=unixODBC-2.3.0
    OCI=instantclient_11_2
 #   FGDB=FileGDB_API
-   PROJ=proj-4.9.3
  #  MESA=mesa-13.0.2
    MESA=mesa-7.9.2
    EZSCINT=ezscint
@@ -189,14 +184,6 @@ if [[ $EXT -eq 1 ]]; then
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct --disable-egl
       make 
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
-   
-      #----- OpenFlight
-      echo "Building ${TMP_PATH}/${FLT}/build.log"
-      cp -r -p ${EXT_SRC_PATH}/${FLT} ${TMP_PATH}/
-      cd ${TMP_PATH}/${FLT}
-      (make
-      cp *.h ${LIB_PATH}/include
-      cp *.so ${LIB_PATH}/lib) > ${TMP_PATH}/${FLT}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
    
    #----- Tcl Specifics
@@ -349,10 +336,10 @@ if [[ $SPI -eq 1 ]]; then
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-tk=${LIB_PATH}/TCL/lib \
-      --with-gdal=/home/nil000/bin/gdal-config  \
-      --with-eccodes=${EXT_LIB} \
-      --with-ecbufr=${EXT_LIB} \
-      --with-flt=${LIB_PATH} \
+      --with-gdal=${EXT_LIB}/bin/gdal-config  \
+      --with-eccodes=${EXT_LIB}/lib \
+      --with-ecbufr=${EXT_LIB}/lib \
+      --with-flt=${EXT_LIB}/lib \
       --with-eer=${LIB_EER}\
       --with-rmn=${LIB_PATH} \
       --with-gdb=${EXT_LIB_PATH}/gdb \
