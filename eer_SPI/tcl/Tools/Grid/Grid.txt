@@ -41,7 +41,6 @@ namespace eval Grid {
 
    #----- Messages
 
-   set Msg(Test)    { "Ceci est un message" "This is a message" }
    set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
 
    #----- Bulles d'aides

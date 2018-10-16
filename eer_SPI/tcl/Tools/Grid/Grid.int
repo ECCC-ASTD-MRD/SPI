@@ -135,7 +135,7 @@ proc Grid::Frame { Frame { Multi False } } {
          frame $Frame.grid.sel
             Option::Create $Frame.grid.sel.no [lindex $Lbl(GridNo) $GDefs(Lang)] Grid::Data(GridNo) 0 -1 0 "Grid::Switch"
             IcoMenu::Create $Frame.grid.sel.size $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm" "0 1 2 3 4 5 6" \
+               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm fill.xbm" "0 1 2 3 4 5 6 7" \
                Grid::Param(GridSize) "Grid::ConfigSet \$Grid::Data(GridId)" 0 -relief groove -bd 2
                ColorBox::CreateSel $Frame.grid.sel.col { Grid::Param(GridColor) Grid::Param(GridAlpha) } Grid::ConfigSet \$Grid::Data(GridId)
             pack $Frame.grid.sel.no -side left -fill x -expand True

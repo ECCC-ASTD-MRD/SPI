@@ -119,21 +119,21 @@ proc Grid::ConfigSet { { ID MODELGRID } } {
    variable Param
    variable Data
 
-   if { $Param(GridSize)==6 } {
-      set Param(GridBoundary) 1
-      set grid 0
-   } else {
-      set Param(GridBoundary) 0
-      set grid $Param(GridSize)
+   set texture 0
+   set grid    0
+   
+   switch $Param(GridSize) {
+      7 { set Param(GridBoundary) 0; set texture 1 }
+      6 { set Param(GridBoundary) 1 }
+      default { set Param(GridBoundary) 0; set grid $Param(GridSize) }
    }
 
    lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
    
-   #----- Kind of a hack, but let's use the widget's internal previous value
    #-transparency [expr int(0x$Param(GridAlpha)/255.0*100.0)]
    if { [fstdfield is $ID] } {
-      fstdfield configure $ID -rendergrid $grid  -renderboundary $Param(GridBoundary) \
-         -width 2 -color $Param(GridColor)
+      fstdfield configure $ID -rendergrid $grid -renderboundary $Param(GridBoundary) \
+         -width 2 -color $Param(GridColor) -colormap GRID$Data(GridNo) -rendertexture $texture -interpdegree NEAREST
       Viewport::UpdateData $Data(Frame)        
    }
 }
@@ -147,10 +147,15 @@ proc Grid::ConfigGet { { ID MODELGRID } } {
       set Param(GridBoundary)   [fstdfield configure $ID -renderboundary]
       set Param(GridColor)      [fstdfield configure $ID -color]
       set Param(GridAlpha)      [fstdfield configure $ID -transparency]
+      set texture               [fstdfield configure $ID -rendertexture]
 
+      if { $texture } {
+         set Param(GridSize) 7
+      }
       if { $Param(GridBoundary) } {
          set Param(GridSize) 6
       }
+      
       ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
       IcoMenu::Set  $Data(Tab).grid.sel.size   $Param(GridSize)
    }
@@ -771,6 +776,7 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 
    return ${ID}
 }
+
 #----------------------------------------------------------------------------
 # Nom      : <Grid::CreateZE>
 # Creation : Juin 2018 - Michel Van Eeckhout - CMC/CMDS
@@ -823,6 +829,12 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check Tru
    fstdfield create ${ID} $ni $nj 1 $Param(Data)
    fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
+   set d [expr $Param(Extend)]
+   set dni [expr $ni-$d]
+   set dnj [expr $nj-$d]
+   
+   vexpr - ${ID}(($d,$dni),($d,$dnj))=1
+   
    set Param(PGSM) ""
 
    return ${ID}
