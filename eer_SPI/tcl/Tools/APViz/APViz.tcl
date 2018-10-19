@@ -158,6 +158,7 @@ proc APViz::Source { Path Widget } {
          set no $Value(NbCalcLayers)
          frame $Widget.calc.$no
             set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbLayers)]]
+            set Value(CLetter,$no) $alpha
             dict set APViz::Data(AlphaDict) $alpha C$no         
             checkbutton $Widget.calc.$no.check -anchor w -var APViz::${Product}::Value(CalcToggle,$no) -text $alpha -command "APViz::Check $Product $no True" \
                -indicatoron False -overrelief raised -offrelief flat
@@ -246,18 +247,20 @@ proc APViz::Source { Path Widget } {
       
       proc AdjustLockedValues { Option Index Product } {
          variable Value
+         variable Range
          variable Layers
          
          switch $Option {
             "Models"    { set lockType Model; set idx 1 }
-            "Runs"      { set lockType Run; set idx 2 }
-            "Hours"     { set lockType Hour; set idx 3 }
+            "Runs"      { set lockType Run;   set idx 2 }
+            "Hours"     { set lockType Hour;  set idx 3 }
             "Levels"    { set lockType Level; set idx 6 }
+            "Vars"      { set lockType Var;   set idx 5 }
             default     {  APViz::AssignVariable $Product $Index
                            return }
          }
          
-         if { $Value(${lockType}Lock) } {
+         if { $Range(${lockType}Lock) } {
             set newValue $Value($Option,$Index)
             #----- Change all other values
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
@@ -265,7 +268,7 @@ proc APViz::Source { Path Widget } {
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
                   #----- Check if a delta is defined (ex:<Hours>+06)
                  if { [info exists ::APViz::${Product}::Value(Delta$Option,$i)] } {
-                     eval set Value($Option,$i) \[format %03i \[expr [string trimleft $newValue 0]$Value(Delta$Option,$i)\]\]
+                     eval set Value($Option,$i) \[format %0${idx}i \[expr [string trimleft $newValue 0]$Value(Delta$Option,$i)\]\]
                   } else {
                      set Value($Option,$i) $newValue
                   }
@@ -273,8 +276,8 @@ proc APViz::Source { Path Widget } {
                }
             }
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
-                  APViz::AssignVariable $Product $i
-                  }
+               APViz::AssignVariable $Product $i
+            }
          } else {
             APViz::AssignVariable $Product $Index
          }
@@ -375,8 +378,7 @@ proc APViz::Source { Path Widget } {
             #----- Extract layer parts
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
                         
-            #----- Toggle On/Off
-            
+            #----- Toggle On/Off            
             set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
             dict set APViz::Data(AlphaDict) $alpha L$no
             checkbutton $Widget.range.variableGrid.layer${no}_toggle -anchor w -var APViz::${Product}::Value(Toggle,$no) -text $alpha \
@@ -491,7 +493,7 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
             if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
-               entry $Path -textvariable APViz::${Product}::Value($Options,$Index) -width $Width -bg $GDefs(ColorLight) -state disabled
+               entry $Path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
             } elseif { $IsSpinBox } {
                spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
@@ -515,7 +517,8 @@ proc APViz::Source { Path Widget } {
             
             #----- Add increment if defined
             if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
-               eval set Value($Options,$Index) \[format %03i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
+               if { $Options=="Runs" } { set w 2 } else { set w 3 }
+               eval set Value($Options,$Index) \[format %0${w}i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
             }
 
          } else {
@@ -758,26 +761,28 @@ proc APViz::Source { Path Widget } {
          frame $Widget.range.variableGrid       ; #Frame pour le grid
          
          #----- Column titles
-         label $Widget.range.variableGrid.var    -text [lindex $Label(Variable) $GDefs(Lang)]
          label $Widget.range.variableGrid.src    -text [lindex $Label(Source) $GDefs(Lang)]
          label $Widget.range.variableGrid.ip3    -text "IP3"
          label $Widget.range.variableGrid.vp     -text "VP"
          label $Widget.range.variableGrid.etiket -text "Etiket"
          
-         checkbutton $Widget.range.variableGrid.mod -variable ::APViz::${Product}::Value(ModelLock) -onvalue True -offvalue False \
+         checkbutton $Widget.range.variableGrid.mod -variable ::APViz::${Product}::Range(ModelLock) -onvalue True -offvalue False \
                -text [lindex $Label(Model) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
-         checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Value(RunLock) -onvalue True -offvalue False \
+         checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Range(RunLock) -onvalue True -offvalue False \
                -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
          $Widget.range.variableGrid.runLock select
                
-         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Value(HourLock) -onvalue True -offvalue False \
+         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Range(HourLock) -onvalue True -offvalue False \
                -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
          $Widget.range.variableGrid.hrLock select
                
-         checkbutton $Widget.range.variableGrid.lvlLock -variable ::APViz::${Product}::Value(LevelLock) -onvalue True -offvalue False \
+         checkbutton $Widget.range.variableGrid.lvlLock -variable ::APViz::${Product}::Range(LevelLock) -onvalue True -offvalue False \
                -text [lindex $Label(Level) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat
 
-         #----- Add help bubbles
+         checkbutton $Widget.range.variableGrid.varLock -variable ::APViz::${Product}::Range(VarLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Variable) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat
+
+               #----- Add help bubbles
          Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
          Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
          Bubble::Create $Widget.range.variableGrid.lvlLock ${APViz::Bubble(Lock)}
@@ -787,8 +792,8 @@ proc APViz::Source { Path Widget } {
          grid $Widget.range.variableGrid.runLock  -column 2 -row 0 -padx 0.2 -sticky ew
          grid $Widget.range.variableGrid.hrLock   -column 3 -row 0 -padx 0.2 -sticky ew
          grid $Widget.range.variableGrid.src      -column 4 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.var      -column 5 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.lvlLock  -column 6 -row 0 -padx 0.2
+         grid $Widget.range.variableGrid.varLock  -column 5 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.lvlLock  -column 6 -row 0 -padx 0.2 -sticky ew
          grid $Widget.range.variableGrid.ip3      -column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.vp       -column 8 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.etiket   -column 9 -row 0 -padx 0.2
@@ -1042,12 +1047,21 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    
    puts "Assigning variable for $model $var"
    
+   #----- check if we need to increment the date on a run increment
    set date $Data(Date)
+   if { [info exists Value(DeltaRuns,$Index)] } {
+      if { $run<0 || $run>=24 } {
+         set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Value(DeltaRuns,$Index)] -format "%Y%m%d" -timezone :UTC]
+         set run [format %02i [expr $run-$Value(DeltaRuns,$Index)]]
+         puts stderr $run...$date
+      }
+   }
+   
    if { ![APViz::ValidateDate $date] } {
       return
    }
 
-   if { ![info exists Value(DeltaHours,$Index)] } {
+   if { ![info exists Value(DeltaHours,$Index)] && ![info exists Value(DeltaRuns,$Index)]} {
       set Value(DATEO) [clock scan $date -timezone :UTC]
       if { $Value(Runs,$Index)!="-" } {
          set Value(DATEO) [clock add [clock scan $date -timezone :UTC] $Value(Runs,$Index) hours -timezone :UTC]
@@ -1112,19 +1126,8 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
 
          dataspec create $obsID
          
-         #----- Verify if a variable param config has been saved for this row
-         if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
-            set index [dict get $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)]
-         } else {
-            set index [APViz::GetVarsNb Data(VarsDict) $var]
-            dict set Data(VarParamsDict) ${var}$Value(RowIDLayer$Index) $index
-         }
-         
-         #----- Increment number of vartype
-         dict incr Data(VarsDict) $var
-         
          #----- Apply variable configs from config file 
-         if { [catch {eval dataspec configure $obsID $Param(${var}$index)}] } {
+         if { [catch {eval dataspec configure $obsID $Param(${var}:$Value(Letter,$Index))}] } {
             if { [catch {eval dataspec configure $obsID $Param($var) }] } {
                #----- Configurations par defaut TODO: CHoose a colormap that exists
                dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
@@ -1201,20 +1204,9 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { ![fstdfield is $fieldID] } {
                return
             }
-
-            #----- Verify if a variable param config has been saved for this row
-            if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
-               set index [dict get $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)]
-            } else {
-               set index [APViz::GetVarsNb Data(VarsDict) $var]
-               dict set Data(VarParamsDict) ${var}$Value(RowIDLayer$Index) $index
-            }
-            
-            #----- Increment number of vartype
-            dict incr Data(VarsDict) $var
-            
+                        puts stderr ${var}:$Value(Letter,$Index)
             #----- Apply variable configs from config file 
-            if {[catch {eval fstdfield configure $fieldID $Param(${var}$index)}]} {
+            if {[catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}]} {
                if {[catch {eval fstdfield configure $fieldID $Param($var)}]} {
                   #----- Valeur par defaut
                   fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
@@ -1419,32 +1411,28 @@ proc APViz::CalculateExpression { Product Index } {
       if {[fstdfield is $resultFieldID]} {
          set isActivated $Value(CalcToggle,$Index)
          
+         set var [fstdfield define $resultFieldID -NOMVAR]
+         
+         #----- Apply variable configs from config file 
+         #----- Verify if configs for calc was specified first
+         if { [catch {eval fstdfield configure $resultFieldID $Param(CALC)} ]} {
+            if { [catch {eval fstdfield configure $resultFieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
+               if { [catch {eval fstdfield configure $resultFieldID $Param($var)}] } {
+                  #----- Valeur par defaut
+                  fstdfield configure $resultFieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+               }
+            }
+         }
+         
+         fstdfield configure $resultFieldID -active $isActivated -set 1
+         
          set vpID [GetVPId $Value(CalcVP,$Index)]
          #----- Assigner au ViewPort
          if {[lsearch -exact [Viewport::Assigned $Data(Frame) $vpID] $resultFieldID] eq -1} {
             Viewport::Assign $Data(Frame) $vpID $resultFieldID
          }
          
-         #----- Verify if a variable param config has been saved for this row
-         set var [fstdfield define $resultFieldID -NOMVAR]
-         if { [dict exists $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)] } {
-            set index [expr [dict get $Data(VarParamsDict) ${var}$Value(RowIDLayer$Index)]+$Value(NbLayers)]
-         } else {
-            set index [expr [APViz::GetVarsNb Data(VarsDict) $var]+$Value(NbLayers)]
-            dict set Data(VarParamsDict) ${var}$Value(RowIDLayer$Index) $index
-         }
          
-         #----- Increment number of vartype
-         dict incr Data(VarsDict) $var
-         
-         #----- Apply variable configs from config file 
-         if { [catch {eval fstdfield configure $resultFieldID $Param(${var}$index)} ]} {
-            if { [catch {eval fstdfield configure $resultFieldID $Param($var)}] } {
-               #----- Valeur par defaut
-               fstdfield configure $resultFieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
-            }
-         }
-         fstdfield configure $resultFieldID -active $isActivated -set 1       
             
          set Data(CalcIDs) [lreplace $Data(CalcIDs) $Value(RowIDCalc$Index) $Value(RowIDCalc$Index) $resultFieldID]
       }
@@ -2601,8 +2589,6 @@ proc APViz::ReinitializeVP { } {
    set Data(DZ_GZpairs) {}
    
    #----- Reinitialize dicts
-   set Data(VarsDict) ""
-   set Data(VarParamsDict) ""
    set Data(RangeNames) ""
    set Data(Ranges) ""
    set Data(AlphaDict) ""
@@ -2640,9 +2626,6 @@ proc APViz::RemoveVariableFromVP { IDList Index } {
    set ID [lindex $IDList $Index]
    set dataType ""
    #set varType [string range $ID [expr [string first "_" $ID] + 1] [string length $ID]]
-
-   #----- Decrement from vartype total in VarsDict
-   #dict incr Data(VarsDict) $varType -1
 
    if {[fstdfield is $ID]} {
       set vp [lindex [fstdfield stats $ID -tag] 1]
@@ -3039,6 +3022,7 @@ proc APViz::UpdateItems { Frame } {
             set col [fstdfield configure $fld -color]
             set eti [fstdfield define $fld -ETIKET]
             set var [fstdfield define $fld -NOMVAR]
+            #----- TODO: Recuperer la formule pour decrire le calcul
             set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
             set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
             set lbl [format "$no: %-5s %-13s %-4s %-s %-3sH" "" $eti $var $lvl $hr]
