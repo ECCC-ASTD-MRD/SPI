@@ -1053,7 +1053,6 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       if { $run<0 || $run>=24 } {
          set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Value(DeltaRuns,$Index)] -format "%Y%m%d" -timezone :UTC]
          set run [format %02i [expr $run-$Value(DeltaRuns,$Index)]]
-         puts stderr $run...$date
       }
    }
    
@@ -1204,7 +1203,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { ![fstdfield is $fieldID] } {
                return
             }
-                        puts stderr ${var}:$Value(Letter,$Index)
+
             #----- Apply variable configs from config file 
             if {[catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}]} {
                if {[catch {eval fstdfield configure $fieldID $Param($var)}]} {
@@ -1899,7 +1898,6 @@ proc APViz::FetchDates { Product Model Src } {
       } else {
          set path $DataSrc(${Model},${Src})/
       }
-      puts stderr ${Model}.${Src}.$path.
       if { ![llength [set fileList [glob -nocomplain -tails -path $path *_000]]] } {
          set fileList [glob -nocomplain -tails -path $path ??????????_*]
          set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
