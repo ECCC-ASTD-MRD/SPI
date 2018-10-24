@@ -163,7 +163,7 @@ proc Grid::ConfigGet { { ID MODELGRID } } {
       }
       
       ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
-      IcoMenu::Set  $Data(Tab).grid.sel.size   $Param(GridSize)
+      IcoMenu::Set $Data(Tab).grid.sel.size   $Param(GridSize)
    }
 }
 
@@ -459,7 +459,7 @@ proc Grid::Settings { } {
    $Data(Tab).settings.text delete 0.0 end
 
    foreach grid $Data(GridParams) {
-      $Data(Tab).settings.text insert end [Grid::SettingsBuild $grid]\n
+      catch { $Data(Tab).settings.text insert end [Grid::SettingsBuild $grid]\n }
    }
 }
 

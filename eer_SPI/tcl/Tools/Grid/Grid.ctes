@@ -21,12 +21,10 @@ namespace eval Grid {
    variable Param
 
    set Param(Title)      { "Grid Maker" "Grid Maker" }
-   set Param(Title_Tab1) { "Grilles" "Grids" }
-   set Param(Title_Tab2) { "GEM Settings" "GEM Settings" }
    set Param(Version)    0.1
-   set Param(Geom)       { 350x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Geom)       { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)       ARROWGRID
-   set Param(Dock)       0                                           ;#Fenetre separee ou non
+   set Param(Dock)       1                                           ;#Fenetre separee ou non
 
    set Data(Active) 0        ;#Flag d'activation de l'outils
    set Data(Canvas) ""       ;#Canvas Actif

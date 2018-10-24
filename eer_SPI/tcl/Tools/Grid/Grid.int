@@ -37,9 +37,11 @@ proc Grid::Window { } {
    variable Bubble
    variable Param
 
-   set Data(Active) 1
-   
-   set Grid::Data(GridId) MODELGRID0
+   set Data(Active)   1
+   set Data(Canvas)  $Page::Data(Canvas)
+   set Data(Frame)   $Page::Data(Frame)
+  
+   set Param(Window) .gridmaker
 
    if { ![winfo exists .gridmaker] } {
 
@@ -57,7 +59,7 @@ proc Grid::Window { } {
       }
       
       TabFrame::Create .gridmaker.tab 1 ""
-      set Data(Tab) [TabFrame::Add .gridmaker.tab 1 [lindex $Param(Title_Tab1) $GDefs(Lang)] True]
+      set Data(Tab) [TabFrame::Add .gridmaker.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
       pack .gridmaker.tab -side top -fill both -expand true
       TabFrame::Select .gridmaker.tab 0
 
@@ -84,7 +86,7 @@ proc Grid::Window { } {
       frame .gridmaker.dock -relief raised -bd 1
          button .gridmaker.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Grid }
          button .gridmaker.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Grid::Close
-         entry .gridmaker.dock.coo -textvariable Grid::Param(Coo) -bg $GDefs(ColorLight) -width 20 -bd 1
+         entry .gridmaker.dock.coo -textvariable Grid::Param(Coo) -bg $GDefs(ColorLight) -width 36 -bd 1
          pack .gridmaker.dock.sel .gridmaker.dock.del -side left
          pack .gridmaker.dock.coo -side left -fill both -expand true
       pack .gridmaker.dock -side bottom -fill x
@@ -96,6 +98,13 @@ proc Grid::Window { } {
    }
    
    Grid::WindowSet $Data(Tab).grid
+
+   #----- Fill up the interface (docking / undocking)
+   set Data(GridId) MODELGRID$Data(GridNo)
+   for { set i 0 } { $i<[llength $Data(GridParams)] } { incr i } { lappend grids $i }
+   Option::Set $Data(Tab).grid.sel.no $grids
+   Grid::Settings
+   
    raise  .gridmaker
 }
 
@@ -215,10 +224,7 @@ proc Grid::Frame { Frame { Multi False } } {
    bind $Frame.grid.rot.angle  <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ref.latr   <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ref.lonr   <Return> "catch { Grid::Apply }"
-   
-   set Param(SizeWarn) True
-   set Param(ResLL)    [expr $Param(ResM)/$Param(LL2M)]
-   
+  
    Bubble::Create $Frame.grid.type  $Bubble(Types)
    Bubble::Create $Frame.grid.reskm $Bubble(ResM)
    Bubble::Create $Frame.grid.resll $Bubble(ResLL)
