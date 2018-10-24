@@ -136,7 +136,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 #endif
 
-#ifdef HAVE_GRIB
+#ifdef HAVE_ECCODES
    // Initialisation du package de fichier standard
    if (TclGRIB_Init(Interp)==TCL_ERROR)
       return(TCL_ERROR);

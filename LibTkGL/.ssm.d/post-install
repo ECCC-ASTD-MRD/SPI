@@ -15,21 +15,33 @@ rm -f ${profilePath} ${loginPath}
 mkdir -p ${profileDirPath}
 
 cat > ${profilePath} << EOF
+
 export SPI_LIB="${packageHome}"
 export EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
 export EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 
 #----- GDAL data
-export GDAL_DATA=\${SPI_LIB}/share/gdal
 export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
-#----- PROJ4 data
-export PROJ_LIB=\${SPI_LIB}/share/proj
+#type sscp >/dev/null 2>&1 || . ssmuse-sh -d hpcs/ext/sscp
 
-#----- Force GRIB API Tables
-export GRIB_SAMPLES_PATH=\${SPI_LIB}/share/grib_api/samples
-export GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
+if [ `domainname -d` = "science.gc.ca" ]; then
+   #----- On the SCIENCE side
+   if [ -z "\${ECCODES_DEFINITION_PATH}" ];then 
+      . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
+   fi
+   if [ ! -d "\${GDB_PATH}" ]; then
+      export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+   fi
+else 
+   #----- On the EC side
+   if [ -z "\${ECCODES_DEFINITION_PATH}" ];then 
+      . ssmuse-sh -x /ssm/net/cmds/extsup/shared/20181017
+   fi
+   if [ ! -d "\${GDB_PATH}" ]; then
+      export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+   fi
 
 #----- GDB data
 if [ ! -d "\${GDB_PATH}" ]; then
@@ -54,16 +66,8 @@ setenv EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
 setenv EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 
 #----- GDAL data
-setenv GDAL_DATA=\${SPI_LIB}/share/gdal
 setenv GDAL_PAM_ENABLED=NO
 setenv CPL_LOG=/dev/null
-
-#----- PROJ4 data
-setenv PROJ_LIB=\${SPI_LIB}/share/proj
-
-#----- Force GRIB API Tables
-setenv GRIB_SAMPLES_PATH=\${SPI_LIB}/share/grib_api/samples
-setenv GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
 
 #----- GDB data
 if [ -z \${GDB_PATH} ]; then

@@ -4,9 +4,10 @@
 
 #----- SSM specifics
 NAME="libSPI"
-DESC="EER-SPI library dependencies"
+DESCRIPTION="SPI libraries"
+SUMMARY="SPI compiled libraries and dependencies"
 VERSION="8.0.0"
-MAINTAINER="Jean-Philippe Gauthier"
+MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 BUILDINFO=`git describe --always`
 
 if [[ (-z $EXT_SRC_PATH) || (-z $EXT_LIB_PATH) ]]; then
@@ -67,9 +68,10 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.3.2${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.4.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 EXT_LIB_PATH=${EXT_LIB_PATH}/${ORDENV_PLAT}
 EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/shared/master/ubuntu-14.04-amd64-64
+#. ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -112,22 +114,16 @@ if [[ $EXT -eq 1 ]]; then
    TKDND=tkdnd2.8
    TDOM=tdom-master
 
-   MYSQL=mysql-5.1
-   OCI=instantclient_11_2
+#   MYSQL=mysql-5.1
+#   OCI=instantclient_11_2
 #   FGDB=FileGDB_API
- #  MESA=mesa-13.0.2
+#   MESA=mesa-13.0.2
    MESA=mesa-7.9.2
-   EZSCINT=ezscint
-   EZINTERPV=cezinterpv
 
    #----- not recompiled yet
-   KKDU=kakadu-6.3
+   EZSCINT=ezscint
+   EZINTERPV=cezinterpv
    RMN=librmn-16.2
-
-   #----- Define the list of items we won't compile but will link with
-   if [[ $ARCH != "AIX" ]]; then
-      SLINK_LIBS="$MYSQL $OCI"
-   fi
 
    #----- Create output directories (link to SSM workspace)
    rm -f -r ${LIB_PATH}
@@ -138,25 +134,8 @@ if [[ $EXT -eq 1 ]]; then
    echo "Temporary directory is : $TMP_PATH"
    echo "Install directory is   : $LIB_PATH"
 
-   #----- The library we don't compile doesn't need to be copied, so link them to the original dir
-
-   if [[ $EXT_LIB_PATH != $LIB_PATH ]]; then
-      for l in $SLINK_LIBS; do
-         if [[ -e $EXT_LIB_PATH/$l ]]; then
-            echo "Copying precompiled $l"
-            cp -frd $EXT_LIB_PATH/$l/lib/*.so* $LIB_PATH/lib
-            if [[ -e $EXT_LIB_PATH/$l/include ]]; then
-               cp -frd $EXT_LIB_PATH/$l/include/* $LIB_PATH/include
-            fi
-         else
-            echo "Library $l could not be found : symlink failed."
-            exit 1
-         fi
-      done
-   fi
-
    #----- RMN, copies libs and BUFR and RPN dictionnaries
-   echo "Copying precompiled $RMN"
+   echo "Copying precompiled $RMN from $EXT_LIB_PATH"
    cp -frd $EXT_LIB_PATH/$RMN/lib/* $LIB_PATH/lib
    cp -frd $EXT_LIB_PATH/$RMN/include/* $LIB_PATH/include
    mkdir -p $LIB_PATH/share/rmn
@@ -164,12 +143,12 @@ if [[ $EXT -eq 1 ]]; then
    cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.1.dtd iso-lat1.ent $LIB_PATH/share/rmn
 
    #----- EZSCINT, copies libs
-   echo "Copying precompiled $EZSCINT"
+   echo "Copying precompiled $EZSCINT from $EXT_LIB_PATH"
    cp -frd $EXT_LIB_PATH/$EZSCINT/lib/* $LIB_PATH/lib
    cp -frd $EXT_LIB_PATH/$EZSCINT/include/* $LIB_PATH/include
 
    #----- EZINTERPV, copies libs
-   echo "Copying precompiled $EZINTERPV"
+   echo "Copying precompiled $EZINTERPV from $EXT_LIB_PATH"
    cp -frd $EXT_LIB_PATH/$EZINTERPV/lib/* $LIB_PATH/lib
    cp -frd $EXT_LIB_PATH/$EZINTERPV/include/* $LIB_PATH/include
    set -e
@@ -252,7 +231,6 @@ if [[ $EXT -eq 1 ]]; then
       (${EXT_SRC_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
       make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
-
 
    cd $SRC_PATH
 
@@ -337,9 +315,9 @@ if [[ $SPI -eq 1 ]]; then
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-tk=${LIB_PATH}/TCL/lib \
       --with-gdal=${EXT_LIB}/bin/gdal-config  \
-      --with-eccodes=${EXT_LIB}/lib \
-      --with-ecbufr=${EXT_LIB}/lib \
-      --with-flt=${EXT_LIB}/lib \
+      --with-eccodes=${EXT_LIB} \
+      --with-ecbufr=${EXT_LIB} \
+      --with-flt=${EXT_LIB} \
       --with-eer=${LIB_EER}\
       --with-rmn=${LIB_PATH} \
       --with-gdb=${EXT_LIB_PATH}/gdb \
@@ -389,7 +367,7 @@ if [[ $SSM -eq 1 ]]; then
    cp .ssm.d/libSPI.sh ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d/${SSM_NAME}.sh
    
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
-   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${SSM_VERSION}/" -e "s/PLATFORM/${ORDENV_PLAT}/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/BUILDINFO/${BUILDINFO}/" -e "s/DESC/${DESC}/" .ssm.d/control > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${SSM_VERSION}/" -e "s/PLATFORM/${ORDENV_PLAT}/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/BUILDINFO/${BUILDINFO}/" -e "s/DESCRIPTION/${DESCRIPTION}/" -e "s/SUMMARY/${SUMMARY}/".ssm.d/control.json > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control.json
    cd ${SSM_DEV}/workspace; tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
 

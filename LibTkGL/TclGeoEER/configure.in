@@ -51,9 +51,9 @@ fi
 
 AX_LIB_ECCODES()
  
-if test "$HAVE_GRIB" = "yes"; then
-   PKG_LIBS="$PKG_LIBS $GRIB_LDFLAGS"
-   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GRIB $GRIB_CFLAGS"
+if test "$HAVE_ECCODES" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $ECCODES_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_ECCODES $ECCODES_CFLAGS"
 fi
 
 # ---------------------------------------------------------------------------
