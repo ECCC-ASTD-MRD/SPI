@@ -26,33 +26,18 @@ export CPL_LOG=/dev/null
 
 #type sscp >/dev/null 2>&1 || . ssmuse-sh -d hpcs/ext/sscp
 
+#----- Dependencies
 if [ `domainname -d` = "science.gc.ca" ]; then
    #----- On the SCIENCE side
-   if [ -z "\${ECCODES_DEFINITION_PATH}" ];then 
-      . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
-   fi
-   if [ ! -d "\${GDB_PATH}" ]; then
-      export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-   fi
+   [ -n "\${OPAL_PREFIX}" ]             || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
+   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
 else 
    #----- On the EC side
-   if [ -z "\${ECCODES_DEFINITION_PATH}" ];then 
-      . ssmuse-sh -x /ssm/net/cmds/extsup/shared/20181017
-   fi
-   if [ ! -d "\${GDB_PATH}" ]; then
-      export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
-   fi
-
-#----- GDB data
-if [ ! -d "\${GDB_PATH}" ]; then
-   if [ `domainname -d` = "science.gc.ca" ]; then
-      #----- On the SCIENCE side
-      export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-   else
-      #----- On the EC side
-      export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
-   fi
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
+   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
 fi
+
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
 if [ -z \${AFSISIO} ]; then
