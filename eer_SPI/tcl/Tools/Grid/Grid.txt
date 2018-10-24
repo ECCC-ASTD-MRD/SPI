@@ -42,6 +42,7 @@ namespace eval Grid {
    #----- Messages
 
    set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
+   set Msg(GridAdd)      { "Vous ne pouvez ajouter une grille tant que la première grille n'est définie." "You cannot add a new grid until the first one is defined." }
 
    #----- Bulles d'aides
    

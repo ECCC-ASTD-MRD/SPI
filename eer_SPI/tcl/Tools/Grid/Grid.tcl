@@ -86,6 +86,12 @@ proc Grid::Switch { } {
 proc Grid::Add { } {
    variable Param
    variable Data
+   variable Msg
+   
+   if  { $Data(GridNo)==0 && !$Param(NI) } {
+      Dialog::Error . $Grid::Msg(GridAdd)
+      return
+   }
    
    set Data(GridNo) [llength $Data(GridParams)]
    lappend Data(GridParams) [array get Grid::Param]
