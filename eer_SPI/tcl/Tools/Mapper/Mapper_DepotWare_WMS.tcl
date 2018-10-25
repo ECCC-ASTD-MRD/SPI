@@ -20,13 +20,17 @@ namespace eval Mapper::DepotWare::WMS {
    variable Lbl
    variable Msg
 
-   set Lbl(URL) { "Addresse URL" "URL Address" }
+   set Lbl(URL)      { "Addresse URL" "URL Address" }
+   set Lbl(User)     { "Usager" "User" }
+   set Lbl(Password) { "Mot de passe" "Password" }
 
    set Msg(Request) { "Problème dans la requète de capacitées WMS (GetCapabilities)" "Problem requesting capabilities WMS (GetCapabilities)" }
 
-   set Data(URL) ""
+   set Data(URL)      ""
+   set Data(User)     ""
+   set Data(Password) ""
    set Data(BlockSize) 512
-   set Data(Layers)  {}
+   set Data(Layers)    {}
 
    set Data(SizeX)        0
    set Data(SizeY)        0
@@ -69,6 +73,16 @@ proc Mapper::DepotWare::WMS::Params { Frame } {
       pack $Frame.path.lbl -side left
       pack $Frame.path.ent -side left  -fill x -expand True
    pack $Frame.path -fill x -expand True -anchor n
+   
+   frame $Frame.user
+      label $Frame.user.lbl -text [lindex $Lbl(User) $GDefs(Lang)] -width 15 -anchor w
+      entry $Frame.user.ent -textvariable Mapper::DepotWare::WMS::Data(User) -bd 1 -bg $GDefs(ColorLight)
+      label $Frame.user.plbl -text [lindex $Lbl(Password) $GDefs(Lang)] -width 12 -anchor w
+      entry $Frame.user.pent -textvariable Mapper::DepotWare::WMS::Data(Password) -bd 1 -bg $GDefs(ColorLight) -show *
+      pack $Frame.user.lbl -side left
+      pack $Frame.user.ent -side left -fill x -expand True
+      pack $Frame.user.plbl $Frame.user.pent -side left
+   pack $Frame.user -side top -fill x
 }
 
 #-------------------------------------------------------------------------------
@@ -99,10 +113,15 @@ proc  Mapper::DepotWare::WMS::Parse { Tree Branch } {
 
    set path [$Tree get $Branch path]
    
-   if { [string first "?" ${path}]==-1 } {
-      set req [http::geturl "${path}?SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
+   set url      [lindex $path 0]
+   set user     [lindex $path 1]
+   set password [lindex $path 2]
+   set head     [list Authorization "Basic [base64::encode $user:$password]"]
+
+   if { [string first "?" ${url}]==-1 } {
+      set req [http::geturl "${url}?SERVICE=WMS&REQUEST=GetCapabilities" -headers $head -blocksize 1048580]
    } else {
-      set req [http::geturl "${path}SERVICE=WMS&REQUEST=GetCapabilities" -blocksize 1048580]
+      set req [http::geturl "${url}SERVICE=WMS&REQUEST=GetCapabilities" -headers $head -blocksize 1048580]
    }
    upvar #0 $req state
 #   puts stderr $state(charset)
@@ -191,7 +210,7 @@ proc  Mapper::DepotWare::WMS::Select { Tree Branch { Select True } { SQL "" } } 
 proc Mapper::DepotWare::WMS::Request { } {
    variable Data
 
-   return $Data(URL)
+   return [list $Data(URL) $Data(User) $Data(Password)]
 }
 
 #-------------------------------------------------------------------------------
@@ -619,6 +638,20 @@ proc Mapper::DepotWare::WMS::GetLegend { Band URL } {
 #
 #-------------------------------------------------------------------------------
 
+proc Mapper::ToHTML { String } {
+   variable Param
+
+   set Param(HTMLCharNumbers) { &#13; \\n &#34; \# &#35; \" &#38; & &#39; ' &#60; < &#62; > &#161; ¡ &#162; ¢ &#163; £ &#164; ¤ &#165; ¥ &#166; ¦ &#167; § &#168; ¨ &#169; ©
+      &#170; ª &#171; « &#172; ¬ &#174; ® &#175; ¯ &#176; ° &#177; ± &#178; ² &#179; ³ &#180; ´ &#181; µ &#182; ¶ &#183; · &#184; ¸ &#185; ¹ &#186; º
+      &#187; » &#188;  ¼ &#189;  ½ &#190; ¾ &#191; ¿ &#192; À &#193; Á &#194; Â &#195; Ã &#196; Ä &#197; Å &#198; Æ &#199; Ç &#200; È
+      &#201; É &#202; Ê &#203; Ë &#204; Ì &#205; Í &#206; Î &#207; Ï &#208; Ð &#209; Ñ &#210; Ò &#211; Ó &#212; Ô &#213; Õ &#214; Ö
+      &#215; × &#216; Ø &#217; Ù &#218; Ú &#219; Û &#220; Ü &#221; Ý &#222; Þ &#223; ß &#224; à &#225; á &#226; â &#227; ã &#228; ä
+      &#229; å &#230; æ &#231; ç &#232; è &#233; é &#234; ê &#235; ë &#236; ì &#237; í &#238; î &#239; ï &#240; ð &#241; ñ &#242; ò
+      &#243; ó &#244; ô &#245; õ &#246; ö &#247; ÷ &#248; ø &#249; ù &#250; ú &#251; û &#252; ü &#253; ý &#254; þ &#255; ÿ }
+
+      return [string map [lreverse $Param(HTMLCharNumbers)] $String]
+}
+
 proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    variable Data
 
@@ -626,7 +659,9 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
       return
    }
    
-   set url          [lindex $Data($Layer) 0]
+   set url          [lindex $Data($Layer) 0 0]
+   set user         [lindex $Data($Layer) 0 1]
+   set password     [lindex $Data($Layer) 0 2]
    set layer        [lindex $Data($Layer) 3]
    set geog         [lindex $Data($Layer) 5]
    set sizex        [lindex $Data($Layer) 6]
@@ -662,8 +697,11 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
       file mkdir $Mapper::DepotWare::Data(CachePath)
    }
 
+
    #----- Build XML request file
-   set layer [string map { " " "%20" } $layer]
+   set layer    [string map { " " "%20" } $layer]
+   set password [Mapper::ToHTML $password]
+   set user     [Mapper::ToHTML $user]
 
    if { [gdalband is $Layer] } {
       set id $Layer
@@ -690,9 +728,14 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    if { $cache && $Mapper::DepotWare::Data(CachePath)!="" } {
       append xml "   <Cache>\n   <Path> [file rootname $file]</Path>\n   <Depth>2</Depth>\n   </Cache>\n"
    }
-   append xml "   <OfflineMode>false</OfflineMode>\n   <ZeroBlockHttpCodes>204,404</ZeroBlockHttpCodes>\n   <ZeroBlockOnServerException>true</ZeroBlockOnServerException>\n</GDAL_WMS>"
+   
+   puts stderr .$url.$user.$password.
+   if { $user!="" && $password!="" } {
+      append xml "   <UserPwd>$user:$password</UserPwd>\n   <UnsafeSSL>true</UnsafeSSL>\n"
+   }
+   append xml "   <AdviseRead>true</AdviseRead>\n   <OfflineMode>false</OfflineMode>\n   <ZeroBlockHttpCodes>204,404</ZeroBlockHttpCodes>\n   <ZeroBlockOnServerException>true</ZeroBlockOnServerException>\n</GDAL_WMS>"
 
-   set f [open $file w]
+   set f [open $file w 600]
    puts $f $xml
    close $f
 

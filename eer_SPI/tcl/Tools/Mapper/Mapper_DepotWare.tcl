@@ -210,7 +210,7 @@ set Mapper::DepotWare::Data(CacheMax) $Data(CacheMax)
 set Mapper::DepotWare::Data(Depots) {"
 
    foreach depot $Data(Depots) {
-      puts $f "   \{ $depot \}"
+      puts $f "   \{$depot\}"
    }
    puts $f "}"
    
