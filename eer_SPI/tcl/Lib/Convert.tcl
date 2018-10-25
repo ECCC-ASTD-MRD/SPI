@@ -696,7 +696,7 @@ proc ISO8601::Decode { ISO T0 T1 P L } {
       #----- Build time list
       if { $p!="" } {
          set t $t0
-         while { $t<$t1 } {
+         while { $t<=$t1 } {
             lappend l $t
             incr t $s
          }

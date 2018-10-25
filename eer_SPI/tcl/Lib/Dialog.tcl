@@ -523,6 +523,38 @@ proc Dialog::WaitDestroy { { Ask False } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Dialog::WaitSimple>
+# Creation : Septembre 2018 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Simplifie et encapsule le dialog de processus en cours.
+#            En cas d'erreur du code, le dialog est retiré avant de relancer
+#            l'erreur, ce qui évite de geler la fenêtre à cause du grab.
+#            Comme le code est exécuté dans le contexte de la fonction appelante,
+#            toutes les variables locales sont accessibles. De même, le "return"
+#            en cas d'erreur (ou de "return' du code) sera exécuté dans le
+#            contexte de la fonction appelante.
+#
+# Parametres :
+#  <Msg>    : Message à afficher
+#  <Code>   : Code à exécuter
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+proc Dialog::WaitSimple { Msg Code } {
+   Dialog::Wait . $Msg
+   if { [catch {
+      uplevel 1 $Code
+   } err opts] } {
+      #----- Remove the waiting dialog before raising the error again
+      Dialog::WaitDestroy
+      return -options $opts -level 2 $err
+   }
+   Dialog::WaitDestroy
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Dialog::Message>
 # Creation : Juillet 98 - J.P. Gauthier - CMC/CMOE -
 #
