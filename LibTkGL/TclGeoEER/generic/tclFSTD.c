@@ -340,7 +340,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                case LVL_PRES  : sprintf(buf,"%.1f mb (Pressure)",level); break;
                case LVL_UNDEF : sprintf(buf,"%.1f  - (Undefined)",level); break;
                case LVL_MAGL  : sprintf(buf,"%.1f  m (Meter above groud level)",level); break;
-               case LVL_HYBRID: sprintf(buf,"%.8f hy (Hybrid)",level); break;
+               case LVL_HYBRID: sprintf(buf,"%.5f hy (Hybrid)",level); break;
                case LVL_THETA : sprintf(buf,"%.4f th (Theta)",level); break;
                case LVL_NBR   : sprintf(buf,"%.4f nb (Number)",level); break;
                case LVL_HOUR  : sprintf(buf,"%.1f hr (Hours)",level); break;
