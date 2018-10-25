@@ -1142,6 +1142,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          if { [fstdfield is $fieldID] } {
             if { !$Animator::Play(Stop) } {
                set Data(Secs) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
+               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
                Viewport::Assign $Data(Frame) $vpID $fieldID -1
                return
             } else {
@@ -1157,7 +1158,11 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                puts "STANDARD FILE - Opening $fileID	$filepath"
             }
             
-            set levelType [APViz::GetLevelType $src]            
+            if { $lev>32768 } {
+               set lvl $lev
+            } else {      
+               set lvl [subst {$lev [APViz::GetLevelType $src]}]
+            }
 
             switch $var {
                "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType $ip3 $etiket}
@@ -1167,7 +1172,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                               APViz::LayerToggle ${Index} Layer False
 
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
-                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
                               return
                            } else {
                               APViz::LayerToggle ${Index} Layer True
@@ -1179,10 +1184,10 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                         }
                
                default  {  
-                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket [subst {$lev $levelType}] -1 $ip3 "" $var }]} {                                       
+                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket $lvl -1 $ip3 "" $var }]} {                                       
                               APViz::LayerToggle ${Index} Layer False
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
-                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
+                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
                               return
                            } else {
                               APViz::LayerToggle ${Index} Layer True
@@ -1236,7 +1241,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             }
          } else {
             APViz::LayerToggle ${Index} Layer False
-            set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
+            set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
             
             #----- Concatener le path du fichier au message d'erreur
             set Data(Msg) "[lindex $Lbl(InvalidFile) $GDefs(Lang)] $filepath"
