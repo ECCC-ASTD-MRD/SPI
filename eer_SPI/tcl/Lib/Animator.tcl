@@ -1008,29 +1008,33 @@ proc Animator::Play { } {
       #----- Determiner le temps courant
       set Play(Now) [set info [lindex $Play(Frames) $Play(Frame)]]
 
-      #----- Recuperer l'information
-      foreach vp $Play(VPs) {
-         if { [info exists Play($vp$info)] } {
+      if { [llength $info]>1 } {
+         #----- If the playlist is a command
+         eval set info \[$info\]
+      } else {
+         #----- Playlist is a single item, Get related info
+         foreach vp $Play(VPs) {
+            if { [info exists Play($vp$info)] } {
 
-            #----- Applique la macro de calcul
-            set Play(Data$vp) $Play($vp$info)
-            set Play(Data)    [concat $Play($vp$info) [FieldCalc::Operand $vp $Play($vp$info)]]
+               #----- Applique la macro de calcul
+               set Play(Data$vp) $Play($vp$info)
+               set Play(Data)    [concat $Play($vp$info) [FieldCalc::Operand $vp $Play($vp$info)]]
 
-            #----- Check for persistent data (time=0)
-            if { $info!=0 && [info exists Play(${vp}0)] } {
-               lappend Play(Data) $Play(${vp}0)
+               #----- Check for persistent data (time=0)
+               if { $info!=0 && [info exists Play(${vp}0)] } {
+                  lappend Play(Data) $Play(${vp}0)
+               }
+               if { $Play(Cache) && !$Play(File) } {
+                  $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data)
+               } else {
+                  $Play(Canvas) itemconf $vp -frame 0 -data $Play(Data)
+               }
+
+               #----- Animer les viewport liees
+               Viewport::LinkDo $vp
             }
-            if { $Play(Cache) && !$Play(File) } {
-               $Play(Canvas) itemconf $vp -frame [expr $Play(Idx)+1] -data $Play(Data)
-            } else {
-               $Play(Canvas) itemconf $vp -frame 0 -data $Play(Data)
-            }
-
-            #----- Animer les viewport liees
-            Viewport::LinkDo $vp
          }
       }
-
       set Play(Mode) $Play(Type)
       
       #----- Appeler la fonction de mises a jour des informations
