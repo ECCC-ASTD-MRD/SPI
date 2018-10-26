@@ -5,7 +5,7 @@
 #----- SSM specifics
 NAME="libSPI"
 DESC="EER-SPI library dependencies"
-VERSION="7.12.3"
+VERSION="7.12.4"
 MAINTAINER="Jean-Philippe Gauthier"
 BUILDINFO=`git describe --always`
 
@@ -68,7 +68,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.3.2${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_3.3.3${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 EXT_LIB_PATH=${EXT_LIB_PATH}/${ORDENV_PLAT}
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
