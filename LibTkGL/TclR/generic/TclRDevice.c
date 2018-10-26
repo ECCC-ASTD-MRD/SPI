@@ -15,7 +15,6 @@
 
 // Driver includes
 #include "TclRDeviceX.h"
-#include "TclRDevicePrintf.h"
 #include "tkCanvRDevice.h"
 
 SEXP TclRDevice_InitFromR() {
