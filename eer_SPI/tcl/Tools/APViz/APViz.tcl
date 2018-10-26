@@ -1424,11 +1424,13 @@ proc APViz::CalculateExpression { Product Index } {
          
          #----- Apply variable configs from config file 
          #----- Verify if configs for calc was specified first
-         if { [catch {eval fstdfield configure $fieldID $Param(CALC)} ]} {
-            if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
-               if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
-                  #----- Valeur par defaut
-                  fstdfield configure $fieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+         if {[catch {eval fstdfield configure $fieldID $Param(CALC:$Value(CLetter,$Index))}]} {
+            if { [catch {eval fstdfield configure $fieldID $Param(CALC)} ]} {
+               if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
+                  if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
+                     #----- Valeur par defaut
+                     fstdfield configure $fieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+                  }
                }
             }
          }
