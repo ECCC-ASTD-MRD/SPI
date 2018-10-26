@@ -114,16 +114,16 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     // Initialize item's record.
     rdv->GC = None;
     rdv->Canv = Canv;
-
-    // Process coords
+    rdv->RDev = NULL;
 
     // Check where configure argument starts
     for(i=0; i<Objc; ++i) {
-        arg = Tcl_GetString(Objv[1]);
+        arg = Tcl_GetString(Objv[i]);
         if ((arg[0] == '-') && (arg[1] >= 'a') && (arg[1] <= 'z')) {
             break;
         }
     }
+    // Process coords
     if( !i || RDeviceCoords(Interp,Canv,ItemPtr,i,Objv)!=TCL_OK ) {
         goto error;
     }
