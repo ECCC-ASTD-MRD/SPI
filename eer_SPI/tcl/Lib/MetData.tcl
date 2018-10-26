@@ -278,12 +278,8 @@ proc MetData::StampModulo { Stamp Sec } {
 }
 
 proc MetData::File2Sec { File } {
-
-   set dh [split [file tail $File] _]
-   set r  [lindex $dh 0]
-   set ex [lindex $dh 1]
-
-   return [clock scan "[string range $r 0 7] [string range $r 8 9] +[string range [lindex $dh 1] 0 2] hours" -timezone :UTC]
+   scan [file tail $File] %10s_%03d dt h
+   return [clock add [clock scan $dt -format "%Y%m%d%H" -timezone :UTC] $h hours -timezone :UTC]
 }
 
 #----------------------------------------------------------------------------
@@ -813,7 +809,6 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
    set tt [catch { fstdfield read OBTT $File $Stamp "" 12000 -1 -1 "" TT }]
 
    if { !$p0 && !$fq && !$fc && !$tt } {
-
       set p0 [fstdfield stats OBP0 -coordvalue $Lat $Lon]
       set fq [fstdfield stats OBFQ -coordvalue $Lat $Lon]
       set fc [fstdfield stats OBFC -coordvalue $Lat $Lon]
@@ -836,10 +831,8 @@ proc MetData::ObukhovCalculate { Stamp File Lat Lon } {
          Log::Print WARNING "MetData::ObukhovCalculate: Off grid localisation, will use default value"
          set L 22856.0320937
       }
-
    } else {
-
-      Log::Print WARNING "MetData::ObukhovCalculate: Missing fields, will use default value"
+      Log::Print WARNING "MetData::ObukhovCalculate: Missing fields, will use default value (p0=$p0 fq=$fq fc=$fc tt=$tt)"
 
       #----- Si on ne peut calculer, mettre un atmosphere neurtre
       set L 22856.0320937

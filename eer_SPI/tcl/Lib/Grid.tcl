@@ -418,7 +418,7 @@ proc Grid::Create { { GridInfo {} } { ID MODELGRID } } {
 proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    variable Param
 
-   set center      False
+   set center      True
 
    set Param(Id)   [lindex $Scale 0]                          ;#----- Grid scale name
    set Param(Type) [string trimleft  [lindex $Scale 1] "("]   ;#----- Grid type
@@ -453,12 +453,12 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    #----- For latlon grid, check for global case
    if { $Param(Type)=="LZ" || $Param(Type)=="LL" } {
       if { [expr ($Param(NI)*$Param(ResLL))>=(360-$Param(ResLL))] } {
+          set center False
           set Param(Lon0) -180
           set Param(Lon1) 180
           set Param(Lat0) -90
           set Param(Lat1) 90
       } else {
-          set center True
           set Param(Lon0) 0
           set Param(Lon1) [expr $Param(ResLL)*$Param(NI)]
           set Param(Lat0) 0
@@ -466,7 +466,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
       }
    }
 
-   if { $center || $Lon!=0.0 } {
+   if { $center } {
       Grid::Center $Lat $Lon
    } else {
       Grid::Create
@@ -560,7 +560,7 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 
    Grid::BBoxOrder
 
-   set ni [expr int(ceil(($Lon1-$Lon0)/$Res))+1]
+   set ni [expr int(min(ceil(($Lon1-$Lon0)/$Res)+1,360.0/$Res))]
    set nj [expr int(ceil(($Lat1-$Lat0)/$Res))+1]
 
    if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {

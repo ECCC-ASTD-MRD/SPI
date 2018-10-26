@@ -40,10 +40,7 @@ namespace eval APViz {
    set Data(VP)     ""       ;#Viewport actif
    set Data(Tab)    ""       ;#Onglet de l'outils
    
-   set Data(Lat0)   0        ;#Coordonnees de la boite de selection
-   set Data(Lon0)   0
-   set Data(Lat1)   0
-   set Data(Lon1)   0
+   set Data(Secs)   0
    
    #----- Widgets
    set Data(RangeSection)	""	; #Section des variables
