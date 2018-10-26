@@ -56,6 +56,7 @@ namespace eval APViz {
                                     \nVeuillez fermer l'application et définir cette variable avant d'utiliser APViz." \
                                    "Environnement variable SPI_APVIZ (configuration paths) not defined or empty. \nPlease close SPI and define SPI_AVIZ before using APViz." }
    set Lbl(InvalidExpression)   { "Expression invalide: " "Invalid expression: "}
+   set Lbl(InvalidGOESPath)     { "Lien symbolic pour accéder au latest de GOES invalide: " "Symbolic link to GOES invalid: "}
    
    set Error(Product)           { "Produit invalide" " Invalid product" }
    

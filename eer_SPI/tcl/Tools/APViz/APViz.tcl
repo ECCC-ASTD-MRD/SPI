@@ -191,7 +191,6 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajouter le ID a la liste
          lappend ${::APViz::Data(CalcIDs)} CALC$Value(RowIDCalc$no)
-         puts "====== Created $Widget.calc.$no"
          return $no
       }
       
@@ -1136,6 +1135,27 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set filepath $DataSrc($model,$src)/$Data(timestamp)      ; # Format: AAAAMMDDRR_HHH
          set fileID FILE_${model}_${src}_$Data(timestamp)
          
+         #If model is GOES: no specific hour or date, path will point to symbolic link
+         #----- Get path
+         #============================== RECUPERATION PATH GOES ================================
+         set comment {
+         if {$model eq "GOES"} {
+             if { [catch {set filepath [file readlink $Data($model,$src)]}] } {
+               #----- If not a symbolic link
+               set message {}
+               foreach msg $Lbl(InvalidGOESPath) {
+                  lappend message [concat $msg $Data($model,$src)]
+               }
+               ::Dialog::Error . $message
+            } else {
+               #----- Recuperation du timestamp selon le nom du fichier pour utilisation du Animator
+               #TODO: Recuperer & inclure heure a 3digits?
+               set Data(timestamp) [string range [file tail filepath] 0 12]      ; # Format: AAAAMMDDRR_HH
+               set fileID FILE_${model}_${src}_$Data(timestamp)
+            }
+         }
+         }
+         
          if { !$Animator::Play(Stop) } {
             set fieldID fld$Value(RowIDLayer$Index)_$Data(timestamp)
          } else {
@@ -1266,6 +1286,11 @@ proc APViz::LayerToggle { Index Type Active } {
       set widget  $Data(Tab).calc.$Index.check 
    }
    
+   #----- Verify if widget exists
+   if {![winfo exists $widget]} {
+      return
+   }
+   
    if { $Active } {
       $widget configure -state normal -background $GDefs(ColorFrame) -selectcolor $GDefs(ColorHighLight)
    } else {
@@ -1374,7 +1399,6 @@ proc APViz::CalculateExpression { Product Index } {
    variable ${Product}::Value
    variable ${Product}::Param
    
-   puts "Calculating for calc index : $Index"
    APViz::LayerToggle ${Index} Calc True
    set expression $Value(Formula,$Index)
    
