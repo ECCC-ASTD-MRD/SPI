@@ -191,6 +191,7 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajouter le ID a la liste
          lappend ${::APViz::Data(CalcIDs)} CALC$Value(RowIDCalc$no)
+         puts "====== Created $Widget.calc.$no"
          return $no
       }
       
@@ -914,7 +915,9 @@ proc APViz::Refresh { Product } {
    variable ${Product}::Value
 
    for { set c 0 } { $c < $Value(NbCalcLayers) } { incr c } {
-      APViz::CalculateExpression $Product $c
+      if {$Value(RowIDCalc$c) >= 0} {
+         APViz::CalculateExpression $Product $c
+      }
    }
    
    Viewport::UpdateData $Data(Frame)
@@ -1370,10 +1373,11 @@ proc APViz::CalculateExpression { Product Index } {
    variable Lbl
    variable ${Product}::Value
    variable ${Product}::Param
-
+   
+   puts "Calculating for calc index : $Index"
    APViz::LayerToggle ${Index} Calc True
    set expression $Value(Formula,$Index)
-
+   
    if { $expression ne "" } {
     
       #----- Substitute expressions
@@ -1381,9 +1385,9 @@ proc APViz::CalculateExpression { Product Index } {
       set vpID       [GetVPId $Value(CalcVP,$Index)]
 
       if { !$Animator::Play(Stop) } {
-         set fieldID CALC$Value(RowIDLayer$Index)_$Data(timestamp)
+         set fieldID CALC$Value(RowIDCalc$Index)_$Data(timestamp)
       } else {
-         set fieldID CALC$Value(RowIDLayer$Index)
+         set fieldID CALC$Value(RowIDCalc$Index)
       }
       
       if { [fstdfield is $fieldID] } {
