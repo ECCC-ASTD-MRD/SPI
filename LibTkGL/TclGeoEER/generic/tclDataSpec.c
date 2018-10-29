@@ -1081,7 +1081,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
 
          case INTERSPECS:
             if (Objc==1) {
-               Tcl_SetObjResult(Interp,Spec->InterSpecs);
+               if (Spec->InterSpecs)
+                  Tcl_SetObjResult(Interp,Spec->InterSpecs);
             } else {
                Spec->InterSpecs=Tcl_DuplicateObj(Objv[++i]);
                Tcl_IncrRefCount(Spec->InterSpecs);
