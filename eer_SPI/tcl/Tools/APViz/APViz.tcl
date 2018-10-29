@@ -914,7 +914,9 @@ proc APViz::Refresh { Product } {
    variable ${Product}::Value
 
    for { set c 0 } { $c < $Value(NbCalcLayers) } { incr c } {
-      APViz::CalculateExpression $Product $c
+      if {$Value(RowIDCalc$c) >= 0} {
+         APViz::CalculateExpression $Product $c
+      }
    }
    
    Viewport::UpdateData $Data(Frame)
@@ -1142,6 +1144,27 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set filepath $DataSrc($model,$src)/$Data(timestamp)      ; # Format: AAAAMMDDRR_HHH
          set fileID FILE_${model}_${src}_$Data(timestamp)
          
+         #If model is GOES: no specific hour or date, path will point to symbolic link
+         #----- Get path
+         #============================== RECUPERATION PATH GOES ================================
+         set comment {
+         if {$model eq "GOES"} {
+             if { [catch {set filepath [file readlink $Data($model,$src)]}] } {
+               #----- If not a symbolic link
+               set message {}
+               foreach msg $Lbl(InvalidGOESPath) {
+                  lappend message [concat $msg $Data($model,$src)]
+               }
+               ::Dialog::Error . $message
+            } else {
+               #----- Recuperation du timestamp selon le nom du fichier pour utilisation du Animator
+               #TODO: Recuperer & inclure heure a 3digits?
+               set Data(timestamp) [string range [file tail filepath] 0 12]      ; # Format: AAAAMMDDRR_HH
+               set fileID FILE_${model}_${src}_$Data(timestamp)
+            }
+         }
+         }
+         
          if { !$Animator::Play(Stop) } {
             set fieldID fld$Value(RowIDLayer$Index)_$Data(timestamp)
          } else {
@@ -1256,6 +1279,11 @@ proc APViz::LayerToggle { Index Type Active } {
       set widget  $Data(Tab).calc.$Index.check 
    }
    
+   #----- Verify if widget exists
+   if {![winfo exists $widget]} {
+      return
+   }
+   
    if { $Active } {
       $widget configure -state normal -background $GDefs(ColorFrame) -selectcolor $GDefs(ColorHighLight)
    } else {
@@ -1366,10 +1394,10 @@ proc APViz::CalculateExpression { Product Index } {
    variable Lbl
    variable ${Product}::Value
    variable ${Product}::Param
-
+   
    APViz::LayerToggle ${Index} Calc True
    set expression $Value(Formula,$Index)
-
+   
    if { $expression ne "" } {
     
       #----- Substitute expressions
@@ -1377,9 +1405,9 @@ proc APViz::CalculateExpression { Product Index } {
       set vpID       [GetVPId $Value(CalcVP,$Index)]
 
       if { !$Animator::Play(Stop) } {
-         set fieldID CALC$Value(RowIDLayer$Index)_$Data(timestamp)
+         set fieldID CALC$Value(RowIDCalc$Index)_$Data(timestamp)
       } else {
-         set fieldID CALC$Value(RowIDLayer$Index)
+         set fieldID CALC$Value(RowIDCalc$Index)
       }
       
       if { [fstdfield is $fieldID] } {
@@ -1416,11 +1444,13 @@ proc APViz::CalculateExpression { Product Index } {
          
          #----- Apply variable configs from config file 
          #----- Verify if configs for calc was specified first
-         if { [catch {eval fstdfield configure $fieldID $Param(CALC)} ]} {
-            if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
-               if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
-                  #----- Valeur par defaut
-                  fstdfield configure $fieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+         if {[catch {eval fstdfield configure $fieldID $Param(CALC:$Value(CLetter,$Index))}]} {
+            if { [catch {eval fstdfield configure $fieldID $Param(CALC)} ]} {
+               if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
+                  if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
+                     #----- Valeur par defaut
+                     fstdfield configure $fieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+                  }
                }
             }
          }
@@ -2985,6 +3015,7 @@ proc APViz::UpdateItems { Frame } {
             set eti  [fstdfield define $fld -ETIKET]
             set var  [fstdfield define $fld -NOMVAR]
             set desc [fstdfield configure $fld -desc]
+
             #----- TODO: Recuperer la formule pour decrire le calcul
             set lvl [lrange [fstdgrid convip [fstdfield define $fld -IP1]] 0 1]
             set hr  [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
