@@ -153,7 +153,7 @@ proc APViz::Window { } {
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .apviz.dock.coo -textvariable APViz::Data(Msg) -bg $GDefs(ColorLight) -width 46 -bd 1
+         entry .apviz.dock.coo -textvariable APViz::Data(Msg) -bg $GDefs(ColorLight) -width 50 -bd 1
          pack .apviz.dock.sel .apviz.dock.del -side left
          pack .apviz.dock.coo -side left -fill both -expand true
       pack .apviz.dock -side bottom -fill x

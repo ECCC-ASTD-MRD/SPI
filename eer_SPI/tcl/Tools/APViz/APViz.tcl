@@ -1088,24 +1088,33 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       if { $src eq "BURP" } {
          set timestamp ${date}${run}_
          set filepath $DataSrc(OBS,$model)/$timestamp
-         puts "BURP Filepath for $var: $filepath"
+         
+         if { !$Animator::Play(Stop) } {
+            set obsID obs$Value(RowIDLayer$Index)_$timestamp
+         } else {
+            set obsID obs$Value(RowIDLayer$Index)
+         }
          
          #----- Liberer l'observation
-         if { [metobs is [lindex $Data(LayerIDs) $Value(RowIDLayer$Index)]] } {
-            APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)
+         if { [metobs is $obsID] } {
+            if { !$Animator::Play(Stop) } {
+               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $obsID]
+               if { $Data(Secs) } { metobs define $obsID -VALID $Data(Secs) 0 }
+               Viewport::Assign $Data(Frame) $vpID $obsID -1
+               return
+            } else {
+               APViz::RemoveVariableFromVP $Data(LayerIDs) $Value(RowIDLayer$Index)
+            }
          }
-
-         set obsID obs$Value(RowIDLayer$Index)
+         puts "BURP FILE for $var: $filepath"
          
          #----- In case id alreayd exists
          if { [metobs is $obsID] } {
             metobs free $obsID
-         }
-         
+         }       
          metobs create $obsID $filepath
-         if { $Data(PR_timestamp) ne "" } {
-            metobs define $obsID -VALID $Data(PR_timestamp) 0
-         }
+         
+         if { $Data(Secs) } { metobs define $obsID -VALID $Data(Secs) 0 }
 
          dataspec create $obsID
          
@@ -1165,23 +1174,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             }
 
             switch $var {
-               "DZ"     { APViz::AssignDZ $Product $Index $model $var $lev $fileID $fieldID $levelType $ip3 $etiket}
-               
-               "PR"     { 
-                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket -1 -1 $ip3 "" $var }]} {
-                              APViz::LayerToggle ${Index} Layer False
-
-                              set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
-                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
-                              return
-                           } else {
-                              APViz::LayerToggle ${Index} Layer True
-                              #----- Set fieldfactor and timestamp (For osbervations)
-                              fstdfield configure $fieldID -factor 1e3
-                              set Data(PR_timestamp) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
-                              set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
-                           }
-                        }
+               "DZ"     { APViz::AssignDZ $Product $Index $src $model $var $lev $fileID $fieldID $ip3 $etiket}
                
                default  {  
                            if {[catch {fstdfield read $fieldID $fileID -1 $etiket $lvl -1 $ip3 "" $var }]} {                                       
@@ -1230,11 +1223,11 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             
             fstdfield configure $fieldID -colormap $colormapName
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
-
+            
+            set Data(Secs) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
             if { !$Animator::Play(Stop) } {
-               set secs [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
-               lappend Animator::Play(Frames) $secs
-               lappend Animator::Play($vpID$secs) $fieldID
+               lappend Animator::Play(Frames) $Data(Secs)
+               lappend Animator::Play($vpID$Data(Secs)) $fieldID
                lappend Animator::Play(VPs) $vpID
             } else {
               Viewport::Assign $Data(Frame) $vpID $fieldID 1
@@ -1277,6 +1270,7 @@ proc APViz::LayerToggle { Index Type Active } {
 # But      :    Verifier si tous les champs ont ete remplis
 #
 # Parametres      :
+#       <Source>  : Source de donnees
 #       <Model>   : Nom du modele meteorologique
 #       <Var>     : Variable meteorologique
 #       <Level>   : Niveau
@@ -1290,7 +1284,7 @@ proc APViz::LayerToggle { Index Type Active } {
 #
 #-------------------------------------------------------------------------------
 
-proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 Etiket } {
+proc APViz::AssignDZ { Product Index Source Model Var Lev FileID FieldID Ip3 Etiket } {
    global GDefs
    variable Data
    variable ${Product}::Value
@@ -1312,11 +1306,12 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 
    }
    
    #----- GZ1 field
-   if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket [subst {$lev1 $LevelType}] -1 $Ip3 "" GZ}]} {
+   set lvl [subst {$lev1 [APViz::GetLevelType $Source]}]
+   if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket $lvl -1 $Ip3 "" GZ}]} {
       #----- Etiket might be wrong
       puts "Etiket was wrong for DZ, changing to blank"
       set Etiket ""
-      if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket [subst {$lev1 $LevelType}] -1 $Ip3 "" GZ}]} {
+      if {[catch {fstdfield read $fieldIDGZ1 $FileID -1 $Etiket $lvl -1 $Ip3 "" GZ}]} {
          puts "fieldIDGZ1: $fieldIDGZ1 failed for level $lev1"
          ::Dialog::Error . $Lbl(InvalidField)
          set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]
@@ -1325,7 +1320,8 @@ proc APViz::AssignDZ { Product Index Model Var Lev FileID FieldID LevelType Ip3 
    } 
    
    #----- GZ2 field
-   if {[catch {fstdfield read $fieldIDGZ2 $FileID -1 $Etiket [subst {$lev2 $LevelType}] -1 $Ip3 "" GZ}]} {
+   set lvl [subst {$lev2 [APViz::GetLevelType $Source]}]
+   if {[catch {fstdfield read $fieldIDGZ2 $FileID -1 $Etiket $lvl -1 $Ip3 "" GZ}]} {
       puts "fieldIDGZ2: $fieldIDGZ2 failed for level $lev2"
       ::Dialog::Error . $Lbl(InvalidField)
       set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) FLD$Value(RowIDLayer$Index)]

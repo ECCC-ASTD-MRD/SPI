@@ -71,8 +71,7 @@ namespace eval APViz {
    set Data(Dates)              {}
    set Data(Date)               ""
 
-   set Data(PR_timestamp)       ""
-   set Data(VPCount)             1
+   set Data(Secs)               0
    set Data(ColNames)           { Models Runs Hours Sources Vars Levels IP3 Viewports Etiket}
    set Data(DefaultColormap)    ""
    set Data(ImageName)          ""
