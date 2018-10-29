@@ -2050,7 +2050,7 @@ proc Viewport::ParamFrame { Frame Apply } {
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/2" -variable Viewport::Map(CoordNum) -value 2 -command "$Apply configure -state normal"
       $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/3" -variable Viewport::Map(CoordNum) -value 3 -command "$Apply configure -state normal"
 
-      pack $Data(Frame).left $Data(Frame).layer -side left -fill both -expand true -padx 5 -pady 5
+      pack $Data(Frame).left $Data(Frame).layer -side left -fill x -padx 5 -pady 5 -anchor n
 
    Bubble::Create $Data(Frame).proj.type.list.select $Bubble(Proj)
    Bubble::Create $Data(Frame).left.ras.topo         $Bubble(Topo)

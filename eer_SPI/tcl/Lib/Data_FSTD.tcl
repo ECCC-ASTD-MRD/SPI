@@ -140,6 +140,8 @@ namespace eval FSTD {
    set Param(IntervalMode)  "NONE"         ;#Mode de selection des niveaux
    set Param(IntervalParam) 0              ;#Nombre de niveaux a definir
    set Param(IntervalDef)   ""             ;#Nom du produit dans les listes  ERPG/AEGL
+   set Param(Interspecs)    {}             ;#List de configuration specifiques de contours
+   set Param(InterspecsNb)  3              ;#Nombre maximum de configuration specifiques de contours
 
    set Param(Axis)          X
    set Param(X0)            1
@@ -180,63 +182,66 @@ namespace eval FSTD {
 
    #----- Definitions des bulles
 
-   set Bubble(Format)    { "Sélection du format de l'affichage des valeurs"
-                           "Select the display format of values" }
-   set Bubble(MapAll)    { "Appliquer la palette aux vecteurs, contours et points"
-                           "Apply colormap to vectors, contours and points" }
-   set Bubble(Color)     { "Sélection de la couleur des contours, points et libelles"
-                           "Select color for contour, points and labels" }
-   set Bubble(Width)     { "Sélection de la largeur des contours et lignes de courants"
-                           "Select width of contour and streamline" }
-   set Bubble(Dash)      { "Sélection du pointillé des countours"
-                           "Selec contour dash type" }
-   set Bubble(Contour)   { "Affichage de contour selon la précision sélectionnée"
-                           "Display contours based on selected precision" }
-   set Bubble(Texture)   { "Affichage du remplissage des cellules selon la palette"
-                           "Display cell filling based on colormap" }
-   set Bubble(Volume)    { "Affichage en iso-surface 3D des intervalles spécifiés"
-                           "Display 3D isosurface of the selected intervals" }
-   set Bubble(Grid)      { "Affichage des points de grilles selon la dimension sélectionnée"
-                           "Display gridpoints based on selected dimension" }
-   set Bubble(Vector)    { "Afichage des vecteurs selon le mode sélectionné (champs vectoriels)"
-                           "Display vectors based on selected mode (vectorial fields)" }
-   set Bubble(Particle)  { "Affichage des parcelles selon la dimension sélectionnée (nuages de points)"
-                           "Display parcels based on selected dimension" }
-   set Bubble(Label)     { "Affichage de libelle sur les contours"
-                           "Display contour labels" }
-   set Bubble(Value)     { "Affichage du min/max ou valeur centrales"
-                           "Display min/max or central values" }
-   set Bubble(Mask)      { "Appliquer le masque si existant (TYPVAR @@)"
-                           "Apply mask if found (TYPVAR @@)" }                        
-   set Bubble(Unit)      { "Unitées de la variable specifie"
-                           "Specified variable units" }
-   set Bubble(Desc)      { "Description de la donnnée"
-                           "Data description" }
-   set Bubble(NomVar)    { "Sélection du champs dont\nvous désirez modifier les paramêtres"
-                           "Select the field which you want to change the parameters" }
-   set Bubble(Mode)      { "Méthode de sélection des niveaux"
-                           "Level selection method" }
-   set Bubble(Nb)        { "Nombre de niveaux déterminés"
-                           "Number of levels" }
-   set Bubble(Conv)      { "Conversion appliquée aux valeurs du champs (+ Delta x Facteur)"
-                           "Conversion applied to the field values (+ Delta x Factor)" }
-   set Bubble(Intervals) { "Liste des intervals (1 2 3 ... ou [0 1])"
-                           "Intervals description (1 2 3 ... ou [0 1])" }
-   set Bubble(Font)      { "Police de caractères pour l'information"
-                           "Font used to display information" }
-   set Bubble(Map)       { "Palette utilisée pour les valeurs"
-                           "Colormap used for values" }
-   set Bubble(MapAbove)  { "Palette utilisée pour les valeurs haut dessus du maximum spécifié"
-                           "Colormap used for values above maximum specified" }
-   set Bubble(MapBelow) { "Palette utilisée pour les valeurs sous le minimum spécifié"
-                           "Colormap used for values bellow minimum specified" }
-   set Bubble(Interp)    { "Méthode d'interpolation des données (Lissage)"
-                           "Interpolation method (Smoothing)" }
-   set Bubble(Grid)      { "Sélection de sous-grilles ou grille maitre (GRTYP=U)"
-                           "Sub-grid or master grid selection (GRTYP=U)" }
-   set Bubble(Tile)      { "Sélectionnez pour reconstruire les grilles\ntuilées (GRTYP=#) en une seule grille"
-                           "Select to rebuild tiled grids (GRTYP=#) into one" }
-
+   set Bubble(Intervals)  { "Liste des intervals de contours"
+                            "List of contour intervals" }
+   set Bubble(InterSpecs) { "Configuration d'affichage spécifique à certains intervales de contour"
+                            "Specific display intervals configuration" }
+   set Bubble(Format)     { "Sélection du format de l'affichage des valeurs"
+                            "Select the display format of values" }
+   set Bubble(MapAll)     { "Appliquer la palette aux vecteurs, contours et points"
+                            "Apply colormap to vectors, contours and points" }
+   set Bubble(Color)      { "Sélection de la couleur des contours, points et libelles"
+                            "Select color for contour, points and labels" }
+   set Bubble(Width)      { "Sélection de la largeur des contours et lignes de courants"
+                            "Select width of contour and streamline" }
+   set Bubble(Dash)       { "Sélection du pointillé des countours"
+                            "Selec contour dash type" }
+   set Bubble(Contour)    { "Affichage de contour selon la précision sélectionnée"
+                            "Display contours based on selected precision" }
+   set Bubble(Texture)    { "Affichage du remplissage des cellules selon la palette"
+                            "Display cell filling based on colormap" }
+   set Bubble(Volume)     { "Affichage en iso-surface 3D des intervalles spécifiés"
+                            "Display 3D isosurface of the selected intervals" }
+   set Bubble(Grid)       { "Affichage des points de grilles selon la dimension sélectionnée"
+                            "Display gridpoints based on selected dimension" }
+   set Bubble(Vector)     { "Afichage des vecteurs selon le mode sélectionné (champs vectoriels)"
+                            "Display vectors based on selected mode (vectorial fields)" }
+   set Bubble(Particle)   { "Affichage des parcelles selon la dimension sélectionnée (nuages de points)"
+                            "Display parcels based on selected dimension" }
+   set Bubble(Label)      { "Affichage de libelle sur les contours"
+                            "Display contour labels" }
+   set Bubble(Value)      { "Affichage du min/max ou valeur centrales"
+                            "Display min/max or central values" }
+   set Bubble(Mask)       { "Appliquer le masque si existant (TYPVAR @@)"
+                            "Apply mask if found (TYPVAR @@)" }                        
+   set Bubble(Unit)       { "Unitées de la variable specifie"
+                            "Specified variable units" }
+   set Bubble(Desc)       { "Description de la donnnée"
+                            "Data description" }
+   set Bubble(NomVar)     { "Sélection du champs dont\nvous désirez modifier les paramêtres"
+                            "Select the field which you want to change the parameters" }
+   set Bubble(Mode)       { "Méthode de sélection des niveaux"
+                            "Level selection method" }
+   set Bubble(Nb)         { "Nombre de niveaux déterminés"
+                            "Number of levels" }
+   set Bubble(Conv)       { "Conversion appliquée aux valeurs du champs (+ Delta x Facteur)"
+                            "Conversion applied to the field values (+ Delta x Factor)" }
+   set Bubble(Intervals)  { "Liste des intervals (1 2 3 ... ou [0 1])"
+                            "Intervals description (1 2 3 ... ou [0 1])" }
+   set Bubble(Font)       { "Police de caractères pour l'information"
+                            "Font used to display information" }
+   set Bubble(Map)        { "Palette utilisée pour les valeurs"
+                            "Colormap used for values" }
+   set Bubble(MapAbove)   { "Palette utilisée pour les valeurs haut dessus du maximum spécifié"
+                            "Colormap used for values above maximum specified" }
+   set Bubble(MapBelow)   { "Palette utilisée pour les valeurs sous le minimum spécifié"
+                            "Colormap used for values bellow minimum specified" }
+   set Bubble(Interp)     { "Méthode d'interpolation des données (Lissage)"
+                            "Interpolation method (Smoothing)" }
+   set Bubble(Grid)       { "Sélection de sous-grilles ou grille maitre (GRTYP=U)"
+                            "Sub-grid or master grid selection (GRTYP=U)" }
+   set Bubble(Tile)       { "Sélectionnez pour reconstruire les grilles\ntuilées (GRTYP=#) en une seule grille"
+                            "Select to rebuild tiled grids (GRTYP=#) into one" }
 }
 
 #-------------------------------------------------------------------------------
@@ -546,8 +551,29 @@ proc FSTD::ParamFrame { Frame Apply } {
    bind $Data(Frame).lev.desc.edit.select <<Paste>>          {+ FSTD::IntervalSetMode NONE 0 True }
    bind $Data(Frame).lev.desc.edit.select <<PasteSelection>> {+ FSTD::IntervalSetMode NONE 0 True }
 
+   for { set l 0 } { $l<$Param(InterspecsNb) } { incr l } {
+      set Param(Color$l) black
+      set Param(Alpha$l) FF
+      set Param(Dash$l) ""
+      set Param(Width$l) 1
+      set Param(Intervals$l) {}
+      frame $Data(Frame).lev.lev$l
+         entry $Data(Frame).lev.lev$l.lst -textvariable FSTD::Param(Intervals$l) -bd 1 -width 12 -bg $GDefs(ColorLight)
+         IcoMenu::CreateDef $Data(Frame).lev.lev$l.st $GDefs(Dir)/share/bitmap \
+            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
+            FSTD::Param(Dash$l) "FSTD::ParamSet" 0 -relief groove -bd 2
+         IcoMenu::Create $Data(Frame).lev.lev$l.width $GDefs(Dir)/share/bitmap \
+            "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
+            FSTD::Param(Width$l) "FSTD::ParamSet" 0 -relief groove -bd 2
+         ColorBox::CreateSel $Data(Frame).lev.lev$l.col [list FSTD::Param(Color$l) FSTD::Param(Alpha$l)] FSTD::ParamSet
+         pack $Data(Frame).lev.lev$l.lst -side left -fill x -expand true
+         pack $Data(Frame).lev.lev$l.col $Data(Frame).lev.lev$l.width $Data(Frame).lev.lev$l.st -side left
+      pack $Data(Frame).lev.lev$l -side top -fill x -padx 2
+      Bubble::Create $Data(Frame).lev.lev$l            $Bubble(InterSpecs) 
+   } 
+           
    #------ Creation des bulles d'aide
-
+   Bubble::Create $Data(Frame).lev.desc.edit        $Bubble(Intervals)
    Bubble::Create $Data(Frame).def.l.val.interp.sel $Bubble(Interp)
    Bubble::Create $Data(Frame).def.l.val.grid.sel   $Bubble(Grid)
    Bubble::Create $Data(Frame).def.l.val.grid.tile  $Bubble(Tile)
@@ -579,7 +605,7 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.r.disp.val     $Bubble(Value)  
    Bubble::Create $Data(Frame).def.r.disp.mask    $Bubble(Mask)
 }
-
+            
 #----------------------------------------------------------------------------
 # Nom      : <FSTD::IntervalSetMode>
 # Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
@@ -856,6 +882,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Vector)     [dataspec configure $spec -rendervector]
    set Param(Axis)       [dataspec configure $spec -axis]
    set Param(Mask)       [dataspec configure $spec -mask]
+   set Param(Interspecs) [dataspec configure $spec -interspecs]
 
    if { $Param(Boundary) } {
       set Param(Grid) 6
@@ -888,6 +915,11 @@ proc FSTD::ParamGet { { Spec "" } } {
       foreach label $interlabels inter $inters {
          append Param(Intervals) "[string trim ${inter}($label)] "
       }
+   }
+
+   set i 0
+   foreach spec $Param(Interspecs) {   
+      lassign $spec Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
    }
 
    FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True
@@ -975,6 +1007,15 @@ proc FSTD::ParamSet { { Spec "" } } {
       set Param(Boundary) 0
       set grid $Param(Grid)
    }
+   
+   #----- interspecs
+   set Param(InterSpecs) {}
+   for { set i 0 }  { $i<$Param(InterspecsNb) } { incr i } {   
+      if { [llength $Param(Intervals$i)] } {
+         lappend Param(InterSpecs) [list $Param(Intervals$i) $Param(Color$i) $Param(Width$i) $Param(Dash$i)]
+      }
+   }
+
    #----- Set all params
    dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $mantisse -font $Param(Font) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
@@ -982,7 +1023,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       -renderparticle $Param(Particle) -rendergrid $grid -renderboundary $Param(Boundary) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
       -topographyfactor $Param(TopoFac) -sample $Param(Sample) -sampletype $Param(SampleType) -step $Param(Step) -gridvector $Param(GridVec) \
       -cube [list $Param(X0) $Param(Y0) $Param(Z0) $Param(X1) $Param(Y1) $Param(Z1)] -axis $Param(Axis) -size $Param(Size) -sizerange $Param(SizeRange) \
-      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -mask $Param(Mask)
+      -transparency $alpha  -min $min -max $max -mapall $Param(MapAll) -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -mask $Param(Mask) -interspecs $Param(InterSpecs)
 
    #----- Set intervals depending on interval mode
    if  { $Param(IntervalMode)=="INTERVAL" || $Param(IntervalMode)=="LINEAR" || $Param(IntervalMode)=="LOGARITHMIC" || $Param(IntervalMode)=="RSMC" } {
