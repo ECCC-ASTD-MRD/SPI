@@ -54,13 +54,14 @@ namespace eval FSTD {
 
    #----- Creer les parametres de la palette par defaut
 
-   font create FLDFONTDEFAULT -family courier -size -12 -weight bold
+   font create FLDFONTDEFAULT -family courrier -size -12 -weight bold
+   font create FLDFONTEXTREMA -family helvetica -size -16 -weight bold
 
    image create photo FLDMAPImg -width 205 -height 15
    colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
-    dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT \
+    dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -efont FLDFONTEXTREMA \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 -renderboundary 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
@@ -98,6 +99,7 @@ namespace eval FSTD {
    set Param(Mode)          VAR            ;#Mode de selection des parametres
    set Param(Map)           FLDMAPDEFAULT  ;#Palette de couleur
    set Param(Font)          FLDFONTDEFAULT ;#Police
+   set Param(EFont)         FLDFONTEXTREMA ;#Police extrema
    set Param(Interp)        LINEAR         ;#Type d'interpolation
    set Param(Extrap)        NEUTRAL        ;#Type d'extrapolation
    set Param(Contour)       0              ;#Affichage des contours
@@ -413,7 +415,6 @@ proc FSTD::ParamFrame { Frame Apply } {
             IcoMenu::Create $Data(Frame).def.r.disp.cont.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm contour1.xbm contour2.xbm contour3.xbm" "0 1 2 3" \
                FSTD::Param(Contour) "FSTD::ParamSet" 0 -relief groove -bd 2
-
             pack $Data(Frame).def.r.disp.cont.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.cont.lbl -side left  -fill y
 
@@ -462,6 +463,9 @@ proc FSTD::ParamFrame { Frame Apply } {
             IcoMenu::Create $Data(Frame).def.r.disp.val.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm valmm.xbm valhl.xbm valhls.xbm " "0 1 20 2" \
                FSTD::Param(Value) "FSTD::ParamSet" 0 -relief groove -bd 2
+            $Data(Frame).def.r.disp.val.sel.menu add separator   
+            $Data(Frame).def.r.disp.val.sel.menu add command -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
+                  -command "FontBox::Create $Data(Frame).def.r.disp.val.sel FSTD::ParamSet \$FSTD::Param(EFont); puts stderr \$FSTD::Param(EFont)" 
             pack $Data(Frame).def.r.disp.val.sel $Data(Frame).def.r.disp.val.lbl -side left
 
          frame $Data(Frame).def.r.disp.part
@@ -849,6 +853,7 @@ proc FSTD::ParamGet { { Spec "" } } {
    set Param(Factor)     [dataspec configure $spec -factor]
    set Param(Delta)      [dataspec configure $spec -delta]
    set Param(Font)       [dataspec configure $spec -font]
+   set Param(EFont)      [dataspec configure $spec -efont]
    set Param(Map)        [dataspec configure $spec -colormap]
    set Param(MapAll)     [dataspec configure $spec -mapall]
    set Param(MapAbove)   [dataspec configure $spec -mapabove]
@@ -917,9 +922,12 @@ proc FSTD::ParamGet { { Spec "" } } {
       }
    }
 
-   set i 0
-   foreach spec $Param(Interspecs) {   
-      lassign $spec Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
+   for { set i 0 }  { $i<$Param(InterspecsNb) } { incr i } {   
+      if { [llength [lindex $Param(Interspecs) $i 0]] } {
+         lassign [lindex $Param(Interspecs) $i] Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
+      } else {
+         lassign { {} "" "" "" } Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
+      }         
    }
 
    FSTD::IntervalSetMode $Param(IntervalMode) $Param(IntervalParam) True
@@ -1017,7 +1025,7 @@ proc FSTD::ParamSet { { Spec "" } } {
    }
 
    #----- Set all params
-   dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $mantisse -font $Param(Font) -colormap $Param(Map) \
+   dataspec configure $Spec -set 2 -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $mantisse -font $Param(Font) -efont $Param(EFont) -colormap $Param(Map) \
       -color $Param(Color) -dash $Param(Dash) -width $Param(Width) -unit $Param(Unit) -desc $Param(Desc) -rendercontour $Param(Contour) \
       -rendervector $Param(Vector) -rendertexture $Param(Texture) -rendervolume $Param(Volume)  -rendervalue $Param(Value) -renderlabel $Param(Label) \
       -renderparticle $Param(Particle) -rendergrid $grid -renderboundary $Param(Boundary) -interpdegree $Param(Interp) -extrapdegree $Param(Extrap) -topography $Param(Topo) \
@@ -1115,6 +1123,19 @@ proc FSTD::ParamPut { { Update False } } {
    #----- Set intervals to right values
    set Param(Intervals) $inters
 
+   #----- Set interspecs params
+   for { set l 0 } { $l<$Param(InterspecsNb) } { incr l } {
+      if { [llength $Param(Intervals$l)] } {
+         IcoMenu::Set $Data(Frame).lev.lev$l.st      [expr {[string length $Param(Dash$l)]?$Param(Dash$l):$Param(Dash)} ]  
+         IcoMenu::Set $Data(Frame).lev.lev$l.width   [expr {[string length $Param(Width$l)]?$Param(Width$l):$Param(Width)}] 
+         ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col [expr {[string length $Param(Color$l)]?$Param(Color$l):$Param(Color)}]
+      } else {
+         IcoMenu::Set $Data(Frame).lev.lev$l.st      ""
+         IcoMenu::Set $Data(Frame).lev.lev$l.width   1
+         ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col black
+      
+      }
+   }
    MapBox::Select "" $Param(Map)
 }
 

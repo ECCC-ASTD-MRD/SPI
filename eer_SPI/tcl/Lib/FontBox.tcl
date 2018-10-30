@@ -75,7 +75,6 @@ proc FontBox::Create { Parent Apply args } {
    variable Resources
 
    #----- font initial
-
    if { $args!="" } {
       set Data(Current)    $args
       set Data(Family)     [font actual $Data(Current) -family]
@@ -153,10 +152,13 @@ proc FontBox::Create { Parent Apply args } {
 proc FontBox::Update { Font Show } {
    variable Data
 
-   font configure $Font -family $Data(Family) -weight $Data(Weight) -size -$Data(Size) \
-      -slant $Data(Slant) -underline $Data(Underline) -overstrike $Data(Overstrike)
+   if { $Font!="" } {
+      font configure $Font -family $Data(Family) -weight $Data(Weight) -size -$Data(Size) \
+         -slant $Data(Slant) -underline $Data(Underline) -overstrike $Data(Overstrike)
+       
 
-   if { $Show } {
-      .fontbox.show.cv itemconfigure TEXT -font $Font
+      if { $Show } {
+         .fontbox.show.cv itemconfigure TEXT -font $Font
+      }
    }
 }

@@ -368,10 +368,15 @@ proc APViz::Source { Path Widget } {
             if  { $layer=="" } {
                break
             }
-            
+
             #----- Extract layer parts
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
-                        
+                       
+            #----- Process Dates range
+#            if { $hour=="<Dates>" } {
+#               set Range(Dates) [APViz::FetchDates $Product $model $dataSrc]
+#            }
+            
             #----- Toggle On/Off            
             set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
             dict set APViz::Data(AlphaDict) $alpha L$no
@@ -393,16 +398,13 @@ proc APViz::Source { Path Widget } {
             CreateRangeWidget $Product $ip3     $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 
             CreateRangeWidget $Product $vp      $Widget.range.variableGrid.layer${no}_vp        $no Viewports false 2
 
-            set defaultVariable [CreateRangeWidget $Product $var $Widget.range.variableGrid.layer${no}_var       $no Vars false -1]
-            set defaultSrc [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1]
+            set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars    false -1]
+            set defaultSrc      [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1]
             
             CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels true -1
             
-            #----- Definir le numero de tab a ouvrir dans la fenetre de configuration
-            set tab 1                                   ; # 1: Tab Champs
-            if {[expr {"$defaultSrc" eq "BURP"}]} {
-               set tab 2                                ; # 2: Tab Observations
-            }
+            #----- Definir le numero de tab a ouvrir dans la fenetre de configuration # 1: Tab Champs, # 2: Tab Observations
+            set tab [expr { $defaultSrc eq "BURP" } ?2:1]
             
             button $Widget.range.variableGrid.layer${no}_delete -image DELETE -bd 1 -height 16 -relief flat -overrelief raised -command "APViz::${Product}::DeleteLayer $Widget $no $Product $defaultSrc"
             button $Widget.range.variableGrid.layer${no}_param  -image PARAMS -bd 1 -height 16 -relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
@@ -1125,7 +1127,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { [catch {eval dataspec configure $obsID $Param($var) }] } {
                #----- Configurations par defaut TODO: Choose a colormap that exists
                dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
-                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFont12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
+                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFONT12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
          }
          
@@ -1221,7 +1223,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}] } {
                if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                   #----- Valeur par defaut
-                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFont12 -width 1 -rendertexture 1 -mapall True
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True
                }
             }
 
@@ -1244,9 +1246,9 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                lappend Data(Colormaps) $colormapName
             }
             
-            fstdfield configure $fieldID -colormap $colormapName
+            fstdfield configure $fieldID -colormap $colormapName 
             fstdfield configure $fieldID -active $Value(Toggle,$Index)
-            
+
             set Data(Secs) [fstdstamp toseconds [fstdfield define $fieldID -DATEV]]
             if { !$Animator::Play(Stop) } {
                lappend Animator::Play(Frames) $Data(Secs)
@@ -1449,7 +1451,7 @@ proc APViz::CalculateExpression { Product Index } {
                if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
                   if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                      #----- Valeur par defaut
-                     fstdfield configure $fieldID -font XFont12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+                     fstdfield configure $fieldID -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
                   }
                }
             }
@@ -2815,6 +2817,23 @@ proc APViz::Start { } {
    variable Param
    variable DataSrc
    variable Lbl
+   
+   catch {
+      font create FONT10 -family Helvetica -weight bold -size -10
+      font create FONT12 -family Helvetica -weight bold -size -12
+      font create FONT14 -family Helvetica -weight bold -size -14
+      font create FONT16 -family Helvetica -weight bold -size -16
+      font create FONT18 -family Helvetica -weight bold -size -18
+      font create FONT20 -family Helvetica -weight bold -size -20
+      font create FONT24 -family Helvetica -weight bold -size -24
+      font create EFONT10 -family Helvetica -weight bold -size -10
+      font create EFONT12 -family Helvetica -weight bold -size -12
+      font create EFONT14 -family Helvetica -weight bold -size -14
+      font create EFONT16 -family Helvetica -weight bold -size -16
+      font create EFONT18 -family Helvetica -weight bold -size -18
+      font create EFONT20 -family Helvetica -weight bold -size -20
+      font create EFONT24 -family Helvetica -weight bold -size -24
+   }
    
    if { [info exists env(SPI_APVIZ)] } {
       foreach path [split $env(SPI_APVIZ) :] {
