@@ -133,7 +133,7 @@ proc APViz::Source { Path Widget } {
       
       #----- Initialize default values
       array unset Range
-      
+     
       #-------------------------------------------------------------------------------
       # Nom      : <APViz::$product::AddCalcLayer>
       # Creation : Juin 2018 - C. Nguyen - CMC/CMOE -
@@ -249,6 +249,7 @@ proc APViz::Source { Path Widget } {
             "Models"    { set lockType Model; set idx 1 }
             "Runs"      { set lockType Run;   set idx 2 }
             "Hours"     { set lockType Hour;  set idx 3 }
+            "Dates"     { set lockType Hour;  set idx 3 }
             "Levels"    { set lockType Level; set idx 6 }
             "Vars"      { set lockType Var;   set idx 5 }
             default     {  APViz::AssignVariable $Product $Index
@@ -371,12 +372,7 @@ proc APViz::Source { Path Widget } {
 
             #----- Extract layer parts
             lassign [split $layer :] toggle model run hour dataSrc var level ip3 vp etiket
-                       
-            #----- Process Dates range
-#            if { $hour=="<Dates>" } {
-#               set Range(Dates) [APViz::FetchDates $Product $model $dataSrc]
-#            }
-            
+                                   
             #----- Toggle On/Off            
             set alpha [lindex $APViz::Data(Alphas) [expr $no + $Value(NbCalcLayers)]]
             dict set APViz::Data(AlphaDict) $alpha L$no
@@ -392,16 +388,26 @@ proc APViz::Source { Path Widget } {
             }
 
             #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
-            CreateRangeWidget $Product $model   $Widget.range.variableGrid.layer${no}_model     $no Models false 5 
-            CreateRangeWidget $Product $hour    $Widget.range.variableGrid.layer${no}_hour      $no Hours true 3 
-            CreateRangeWidget $Product $run     $Widget.range.variableGrid.layer${no}_run       $no Runs true 2 
-            CreateRangeWidget $Product $ip3     $Widget.range.variableGrid.layer${no}_ip3       $no IP3 true 2 
-            CreateRangeWidget $Product $vp      $Widget.range.variableGrid.layer${no}_vp        $no Viewports false 2
+            CreateRangeWidget $Product $model   $Widget $no Models false 5 
+            CreateRangeWidget $Product $ip3     $Widget $no IP3 true 2 
+            CreateRangeWidget $Product $vp      $Widget $no Viewports false 2
 
-            set defaultVariable [CreateRangeWidget $Product $var     $Widget.range.variableGrid.layer${no}_var       $no Vars    false -1]
-            set defaultSrc      [CreateRangeWidget $Product $dataSrc $Widget.range.variableGrid.layer${no}_dataSrc   $no Sources false -1]
+            #----- Process Dates range
+            if { $hour=="<Dates>" } {
+               set Range(Hours) [set Range(Dates) [APViz::FetchDates $Product $model $dataSrc]]
+               set Range(Date)  [lindex $Range(Dates) end]
+               CreateRangeWidget $Product $run     $Widget $no Runs true 0
+               CreateRangeWidget $Product $hour    $Widget $no Hours true 13 
+               $Widget.range.variableGrid.run configure -text ""
+            } else {
+               CreateRangeWidget $Product $run     $Widget $no Runs true 2 
+               CreateRangeWidget $Product $hour    $Widget $no Hours true 3
+            }           
+
+            set defaultVariable [CreateRangeWidget $Product $var     $Widget $no Vars    false -1]
+            set defaultSrc      [CreateRangeWidget $Product $dataSrc $Widget $no Sources false -1]
             
-            CreateRangeWidget $Product $level $Widget.range.variableGrid.layer${no}_level $no Levels true -1
+            CreateRangeWidget $Product $level $Widget $no Levels true 5
             
             #----- Definir le numero de tab a ouvrir dans la fenetre de configuration # 1: Tab Champs, # 2: Tab Observations
             set tab [expr { $defaultSrc eq "BURP" } ?2:1]
@@ -417,7 +423,7 @@ proc APViz::Source { Path Widget } {
             set Value(RowIDLayer$no) [expr $no - $Value(RowIDLayer)]
             
             #----- Place widgets in grid        
-            set itemList [list toggle model run hour dataSrc var level ip3 vp etiket param delete]
+            set itemList [list toggle Models Runs Hours Sources Vars Levels IP3 Viewports etiket param delete]
             set colNb 0
             foreach item $itemList {
                grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
@@ -464,10 +470,12 @@ proc APViz::Source { Path Widget } {
       #
       #-------------------------------------------------------------------------------
       
-      proc CreateRangeWidget { Product Style Path Index Options IsSpinBox Width } {
+      proc CreateRangeWidget { Product Style Widget Index Options IsSpinBox Width } {
          global GDefs
          variable Range
          variable Value
+
+         set path $Widget.range.variableGrid.layer${Index}_$Options
 
          if { [string index $Style 0] eq "<" } {
             #----- Check for hour delta
@@ -481,27 +489,32 @@ proc APViz::Source { Path Widget } {
                set Style [lindex $st 0]
             }
             
-            set rangeType [string trim $Style {< >}]
-            # Ne fonctionne que si l'usager suit la regle
-            set range     [string range $rangeType 0 end-1]
+            set rangeType [string trim $Style {< >}]        
+            set range     [string range $rangeType 0 end-1] ;# Ne fonctionne que si l'usager suit la regle
+
+            if { $range=="Date" } {
+               catch { $Widget.range.variableGrid.hour configure -state normal }
+            } else {
+               catch { $Widget.range.variableGrid.[string tolower $range] configure -state normal }
+            }
             
             if { [lsearch -exact [dict get $APViz::Data(RangeNames) $Options] $rangeType] < 0} {
                dict lappend APViz::Data(RangeNames) $Options $rangeType
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
             if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
-               entry $Path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
+               entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
             } elseif { $IsSpinBox } {
-               spinbox $Path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
+               spinbox $path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
                
                #----- Bind with return key
-               bind $Path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product"
+               bind $path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product"
                
             } else {
-               regsub .range\[a-z,A-Z,0-9,.,_\]* $Path "" widget	; # Pour la mise a jour des spinbox
-               ComboBox::Create $Path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
-               "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $Path $Index"
+               regsub .range\[a-z,A-Z,0-9,.,_\]* $path "" widget	; # Pour la mise a jour des spinbox
+               ComboBox::Create $path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
+               "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $path $Index"
             }
            
             #----- Default Values
@@ -519,7 +532,7 @@ proc APViz::Source { Path Widget } {
             }
 
          } else {
-            label $Path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
+            label $path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
          }
          eval set defaultValue \$\{APViz::${Product}::Value($Options,$Index)\}
@@ -624,8 +637,8 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajustement du rowID
          incr Value(RowIDLayer)
-         set itemList [list toggle model var level run hour dataSrc ip3 vp etiket param delete]
-            
+         set itemList [list toggle Models Runs Hours Sources Vars Levels IP3 Viewports etiket param delete]
+  
          #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
          for {set i 0} {$i < $Value(NbLayers)} {incr i} {
             if {$Value(RowIDLayer$i) > $Value(RowIDLayer$Index)} {
@@ -761,35 +774,30 @@ proc APViz::Source { Path Widget } {
          label $Widget.range.variableGrid.ip3    -text "IP3"
          label $Widget.range.variableGrid.vp     -text "VP"
          label $Widget.range.variableGrid.etiket -text "Etiket"
-         
-         checkbutton $Widget.range.variableGrid.mod -variable ::APViz::${Product}::Range(ModelLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Model) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
-         checkbutton $Widget.range.variableGrid.runLock -variable ::APViz::${Product}::Range(RunLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
-         $Widget.range.variableGrid.runLock select
-               
-         checkbutton $Widget.range.variableGrid.hrLock -variable ::APViz::${Product}::Range(HourLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat 
-         $Widget.range.variableGrid.hrLock select
-               
-         checkbutton $Widget.range.variableGrid.lvlLock -variable ::APViz::${Product}::Range(LevelLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Level) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat
 
-         checkbutton $Widget.range.variableGrid.varLock -variable ::APViz::${Product}::Range(VarLock) -onvalue True -offvalue False \
-               -text [lindex $Label(Variable) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat
+         checkbutton $Widget.range.variableGrid.model -variable ::APViz::${Product}::Range(ModelLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Model) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -state disabled
+         checkbutton $Widget.range.variableGrid.run -variable ::APViz::${Product}::Range(RunLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Run) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -state disabled
+         checkbutton $Widget.range.variableGrid.hour -variable ::APViz::${Product}::Range(HourLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Hour) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -state disabled              
+         checkbutton $Widget.range.variableGrid.level -variable ::APViz::${Product}::Range(LevelLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Level) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -state disabled
+         checkbutton $Widget.range.variableGrid.var -variable ::APViz::${Product}::Range(VarLock) -onvalue True -offvalue False \
+               -text [lindex $Label(Variable) $GDefs(Lang)] -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -state disabled
 
-               #----- Add help bubbles
-         Bubble::Create $Widget.range.variableGrid.runLock ${APViz::Bubble(Lock)}
-         Bubble::Create $Widget.range.variableGrid.hrLock ${APViz::Bubble(Lock)}
-         Bubble::Create $Widget.range.variableGrid.lvlLock ${APViz::Bubble(Lock)}
+         #----- Add help bubbles
+         Bubble::Create $Widget.range.variableGrid.run   ${APViz::Bubble(Lock)}
+         Bubble::Create $Widget.range.variableGrid.hour  ${APViz::Bubble(Lock)}
+         Bubble::Create $Widget.range.variableGrid.level ${APViz::Bubble(Lock)}
          
          grid $Widget.range.variableGrid          -column 0 -row 1 -padx 0.2
-         grid $Widget.range.variableGrid.mod      -column 1 -row 0 -padx 0.2 -sticky ew
-         grid $Widget.range.variableGrid.runLock  -column 2 -row 0 -padx 0.2 -sticky ew
-         grid $Widget.range.variableGrid.hrLock   -column 3 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.model    -column 1 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.run      -column 2 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.hour     -column 3 -row 0 -padx 0.2 -sticky ew
          grid $Widget.range.variableGrid.src      -column 4 -row 0 -padx 0.2
-         grid $Widget.range.variableGrid.varLock  -column 5 -row 0 -padx 0.2 -sticky ew
-         grid $Widget.range.variableGrid.lvlLock  -column 6 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.var      -column 5 -row 0 -padx 0.2 -sticky ew
+         grid $Widget.range.variableGrid.level    -column 6 -row 0 -padx 0.2 -sticky ew
          grid $Widget.range.variableGrid.ip3      -column 7 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.vp       -column 8 -row 0 -padx 0.2
          grid $Widget.range.variableGrid.etiket   -column 9 -row 0 -padx 0.2
@@ -924,7 +932,7 @@ proc APViz::Refresh { Product } {
    Viewport::UpdateData $Data(Frame)
    Page::UpdateCommand $Data(Frame)
    Page::UpdateItems $Data(Frame)
-   
+
    return $Data(Secs)
 }
 
@@ -1031,6 +1039,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    variable Data
    variable DataSrc
    variable Etiket
+   variable Ext
    variable Lbl
    variable ${Product}::Param
    variable ${Product}::Value
@@ -1140,33 +1149,14 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          
          Viewport::Assign $Data(Frame) $vpID $obsID 1    
       } else {
-                  
-         #----- Pas un fichier BURP
-         set Data(timestamp) ${date}${run}_$hour
+         if { [info exists Ext(${model},${src})] } {
+            set Data(timestamp) ${hour}$Ext(${model},${src})
+         } else {    
+            set Data(timestamp) ${date}${run}_$hour
+         }
          set filepath $DataSrc($model,$src)/$Data(timestamp)      ; # Format: AAAAMMDDRR_HHH
          set fileID FILE_${model}_${src}_$Data(timestamp)
-         
-         #If model is GOES: no specific hour or date, path will point to symbolic link
-         #----- Get path
-         #============================== RECUPERATION PATH GOES ================================
-         set comment {
-         if {$model eq "GOES"} {
-             if { [catch {set filepath [file readlink $Data($model,$src)]}] } {
-               #----- If not a symbolic link
-               set message {}
-               foreach msg $Lbl(InvalidGOESPath) {
-                  lappend message [concat $msg $Data($model,$src)]
-               }
-               ::Dialog::Error . $message
-            } else {
-               #----- Recuperation du timestamp selon le nom du fichier pour utilisation du Animator
-               #TODO: Recuperer & inclure heure a 3digits?
-               set Data(timestamp) [string range [file tail filepath] 0 12]      ; # Format: AAAAMMDDRR_HH
-               set fileID FILE_${model}_${src}_$Data(timestamp)
-            }
-         }
-         }
-         
+                  
          if { !$Animator::Play(Stop) } {
             set fieldID fld$Value(RowIDLayer$Index)_$Data(timestamp)
          } else {
@@ -1913,9 +1903,10 @@ proc APViz::FetchAllDates { Product } {
 
 proc APViz::FetchDates { Product Model Src } {
    variable Data
+   variable Ext
    variable DataSrc
    
-   set dateList {}
+   set dates {}
 
    if { $Product ne "" } {
       if { $Src eq "BURP" } {
@@ -1923,11 +1914,19 @@ proc APViz::FetchDates { Product Model Src } {
       } else {
          set path $DataSrc(${Model},${Src})/
       }
-      if { ![llength [set fileList [glob -nocomplain -tails -path $path *_000]]] } {
-         set fileList [glob -nocomplain -tails -path $path ??????????_*]
-         set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
+      if { [info exists Ext(${Model},${Src})] } {
+         #----- Files with extensions (ex: GOES g15,g16)
+         if { [llength [set fileList [glob -nocomplain -tails -path $path *$Ext(${Model},${Src})]]] } {
+            set dates    [lsort [lmap a $fileList {string range $a 0 12}]] 
+         }     
       } else {
-         set dates    [lsort [lmap a $fileList {string range $a 0 7}]]
+         #----- Files with modelling standard (YYYYMMDDRR_HHH)
+         if { ![llength [set fileList [glob -nocomplain -tails -path $path *_000]]] } {
+            set fileList [glob -nocomplain -tails -path $path ??????????_*]
+            set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
+         } else {
+            set dates    [lsort [lmap a $fileList {string range $a 0 7}]]
+         }
       }
    }
    return $dates
@@ -2992,6 +2991,7 @@ proc APViz::Update { Frame } {
 proc APViz::UpdateItems { Frame } {
    global   GDefs
    variable Data
+   variable Ext
 
    if { $Data(CurrentProduct)!="" } {
    
@@ -3012,7 +3012,10 @@ proc APViz::UpdateItems { Frame } {
             set hr   [expr [fstdfield define $fld -DEET]*[fstdfield define $fld -NPAS]/3600]
             set secv [fstdstamp toseconds [fstdfield define $fld -DATEV]]
             set seco [fstdstamp toseconds [fstdfield define $fld -DATEO]]
-            set lbl  [format "$alpha: %-5s %-13s %-4s %-8s %-3sH - valid:%s \[run:%s\]" $Value(Models,$no) $eti $var $lvl $hr [clock format $secv -format {%HZ %a %b %d,%Y} -timezone :UTC] [clock format $seco -format {%HZ %a %b %d,%Y} -timezone :UTC]]
+            set lbl  [format "$alpha: %-5s %-13s %-4s %-8s %-3sH - valid:%s" $Value(Models,$no) $eti $var $lvl $hr [clock format $secv -format {%HZ %a %b %d,%Y} -timezone :UTC]]
+            if { ![info exists Ext($Value(Models,$no),$Value(Sources,$no))] } {
+               append lbl [format " \[run:%s\]" [clock format $seco -format {%HZ %a %b %d,%Y} -timezone :UTC]]
+            }
             Legend::Add $Frame text UL -font XFont12 -fill $col -text $lbl
          } elseif { [metobs is $fld] && [dataspec configure $fld -active] } {         
             set col [dataspec configure $fld -color]
