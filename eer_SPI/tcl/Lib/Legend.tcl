@@ -64,9 +64,9 @@ proc Legend::Add { Frame Object Mode args } {
       #----- More than 1 line
       switch $Mode {
          "UL" { set ibox { [expr $Param(LWLEGEND_$Mode)+[lindex $bbox 0]+3] [expr [lindex $bbox 3]+$Param(LineSpace)] }; set a nw }
-         "UR" { set ibox { [lindex $bbox 2] [expr [lindex $bbox 3]+$Param(LineSpace)] }; set a ne }
+         "UR" { set ibox { [expr [lindex $bbox 2]-3] [expr [lindex $bbox 3]+$Param(LineSpace)] }; set a ne }
          "LL" { set ibox { [expr $Param(LWLEGEND_$Mode)+[lindex $bbox 0]+3] [expr [lindex $bbox 1]-$Param(LineSpace)] }; set a sw }
-         "LR" { set ibox { [lindex $bbox 2] [expr [lindex $bbox 1]-$Param(LineSpace)] }; set a se }
+         "LR" { set ibox { [expr [lindex $bbox 2]-3] [expr [lindex $bbox 1]-$Param(LineSpace)] }; set a se }
       }
    }
    

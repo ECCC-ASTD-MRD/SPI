@@ -263,8 +263,8 @@ proc APViz::Source { Path Widget } {
                set opts [split [lindex $Layers $i] :] 
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
                   #----- Check if a delta is defined (ex:<Hours>+06)
-                 if { [info exists ::APViz::${Product}::Value(Delta$Option,$i)] } {
-                     eval set Value($Option,$i) \[format %0${idx}i \[expr [string trimleft $newValue 0]$Value(Delta$Option,$i)\]\]
+                 if { [info exists ::APViz::${Product}::Mod($Option,$i)] } {
+                     eval set Value($Option,$i) \[format %0${idx}i \[expr [string trimleft $newValue 0]$Mod($Option,$i)\]\]
                   } else {
                      set Value($Option,$i) $newValue
                   }
@@ -475,21 +475,19 @@ proc APViz::Source { Path Widget } {
          global GDefs
          variable Range
          variable Value
+         variable Mod
 
          set path $Widget.range.variableGrid.layer${Index}_$Options
 
+         #----- Check for modifier
+         catch { unset Mod($Options,$Index) }
+         if { [set mod [string trim [regexp -inline {\(.*\)} $Style] {()}]]!="" } {
+            set Mod($Options,$Index) $mod
+            set Style [string range $Style 0 [expr [string first "(" $Style]-1]]
+         }
+         
          if { [string index $Style 0] eq "<" } {
-            #----- Check for hour delta
-            catch { unset Value(Delta$Options,$Index) }
-            if { [set delta [lindex [set st [split $Style +]] end]]!=$Style } {
-               set Value(Delta$Options,$Index) +[string trimleft $delta 0]
-               set Style [lindex $st 0]
-            }
-            if { [set delta [lindex [set st [split $Style -]] end]]!=$Style } {
-               set Value(Delta$Options,$Index) -[string trimleft $delta 0]
-               set Style [lindex $st 0]
-            }
-            
+                    
             set rangeType [string trim $Style {< >}]        
             set range     [string range $rangeType 0 end-1] ;# Ne fonctionne que si l'usager suit la regle
 
@@ -503,7 +501,7 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(RangeNames) $Options $rangeType
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
-            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+            if { [info exists Mod($Options,$Index)] } {
                entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
             } elseif { $IsSpinBox } {
                spinbox $path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
@@ -527,9 +525,9 @@ proc APViz::Source { Path Widget } {
             }
             
             #----- Add increment if defined
-            if { [info exists ::APViz::${Product}::Value(Delta$Options,$Index)] } {
+            if { [info exists Mod($Options,$Index)] && ($Options=="Runs" || $Options=="Hours") } {
                if { $Options=="Runs" } { set w 2 } else { set w 3 }
-               eval set Value($Options,$Index) \[format %0${w}i \[expr [string trimleft $Value($Options,$Index) 0]$Value(Delta$Options,$Index)\]\]
+               eval set Value($Options,$Index) \[format %0${w}i \[expr [string trimleft $Value($Options,$Index) 0]\$Mod($Options,$Index)\]\]
             }
 
          } else {
@@ -1045,6 +1043,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    variable ${Product}::Param
    variable ${Product}::Value
    variable ${Product}::Range
+   variable ${Product}::Mod
 
    #----- Get layer values
    set model	$Value(Models,$Index)
@@ -1066,10 +1065,10 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
      
    #----- Check if we need to increment the date on a run increment
    set date $Data(Date)
-   if { [info exists Value(DeltaRuns,$Index)] } {
+   if { [info exists Mod(Runs,$Index)] } {
       if { $run<0 || $run>=24 } {
-         set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Value(DeltaRuns,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
-         set run [format %02i [expr $run-$Value(DeltaRuns,$Index)]]
+         set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Mod(Runs,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
+         set run [format %02i [expr $run-$Mod(Runs,$Index)]]
       }
    }
    
@@ -1216,6 +1215,10 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                return
             }
             
+            if { [info exists Mod(Vars,$Index)] } {
+               vexpr $fieldID fkernel($fieldID,KERNEL_BLUR)
+            }
+            
             #----- Apply variable configs from config file 
             if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}] } {
                if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
@@ -1358,7 +1361,7 @@ proc APViz::AssignDZ { Product Index Source Model Var Lev FileID FieldID Ip3 Eti
    }
    
    #----- Calcul: GZ1 - GZ2
-   vexpr $FieldID "$fieldIDGZ1-$fieldIDGZ2"
+   vexpr $FieldID "$fieldIDGZ2-$fieldIDGZ1"
    
    if { [fstdfield is $FieldID] } {      
       APViz::LayerToggle ${Index} Layer True
@@ -2921,6 +2924,8 @@ proc APViz::Start { } {
       font create EFONT20 -family Helvetica -weight bold -size -20
       font create EFONT24 -family Helvetica -weight bold -size -24
    }
+   
+   vector create KERNEL_BLUR { { 1 1 1 } { 1 2 1 } { 1 1 1 } }
    
    if { [info exists env(SPI_APVIZ)] } {
       foreach path [split $env(SPI_APVIZ) :] {
