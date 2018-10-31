@@ -20,6 +20,7 @@ typedef struct RDeviceItem  {
     void        *RDev;      // R Device (Volontarily opaque type)
     Tk_Canvas   Canv;       // Canvas containing the item
     GC          GC;         // X Graphic Context
+    Tk_Font     Font;       // Font for any text in the device
 } RDeviceItem;
 
 /*
@@ -31,8 +32,9 @@ static const Tk_CustomOption tagsOption = {
 };
 
 static const Tk_ConfigSpec configSpecs[] = {
-    {TK_CONFIG_CUSTOM,  "-tags",    NULL,NULL,NULL,     0,  TK_CONFIG_NULL_OK,  &tagsOption},
-    {TK_CONFIG_END,     NULL,       NULL,NULL,NULL,     0,  0,                  NULL}
+    {TK_CONFIG_CUSTOM,  "-tags",    NULL,NULL,NULL,             0,                              TK_CONFIG_NULL_OK,  &tagsOption},
+    {TK_CONFIG_FONT,    "-font",    NULL,NULL,"TkDefaultFont",  Tk_Offset(RDeviceItem,Font),    0,                  NULL},
+    {TK_CONFIG_END,     NULL,       NULL,NULL,NULL,             0,                              0,                  NULL}
 };
 
 /*
@@ -694,6 +696,26 @@ void RDeviceItem_SignalRedraw(void *Item) {
 */
 void RDeviceItem_DetachDevice(void *Item) {
     ((RDeviceItem*)Item)->RDev = NULL;
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <RDeviceItem_GetFont>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Called by the device when text is being drawn
+ *
+ * Parametres   :
+ *  <Item>      : Item we need the font from
+ *
+ * Retour       : The font.
+ *
+ * Side effects : None.
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+Tk_Font RDeviceItem_GetFont(void *Item) {
+    return ((RDeviceItem*)Item)->Font;
 }
 
 /*--------------------------------------------------------------------------------------------------------------

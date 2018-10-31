@@ -12,10 +12,13 @@
 // Tcl includes
 #include <tcl.h>
 #include <tk.h>
+#include <tkInt.h>
 
 // Driver includes
 #include "TclRDeviceX.h"
 #include "tkCanvRDevice.h"
+
+#define MM2INCH 0.0393701
 
 typedef struct TCtx {
     void        *Item;      // RDeviceItem (needs to be passed to signal a redraw)
@@ -197,9 +200,15 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
 
 }
 static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *Ascent,double *Descent,double *Width,pDevDesc Dev) {
-    *Ascent = 0.0;
-    *Descent = 0.0;
-    *Width = 0.0;
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+    Tk_FontMetrics fm;
+
+    Tk_GetFontMetrics(RDeviceItem_GetFont(ctx->Item),&fm);
+    printf("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+
+    *Ascent = fm.ascent;
+    *Descent = fm.descent;
+    *Width = fm.linespace;
 }
 static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
     printf("Mode set to %d\n",Mode);
@@ -303,11 +312,17 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
     }
 }
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
-    printf("StrWidth of (%s)\n",Str);
-    return strlen(Str)*5.0;
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
+    printf("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str)));
+    return Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str));
 }
 static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double HAdj,const pGEcontext restrict GEC,pDevDesc Dev) {
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
     printf("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
+    //Tk_DrawChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y));
+    TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y),Rot);
 }
 //static void (*onExit)(pDevDesc Dev);
 //static SEXP (*getEvent)(SEXP,const char *);
@@ -321,11 +336,23 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
     pDevDesc dev = calloc(1,sizeof(*dev));
 
     if( dev ) {
+        //int screen;
+        //double pxw,pxh;
+
+        //screen = Tk_ScreenNumber(Ctx->TkWin);
+        //pxw = ((double)(DisplayWidthMM(Ctx->Display,screen))/(double)(DisplayWidth(Ctx->Display,screen))) * MM2INCH;
+        //pxh = ((double)(DisplayHeightMM(Ctx->Display,screen))/(double)(DisplayHeight(Ctx->Display,screen))) * MM2INCH;
+
+        Tk_FontMetrics fm;
+        Tk_GetFontMetrics(RDeviceItem_GetFont(Ctx->Item),&fm);
+        printf("font : ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+
         // Device physical parameters
         dev->left       = 0.;
         dev->right      = Ctx->W;
         dev->bottom     = 0.;
         dev->top        = Ctx->H;
+        //TODO set clipping params
         //dev->clipLeft   = 0.;
         //dev->clipRight  = 1000.;
         //dev->clipBottom = 0.;
@@ -333,9 +360,9 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->xCharOffset= 0.4900;
         dev->yCharOffset= 0.3333;
         dev->yLineBias  = 0.1;
-        dev->ipr[0]     = 1.0/72.0;
+        dev->ipr[0]     = 1.0/72.0; /* Inches per raster; [0]=x, [1]=y */
         dev->ipr[1]     = 1.0/72.0;
-        dev->cra[0]     = 10;
+        dev->cra[0]     = 10;       /* Character size in rasters; [0]=x, [1]=y */
         dev->cra[1]     = 10;
         //dev->gamma      = 1.;
 
@@ -352,12 +379,12 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->haveRaster         = 1;        /* 1 = no, 2 = yes, 3 = except for missing values */
         dev->haveCapture        = 1;        /* 1 = no, 2 = yes */
         dev->haveLocator        = 1;        /* 1 = no, 2 = yes */
-        dev->hasTextUTF8        = FALSE;
-        dev->wantSymbolUTF8     = FALSE;
+        dev->hasTextUTF8        = TRUE;
+        dev->wantSymbolUTF8     = TRUE;
         dev->useRotatedTextInContour = FALSE;
 
         // Initial settings
-        dev->startps    = 10.;
+        dev->startps    = fm.linespace;
         dev->startcol   = R_RGB(0,0,0);
         dev->startfill  = R_TRANWHITE;
         dev->startlty   = LTY_SOLID;
@@ -391,8 +418,8 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->strWidth       = (void*)TclRDeviceX_StrWidth;
         dev->text           = (void*)TclRDeviceX_Text;
         dev->onExit         = NULL;
-        dev->textUTF8       = NULL;
-        dev->strWidthUTF8   = NULL;
+        dev->textUTF8       = (void*)TclRDeviceX_Text;
+        dev->strWidthUTF8   = (void*)TclRDeviceX_StrWidth;
 
         dev->eventHelper    = NULL;
         dev->holdflush      = NULL;
