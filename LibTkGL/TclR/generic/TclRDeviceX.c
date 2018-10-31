@@ -35,6 +35,22 @@ typedef struct TCtx {
 static __thread XPoint *XPOINT_BUF=NULL;
 static __thread size_t  XPOINT_N=0;
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <ToXPoint>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Put the R given coords into an XPoint buffer
+ *
+ * Parametres   :
+ *  <Ctx>       : Device context
+ *  <N>         : Number of coordinates
+ *  <X>         : Coordinates in X
+ *  <Y>         : Coordinates in Y
+ *
+ * Retour       : The XPoint buffer
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
     // Make sure the buffer has enough space
     if( XPOINT_N < N ) {
@@ -58,16 +74,47 @@ static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
     return XPOINT_BUF;
 }
 
+
+
 // Canvas item sync functions
 
-// Signals a kill from the tk side (when the canvas item is destroyed)
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Destroy>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Signals a kill from the tk side (when the canvas item is destroyed)
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be triggered by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void TclRDeviceX_Destroy(void* GE) {
     if( GE ) {
         killDevice(ndevNumber(((pGEDevDesc)GE)->dev));
     }
 }
 
-// Redraw the scene for the device
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Redraw>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Force the device to replay the display list
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be triggered by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void TclRDeviceX_Redraw(void *GE) {
     if( GE ) {
         // Replay the display list
@@ -75,6 +122,23 @@ void TclRDeviceX_Redraw(void *GE) {
     }
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Resize>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Resize the device
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *  <W>         : New width
+ *  <H>         : New height
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be called by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void TclRDeviceX_Resize(void *GE,int W,int H) {
     if( GE ) {
         pDevDesc dev = ((pGEDevDesc)GE)->dev;
@@ -106,6 +170,21 @@ void TclRDeviceX_Resize(void *GE,int W,int H) {
     }
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_GetPixmap>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Return the pixmap associated with the canvas item's opaque pointer
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *
+ * Retour       : The pixmap associated with the given handle
+ *
+ * Remarque     : This function should only be called by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 Pixmap TclRDeviceX_GetPixmap(void* GE) {
     if( GE ) {
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
@@ -114,14 +193,27 @@ Pixmap TclRDeviceX_GetPixmap(void* GE) {
     return None;
 }
 
-// Signals a redraw to Tk
-static void TclRDeviceX_MarkDirty(pDevDesc Dev) {
-    RDeviceItem_SignalRedraw(((TCtx*)Dev->deviceSpecific)->Item);
-}
 
 // Helper functions
 
-void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_GCColor>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Set the color in the Graphic Context from an R color
+ *
+ * Parametres   :
+ *  <Ctx>       : Device context
+ *  <RCol>      : R Color
+ *
+ * Retour       :
+ *
+ * Remarque     :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
     // Set the XColor structure
     XColor col;
     col.red     = R_RED(RCol)<<8;//|0x77;
@@ -147,7 +239,23 @@ void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
     }
 }
 
-void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_GCLine>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Set the line style in the Graphic Context from an R graphical engine context
+ *
+ * Parametres   :
+ *  <Ctx>       : Device context
+ *  <GEC>       : R graphical engine context
+ *
+ * Retour       :
+ *
+ * Remarque     :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
     int lstyle=LineSolid,capstyle=CapRound,joinstyle=JoinRound;
 
     DBGPRINTF("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
@@ -173,9 +281,44 @@ void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
     XSetLineAttributes(Ctx->Display,Ctx->GC,(unsigned int)round(GEC->lwd),lstyle,capstyle,joinstyle);
 }
 
-/* Standard RDevice function implementations */
+
+// Standard RDevice function implementations
+
+
 
 //static void (*activate)(const pDevDesc );
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Circle>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a circle
+ *
+ * Parametres   :
+ *  <X>         : X position of the center of the circle to draw
+ *  <Y>         : Y position of the center of the circle to draw
+ *  <R>         : Radius of the circle to draw
+ *  <GEC>       : R graphical engine context. To honor : col, fill, gamma, lty, lwd
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Circle should have the side-effect that a circle is drawn, centred at the given location, with
+ *  the given radius. (If the device has non-square pixels, 'radius' should be interpreted in the units of
+ *  the x direction.)
+ *
+ *  The border of the circle should be drawn in the given "col", and the circle should be filled with the
+ *  given "fill" colour.
+ *  If "col" is NA_INTEGER then no border should be drawn
+ *  If "fill" is NA_INTEGER then the circle should not be filled.
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): col, fill, gamma, lty, lwd
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     int r=(int)round(R),x=(int)round(X)-r,y=ctx->H-(int)round(Y)+r,d=r*2;
@@ -193,6 +336,32 @@ static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restr
         XDrawArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
     }
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Clip>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Set the clipping region
+ *
+ * Parametres   :
+ *  <X0>        : X position of the first clipping rectangle's corner
+ *  <X1>        : X position of the second clipping rectangle's corner
+ *  <Y0>        : Y position of the first clipping rectangle's corner
+ *  <Y1>        : Y position of the second clipping rectangle's corner
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Clip is given the left, right, bottom, and top of a rectangle (in DEVICE coordinates).
+ *  It should have the side-effect that subsequent output is clipped to the given rectangle.
+ *  NOTE that R's graphics engine already clips to the extent of the device.
+ *  NOTE also that this will probably only be called if the flag canClip is true. [ELO : NOT TRUE!!]
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     XRectangle clip;
@@ -206,7 +375,28 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
     DBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     XSetClipRectangles(ctx->Display,ctx->GC,0,0,&clip,1,Unsorted);
 }
-static void TclRDeviceX_Free(pDevDesc Dev) {
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Close>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Free the device's resources
+ *
+ * Parametres   :
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Close is called when the device is killed. This function is responsible for destroying any
+ *  device-specific resources that were created in device_Open and for FREEing the device-specific parameters
+ *  structure.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceX_Close(pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     DBGPRINTF("Freeing RDevice\n");
 
@@ -234,8 +424,35 @@ static void TclRDeviceX_Free(pDevDesc Dev) {
         XPOINT_N = 0;
     }
 }
+
 //static void (*deactivate)(pDevDesc );
 //static Rboolean (*locator)(double *x,double *y,pDevDesc Dev);
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Line>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a line
+ *
+ * Parametres   :
+ *  <X0>        : X position of the first point
+ *  <Y0>        : Y position of the first point
+ *  <X1>        : X position of the second point
+ *  <Y1>        : Y position of the second point
+ *  <GEC>       : R graphical engine context. To honor : col, gamma, lty, lwd
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Line should have the side-effect that a single line is drawn (from x0,y0 to x1,y1)
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): col, gamma, lty, lwd
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
@@ -245,6 +462,40 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
     XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)round(X0),ctx->H-(int)round(Y0),(int)round(X1),ctx->H-(int)round(Y1));
 
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_MetricInfo>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Return metric infos
+ *
+ * Parametres   :
+ *  <C>         : Character for the metrics (see note)
+ *  <GEC>       : R graphical engine context. To honor : font, cex, ps
+ *  <Ascent>    : [OUT] Amount in pixels that the tallest letter sticks up above the baseline, plus any extra
+ *                blank space added by the designer of the font
+ *  <Descent    : [OUT] Amount in pixels that any letter sticks below the baseline, plus any extra
+ *                blank space added by the designer of the font
+ *  <Width>     : [OUT] Sum of the ascent and descent. Indicates how far apart two lines of text in the same
+ *                font should be placed so that none of the characters in one line overlap any of the characters
+ *                in the other line
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_MetricInfo should return height, depth, and width information for the given character in DEVICEi units.
+ *
+ *  Note: in an 8-bit locale, c is 'char'. In an mbcslocale, it is wchar_t, and at least some of code assumes
+ *  that is UCS-2 (Windows, true) or UCS-4.
+ *
+ *  This is used for formatting mathematical expressions and for exact centering of text (see GText)
+ *  If the device cannot provide metric information then it MUST return 0.0 for ascent, descent, and width.
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *Ascent,double *Descent,double *Width,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     Tk_FontMetrics fm;
@@ -256,13 +507,59 @@ static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *A
     *Descent = fm.descent;
     *Width = fm.linespace;
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Mode>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Changes the mode of the device
+ *
+ * Parametres   :
+ *  <Mode>      : 1 if start drawing, 0 if stops drawing (and a possible 2 which might exist)
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Mode is called whenever the graphics engine starts drawing (mode=1) or stops drawing (mode=0)
+ *  GMode (in graphics.c) also says that mode = 2 (graphical input on) exists.
+ *
+ *  The device is not required to do anything
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
     DBGPRINTF("Mode set to %d\n",Mode);
     // Device stopped drawing, signal a refresh
     if( Mode == 0 ) {
-        TclRDeviceX_MarkDirty(Dev);
+        RDeviceItem_SignalRedraw(ctx->Item);
     }
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_NewPage>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Clear the device
+ *
+ * Parametres   :
+ *  <GEC>       : R graphical engine context.
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_NewPage is called whenever a new plot requires a new page.
+ *  A new page might mean just clearing the device (e.g., X11) or moving to a new page (e.g., postscript)
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
@@ -274,6 +571,34 @@ static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     TclRDeviceX_GCColor(ctx,R_TRANWHITE);
     XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,0,0,ctx->W,ctx->H);
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Polygon>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a polygon
+ *
+ * Parametres   :
+ *  <N>         : Number of points in the polygon
+ *  <X>         : X coords of the polygon
+ *  <Y>         : Y coords of the polygon
+ *  <GEC>       : R graphical engine context. To honor : col, fill, gamma, lty, lwd
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Polygon should have the side-effect that a polygon is drawn using the given x and y values
+ *  the polygon border should be drawn in the "col" colour and filled with the "fill" colour.
+ *  If "col" is NA_INTEGER don't draw the border
+ *  If "fill" is NA_INTEGER don't fill the polygon
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): col, fill, gamma, lty, lwd
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
@@ -293,6 +618,32 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
         }
     }
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Polyline>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a polyline
+ *
+ * Parametres   :
+ *  <N>         : Number of points in the polyline
+ *  <X>         : X coords of the polyline
+ *  <Y>         : Y coords of the polyline
+ *  <GEC>       : R graphical engine context. To honor : col, gamma, lty, lwd
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Polyline should have the side-effect that a series of line segments are drawn using the given x
+ *  and y values.
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): col, gamma, lty, lwd
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
@@ -305,6 +656,36 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
         XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
     }
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Rect>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a rectangle
+ *
+ * Parametres   :
+ *  <X0>        : X position of the first point
+ *  <Y0>        : Y position of the first point
+ *  <X1>        : X position of the second point
+ *  <Y1>        : Y position of the second point
+ *  <GEC>       : R graphical engine context. To honor : col, fill, gamma, lty, lwd
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Rect should have the side-effect that a rectangle is drawn with the given locations for its
+ *  opposite corners. The border of the rectangle should be in the given "col" colour and the rectangle
+ *  should be filled with the given "fill" colour.
+ *  If "col" is NA_INTEGER then no border should be drawn
+ *  If "fill" is NA_INTEGER then the rectangle should not be filled.
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): ?? [ELO probably col, fill, gamma, lty, lwd]
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx       = (TCtx*)Dev->deviceSpecific;
     int             x=(int)round(X0),y=ctx->H-(int)round(Y0);
@@ -323,9 +704,35 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
         XDrawRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);
     }
 }
+
 //static void (*path)(double *x,double *y,int npoly,int *nper,Rboolean winding,const pGEcontext restrict GEC,pDevDesc Dev);
 //static void (*raster)(unsigned int *raster,int w,int h,double x,double y,double width,double height,double rot,Rboolean interpolate,const pGEcontext restrict GEC,pDevDesc Dev);
 //static SEXP (*cap)(pDevDesc Dev);
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Size>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Get/Set the size of the device
+ *
+ * Parametres   :
+ *  <Left>      : X coord of the leftmost corner
+ *  <Right>     : X coord of the rightmost corner
+ *  <Bottom>    : Y coord of the bottommost corner
+ *  <Top>       : Y coord of the topmost corner
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine. Note that the "write" part is not used by R.
+ *
+ * from R Doc   :
+ *
+ *  device_Size is called whenever the device is resized. The function returns (left, right, bottom, and top) for the
+ *  new device size. This is not usually called directly by the graphics engine because the detection of device resizes
+ *  (e.g., a window resize) are usually detected by device-specific code.
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *Top,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
@@ -341,12 +748,63 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
         Dev->top    = ctx->H;
     }
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_StrWidth>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Return the size of the text in device units (pixels)
+ *
+ * Parametres   :
+ *  <Str>       : String we want the screen size of
+ *  <GEC>       : R graphical engine context. To honor : font, cex, ps
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_StrWidth should return the width of the given string in DEVICE units.
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): font, cex, ps
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
     DBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str)));
     return Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str));
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Text>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a polygon
+ *
+ * Parametres   :
+ *  <X>         : X coords of the polygon
+ *  <Y>         : Y coords of the polygon
+ *  <Str>       : String we want the to draw
+ *  <Rot>       : Rotation angle (degrees)
+ *  <HAdj>      : Horizontal adjustment (ignored)
+ *  <GEC>       : R graphical engine context. To honor : font, cex, ps, col, gamma
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Text should have the side-effect that the given text is drawn at the given location.
+ *  The text should be rotated according to rot (degrees)
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): font, cex, ps, col, gamma
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double HAdj,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
@@ -354,6 +812,7 @@ static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double
     //Tk_DrawChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y));
     TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y),Rot);
 }
+
 //static void (*onExit)(pDevDesc Dev);
 //static SEXP (*getEvent)(SEXP,const char *);
 //static Rboolean (*newFrameConfirm)(pDevDesc Dev);
@@ -362,6 +821,21 @@ static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double
 //static void (*eventHelper)(pDevDesc Dev,int code);
 //static int (*holdflush)(pDevDesc Dev,int level);
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_NewDev>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Create a new RDevice structure
+ *
+ * Parametres   :
+ *  <Ctx>       : The new device's context
+ *
+ * Retour       : A new RDevice initialized
+ *
+ * Remarque     :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
     pDevDesc dev = calloc(1,sizeof(*dev));
 
@@ -430,7 +904,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->activate       = NULL;
         dev->circle         = (void*)TclRDeviceX_Circle;
         dev->clip           = (void*)TclRDeviceX_Clip; // Apparently called even if canClip is FALSE
-        dev->close          = (void*)TclRDeviceX_Free;
+        dev->close          = (void*)TclRDeviceX_Close;
         dev->deactivate     = NULL;
         dev->locator        = NULL;
         dev->line           = (void*)TclRDeviceX_Line;
@@ -457,6 +931,25 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
     return dev;
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Init>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Create a new RDevice and register it in the R world as the active device
+ *
+ * Parametres   :
+ *  <Interp>    : The tcl interp to put error messages in case of error
+ *  <Item>      : A reference to the canvas item for callbacks. Volontarily made as an opaque pointer.
+ *  <TkWin>     : Tk Window associated to the canvas
+ *  <W>         : Width of the device to create
+ *  <H>         : Height of the device to create
+ *
+ * Retour       : A new RDevice initialized
+ *
+ * Remarque     : This is called by the Tk canvas item to create its associated RDevice in the R world
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
 void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,int W,int H) {
     pDevDesc dev = NULL;
     pGEDevDesc ge = NULL;
