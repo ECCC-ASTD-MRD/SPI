@@ -210,16 +210,20 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
         c[i] = (int)(d+(d>=0.0?0.5:-0.5));
     }
 
-    rdv->Header.x1 = c[0];
-    rdv->Header.y1 = c[1];
-    rdv->Header.x2 = c[2];
-    rdv->Header.y2 = c[3];
+    rdv->Header.x1 = c[0]<=c[2] ? c[0] : c[2];
+    rdv->Header.y1 = c[1]<=c[3] ? c[1] : c[3];
+    rdv->Header.x2 = c[2]>=c[0] ? c[2] : c[0];
+    rdv->Header.y2 = c[3]>=c[1] ? c[3] : c[1];;
 
     //if( x<0.0 || y<0.0 || w<0.0 || h<0.0 ) {
     //    Tcl_SetObjResult(Interp,Tcl_ObjPrintf("invalid coordinates: negative coordinates obtained"));
     //    Tcl_SetErrorCode(Interp,"TK","CANVAS","COORDS","RDEVICE",NULL);
     //    return TCL_ERROR;
     //}
+
+    // Update the device since we resized it
+    printf("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 
     return TCL_OK;
 }
@@ -257,7 +261,7 @@ static int RDeviceConfigure(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <RDeviceConfigure>
+ * Nom          : <RDeviceDelete>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
  * But          : Clean up the data structure associated with an rdevice
@@ -266,8 +270,6 @@ static int RDeviceConfigure(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
  *  <Canv>      : Canvas containing rdevice
  *  <ItemPtr>   : rdevice to delete
  *  <Display>   : Display containing window for canvas
- *  <Objv>      : Arguments describing changes
- *  <Flags>     : Flags to pass to Tk_ConfigureWidget
  *
  * Retour       :
  *
@@ -448,7 +450,9 @@ static void RDeviceScale(Tk_Canvas Canv,Tk_Item *ItemPtr,double OriginX,double O
     rdv->Header.x2 = (int)round(OriginX + ScaleX*(rdv->Header.x2-OriginX));
     rdv->Header.y2 = (int)round(OriginY + ScaleY*(rdv->Header.y2-OriginY));
 
-    //TODO Resize the rdevice
+    // Update the device since we resized it
+    printf("Scaled to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------

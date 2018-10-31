@@ -35,6 +35,45 @@ void TclRDeviceX_Destroy(void* GE) {
     }
 }
 
+// Redraw the scene for the device
+void TclRDeviceX_Redraw(void *GE) {
+    if( GE ) {
+        // Replay the display list
+        GEplayDisplayList(GE);
+    }
+}
+
+void TclRDeviceX_Resize(void *GE,int W,int H) {
+    if( GE ) {
+        pDevDesc dev = ((pGEDevDesc)GE)->dev;
+        TCtx *ctx = (TCtx*)dev->deviceSpecific;
+
+        // Free and create a new pixmap if we need a bigger one in one or both dimension(s)
+        if( ctx->W<W || ctx->H<H ) {
+            if( ctx->Pixmap != None )
+                Tk_FreePixmap(ctx->Display,ctx->Pixmap);
+            if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(ctx->TkWin),W,H,Tk_Depth(ctx->TkWin))) == None ) {
+                // Let's hope this never happens
+                TclRDeviceX_Destroy(GE);
+                return;
+            }
+        }
+
+        // Only resize if we changed dimensions
+        if( ctx->W!=W || ctx->H!=H ) {
+            // Update the context
+            ctx->W = W;
+            ctx->H = H;
+
+            // Update the device
+            dev->size(NULL,NULL,NULL,NULL,dev);
+
+            // Redraw
+            TclRDeviceX_Redraw(GE);
+        }
+    }
+}
+
 Pixmap TclRDeviceX_GetPixmap(void* GE) {
     if( GE ) {
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
@@ -43,9 +82,12 @@ Pixmap TclRDeviceX_GetPixmap(void* GE) {
     return None;
 }
 
-static void TclRDeviceX_Redraw(pDevDesc Dev) {
+// Signals a redraw to Tk
+static void TclRDeviceX_MarkDirty(pDevDesc Dev) {
     RDeviceItem_SignalRedraw(((TCtx*)Dev->deviceSpecific)->Item);
 }
+
+// Helper functions
 
 void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
     // Set the XColor structure
@@ -163,7 +205,7 @@ static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
     printf("Mode set to %d\n",Mode);
     // Device stopped drawing, signal a refresh
     if( Mode == 0 ) {
-        TclRDeviceX_Redraw(Dev);
+        TclRDeviceX_MarkDirty(Dev);
     }
 }
 static void TclRDeviceX_Clear(const pGEcontext restrict GEC,pDevDesc Dev) {
@@ -245,7 +287,21 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
 //static void (*path)(double *x,double *y,int npoly,int *nper,Rboolean winding,const pGEcontext restrict GEC,pDevDesc Dev);
 //static void (*raster)(unsigned int *raster,int w,int h,double x,double y,double width,double height,double rot,Rboolean interpolate,const pGEcontext restrict GEC,pDevDesc Dev);
 //static SEXP (*cap)(pDevDesc Dev);
-//static void (*size)(double *left,double *right,double *bottom,double *top,pDevDesc Dev);
+static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *Top,pDevDesc Dev) {
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
+    if( Left ) {
+        *Left   = 0.0;
+        *Right  = ctx->W;
+        *Bottom = ctx->H;
+        *Top    = 0.0;
+    } else {
+        Dev->left   = 0.;
+        Dev->right  = ctx->W;
+        Dev->bottom = 0.;
+        Dev->top    = ctx->H;
+    }
+}
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     printf("StrWidth of (%s)\n",Str);
     return strlen(Str)*5.0;
@@ -331,7 +387,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->path           = NULL;
         dev->raster         = NULL;
         dev->cap            = NULL;
-        dev->size           = NULL;
+        dev->size           = (void*)TclRDeviceX_Size;
         dev->strWidth       = (void*)TclRDeviceX_StrWidth;
         dev->text           = (void*)TclRDeviceX_Text;
         dev->onExit         = NULL;
@@ -371,7 +427,7 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,int W,int H
     ctx->Pixmap     = None;
     ctx->GC         = None;
     ctx->Col        = NULL;
-    if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(TkWin),W,H,Tk_Depth(TkWin))) == None ) { //4 is the color depth (num bytes per pixels)
+    if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(TkWin),W,H,Tk_Depth(TkWin))) == None ) {
         Tcl_AppendResult(Interp,"Could not create pixmap",NULL);
         goto err;
     }
@@ -403,7 +459,7 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,int W,int H
 
     return (void*)ge;
 err:
-    // An error occured, free all the rousources
+    // An error occured, free all the resources
     if( ctx ) {
         if( ctx->Pixmap != None )
             Tk_FreePixmap(ctx->Display,ctx->Pixmap);
