@@ -194,7 +194,17 @@ static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restr
     }
 }
 static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc Dev) {
+    TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+    XRectangle clip;
+
+    clip.x = (short)(X0<=X1 ? X0 : X1);
+    clip.y = (short)(Y0<=Y1 ? Y0 : Y1);
+
+    clip.width = (unsigned short)fabs(X1-X0);
+    clip.height = (unsigned short)fabs(Y1-Y0);
+
     printf("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    XSetClipRectangles(ctx->Display,ctx->GC,0,0,&clip,1,Unsorted);
 }
 static void TclRDeviceX_Free(pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
@@ -253,10 +263,14 @@ static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
         TclRDeviceX_MarkDirty(Dev);
     }
 }
-static void TclRDeviceX_Clear(const pGEcontext restrict GEC,pDevDesc Dev) {
+static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
     printf("CLEAR\n");
+    // Reset clipping
+    XSetClipMask(ctx->Display,ctx->GC,None);
+
+    // Reset background
     TclRDeviceX_GCColor(ctx,R_TRANWHITE);
     XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,0,0,ctx->W,ctx->H);
 }
@@ -368,11 +382,10 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->right      = Ctx->W;
         dev->bottom     = 0.;
         dev->top        = Ctx->H;
-        //TODO set clipping params
-        //dev->clipLeft   = 0.;
-        //dev->clipRight  = 1000.;
-        //dev->clipBottom = 0.;
-        //dev->clipTop    = 1000.;
+        dev->clipLeft   = 0.;
+        dev->clipRight  = Ctx->W;
+        dev->clipBottom = 0.;
+        dev->clipTop    = Ctx->H;
         dev->xCharOffset= 0.4900;
         dev->yCharOffset= 0.3333;
         dev->yLineBias  = 0.1;
@@ -383,7 +396,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         //dev->gamma      = 1.;
 
         // Device capabilities
-        dev->canClip            = FALSE;
+        dev->canClip            = TRUE;
         dev->canChangeGamma     = FALSE;
         dev->canHAdj            = 0;
         dev->canGenMouseDown    = FALSE;
@@ -423,7 +436,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->line           = (void*)TclRDeviceX_Line;
         dev->metricInfo     = (void*)TclRDeviceX_MetricInfo;
         dev->mode           = (void*)TclRDeviceX_Mode;
-        dev->newPage        = (void*)TclRDeviceX_Clear;
+        dev->newPage        = (void*)TclRDeviceX_NewPage;
         dev->polygon        = (void*)TclRDeviceX_Polygon;
         dev->polyline       = (void*)TclRDeviceX_Polyline;
         dev->rect           = (void*)TclRDeviceX_Rect;
