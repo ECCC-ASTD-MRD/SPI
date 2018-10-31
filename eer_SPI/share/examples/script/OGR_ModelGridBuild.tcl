@@ -26,6 +26,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
+set multi    0
 set ops /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/dbase
 set par /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/par/dbase
 
@@ -36,14 +37,17 @@ set prog_par $par/prog
 set names  {      "GDPS"        "RDPS"        "GEPS"            "REPS"             "HRDPS_National"    "HRDPS_Caps"          "RAQDPS"   "CAPSOCE"          "GLSOCE"         "GSL"        "RIOPS"             "SHOP"                 "GDWPS"         RDWPS_ERI       RDWPS_HUM       RDWPS_ONT       RDWPS_SUP        REWPS }
 set vars   {      P0            P0            P0                P0                 P0                  P0                    P0         GL                 GL               GL            GL                  TM                    GL              GL              GL              GL              GL               GL    }
 set models [list  $prog/glbhyb $prog/reghyb  $prog/ens.glbmodel $prog/ens.regmodel $prog/lam/nat.model $prog/lam/caps.model  $prog/mach $prog/lam/caps.oce $prog_par/glsoce $prog/gsloce  $prog/riops.native  $anal/shop/stlawrence $prog/gdwps/glb $prog/rdwps/eri $prog/rdwps/hum $prog/rdwps/ont $prog/rdwps/sup $prog/rewps]
+set names  {      "CAPSOCE"          "GLSOCE"         "GSL"        "RIOPS"             "SHOP"                 "GDWPS"         RDWPS_ERI       RDWPS_HUM       RDWPS_ONT       RDWPS_SUP        REWPS }
+set vars   {      GL                 GL               GL            GL                  TM                    GL              GL              GL              GL              GL               GL    }
+set models [list  $prog/lam/caps.oce $prog_par/glsoce $prog/gsloce  $prog/riops.native  $anal/shop/stlawrence $prog/gdwps/glb $prog/rdwps/eri $prog/rdwps/hum $prog/rdwps/ont $prog/rdwps/sup $prog/rewps]
 
 #----- Initialiser la geometrie
 ogrgeometry create POINT "Point"
 
 #----- Loop on the models
 foreach model $models var $vars name $names {
-    
-   Log::Print INFO "Processing $model"
+     
+    Log::Print INFO "Processing $model"
          
    #----- Pick the last file
    set file [lindex [lsort -dictionary -increasing [glob -nocomplain $model/\[1-2\]?????????_000*]] end]
@@ -60,38 +64,57 @@ foreach model $models var $vars name $names {
       fstdfile close RPNFILE
       continue
    }
-
+   set ns [llength [fstdfield define VAR -GRIDID]]
+   set ns [expr $ns==0?1:$ns]
+   set ni [fstdfield define VAR -NI]
+   set nj [fstdfield define VAR -NJ]
+   
    #----- Open GEM index file
-   eval file delete [glob -nocomplain DataOut/ModelGrid_$name*]
-   ogrfile open INDEXFILE write DataOut/ModelGrid_$name.shp "ESRI Shapefile"
+   eval file delete [glob -nocomplain /home/nil000/Projects/eerSPI/eer_SPI/share/examples/script/DataOut/ModelGrid_$name*]
+   ogrfile open INDEXFILE write /home/nil000/Projects/eerSPI/eer_SPI/share/examples/script/DataOut/ModelGrid_$name.shp "ESRI Shapefile"
    ogrlayer create INDEXFILE INDEX $model
    
-   ogrlayer define INDEX -field NAME String
-   ogrlayer define INDEX -nb [llength [fstdfield define VAR -GRIDID]]
-   ogrgeometry create MPOINT "Multi Point"
-   
-   #----- Loop on sub grids
-   for { set s 0 } { $s < [llength [fstdfield define VAR -GRIDID]] } { incr s } {
-      fstdfield define VAR -grid [expr $s+1]
-
-      foreach { lat lon } [fstdfield stats VAR -grid] {
-         ogrgeometry define POINT -points [list $lon $lat]
-         ogrgeometry define MPOINT -addgeometry False POINT
-      }
-   
-      fstdfile close RPNFILE
-   
-      if { $s!=0 } {
-         ogrlayer define INDEX -feature $s NAME "$name ($s)"
-      } else {
-         ogrlayer define INDEX -feature $s NAME $name
-      }
-      ogrlayer define INDEX -geometry $s False MPOINT
+   if { $multi } {
+      ogrlayer define INDEX -field NAME String
+      ogrlayer define INDEX -nb $ns
+   } else {
+      ogrlayer define INDEX -field I Integer
+      ogrlayer define INDEX -field J Integer   
+      ogrlayer define INDEX -nb [expr $ni*$nj]
    }
    
+   #----- Loop on sub grids
+   set n 0
+   for { set s 0 } { $s < $ns } { incr s } {
+      fstdfield define VAR -grid [expr $s+1]
+      ogrgeometry free MPOINT
+      ogrgeometry create MPOINT "Multi Point"
+      
+      foreach { lat lon } [fstdfield stats VAR -grid] {
+         ogrgeometry define POINT -points [list $lon $lat]
+         if { $multi } {
+            ogrgeometry define MPOINT -addgeometry False POINT
+         } else {
+            ogrlayer define INDEX -feature $n I [expr $n%$ni]
+            ogrlayer define INDEX -feature $n J [expr $n/$ni]
+            ogrlayer define INDEX -geometry $n False POINT
+         }
+         incr n
+      }
+   
+      if { $multi } {
+         if { $s!=0 } {
+            ogrlayer define INDEX -feature $s NAME "$name ($s)"
+         } else {
+            ogrlayer define INDEX -feature $s NAME $name
+         }
+         ogrlayer define INDEX -geometry $s False MPOINT
+      }
+   }
+   
+   fstdfile close RPNFILE
    ogrfile close INDEXFILE
    ogrlayer free INDEX
-   ogrgeometry free MPOINT
 }
 
 cd DataOut

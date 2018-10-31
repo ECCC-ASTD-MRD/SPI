@@ -30,12 +30,12 @@ export CPL_LOG=/dev/null
 if [ `domainname -d` = "science.gc.ca" ]; then
    #----- On the SCIENCE side
    [ -n "\${OPAL_PREFIX}" ]             || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
    [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
 else 
    #----- On the EC side
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/20181017
-   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
 
 
@@ -54,15 +54,15 @@ setenv EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 setenv GDAL_PAM_ENABLED=NO
 setenv CPL_LOG=/dev/null
 
-#----- GDB data
-if [ -z \${GDB_PATH} ]; then
-   if [ `domainname -d` = "science.gc.ca" ]; then
-      #----- On the SCIENCE side
-      setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-   else
-      #----- On the EC side
-      setenv GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
-   fi
+if [ `domainname -d` = "science.gc.ca" ]; then
+   #----- On the SCIENCE side
+   [ -n "\${OPAL_PREFIX}" ]             || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+else 
+   #----- On the EC side
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc

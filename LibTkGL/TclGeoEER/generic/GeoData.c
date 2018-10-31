@@ -2002,6 +2002,7 @@ int GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode) {
             if (Mode & GDB_VECTOR) {
                if (GDB->Params.CoordLoc<0) {
                   GDB_FillRender(Interp,Proj,tile->FCoast,(Proj->VP->ColorFCoast && tile->FCoast)?Proj->VP->ColorFCoast:Proj->VP->BGColor,0x1,0);
+                  GDB_FillRender(Interp,Proj,tile->FLake,(Proj->VP->ColorFLake && tile->FLake)?Proj->VP->ColorFLake:Proj->VP->BGColor,0x1,1);
                   GDB_FillRender(Interp,Proj,tile->FCoastIn,(Proj->VP->ColorFCoast && tile->FCoast)?Proj->VP->ColorFCoast:Proj->VP->BGColor,0x1,1);
                }
 

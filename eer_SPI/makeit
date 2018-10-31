@@ -8,7 +8,7 @@ NAME="SPI"
 DESCRIPTION="Meteorological GIS, Processing and Modeling tool"
 SUMMARY="4D virtual globe for scientific visualisation and analytics"
 VERSION="8.0.0"
-MAINTAINER="Jean-Philippe Gauthier"
+MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 BUILDINFO=`git describe --always`
 
 
