@@ -224,7 +224,7 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
     //}
 
     // Update the device since we resized it
-    printf("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    DBGPRINTF("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
     TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 
     return TCL_OK;
@@ -337,8 +337,8 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
 
         // Get those coordinates in the portion of the canvas actually shown
         Tk_CanvasDrawableCoords(Canv,rdv->Header.x1+x,rdv->Header.y1+y,&drawX,&drawY);
-        printf("Drawable coords : %hd %hd\n",drawX,drawY);
-        printf("x(%d) y(%d) w(%u) h(%u)\n",x,y,w,h);
+        DBGPRINTF("Drawable coords : %hd %hd\n",drawX,drawY);
+        DBGPRINTF("x(%d) y(%d) w(%u) h(%u)\n",x,y,w,h);
 
         // Copy the selected area from our pixmap (filled by the RDevice) to the canvas
         // Note that we need to set the mask's origin to the start of our pixmap if we want to draw a background correctly
@@ -453,7 +453,7 @@ static void RDeviceScale(Tk_Canvas Canv,Tk_Item *ItemPtr,double OriginX,double O
     rdv->Header.y2 = (int)round(OriginY + ScaleY*(rdv->Header.y2-OriginY));
 
     // Update the device since we resized it
-    printf("Scaled to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    DBGPRINTF("Scaled to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
     TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 }
 

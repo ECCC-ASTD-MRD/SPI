@@ -49,7 +49,7 @@ static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
 
         // Convert the coodinates into the X world
         for(i=0; i<N; ++i) {
-            printf("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
+            DBGPRINTF("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
             XPOINT_BUF[i].x = (short)round(X[i]);
             XPOINT_BUF[i].y = (short)(Ctx->H - (int)round(Y[i]));
         }
@@ -127,7 +127,7 @@ void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
     col.red     = R_RED(RCol)<<8;//|0x77;
     col.green   = R_GREEN(RCol)<<8;//|0x77;
     col.blue    = R_BLUE(RCol)<<8;//|0x77;
-    printf("RCol=%u (%u,%u,%u)\n",RCol,R_RED(RCol),R_GREEN(RCol),R_BLUE(RCol));
+    DBGPRINTF("RCol=%u (%u,%u,%u)\n",RCol,R_RED(RCol),R_GREEN(RCol),R_BLUE(RCol));
 
     // Check if we need to change the color
     if( !Ctx->Col || Ctx->Col->red!=col.red || Ctx->Col->green!=col.green || Ctx->Col->blue!=col.blue ) {
@@ -143,14 +143,14 @@ void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
         XGCValues xgc;
         xgc.foreground = tkcol->pixel;
         XChangeGC(Ctx->Display,Ctx->GC,GCForeground,&xgc);
-        printf("Foreground changed to %lu\n",xgc.foreground);
+        DBGPRINTF("Foreground changed to %lu\n",xgc.foreground);
     }
 }
 
 void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
     int lstyle=LineSolid,capstyle=CapRound,joinstyle=JoinRound;
 
-    printf("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
+    DBGPRINTF("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
     switch( GEC->lty ) {
         case 1: lstyle=LineSolid;       break;
         case 2: lstyle=LineOnOffDash;   break;
@@ -180,7 +180,7 @@ static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restr
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     int r=(int)round(R),x=(int)round(X)-r,y=ctx->H-(int)round(Y)+r,d=r*2;
 
-    printf("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
+    DBGPRINTF("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
     // Check if we need to fill the circle
     if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
@@ -203,12 +203,12 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
     clip.width = (unsigned short)fabs(X1-X0);
     clip.height = (unsigned short)fabs(Y1-Y0);
 
-    printf("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    DBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     XSetClipRectangles(ctx->Display,ctx->GC,0,0,&clip,1,Unsorted);
 }
 static void TclRDeviceX_Free(pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
-    printf("Freeing RDevice\n");
+    DBGPRINTF("Freeing RDevice\n");
 
     // Detach this device from the associated item
     RDeviceItem_DetachDevice(ctx->Item);
@@ -239,7 +239,7 @@ static void TclRDeviceX_Free(pDevDesc Dev) {
 static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    printf("Line [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    DBGPRINTF("Line [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     TclRDeviceX_GCLine(ctx,GEC);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)round(X0),ctx->H-(int)round(Y0),(int)round(X1),ctx->H-(int)round(Y1));
@@ -250,14 +250,14 @@ static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *A
     Tk_FontMetrics fm;
 
     Tk_GetFontMetrics(RDeviceItem_GetFont(ctx->Item),&fm);
-    printf("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+    DBGPRINTF("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
 
     *Ascent = fm.ascent;
     *Descent = fm.descent;
     *Width = fm.linespace;
 }
 static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
-    printf("Mode set to %d\n",Mode);
+    DBGPRINTF("Mode set to %d\n",Mode);
     // Device stopped drawing, signal a refresh
     if( Mode == 0 ) {
         TclRDeviceX_MarkDirty(Dev);
@@ -266,7 +266,7 @@ static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
 static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    printf("CLEAR\n");
+    DBGPRINTF("CLEAR\n");
     // Reset clipping
     XSetClipMask(ctx->Display,ctx->GC,None);
 
@@ -278,7 +278,7 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
 
-    printf("Polygon (%d)\n",N);
+    DBGPRINTF("Polygon (%d)\n",N);
     if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Check if we need to fill the polygon
         if( GEC->fill != NA_INTEGER ) {
@@ -297,7 +297,7 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
 
-    printf("Polyline (%d)\n",N);
+    DBGPRINTF("Polyline (%d)\n",N);
     if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Draw the lines
         TclRDeviceX_GCLine(ctx,GEC);
@@ -310,7 +310,7 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
     int             x=(int)round(X0),y=ctx->H-(int)round(Y0);
     unsigned int    w=(unsigned int)round(X1-X0),h=(unsigned int)round(Y1-Y0);
 
-    printf("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    DBGPRINTF("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     // Check if we need to fill the rectangle
     if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
@@ -344,13 +344,13 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    printf("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str)));
+    DBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str)));
     return Tk_TextWidth(RDeviceItem_GetFont(ctx->Item),Str,strlen(Str));
 }
 static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double HAdj,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    printf("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
+    DBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
     //Tk_DrawChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y));
     TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,RDeviceItem_GetFont(ctx->Item),Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y),Rot);
 }
@@ -375,7 +375,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
 
         Tk_FontMetrics fm;
         Tk_GetFontMetrics(RDeviceItem_GetFont(Ctx->Item),&fm);
-        printf("font : ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+        DBGPRINTF("font : ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
 
         // Device physical parameters
         dev->left       = 0.;
