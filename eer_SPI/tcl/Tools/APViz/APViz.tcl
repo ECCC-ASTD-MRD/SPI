@@ -395,6 +395,7 @@ proc APViz::Source { Path Widget } {
             #----- Process Dates range
             if { $hour=="<Dates>" } {
                set Range(Hours) [set Range(Dates) [APViz::FetchDates $Product $model $dataSrc]]
+               set Range(Dates) [APViz::FetchDates $Product $model $dataSrc]
                set Range(Date)  [lindex $Range(Dates) end]
                CreateRangeWidget $Product $run     $Widget $no Runs true 0
                CreateRangeWidget $Product $hour    $Widget $no Hours true 13 
@@ -1043,6 +1044,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    variable Lbl
    variable ${Product}::Param
    variable ${Product}::Value
+   variable ${Product}::Range
 
    #----- Get layer values
    set model	$Value(Models,$Index)
@@ -1057,22 +1059,22 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    
    puts "Assigning variable for $model $var"
    
-   #----- check if we need to increment the date on a run increment
+   #----- Check for empty values
+   if { $run=="-" || $run=="" } { set run 00 }
+   if { $ip3=="-" || $ip3=="" } { set ip3 -1 }
+   if { $lev=="-" || $lev=="" } { set lev -1 }
+     
+   #----- Check if we need to increment the date on a run increment
    set date $Data(Date)
    if { [info exists Value(DeltaRuns,$Index)] } {
       if { $run<0 || $run>=24 } {
-         set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Value(DeltaRuns,$Index)] -format "%Y%m%d" -timezone :UTC]
+         set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Value(DeltaRuns,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
          set run [format %02i [expr $run-$Value(DeltaRuns,$Index)]]
       }
    }
    
    if { ![APViz::ValidateDate $date] } {
       return
-   }
-
-   #----- Setting optional IP3
-   if { ($ip3 eq "-") || ($ip3 eq "") } {
-      set ip3 -1
    }
    
    #----- Assign etiket if not set
@@ -1150,7 +1152,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          Viewport::Assign $Data(Frame) $vpID $obsID 1    
       } else {
          if { [info exists Ext(${model},${src})] } {
-            set Data(timestamp) ${hour}$Ext(${model},${src})
+            if { [info exist Range(Dates)] } {
+               set Data(timestamp) ${hour}$Ext(${model},${src})
+            } else {
+               set hour [scan $hour %d]
+               set Data(timestamp) [clock format [expr [clock scan $date -format "%Y%m%d" -timezone :UTC]+${run}*3600+${hour}*3600] -format "%Y%m%d%H_%M" -timezone :UTC]$Ext(${model},${src})
+            }
          } else {    
             set Data(timestamp) ${date}${run}_$hour
          }
@@ -1182,7 +1189,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                puts "STANDARD FILE - Opening $fileID	$filepath"
             }
             
-            if { $lev>32768 } {
+            if { $lev>32768 || $lev==-1 } {
                set lvl $lev
             } else {      
                set lvl [subst {$lev [APViz::GetLevelType $src]}]
@@ -1192,7 +1199,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                "DZ"     { APViz::AssignDZ $Product $Index $src $model $var $lev $fileID $fieldID $ip3 $etiket}
                
                default  {  
-                           if {[catch {fstdfield read $fieldID $fileID -1 $etiket $lvl -1 $ip3 "" $var }]} {                                       
+                           if { [catch {fstdfield read $fieldID $fileID -1 $etiket $lvl -1 $ip3 "" $var }] } {                                       
                               APViz::LayerToggle ${Index} Layer False
                               set Data(Msg) "[lindex $Lbl(InvalidField) $GDefs(Lang)]: $Value(RowIDLayer$Index)"
                               set Data(LayerIDs) [lreplace $Data(LayerIDs) $Value(RowIDLayer$Index) $Value(RowIDLayer$Index) $fieldID]
@@ -1208,7 +1215,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { ![fstdfield is $fieldID] } {
                return
             }
-
+            
             #----- Apply variable configs from config file 
             if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}] } {
                if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
@@ -1821,13 +1828,13 @@ proc APViz::FetchAllDates { Product } {
 
       set sourceLst {}
       set dateLst   {}
-      for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-         if {[set rowID $Value(RowIDLayer$i)] >= 0} {
+      for { set i 0 } {$i < $Value(NbLayers) } { incr i } {
+         if { [set rowID $Value(RowIDLayer$i)] >= 0 } {
             set model $Value(Models,$i)
             set src $Value(Sources,$i)
             
             #----- Verify if the model and src have already been treated
-            if {[lsearch -exact $sourceLst $model$src] < 0} {
+            if { [lsearch -exact $sourceLst $model$src] < 0 } {
                lappend dateLst [APViz::FetchDates $Product $model $src]
                lappend sourceLst $model$src
             }
@@ -1841,16 +1848,17 @@ proc APViz::FetchAllDates { Product } {
          set finalDateLst {}
          
          foreach dates $dateLst {
-            if {[llength $shortestLst] > [llength $dates] } {
+            if { [llength $shortestLst] > [llength $dates] } {
                set shortestLst $dates
             }
          }
+puts stderr .$shortestLst.
 
          #----- For all dates contained in the shortest date list, verify if contained in all other lists
          foreach date $shortestLst {
             set isValid 1
-            for {set j 0} {$j < $nbDateLst} {incr j} {
-               if {[lsearch -exact [lindex $dateLst $j] $date] >= 0} {
+            for { set j 0 } { $j < $nbDateLst } { incr j } {
+               if { [lsearch -exact [lindex $dateLst $j] $date] >= 0 } {
                   set isValid [expr $isValid && 1]
                } else {
                   set isValid [expr $isValid && 0]
@@ -1858,7 +1866,7 @@ proc APViz::FetchAllDates { Product } {
             }
             
             #----- Append date to list only if contained in all lists
-            if {$isValid} {
+            if { $isValid } {
                lappend finalDateLst $date
             }
          }
@@ -1867,7 +1875,82 @@ proc APViz::FetchAllDates { Product } {
       }
       
       #----- Display dates in Available Dates combo box
-      if {($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)]} {
+      if { ($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)] } {
+         ComboBox::DelAll $Data(DateCBWidget)
+         ComboBox::AddList $Data(DateCBWidget) $finalDateLst
+      }
+
+      if { ($Data(Date) eq "") && ([lsearch -exact $Data(Dates) $selectedDate] >= 0)} {
+         if { $selectedDate ne "" } {
+            set Data(Date) $selectedDate
+         } else {
+            set Data(Date) [lindex $Data(Dates) end]
+         }
+      }
+      
+      set Data(Dates) $finalDateLst
+   }
+}
+
+proc APViz::FetchAllDatesJP { Product } {
+   variable Data
+   
+   if { $Product ne "" } {
+      variable ${Product}::Value
+      
+      set selectedDate $Data(Date)
+
+      set sourceLst {}
+      set dateLst   {}
+      for { set i 0 } {$i < $Value(NbLayers) } { incr i } {
+         if { [set rowID $Value(RowIDLayer$i)] >= 0 } {
+            set model $Value(Models,$i)
+            set src $Value(Sources,$i)
+            
+            #----- Verify if the model and src have already been treated
+            if { [lsearch -exact $sourceLst $model$src] < 0 } {
+               set dateLst [concat $dateLst [APViz::FetchDates $Product $model $src]]
+               lappend sourceLst $model$src
+            }
+         }
+      }
+
+#       if { [set nbDateLst [llength $dateLst]] > 1 } {
+#          
+#          #----- Find the shortest list
+#          set shortestLst [lindex $dateLst 0]
+#          set finalDateLst {}
+#          
+#          foreach dates $dateLst {
+#             if { [llength $shortestLst] > [llength $dates] } {
+#                set shortestLst $dates
+#             }
+#          }
+# 
+#          #----- For all dates contained in the shortest date list, verify if contained in all other lists
+#          foreach date $shortestLst {
+#             set isValid 1
+#             for { set j 0 } { $j < $nbDateLst } { incr j } {
+#                if { [lsearch -exact [lindex $dateLst $j] $date] >= 0 } {
+#                   set isValid [expr $isValid && 1]
+#                } else {
+#                   set isValid [expr $isValid && 0]
+#                }
+#             }
+#             
+#             #----- Append date to list only if contained in all lists
+#             if { $isValid } {
+#                lappend finalDateLst $date
+#             }
+#          }
+#       } else {
+#          set finalDateLst [lindex $dateLst 0]
+#       }
+      set finalDateLst [lsort -increasing -unique $dateLst]
+puts stderr .$finalDateLst.
+      
+      #----- Display dates in Available Dates combo box
+      if { ($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)] } {
          ComboBox::DelAll $Data(DateCBWidget)
          ComboBox::AddList $Data(DateCBWidget) $finalDateLst
       }
@@ -1905,6 +1988,7 @@ proc APViz::FetchDates { Product Model Src } {
    variable Data
    variable Ext
    variable DataSrc
+   variable ${Product}::Range
    
    set dates {}
 
@@ -1917,7 +2001,11 @@ proc APViz::FetchDates { Product Model Src } {
       if { [info exists Ext(${Model},${Src})] } {
          #----- Files with extensions (ex: GOES g15,g16)
          if { [llength [set fileList [glob -nocomplain -tails -path $path *$Ext(${Model},${Src})]]] } {
-            set dates    [lsort [lmap a $fileList {string range $a 0 12}]] 
+            if { [info exists Range(Dates)] } {
+               set dates    [lsort [lmap a $fileList {string range $a 0 12}]] 
+            } else {
+               set dates    [lsort [lmap a $fileList {string range $a 0 7}]] 
+            }
          }     
       } else {
          #----- Files with modelling standard (YYYYMMDDRR_HHH)
@@ -3143,13 +3231,13 @@ proc APViz::UpdateAvailableDates { Product } {
    variable DataSrc
    variable Lbl
    
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {$Value(RowIDLayer$i) >= 0} {
+   for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
+      if { $Value(RowIDLayer$i) >= 0 } {
          set model $Value(Models,$i)
          set src $Value(Sources,$i)
          
          #----- Recuperer le path de la source
-         if {$src eq "BURP"} {
+         if { $src eq "BURP" } {
             set path $DataSrc(OBS,$model)
          } else {
             set path $DataSrc($model,$src)
@@ -3158,7 +3246,7 @@ proc APViz::UpdateAvailableDates { Product } {
          #----- Verifier s'il y a eu des changements dans le dossier
          set lastModifiedDate [clock format [file mtime $path] -format %Y%m%d]
 
-         if {$lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]} {
+         if { $lastModifiedDate > [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]] } {
             #----- Afficher message
             .apviz.dock.coo insert 0 [lindex $Lbl(FetchingDates) $GDefs(Lang)]
             APViz::FetchAllDates $Product
@@ -3168,7 +3256,7 @@ proc APViz::UpdateAvailableDates { Product } {
       }
    }
 
-   if {(!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])) || ($Data(Date) eq "")} {
+   if { (!$Data(dateLock) && ($Data(Date) ne [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]])) || ($Data(Date) eq "") } {
       set Data(Date) [lindex $Data(Dates) [expr [llength $Data(Dates)] -1 ]]
       #----- Afficher message
       .apviz.dock.coo insert 0 [lindex $Lbl(UpdatingDate) $GDefs(Lang)]
