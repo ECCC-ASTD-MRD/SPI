@@ -30,6 +30,35 @@ typedef struct TCtx {
     XColor      *Col;       // Color currently in use
 } TCtx;
 
+// Point buffer
+
+static __thread XPoint *XPOINT_BUF=NULL;
+static __thread size_t  XPOINT_N=0;
+
+static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
+    // Make sure the buffer has enough space
+    if( XPOINT_N < N ) {
+        if( XPOINT_BUF )
+            free(XPOINT_BUF);
+        XPOINT_BUF = malloc(N*sizeof(*XPOINT_BUF));
+        XPOINT_N = N;
+    }
+
+    if( XPOINT_BUF ) {
+        int i;
+
+        // Convert the coodinates into the X world
+        for(i=0; i<N; ++i) {
+            printf("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
+            XPOINT_BUF[i].x = (short)round(X[i]);
+            XPOINT_BUF[i].y = (short)(Ctx->H - (int)round(Y[i]));
+        }
+    }
+
+    return XPOINT_BUF;
+}
+
+// Canvas item sync functions
 
 // Signals a kill from the tk side (when the canvas item is destroyed)
 void TclRDeviceX_Destroy(void* GE) {
@@ -187,6 +216,13 @@ static void TclRDeviceX_Free(pDevDesc Dev) {
     ctx->Pixmap     = None;
     ctx->GC         = None;
     ctx->Col        = NULL;
+
+    // Free the xpoint buffer
+    if( XPOINT_BUF ) {
+        free(XPOINT_BUF);
+        XPOINT_BUF = NULL;
+        XPOINT_N = 0;
+    }
 }
 //static void (*deactivate)(pDevDesc );
 //static Rboolean (*locator)(double *x,double *y,pDevDesc Dev);
@@ -227,17 +263,9 @@ static void TclRDeviceX_Clear(const pGEcontext restrict GEC,pDevDesc Dev) {
 static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
-    int     i;
 
     printf("Polygon (%d)\n",N);
-    if( N && (xp=malloc(N*sizeof(*xp))) ) {
-        // Convert our coordinates into the X world
-        for(i=0; i<N; ++i) {
-            printf("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
-            xp[i].x = (short)round(X[i]);
-            xp[i].y = (short)ctx->H - (short)round(Y[i]);
-        }
-        
+    if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Check if we need to fill the polygon
         if( GEC->fill != NA_INTEGER ) {
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
@@ -249,30 +277,18 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
             XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
         }
-
-        free(xp);
     }
 }
 static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
-    int     i;
 
     printf("Polyline (%d)\n",N);
-    if( N && (xp=malloc(N*sizeof(*xp))) ) {
-        // Convert our coordinates into the X world
-        for(i=0; i<N; ++i) {
-            printf("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
-            xp[i].x = (short)round(X[i]);
-            xp[i].y = (short)ctx->H - (short)round(Y[i]);
-        }
-
+    if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Draw the lines
         TclRDeviceX_GCLine(ctx,GEC);
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
         XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
-
-        free(xp);
     }
 }
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
