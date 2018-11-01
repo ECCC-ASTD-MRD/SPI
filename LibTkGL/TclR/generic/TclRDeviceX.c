@@ -22,7 +22,8 @@
 
 typedef struct TCtx {
     void        *Item;      // RDeviceItem (needs to be passed to signal a redraw)
-    int         W,H;        // Width and Height of the pixmap
+    int         W,H;        // Width and Height of the device
+    int         PxW,PxH;    // Width and height of the underlying pixmap
     Display     *Display;   // Connection to the X server
     Tk_Window   TkWin;      // TkWindow
     Pixmap      Pixmap;     // Pixmap where we will draw all the R primitives
@@ -145,7 +146,7 @@ void TclRDeviceX_Resize(void *GE,int W,int H) {
         TCtx *ctx = (TCtx*)dev->deviceSpecific;
 
         // Free and create a new pixmap if we need a bigger one in one or both dimension(s)
-        if( ctx->W<W || ctx->H<H ) {
+        if( ctx->PxW<W || ctx->PxH<H ) {
             if( ctx->Pixmap != None )
                 Tk_FreePixmap(ctx->Display,ctx->Pixmap);
             if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(ctx->TkWin),W,H,Tk_Depth(ctx->TkWin))) == None ) {
@@ -153,6 +154,8 @@ void TclRDeviceX_Resize(void *GE,int W,int H) {
                 TclRDeviceX_Destroy(GE);
                 return;
             }
+            ctx->PxW = W;
+            ctx->PxH = H;
         }
 
         // Only resize if we changed dimensions
@@ -971,6 +974,8 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,int W,int H
     ctx->Item       = Item;
     ctx->W          = W;
     ctx->H          = H;
+    ctx->PxW        = W;
+    ctx->PxH        = H;
     ctx->Display    = Tk_Display(TkWin);
     ctx->TkWin      = TkWin;
     ctx->Pixmap     = None;
