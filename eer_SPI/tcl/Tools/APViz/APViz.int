@@ -196,7 +196,7 @@ proc APViz::AddLayerWindow { } {
    toplevel .addLayerBox
    wm protocol  .addLayerBox WM_DELETE_WINDOW { APViz::DeleteWidget .addLayerBox }
    wm transient .addLayerBox $Data(Frame)
-   wm geom      .addLayerBox 410x260
+   wm geom      .addLayerBox 980x140
    
    TabFrame::Create .addLayerBox.tab 1 ""
    pack .addLayerBox.tab -side top -fill both -expand false -padx 5 -pady 5
@@ -206,17 +206,17 @@ proc APViz::AddLayerWindow { } {
    frame .addLayerBox.layers
       #----- Titles
       frame .addLayerBox.layers.layerGrid
-      label .addLayerBox.layers.layerGrid.valueLbl -text "Default Value \n(Required)"
-      label .addLayerBox.layers.layerGrid.rangeLbl -text "Range \n(Optional)"
+      label .addLayerBox.layers.layerGrid.valueLbl -justify right -text "Default Value:"
+      label .addLayerBox.layers.layerGrid.rangeLbl -justify right -text "Range(Optional):"
       button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {APViz::CreateRangeWindow }
       
       Bubble::Create .addLayerBox.layers.layerGrid.addRange $Bubble(AddRange)
       Bubble::Create .addLayerBox.layers.layerGrid.valueLbl $Bubble(DefaultValue)
       
       grid .addLayerBox.layers.layerGrid -column 0 -row 0
-      grid .addLayerBox.layers.layerGrid.valueLbl -column 1 -row 0
-      grid .addLayerBox.layers.layerGrid.rangeLbl -column 2 -row 0
-      grid .addLayerBox.layers.layerGrid.addRange -column 3 -row 0
+      grid .addLayerBox.layers.layerGrid.valueLbl -column 0 -row 1
+      grid .addLayerBox.layers.layerGrid.rangeLbl -column 0 -row 2
+      grid .addLayerBox.layers.layerGrid.addRange -column 0 -row 3
       
       set no 0
       foreach type $Data(ColNames) {
@@ -293,34 +293,34 @@ proc APViz::CalculateNumericalRange { Widget Max Min Step } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::CreateAddLayerRow { Widget Type Row } {
+proc APViz::CreateAddLayerRow { Widget Type Col } {
    variable Data
    variable Bubble
    variable FieldList
 
    set lowerType [string tolower $Type] 
    #----- Field name
-   label $Widget.${lowerType}Lbl -text "${Type}:" -anchor w
+   label $Widget.${lowerType}Lbl -text "${Type}" -anchor w
    
    #----- Value and range widgets
    #----- If range is not empty, value will be default value
    if {$Type eq "Vars"} {
-      ComboBox::Create $Widget.${lowerType}Value APViz::Data(AddLayer$Type,Value) edit sorted nodouble -1 $FieldList(ALL) 18 20 ""
+      ComboBox::Create $Widget.${lowerType}Value APViz::Data(AddLayer$Type,Value) edit sorted nodouble -1 $FieldList(ALL) 10 20 ""
    } else {
-      entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value)
+      entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value) -width 12
    }
    
    if {$Type eq "Models"} {
       $Widget.${lowerType}Value configure -validate focus -vcmd "APViz::SetAvailableVarsList \$APViz::Data(AddLayer$Type,Value) $Widget.varsValue"
    }
 
-   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 18 [dict get $Data(Ranges) $Type] \
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 10 [dict get $Data(Ranges) $Type] \
       "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
-   set rowNb [expr $Row + 1]
+   set colNb [expr $Col + 1]
    
-   grid $Widget.${lowerType}Lbl      -column 0 -row $rowNb -padx .5
-   grid $Widget.${lowerType}Value    -column 1 -row $rowNb -padx .5
-   grid $Widget.${lowerType}Range    -column 2 -row $rowNb -padx .5
+   grid $Widget.${lowerType}Lbl      -row 0 -column $colNb -padx .5
+   grid $Widget.${lowerType}Value    -row 1 -column $colNb -padx .5
+   grid $Widget.${lowerType}Range    -row 2 -column $colNb -padx .5
    
    Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
    Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
