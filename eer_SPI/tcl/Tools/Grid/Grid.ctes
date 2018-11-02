@@ -37,8 +37,15 @@ namespace eval Grid {
    set Data(GridDepend)   0
    set Data(GridId)       MODELGRID                                                ;# Grid identificator 
    set Data(GridParams)   { "" }
-   set Data(GridColors)   { black blue red yellow green }                          ;# Multiple grid color list
-   
+   set Data(GridSize)     2
+   set Data(GridColor)    black
+   set Data(GridBoundary) 0
+   set Data(Color0)       black                          
+   set Data(Color1)       blue                        
+   set Data(Color2)       red                        
+   set Data(Color3)       yellow                        
+   set Data(Color4)       green                         
+ 
    colormap create GRID0; colormap control GRID0 -add 255 000 000 000 255; colormap control GRID0 -add 0 128 128 128 255
    colormap create GRID1; colormap control GRID1 -add 255 000 000 128 255; colormap control GRID1 -add 0 000 000 255 255
    colormap create GRID2; colormap control GRID2 -add 255 128 000 000 255; colormap control GRID2 -add 0 255 000 000 255
@@ -88,9 +95,5 @@ namespace eval Grid {
    set Param(XLon2)    90                                                          ;# Rotation axis longitude
    set Param(Angle)    0                                                           ;# Rotation angle
    set Param(Extend)   0                                                           ;# Internal extension
-
-   set Param(GridSize)     2
-   set Param(GridColor)    black
-   set Param(GridBoundary) 0
-   set Param(GridAlpha)    100      
 }
+

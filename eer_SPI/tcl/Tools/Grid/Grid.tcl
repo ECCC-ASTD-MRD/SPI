@@ -80,7 +80,6 @@ proc Grid::Switch { } {
    set Param(LockCenter) [expr $Data(GridNo)>0?True:False]
    
    Grid::WindowSet $Data(Tab).grid
-   Grid::ConfigGet $Data(GridId)
 }
 
 proc Grid::Add { } {
@@ -102,8 +101,6 @@ proc Grid::Add { } {
    Option::Set $Data(Tab).grid.sel.no $grids
    $Data(Tab).grid.sel.no.b.m invoke end
    
-   set Param(GridColor) [lindex $Data(GridColors) $Data(GridNo)]
-   ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
    Grid::Create $Data(GridId)
 }
 
@@ -121,50 +118,28 @@ proc Grid::Del { } {
    }
 }
 
-proc Grid::ConfigSet { { ID MODELGRID } } {
+proc Grid::ConfigSet { } {
    variable Param
    variable Data
 
    set texture 0
    set grid    0
    
-   switch $Param(GridSize) {
-      7 { set Param(GridBoundary) 0; set texture 1 }
-      6 { set Param(GridBoundary) 1 }
-      default { set Param(GridBoundary) 0; set grid $Param(GridSize) }
+   switch $Data(GridSize) {
+      7 { set Data(GridBoundary) 0; set texture 1 }
+      6 { set Data(GridBoundary) 1 }
+      default { set Data(GridBoundary) 0; set grid $Data(GridSize) }
    }
 
    lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
    
-   #-transparency [expr int(0x$Param(GridAlpha)/255.0*100.0)]
-   if { [fstdfield is $ID] } {
-      fstdfield configure $ID -rendergrid $grid -renderboundary $Param(GridBoundary) \
-         -width 2 -color $Param(GridColor) -colormap GRID$Data(GridNo) -rendertexture $texture -interpdegree NEAREST
-      Viewport::UpdateData $Data(Frame)        
-   }
-}
-
-proc Grid::ConfigGet { { ID MODELGRID } } {
-   variable Param
-   variable Data
-
-   if { [fstdfield is $ID] } {
-      set Param(GridSize)       [fstdfield configure $ID -rendergrid]
-      set Param(GridBoundary)   [fstdfield configure $ID -renderboundary]
-      set Param(GridColor)      [fstdfield configure $ID -color]
-      set Param(GridAlpha)      [fstdfield configure $ID -transparency]
-      set texture               [fstdfield configure $ID -rendertexture]
-
-      if { $texture } {
-         set Param(GridSize) 7
+   for { set no 0 } { $no<[llength $Data(GridParams)] } { incr no } {
+      if { [fstdfield is MODELGRID$no] } {
+         fstdfield configure MODELGRID$no -rendergrid $grid -renderboundary $Data(GridBoundary) \
+            -width 2 -color $Data(Color$no) -colormap GRID$no -rendertexture $texture -interpdegree NEAREST
       }
-      if { $Param(GridBoundary) } {
-         set Param(GridSize) 6
-      }
-      
-      ColorBox::ConfigNoColor $Data(Tab).grid.sel.col $Param(GridColor)
-      IcoMenu::Set $Data(Tab).grid.sel.size   $Param(GridSize)
    }
+   Viewport::UpdateData $Data(Frame)        
 }
 
 #----------------------------------------------------------------------------
@@ -435,11 +410,21 @@ proc Grid::Cascade { } {
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
 }
 
-proc Grid::SettingsBuild { Params } {
+proc Grid::SettingsBuild { Params { C False } } {
    
    array set param $Params
    switch $param(Type) {
-         "ZE"    { return [format "&grid
+         "ZE"    { if { $C } {
+                      return [format "&grdc
+  Grdc_ni     = %i, Grdc_nj     = %i,
+  Grdc_dx     = %.4f, Grdc_dy     = %.4f,
+  Grdc_lonr   = %9.4f, Grdc_latr  = %8.4f,
+  Grdc_maxcfl = %i\n" \
+  Grdc_nbits  = \n" \
+  Grdc_nfe    = \n" \
+         $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(MaxCFL)]
+                   } else {      
+                      return [format "&grid
   Grd_typ_S  = 'LU',
   Grd_ni     = %i, Grd_nj     = %i,
   Grd_dx     = %.4f, Grd_dy     = %.4f,
@@ -448,7 +433,8 @@ proc Grid::SettingsBuild { Params } {
   Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
   Grd_maxcfl = %i\n" \
          $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
-      }
+                   }
+                  }
    }
 }
 
@@ -471,25 +457,30 @@ proc Grid::Launch { Path } {
    }
    
    #----- Create job file
-   set f [open ${Path}/jobfile.txt w 0755]
+   set f [open ${Path}/jobfile.sh w 0755]
    puts $f "#!/bin/bash"
 
-   set no 0
+   set no    [llength $Data(GridParams)]
+   set gridc {}
    foreach grid $Data(GridParams) {
    
-      #----- Write namelist
+      #----- Write namelist grid and gridc
       exec echo [Grid::SettingsBuild $grid] > ${Path}/grid$no.nml
+      if { [llength $gridc] } {
+         exec echo [Grid::SettingsBuild $gridc True] >> ${Path}/grid$no.nml     
+      }
+      set gridc $grid
       
       #----- Write RPN grid file
       file delete -force ${Path}/grid$no.fstd 
       fstdfile open FILE write ${Path}/grid$no.fstd 
-      Grid::Write FILE MODELGRID$no
-      fstdfile close FILE     
+      Grid::Write FILE MODELGRID[expr $no-1]
+      fstdfile close FILE
 
       #----- Add GenphysX call
-      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target $Data(GenPhysX_Target) -result ${Path}/geo$0 -batch -mach $Data(GenPhysX_Host) -t $Data(GenPhysX_Time) -cm $Data(GenPhysX_Memory) -cpus $Data(GenPhysX_CPU)"
+      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target $Data(GenPhysX_Target) -result ${Path}/geo$no -batch -mach $Data(GenPhysX_Host) -t $Data(GenPhysX_Time) -cm $Data(GenPhysX_Memory) -cpus $Data(GenPhysX_CPU) &"
      
-      incr no
+      incr no -1
    }
    
    close $f
@@ -542,7 +533,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
          set Data(Canvas) $Page::Data(Canvas)
          set Data(VP)     $Viewport::Data(VP)
          
-         Grid::ConfigSet $ID
+         Grid::ConfigSet
          Viewport::Assign $Data(Frame) $Data(VP) $ID False 0
          Grid::UpdateItems $Page::Data(Frame)       
       }
@@ -1142,7 +1133,7 @@ proc Grid::UpdateItems { Frame } {
       
 #      Viewport::DrawRange $Data(Frame) $Data(VP) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) GRIDMAKER red
       if { $Grid::Param(Type)=="ZE" } {
-         Viewport::DrawLine $Data(Frame) $Data(VP) [list $Grid::Param(XLat1) $Grid::Param(XLon1) 0.0 $Grid::Param(XLat2) $Grid::Param(XLon2) 0.0] [list GRIDMAKER GRIDMAKERROT PAGE$Data(VP)] [lindex $Data(GridColors) 0] 2 TRUE
+         Viewport::DrawLine $Data(Frame) $Data(VP) [list $Grid::Param(XLat1) $Grid::Param(XLon1) 0.0 $Grid::Param(XLat2) $Grid::Param(XLon2) 0.0] [list GRIDMAKER GRIDMAKERROT PAGE$Data(VP)] $Data(Color0) 2 TRUE
 #         $Data(Frame).page.canvas bind GRIDMAKERROT <Enter>     "$Data(Frame).page.canvas config -cursor exchange"
 #         $Data(Frame).page.canvas bind GRIDMAKERROT <Leave>     "$Data(Frame).page.canvas config -cursor hand1"
 #         $Data(Frame).page.canvas bind GRIDMAKERROT <B1-Motion> "set Grid::Param(XLat1) $Viewport::Map(LonCursor);set Grid::Param(XLat2) $Viewport::Map(LatCursor); puts stderr [expr [projection function $Page::Data(Frame) -bearing $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2)]+90.0]"

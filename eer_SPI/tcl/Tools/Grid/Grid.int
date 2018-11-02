@@ -70,7 +70,11 @@ proc Grid::Window { } {
          button $Data(Tab).head.add -image GRIDADD -relief flat -bd 1 -overrelief raised -command { Grid::Add }
          button $Data(Tab).head.del -image GRIDDEL -relief flat -bd 1 -overrelief raised -command { Grid::Del }
          button $Data(Tab).head.run -image GRIDRUN -relief flat -bd 1 -overrelief raised -command { Grid::Launch [FileBox::Create . "" Path {}] }
-         pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.del -side left -padx 2
+         IcoMenu::Create $Data(Tab).head.size $GDefs(Dir)/share/bitmap \
+               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm fill.xbm" "0 1 2 3 4 5 6 7" \
+               Grid::Data(GridSize) "Grid::ConfigSet" 0 -relief groove -bd 2
+         IcoMenu::Set $Data(Tab).head.size $Data(GridSize)
+         pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.del $Data(Tab).head.size -side left -padx 2
          pack $Data(Tab).head.run -side right
       pack $Data(Tab).head -side top -fill x -padx 2 -pady 2
  
@@ -143,14 +147,8 @@ proc Grid::Frame { Frame { Multi False } } {
       if { $Multi } {
          frame $Frame.grid.sel
             Option::Create $Frame.grid.sel.no [lindex $Lbl(GridNo) $GDefs(Lang)] Grid::Data(GridNo) 0 -1 0 "Grid::Switch"
-            IcoMenu::Create $Frame.grid.sel.size $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm fill.xbm" "0 1 2 3 4 5 6 7" \
-               Grid::Param(GridSize) "Grid::ConfigSet \$Grid::Data(GridId)" 0 -relief groove -bd 2
-               ColorBox::CreateSel $Frame.grid.sel.col { Grid::Param(GridColor) Grid::Param(GridAlpha) } Grid::ConfigSet \$Grid::Data(GridId)
             pack $Frame.grid.sel.no -side left -fill x -expand True
-            pack $Frame.grid.sel.size $Frame.grid.sel.col -side left
          pack $Frame.grid.sel -side top -fill x
-         IcoMenu::Set $Frame.grid.sel.size   $Param(GridSize)
       }   
 
       Option::Create $Frame.grid.type  [lindex $Lbl(GridType) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame.grid"
