@@ -208,7 +208,6 @@ proc APViz::AddLayerWindow { } {
       frame .addLayerBox.layers.layerGrid
       label .addLayerBox.layers.layerGrid.valueLbl -justify right -text "Default Value:"
       label .addLayerBox.layers.layerGrid.rangeLbl -justify right -text "Range(Optional):"
-      button .addLayerBox.layers.layerGrid.addRange -image PLUS -command {APViz::CreateRangeWindow }
       
       Bubble::Create .addLayerBox.layers.layerGrid.addRange $Bubble(AddRange)
       Bubble::Create .addLayerBox.layers.layerGrid.valueLbl $Bubble(DefaultValue)
@@ -216,7 +215,6 @@ proc APViz::AddLayerWindow { } {
       grid .addLayerBox.layers.layerGrid -column 0 -row 0
       grid .addLayerBox.layers.layerGrid.valueLbl -column 0 -row 1
       grid .addLayerBox.layers.layerGrid.rangeLbl -column 0 -row 2
-      grid .addLayerBox.layers.layerGrid.addRange -column 0 -row 3
       
       set no 0
       foreach type $Data(ColNames) {
@@ -313,10 +311,19 @@ proc APViz::CreateAddLayerRow { Widget Type Col } {
    if {$Type eq "Models"} {
       $Widget.${lowerType}Value configure -validate focus -vcmd "APViz::SetAvailableVarsList \$APViz::Data(AddLayer$Type,Value) $Widget.varsValue"
    }
+   
+   #----- Set options lists
+   set rangeLst1 [dict get $Data(Ranges) $Type]
+   lappend rangeLst1 "Create New Range"
+   set rangeLst2 [dict get $Data(RangeNames) $Type]
+   lappend rangeLst2 "NEWRANGE"
 
-   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 0 10 [dict get $Data(Ranges) $Type] \
-      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" [dict get $Data(RangeNames) $Type]
+   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 1 10 $rangeLst1\
+      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" $rangeLst2
    set colNb [expr $Col + 1]
+   
+   #----- Bind option with enter
+   bind $Widget.${lowerType}Range.e <Return> "APViz::SetDefaultValue $Type"
    
    grid $Widget.${lowerType}Lbl      -row 0 -column $colNb -padx .5
    grid $Widget.${lowerType}Value    -row 1 -column $colNb -padx .5
@@ -365,8 +372,13 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
          
          #----- Update Combobox lists
          set lowerCategory [string tolower $RangeCategory]
+         #----- Append Create Range option at the end
+         set rangeLst1 [dict get $Data(Ranges) $RangeCategory]
+         set rangelst2 [dict get $Data(RangeNames) $RangeCategory]
+         lappend rangeLst1 "Create New Range"
+         lappend rangeLst2 "NEWRANGE"
          if {[winfo exists .addLayerBox.layers.layerGrid.${lowerCategory}Range]} {
-            Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range [dict get $Data(Ranges) $RangeCategory] [dict get $Data(RangeNames) $RangeCategory]
+            Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range $rangeLst1 $rangeLst2
          }      
 
          APViz::DeleteWidget .addRangeBox
@@ -396,7 +408,7 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::CreateRangeWindow { } {
+proc APViz::CreateRangeWindow { Category } {
    global GDefs
    
    variable Data
@@ -419,6 +431,7 @@ proc APViz::CreateRangeWindow { } {
    pack .addRangeBox.range -side top -fill x -padx 5 -ipady 2 -anchor n
    
    #----- Range category (ComboBox)
+   set comment {
    frame .addRangeBox.range.category
       label .addRangeBox.range.category.lbl -text "Range Category:" -width 15 -anchor w
       #TODO: Effacer la selection 
@@ -427,6 +440,7 @@ proc APViz::CreateRangeWindow { } {
       ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 34 8 ""
       pack .addRangeBox.range.category.lbl .addRangeBox.range.category.cb -side left
    pack .addRangeBox.range.category -side top -fill x
+   }
    
    #----- Range name (Entry)
    frame .addRangeBox.range.name
@@ -464,7 +478,7 @@ proc APViz::CreateRangeWindow { } {
    pack .addRangeBox.par -side top -padx 5 -fill x
    
    frame .addRangeBox.command
-      button .addRangeBox.command.add -text "Create Range" -bd 1 -command "APViz::CreateRange .addRangeBox \$rangeName \$rangeValues \$rangeType"
+      button .addRangeBox.command.add -text "Create Range" -bd 1 -command "APViz::CreateRange .addRangeBox \$rangeName \$rangeValues $Category"
       button .addRangeBox.command.cancel -text [lindex $Lbl(Close) $GDefs(Lang)] -command "APViz::DeleteWidget .addRangeBox" -bd 1
       pack .addRangeBox.command.add .addRangeBox.command.cancel -side left -fill x -expand true
    pack .addRangeBox.command -side top -fill x -pady 5 -padx 5
@@ -758,7 +772,15 @@ proc APViz::SetDefaultValue { Option } {
    variable Data
    variable FieldList
    
-   #TODO: Update combobox list?
+   #----- Pop up range if Create new range selected
+   if {$Data(Range,$Option) eq "Create New Range"} {
+      APViz::CreateRangeWindow $Option
+      #---- Erase selection
+      set Data(Range,$Option) ""
+      
+      return
+   }
+   
    #----- Putting first list element as default value 
    if {($Option eq "Vars") && ([lsearch -exact [array names FieldList] $Data(Range,$Option)] >= 0)} {
       set values [split $FieldList($Data(Range,$Option)) " "]
@@ -773,4 +795,5 @@ proc APViz::SetDefaultValue { Option } {
          set Data(AddLayer$Option,Value) $value
       }
    }
+   
 }
