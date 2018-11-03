@@ -372,16 +372,25 @@ proc APViz::CreateRange { Widget RangeName RangeValues RangeCategory } {
          
          #----- Update Combobox lists
          set lowerCategory [string tolower $RangeCategory]
+         
          #----- Append Create Range option at the end
          set rangeLst1 [dict get $Data(Ranges) $RangeCategory]
-         set rangelst2 [dict get $Data(RangeNames) $RangeCategory]
+         set rangeLst2 [dict get $Data(RangeNames) $RangeCategory]
          lappend rangeLst1 "Create New Range"
          lappend rangeLst2 "NEWRANGE"
+         
          if {[winfo exists .addLayerBox.layers.layerGrid.${lowerCategory}Range]} {
             Option::Set .addLayerBox.layers.layerGrid.${lowerCategory}Range $rangeLst1 $rangeLst2
          }      
 
          APViz::DeleteWidget .addRangeBox
+         
+         #----- Selectionner ce range
+         set APViz::Data(Range,$RangeCategory) $RangeValues
+         set APViz::Data(RangeName,$RangeCategory) $RangeName
+         APViz::SetDefaultValue $RangeCategory
+         APViz::AddRangeBubbleInfo $Widget.${lowerCategory}Range $RangeCategory  
+         
       } else {
          set fr "Le nom \"$RangeName\" est deja utilise. Veillez en choisir un autre."
          set eng "The name \"$RangeName\" has already been used. Please choose another one."
@@ -517,31 +526,36 @@ proc APViz::AddNewLayer { Widget } {
       }
    }
    
+   set product $Data(CurrentProduct)
+   
    #----- Initialiser layer et defaultValues
    set layer False
    set defaults False
    
    #----- Get all ranges and default values  
    foreach type $Data(ColNames) {
-      set default$type [string trim $Data(AddLayer$type,Value)]
+      set default [string trim $Data(AddLayer$type,Value)]
       if {[info exists Data(Range,$type)] && ($Data(Range,$type) ne "") && ($Data(Range,$type) ne "NONE")} {
          set range$type <[string trim $Data(RangeName,$type)]>
       } else { 
-         eval set range$type \$default$type
+         set range$type $default
       }
       
       eval set layer [string cat ${layer}: \$range$type]
-      eval set defaults [string cat ${defaults}: \$default$type]
+      #----- Set default 
+      if {$product ne ""} {
+         set def [string range $type 0 end-1]
+         set ${product}::Range($def) $default
+      }
    }
    
    lappend Data(Layers) $layer
-   set product $Data(CurrentProduct)
    
    if {$product ne ""} {
-      APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True [set no [expr [llength $Data(Layers)] - 1]]
+      APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) True [set no [expr [llength $Data(Layers)] - 1]]
       if {[winfo exists $Data(ParentWidget).add.menu]} {
          regsub \(True:|False:\) $layer "" desc
-         $Data(ParentWidget).add.menu insert $no command -label "Type$no: $desc" -command "APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) $defaults True $no"
+         $Data(ParentWidget).add.menu insert $no command -label "Type$no: $desc" -command "APViz::${product}::CreateLayers $product $layer $Data(ParentWidget) True $no"
       }
       
       APViz::DeleteWidget $Widget
