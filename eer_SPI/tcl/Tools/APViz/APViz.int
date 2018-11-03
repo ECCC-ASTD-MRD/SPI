@@ -440,16 +440,10 @@ proc APViz::CreateRangeWindow { Category } {
    pack .addRangeBox.range -side top -fill x -padx 5 -ipady 2 -anchor n
    
    #----- Range category (ComboBox)
-   set comment {
    frame .addRangeBox.range.category
-      label .addRangeBox.range.category.lbl -text "Range Category:" -width 15 -anchor w
-      #TODO: Effacer la selection 
-      unset -nocomplain rangeType
-      catch {ComboBox::DelAll .addRangeBox.range.category.cb True}
-      ComboBox::Create .addRangeBox.range.category.cb rangeType noedit unsorted nodouble -1 $Data(ColNames) 34 8 ""
-      pack .addRangeBox.range.category.lbl .addRangeBox.range.category.cb -side left
+      label .addRangeBox.range.category.lbl -text "Category: $Category" -anchor w
+      pack .addRangeBox.range.category.lbl -side left
    pack .addRangeBox.range.category -side top -fill x
-   }
    
    #----- Range name (Entry)
    frame .addRangeBox.range.name
