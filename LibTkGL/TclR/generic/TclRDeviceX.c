@@ -18,7 +18,7 @@
 #include "TclRDeviceX.h"
 #include "tkCanvRDevice.h"
 
-#define MM2INCH 0.0393701
+#define MM2INCH     0.0393701
 
 typedef struct TCtx {
     void        *Item;      // RDeviceItem (needs to be passed to signal a redraw)
@@ -550,7 +550,7 @@ static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
  * But          : Clear the device
  *
  * Parametres   :
- *  <GEC>       : R graphical engine context.
+ *  <GEC>       : R graphical engine context. To honor : fill
  *  <Dev>       : The device on which to act
  *
  * Retour       :
@@ -571,7 +571,7 @@ static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     XSetClipMask(ctx->Display,ctx->GC,None);
 
     // Reset background
-    TclRDeviceX_GCColor(ctx,R_TRANWHITE);
+    TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
     XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,0,0,ctx->W,ctx->H);
 }
 
