@@ -860,7 +860,75 @@ static void TclRDeviceX_Raster(unsigned int *Raster,int W,int H,double X,double 
     XPutImage(ctx->Display,ctx->Pixmap,ctx->GC,ctx->Img,0,0,x,ctx->H-y-imgH,imgW,imgH);
 }
 
-//static SEXP (*cap)(pDevDesc Dev);
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Cap>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Create an R raster from the device pixmap
+ *
+ * Parametres   :
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       : An R raster (matrix)
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Cap should return an integer matrix (R colors) representing the current contents of the device display.
+ *
+ *  The result is expected to be ROW FIRST.
+ *
+ *  This will only make sense for raster devices and can probably only be implemented for screen devices.
+ *---------------------------------------------------------------------------------------------------------------
+ */
+static SEXP TclRDeviceX_Cap(pDevDesc Dev) {
+    TCtx    *ctx=(TCtx*)Dev->deviceSpecific;
+    SEXP    raster=R_NilValue;
+    XImage  *img;
+
+    if( (img=XGetImage(ctx->Display,ctx->Pixmap,0,0,ctx->W,ctx->H,AllPlanes,ZPixmap) ) ) {
+        char    *data,*rdata;
+        int     size=img->width*img->height;
+        SEXP    rdim;
+
+        // Allocate the memory in R for the raster
+        PROTECT( raster=allocVector(INTSXP,size) );
+
+        // Set the image bytes in ABGR (msb->lsb) order (Xlib passes it as ARGB (msb->lsb))
+        if( img->byte_order == LSBFirst ) {
+            for(rdata=(char*)INTEGER(raster),data=img->data; size; --size,data+=4,rdata+=4) {
+                // Bytes are BGRA, we need RGBA
+                rdata[0] = data[2];
+                rdata[1] = data[1];
+                rdata[2] = data[0];
+                rdata[3] = data[3];
+            }
+        } else {
+            for(rdata=(char*)INTEGER(raster),data=img->data; size; --size,data+=4,rdata+=4) {
+                // Bytes are ARGB, we need ABGR
+                rdata[0] = data[0];
+                rdata[1] = data[3];
+                rdata[2] = data[2];
+                rdata[3] = data[1];
+            }
+        }
+
+        // Add the dimensions (nrow,ncol) as attribute (create an R matrix)
+        PROTECT( rdim=allocVector(INTSXP,2) );
+        INTEGER(rdim)[0] = img->height;
+        INTEGER(rdim)[1] = img->width;
+        Rf_setAttrib(raster,R_DimSymbol,rdim);
+
+        // Free everything
+        UNPROTECT(2);
+        XDestroyImage(img);
+    } else {
+        fprintf(stderr,"%s: Could not get XImage for raster creation\n",__func__);
+    }
+
+    return raster;
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDeviceX_Size>
@@ -1033,7 +1101,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->haveTransparency   = 1;        /* 1 = no, 2 = yes */
         dev->haveTransparentBg  = 1;        /* 1 = no, 2 = fully, 3 = semi */
         dev->haveRaster         = 2;        /* 1 = no, 2 = yes, 3 = except for missing values */
-        dev->haveCapture        = 1;        /* 1 = no, 2 = yes */
+        dev->haveCapture        = 2;        /* 1 = no, 2 = yes */
         dev->haveLocator        = 1;        /* 1 = no, 2 = yes */
         dev->hasTextUTF8        = TRUE;
         dev->wantSymbolUTF8     = TRUE;
@@ -1069,7 +1137,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->rect           = (void*)TclRDeviceX_Rect;
         dev->path           = NULL;
         dev->raster         = (void*)TclRDeviceX_Raster;
-        dev->cap            = NULL;
+        dev->cap            = (void*)TclRDeviceX_Cap;
         dev->size           = (void*)TclRDeviceX_Size;
         dev->strWidth       = (void*)TclRDeviceX_StrWidth;
         dev->text           = (void*)TclRDeviceX_Text;
