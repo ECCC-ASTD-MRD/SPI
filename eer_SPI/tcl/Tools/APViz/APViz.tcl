@@ -1215,8 +1215,13 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                return
             }
             
+            #----- Apply var modifier
             if { [info exists Mod(Vars,$Index)] } {
-               vexpr $fieldID fkernel($fieldID,KERNEL_BLUR)
+               switch $Mod(Vars,$Index) {
+                  "filter1" { vexpr $fieldID fkernel($fieldID,KERNEL1) }
+                  "filter2" { vexpr $fieldID fkernel($fieldID,KERNEL2) }
+                  "filter3" { vexpr $fieldID fkernel($fieldID,KERNEL3) }
+               }
             }
             
             #----- Apply variable configs from config file 
@@ -2925,7 +2930,9 @@ proc APViz::Start { } {
       font create EFONT24 -family Helvetica -weight bold -size -24
    }
    
-   vector create KERNEL_BLUR { { 1 1 1 } { 1 2 1 } { 1 1 1 } }
+   vector create KERNEL1 { { 1 1 1 } { 1 1 1 } { 1 1 1 } }
+   vector create KERNEL2 { { 1 1 1 } { 1 2 1 } { 1 1 1 } }
+   vector create KERNEL3 { { 1 1 1 } { 1 3 1 } { 1 1 1 } }
    
    if { [info exists env(SPI_APVIZ)] } {
       foreach path [split $env(SPI_APVIZ) :] {
