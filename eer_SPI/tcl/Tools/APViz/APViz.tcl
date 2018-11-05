@@ -1530,13 +1530,13 @@ proc APViz::Close { } {
    variable Data
 
    #----- Si le mode etait celui de l'outils, revert to SPI
-
    if { $Page::Data(ToolMode)=="APViz" } {
       SPI::ToolMode SPI Zoom
    }
 
    #----- Cleanup de l'outils
    APViz::CloseFiles
+
    APViz::ReinitializeVP
    
    if {$Data(AutoUpdateEventID) ne ""} {
@@ -2621,7 +2621,7 @@ proc APViz::ReinitializeVP { } {
    foreach vp [Page::Registered $Data(Frame) Viewport] {
       Viewport::UnAssign $Data(Frame) $vp
    }
-   
+
    #----- Liberer les ID
    foreach ID $Data(LayerIDs) {
       if {[fstdfield is $ID]} {
@@ -2630,14 +2630,14 @@ proc APViz::ReinitializeVP { } {
          metobs free $ID
       }
    }
-
+   
    #----- Liberer les ID de couches de calcul
    foreach calcID $Data(CalcIDs) {
       if {[fstdfield is $calcID]} {
          fstdfield free $calcID
       }
    }
-
+   
    set product $Data(CurrentProduct)
    if {$product ne ""} {
       variable ${product}::Param
