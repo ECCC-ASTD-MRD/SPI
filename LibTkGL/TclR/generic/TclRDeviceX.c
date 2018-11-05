@@ -29,6 +29,8 @@ typedef struct TCtx {
     Pixmap      Pixmap;     // Pixmap where we will draw all the R primitives
     GC          GC;         // X Graphic context
     XColor      *Col;       // Color currently in use
+    XImage      *Img;       // Image used to show rasters
+    int         ImgSize;    // True size of the image buffer
 } TCtx;
 
 // Point buffer
@@ -413,12 +415,15 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
         XFreeGC(ctx->Display,ctx->GC);
     if( ctx->Col )
         Tk_FreeColor(ctx->Col);
+    if( ctx->Img )
+        XDestroyImage(ctx->Img);
 
     ctx->Display    = NULL;
     ctx->TkWin      = NULL;
     ctx->Pixmap     = None;
     ctx->GC         = None;
     ctx->Col        = NULL;
+    ctx->Img        = NULL;
 
     // Free the xpoint buffer
     if( XPOINT_BUF ) {
@@ -709,7 +714,152 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
 }
 
 //static void (*path)(double *x,double *y,int npoly,int *nper,Rboolean winding,const pGEcontext restrict GEC,pDevDesc Dev);
-//static void (*raster)(unsigned int *raster,int w,int h,double x,double y,double width,double height,double rot,Rboolean interpolate,const pGEcontext restrict GEC,pDevDesc Dev);
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_Raster>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Draw a raster
+ *
+ * Parametres   :
+ *  <Raster>    : Image data BY ROW, every four bytes giving on R colour (ABGR)
+ *  <W>         : Width of the raster (size in X)
+ *  <H>         : Height of the raster (size in Y)
+ *  <X>         : X position of the bottom-left corner
+ *  <Y>         : Y position of the bottom-left corner
+ *  <Width>     : Width we want the raster to have on the device (see Interp)
+ *  <Height>    : Height we want the raster to have on the device (see Interp)
+ *  <Rot>       : Rotation angle (degree) with positive rotation anticlockwise from the positive x-axis
+ *  <Interp>    : Whether to apply linear interpolation to the image
+ *  <GEC>       : R graphical engine context. To honor : ???
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  device_Raster should draw a raster image justified at the given location, size, and rotation
+ *  (not all devices may be able to rotate?)
+ *
+ *  'raster' gives the image data BY ROW, with every four bytes giving one R colour (ABGR).
+ *  'x and 'y' give the bottom-left corner.
+ *
+ *  'rot' is in degrees (as per device_Text), with positive rotation anticlockwise from the positive x-axis.
+ *
+ *  R_GE_gcontext parameters that should be honoured (if possible): ??
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceX_Raster(unsigned int *Raster,int W,int H,double X,double Y,double Width,double Height,double Rot,Rboolean Interp,const pGEcontext restrict GEC,pDevDesc Dev) {
+    TCtx    *ctx=(TCtx*)Dev->deviceSpecific;
+    int     x,y,imgW,imgH,bufs,idx,rotW=0,rotH=0;
+    double  angle = Rot*DEG2RAD;
+    char    *data,swap;
+
+    DBGPRINTF("Raster [%.4f,%.4f]+[%.4f,%.4f] (Ori: %dx%d) Interp=%d Rot=%.4f\n",X,Y,Width,Height,W,H,Interp,Rot);
+
+    // Make sure we have an image
+    if( !ctx->Img ) {
+        int depth;
+        Visual *visual = Tk_GetVisual(NULL,ctx->TkWin,"default",&depth,NULL);
+
+        if( depth < 24 ) {
+            fprintf(stderr,"%s: Depth of %d unsupported, raster won't be drawn\n",__func__,depth);
+            return;
+        }
+
+        // Initialize an XImage
+        if( !(ctx->Img=XCreateImage(ctx->Display,visual,depth,ZPixmap,0,NULL,0,0,32,0)) ) {
+            fprintf(stderr,"%s: Could not create XImage, raster won't be drawn\n",__func__);
+            return;
+        }
+        ctx->ImgSize = 0;
+    }
+
+    // Get the width/height and coords of the image
+    x       = (int)round(X);
+    y       = (int)round(Y);
+    imgW    = (int)round(Width);
+    imgH    = (int)round(Height);
+    bufs    = imgW*imgH;
+
+    // Adjust values based on transformation
+    if( Rot != 0.0 ) {
+        double rotX,rotY;
+
+        // Calculate the BBOX around the rotated image
+        R_GE_rasterRotatedSize(imgW,imgH,angle,&rotW,&rotH);
+
+        // We'll need twice the buffer size since we need some manipulations to take place later on
+        bufs = rotW*rotH*2;
+
+        // Adjust the position of the bottom left corner
+        R_GE_rasterRotatedOffset(imgW,imgH,angle,1,&rotX,&rotY);
+
+        x = (int)round(X-(rotW-imgW)*0.5-rotX);
+        y = (int)round(Y-(rotH-imgH)*0.5-rotY);
+    }
+
+    // Make sure we have a big enough memory buffer
+    if( ctx->ImgSize < bufs ) {
+        // Free previously allocated memory
+        if( ctx->Img->data )
+            free(ctx->Img->data);
+
+        // Allocate the data for the image (note : the data will be freed by XDestroyImage)
+        ctx->ImgSize = bufs;
+        if( !(ctx->Img->data=malloc(bufs*sizeof(*Raster))) ) {
+            ctx->ImgSize = 0;
+            fprintf(stderr,"%s: Could not create XImage buffer (%dx%dx4), raster won't be drawn\n",__func__,imgW,imgH);
+            return;
+        }
+    }
+
+    // Scale the image to the required size
+    if( Interp ) {
+        R_GE_rasterInterpolate(Raster,W,H,(unsigned int*)ctx->Img->data,imgW,imgH);
+    } else {
+        R_GE_rasterScale(Raster,W,H,(unsigned int*)ctx->Img->data,imgW,imgH);
+    }
+
+    // Make the image rotation
+    if( Rot != 0.0 ) {
+        data = ctx->Img->data + rotW*rotH*sizeof(*Raster);
+
+        R_GE_rasterResizeForRotation((unsigned int*)ctx->Img->data,imgW,imgH,(unsigned int*)data,rotW,rotH,GEC);
+        R_GE_rasterRotate((unsigned int*)data,rotW,rotH,angle,(unsigned int*)ctx->Img->data,GEC,FALSE);
+
+        imgW = rotW;
+        imgH = rotH;
+    }
+
+    // Set the image bytes in ARGB (msb->lsb) order (R passes it as ABGR (msb->lsb))
+    if( ctx->Img->byte_order == LSBFirst ) {
+        for(idx=imgW*imgH,data=ctx->Img->data; idx; --idx,data+=4) {
+            // Bytes are RGBA, we need BGRA
+            swap    = data[0];
+            data[0] = data[2];
+            data[2] = swap;
+        }
+    } else {
+        for(idx=imgW*imgH,data=ctx->Img->data; idx; --idx,data+=4) {
+            // Bytes are ABGR, we need ARGB
+            swap    = data[1];
+            data[1] = data[3];
+            data[3] = swap;
+        }
+    }
+
+    // Set the image dimensions
+    ctx->Img->width             = imgW;
+    ctx->Img->height            = imgH;
+    ctx->Img->bytes_per_line    = imgW*ctx->Img->bitmap_unit/8;
+
+    // Draw the image
+    XPutImage(ctx->Display,ctx->Pixmap,ctx->GC,ctx->Img,0,0,x,ctx->H-y-imgH,imgW,imgH);
+}
+
 //static SEXP (*cap)(pDevDesc Dev);
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -882,7 +1032,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->canGenKeybd        = FALSE;
         dev->haveTransparency   = 1;        /* 1 = no, 2 = yes */
         dev->haveTransparentBg  = 1;        /* 1 = no, 2 = fully, 3 = semi */
-        dev->haveRaster         = 1;        /* 1 = no, 2 = yes, 3 = except for missing values */
+        dev->haveRaster         = 2;        /* 1 = no, 2 = yes, 3 = except for missing values */
         dev->haveCapture        = 1;        /* 1 = no, 2 = yes */
         dev->haveLocator        = 1;        /* 1 = no, 2 = yes */
         dev->hasTextUTF8        = TRUE;
@@ -918,7 +1068,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->polyline       = (void*)TclRDeviceX_Polyline;
         dev->rect           = (void*)TclRDeviceX_Rect;
         dev->path           = NULL;
-        dev->raster         = NULL;
+        dev->raster         = (void*)TclRDeviceX_Raster;
         dev->cap            = NULL;
         dev->size           = (void*)TclRDeviceX_Size;
         dev->strWidth       = (void*)TclRDeviceX_StrWidth;
@@ -981,6 +1131,8 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,int W,int H
     ctx->Pixmap     = None;
     ctx->GC         = None;
     ctx->Col        = NULL;
+    ctx->Img        = NULL;
+    ctx->ImgSize    = 0;
     if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(TkWin),W,H,Tk_Depth(TkWin))) == None ) {
         Tcl_AppendResult(Interp,"Could not create pixmap",NULL);
         goto err;
