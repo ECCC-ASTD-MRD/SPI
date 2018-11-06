@@ -783,8 +783,8 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
 */
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx       = (TCtx*)Dev->deviceSpecific;
-    int             x=(int)round(X0),y=ctx->H-(int)round(Y0);
     unsigned int    w=(unsigned int)round(X1-X0),h=(unsigned int)round(Y1-Y0);
+    int             x=(int)round(X0),y=ctx->H-(int)round(Y0)-h;
 
     DBGPRINTF("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     // Check if we need to fill the rectangle
