@@ -497,6 +497,8 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
         Tk_FreeColor(ctx->Col);
     if( ctx->Img )
         XDestroyImage(ctx->Img);
+    if( ctx->TkFont )
+        Tk_FreeFont(ctx->TkFont);
 
     ctx->Display    = NULL;
     ctx->TkWin      = NULL;
@@ -504,6 +506,7 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
     ctx->GC         = None;
     ctx->Col        = NULL;
     ctx->Img        = NULL;
+    ctx->TkFont     = NULL;
 
     // Free the xpoint buffer
     if( XPOINT_BUF ) {
@@ -511,6 +514,10 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
         XPOINT_BUF = NULL;
         XPOINT_N = 0;
     }
+
+    // Free the context
+    free(ctx);
+    Dev->deviceSpecific = NULL;
 }
 
 //static void (*deactivate)(pDevDesc );
@@ -1084,11 +1091,11 @@ static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC
  * Nom          : <TclRDeviceX_Text>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
- * But          : Draw a polygon
+ * But          : Draw text
  *
  * Parametres   :
- *  <X>         : X coords of the polygon
- *  <Y>         : Y coords of the polygon
+ *  <X>         : X coords of the text
+ *  <Y>         : Y coords of the text
  *  <Str>       : String we want the to draw
  *  <Rot>       : Rotation angle (degrees)
  *  <HAdj>      : Horizontal adjustment (ignored)
