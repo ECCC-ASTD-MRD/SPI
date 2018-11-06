@@ -139,7 +139,7 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     Tk_MakeWindowExist(win);
 
     // Create the device in R
-    if( !(rdv->RDev=TclRDeviceX_Init(Interp,(void*)rdv,win,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1)) ) {
+    if( !(rdv->RDev=TclRDeviceX_Init(Interp,(void*)rdv,win,rdv->Font,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1)) ) {
         goto error;
     }
 
@@ -216,12 +216,6 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
     rdv->Header.y1 = c[1]<=c[3] ? c[1] : c[3];
     rdv->Header.x2 = c[2]>=c[0] ? c[2] : c[0];
     rdv->Header.y2 = c[3]>=c[1] ? c[3] : c[1];;
-
-    //if( x<0.0 || y<0.0 || w<0.0 || h<0.0 ) {
-    //    Tcl_SetObjResult(Interp,Tcl_ObjPrintf("invalid coordinates: negative coordinates obtained"));
-    //    Tcl_SetErrorCode(Interp,"TK","CANVAS","COORDS","RDEVICE",NULL);
-    //    return TCL_ERROR;
-    //}
 
     // Update the device since we resized it
     DBGPRINTF("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
@@ -340,11 +334,8 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
         DBGPRINTF("Drawable coords : %hd %hd\n",drawX,drawY);
         DBGPRINTF("x(%d) y(%d) w(%u) h(%u)\n",x,y,w,h);
 
-        // Copy the selected area from our pixmap (filled by the RDevice) to the canvas
-        // Note that we need to set the mask's origin to the start of our pixmap if we want to draw a background correctly
-        //XSetClipOrigin(Display,rdv->GC,drawX-x,drawY-y);
+        // Copy our pixmap (filled by the RDevice) to the canvas
         XCopyArea(Display,pixmap,Drawable,Canvas(Canv)->pixmapGC,x,y,w,h,drawX,drawY);
-        //XSetClipOrigin(Display,rdv->gc,0,0);
     }
 }
 
@@ -698,24 +689,23 @@ void RDeviceItem_DetachDevice(void *Item) {
     ((RDeviceItem*)Item)->RDev = NULL;
 }
 
-
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <RDeviceItem_GetFont>
+ * Nom          : <RDeviceItem_SetFont>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
- * But          : Called by the device when text is being drawn
+ * But          : Called by the device when a font change happens in R
  *
  * Parametres   :
- *  <Item>      : Item we need the font from
+ *  <Item>      : Item want to update the font of
  *
- * Retour       : The font.
+ * Retour       :
  *
- * Side effects : None.
+ * Side effects : Updates the font in the item
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-Tk_Font RDeviceItem_GetFont(void *Item) {
-    return ((RDeviceItem*)Item)->Font;
+void RDeviceItem_SetFont(void *Item,Tk_Font Font) {
+    ((RDeviceItem*)Item)->Font = Font;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -728,7 +718,7 @@ Tk_Font RDeviceItem_GetFont(void *Item) {
  *
  * Retour       :
  *
- * Side effects : Resets the RDev to NULL
+ * Side effects : Creates a new canvas item type
  *
  *---------------------------------------------------------------------------------------------------------------
 */

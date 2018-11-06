@@ -4,6 +4,6 @@
 void RDeviceItem_Register();
 void RDeviceItem_SignalRedraw(void *Item);
 void RDeviceItem_DetachDevice(void *Item);
-Tk_Font RDeviceItem_GetFont(void *Item);
+void RDeviceItem_SetFont(void *Item,Tk_Font Font);
 
 #endif // TKCANVRDEVICE_H
