@@ -72,7 +72,7 @@ namespace eval APViz {
    set Data(Date)               ""
 
    set Data(Secs)               0
-   set Data(ColNames)           { Models Runs Hours Sources Vars Levels IP3 Viewports Etiket}
+   set Data(ColNames)           { Models Runs Hours Sources Vars Levels IP3s Viewports Etikets}
    set Data(DefaultColormap)    ""
    set Data(ImageName)          ""
    set Data(ProductPaths)       {}

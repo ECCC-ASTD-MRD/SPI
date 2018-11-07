@@ -16,7 +16,7 @@
 #   APViz::Window                   { }
 #   APViz::AddLayerWindow           { }
 #   APViz::CalculateNumericalRange  { Widget Max Min Step }
-#   APViz::CreateAddLayerRow        { Widget Type Row }
+#   APViz::CreateAddLayerRow        { Widget }
 #   APViz::CreateRange              { Widget RangeName RangeValues RangeCategory }
 #   APViz::CreateRangeWindow        { }
 #   APViz::AddNewLayer              { Widget }
@@ -196,7 +196,7 @@ proc APViz::AddLayerWindow { } {
    toplevel .addLayerBox
    wm protocol  .addLayerBox WM_DELETE_WINDOW { APViz::DeleteWidget .addLayerBox }
    wm transient .addLayerBox $Data(Frame)
-   wm geom      .addLayerBox 980x140
+#   wm geom      .addLayerBox 980x140
    
    TabFrame::Create .addLayerBox.tab 1 ""
    pack .addLayerBox.tab -side top -fill both -expand false -padx 5 -pady 5
@@ -216,11 +216,7 @@ proc APViz::AddLayerWindow { } {
       grid .addLayerBox.layers.layerGrid.valueLbl -column 0 -row 1
       grid .addLayerBox.layers.layerGrid.rangeLbl -column 0 -row 2
       
-      set no 0
-      foreach type $Data(ColNames) {
-         APViz::CreateAddLayerRow .addLayerBox.layers.layerGrid $type $no
-         incr no
-      }
+      APViz::CreateAddLayerRow .addLayerBox.layers.layerGrid 
 
    pack .addLayerBox.layers -side top -fill x -pady 5 -padx 5
    
@@ -291,48 +287,89 @@ proc APViz::CalculateNumericalRange { Widget Max Min Step } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::CreateAddLayerRow { Widget Type Col } {
+proc APViz::DataSelect { Model Widget } {
+   variable FieldList
+   variable Data
+   
+   set default $Data(AddLayerVars,Value)
+   
+   if {[info exists FieldList($Model)]} {
+      Option::Set $Widget.varsValue $FieldList($Model)
+   } else {
+      Option::Set $Widget.varsValue $FieldList(ALL)
+   }
+   
+   if {[lsearch -exact $FieldList(ALL) $default] >= 0} {
+      set Data(AddLayerVars,Value) $default
+   }    
+   
+   set lst [lsort -unique [lmap a [array names APViz::DataSrc -glob "$APViz::Data(AddLayerModels,Value),*" ] {lindex [split $a ,] 1}]]
+   Option::Set $Widget.sourcesValue $lst
+    
+   return True
+}
+
+proc APViz::CreateAddLayerRow { Widget } {
    variable Data
    variable Bubble
    variable FieldList
 
-   set lowerType [string tolower $Type] 
-   #----- Field name
-   label $Widget.${lowerType}Lbl -text "${Type}" -anchor w
+   label $Widget.modelsLbl -text "Data" -anchor w  
+   set lst [lsort -unique [lmap a [array names APViz::DataSrc] {lindex [split $a ,] 0}]]
+   Option::Create $Widget.modelsValue "" APViz::Data(AddLayerModels,Value) 1 10 $lst "APViz::DataSelect \$APViz::Data(AddLayerModels,Value) $Widget"
    
-   #----- Value and range widgets
-   #----- If range is not empty, value will be default value
-   if {$Type eq "Vars"} {
-      ComboBox::Create $Widget.${lowerType}Value APViz::Data(AddLayer$Type,Value) edit sorted nodouble -1 $FieldList(ALL) 10 20 ""
-   } else {
-      entry $Widget.${lowerType}Value -bg white -textvariable APViz::Data(AddLayer$Type,Value) -width 12
-   }
+   label $Widget.runsLbl -text "Run" -anchor w  
+   set lst { 00 06 12 18 }
+   Option::Create $Widget.runsValue "" APViz::Data(AddLayerRuns,Value) 1 10 $lst ""
    
-   if {$Type eq "Models"} {
-      $Widget.${lowerType}Value configure -validate focus -vcmd "APViz::SetAvailableVarsList \$APViz::Data(AddLayer$Type,Value) $Widget.varsValue"
-   }
-   
-   #----- Set options lists
-   set rangeLst1 [dict get $Data(Ranges) $Type]
-   lappend rangeLst1 "Create New Range"
-   set rangeLst2 [dict get $Data(RangeNames) $Type]
-   lappend rangeLst2 "NEWRANGE"
+   label $Widget.hoursLbl -text "Hour" -anchor w  
+   set lst { 00 06 12 18 24 48 72 }
+   Option::Create $Widget.hoursValue "" APViz::Data(AddLayerHours,Value) 1 10 $lst ""
 
-   Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$Type) APViz::Data(RangeName,$Type)" 1 10 $rangeLst1\
-      "eval APViz::AddRangeBubbleInfo $Widget.${lowerType}Range $Type ; APViz::SetDefaultValue $Type" $rangeLst2
-   set colNb [expr $Col + 1]
+   set lst { HYB PRES }
+   label $Widget.sourcesLbl -text "Source" -anchor w  
+   Option::Create $Widget.sourcesValue "" APViz::Data(AddLayerSources,Value) 1 10 $lst ""
+
+   label $Widget.varsLbl -text "Var" -anchor w  
+   Option::Create $Widget.varsValue "" APViz::Data(AddLayerVars,Value) 1 10 $FieldList(ALL) ""
    
-   #----- Bind option with enter
-   bind $Widget.${lowerType}Range.e <Return> "APViz::SetDefaultValue $Type"
+   label $Widget.levelsLbl -text "Level" -anchor w  
+   Option::Create $Widget.levelsValue "" APViz::Data(AddLayerLevels,Value) 1 -1 "" ""
    
-   grid $Widget.${lowerType}Lbl      -row 0 -column $colNb -padx .5
-   grid $Widget.${lowerType}Value    -row 1 -column $colNb -padx .5
-   grid $Widget.${lowerType}Range    -row 2 -column $colNb -padx .5
+   label $Widget.ip3sLbl -text "IP3" -anchor w  
+   Option::Create $Widget.ip3sValue "" APViz::Data(AddLayerIP3s,Value) 1 -1 "" ""
    
-   Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
-   Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
+   label $Widget.etiketsLbl -text "Etiket" -anchor w  
+   Option::Create $Widget.etiketsValue "" APViz::Data(AddLayerEtikets,Value) 1 -1 "" ""
+   
+   set c 1
+   foreach type $Data(ColNames) {  
+      if { $type=="Viewports" } {
+         continue
+      }
+      set lowerType [string tolower $type]
+      
+      #----- Set options lists
+      set rangeLst1 [dict get $Data(Ranges) $type]
+      lappend rangeLst1 "Create New Range"
+      set rangeLst2 [dict get $Data(RangeNames) $type]
+      lappend rangeLst2 "NEWRANGE"
+      
+      Option::Create $Widget.${lowerType}Range "" "APViz::Data(Range,$type) APViz::Data(RangeName,$type)" 1 10 $rangeLst1\
+         "eval APViz::AddRangeBubbleInfo $Widget.modelsRange $type; APViz::SetDefaultValue $type" $rangeLst2
+         
+      grid $Widget.${lowerType}Lbl      -row 0 -column $c -padx .5
+      grid $Widget.${lowerType}Value    -row 1 -column $c -padx .5 -sticky ew
+      grid $Widget.${lowerType}Range    -row 2 -column $c -padx .5
+
+      #----- Bind option with enter
+      bind $Widget.${lowerType}Range.e <Return> "APViz::SetDefaultValue $type"
+      
+      Bubble::Create $Widget.${lowerType}Range $Bubble(SelectRange)
+      Bubble::Create $Widget.${lowerType}Value $Bubble(SelectDefaultValue)
+      incr c
+   }  
 }
-
 
 #----------------------------------------------------------------------------
 # Nom      : <APViz::CreateRange>
@@ -429,7 +466,6 @@ proc APViz::CreateRangeWindow { Category } {
    toplevel .addRangeBox
    wm protocol  .addRangeBox WM_DELETE_WINDOW { APViz::DeleteWidget .addRangeBox }
    wm transient .addRangeBox $Data(Frame)
-   wm geom      .addRangeBox 390x160
    
    TabFrame::Create .addRangeBox.tab 1 ""
    pack .addRangeBox.tab -side top -fill both -expand false -padx 5 -pady 5
@@ -518,7 +554,7 @@ proc APViz::AddNewLayer { Widget } {
    
    #------ Verify if all mandatory fields are filled (optional: IP3 and VP)
    foreach type $Data(ColNames) {
-      if {($type ne "IP3") && ($type ne "Etiket")} {
+      if {($type ne "IP3") && ($type ne "Etiket") && ($type ne "Viewports")} {
          if {![info exists APViz::Data(AddLayer$type,Value)] || ($APViz::Data(AddLayer$type,Value) eq "")} {
             ::Dialog::Info . $Lbl(EmptyFields)
             return
