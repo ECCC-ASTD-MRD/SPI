@@ -259,12 +259,15 @@ proc APViz::Source { Path Widget } {
          
          if { $Range(${lockType}Lock) } {
             set newValue $Value($Option,$Index)
+            
             #----- Change all other values
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
                set opts [split [lindex $Layers $i] :] 
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
                   set Value($Option,$i) $newValue
-#                  APViz::AssignVariable $Product $i
+               } 
+               if { [info exists Mod($Option,$Index)] && [info exists Mod($Option,$i)]} {
+                  set Mod($Option,$i) $Mod($Option,$Index)
                }
             }
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
@@ -397,7 +400,7 @@ proc APViz::Source { Path Widget } {
                CreateRangeWidget $Product $hour    $Widget $no Hours true 13 
                $Widget.range.variableGrid.run configure -text ""
             } else {
-               CreateRangeWidget $Product $run     $Widget $no Runs true 2 
+               CreateRangeWidget $Product $run     $Widget $no Runs true 3 
                CreateRangeWidget $Product $hour    $Widget $no Hours true 3
             }           
 
@@ -498,7 +501,15 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
             if { [info exists Mod($Options,$Index)] } {
-               if { ($Options=="Runs" || $Options=="Hours") } {
+               if { $Options=="Runs" } {
+                  if { $Mod($Options,$Index)=="+-" } {
+                     set Mod($Options,$Index) -06
+                     spinbox $path -values { -48 -42 -36 -30 -24 -18 -12 -06 00 +06 +12 +18 +24 +30 +36 +42 +48 } -width 3 -textvariable APViz::${Product}::Mod($Options,$Index) -bg $GDefs(ColorLight) \
+                        -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
+                  } else {
+                     entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
+                  }
+               } elseif { $Options=="Hours" } {
                   entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                } else {
                   entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
@@ -1058,7 +1069,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    if { $lev=="-" || $lev=="" } { set lev -1 }
      
    #----- Check if we need to increment the hour
-   if { [info exists Mod(Hours,$Index)] } {
+   if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)!="+-" } {
       eval set hour \[format %03i \[expr [scan $hour %d]\$Mod(Hours,$Index)\]\]
    }
    
@@ -1068,7 +1079,10 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       eval set run \[expr [scan $run %d]\$Mod(Runs,$Index)\]
       if { $run<0 || $run>=24 } {
          set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Mod(Runs,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
-         set run [format %02i [expr $run-$Mod(Runs,$Index)]]
+         set run  [format %02i [expr $run%24]]
+      }
+      if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)=="+-" } {
+         eval set hour \[format %03i \[expr [scan $hour %d]-\$Mod(Runs,$Index)\]\]
       }
    }
    
