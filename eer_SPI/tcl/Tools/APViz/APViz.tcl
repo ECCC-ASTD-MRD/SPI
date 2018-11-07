@@ -501,7 +501,7 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
             if { [info exists Mod($Options,$Index)] } {
-               if { $Options=="Runs" } {
+               if { $Options=="Runs" || $Options=="Hours" } {
                   if { $Mod($Options,$Index)=="+-" } {
                      set Mod($Options,$Index) -06
                      spinbox $path -values { -48 -42 -36 -30 -24 -18 -12 -06 00 +06 +12 +18 +24 +30 +36 +42 +48 } -width 3 -textvariable APViz::${Product}::Mod($Options,$Index) -bg $GDefs(ColorLight) \
@@ -509,8 +509,6 @@ proc APViz::Source { Path Widget } {
                   } else {
                      entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                   }
-               } elseif { $Options=="Hours" } {
-                  entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                } else {
                   entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                }
@@ -1069,7 +1067,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    if { $lev=="-" || $lev=="" } { set lev -1 }
      
    #----- Check if we need to increment the hour
-   if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)!="+-" } {
+   if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)!="=" } {
       eval set hour \[format %03i \[expr [scan $hour %d]\$Mod(Hours,$Index)\]\]
    }
    
@@ -1081,7 +1079,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
          set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Mod(Runs,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
          set run  [format %02i [expr $run%24]]
       }
-      if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)=="+-" } {
+      if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)=="=" } {
          eval set hour \[format %03i \[expr [scan $hour %d]-\$Mod(Runs,$Index)\]\]
       }
    }
