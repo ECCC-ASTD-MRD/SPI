@@ -1,6 +1,9 @@
 #ifndef TKCANVRDEVICE_H
 #define TKCANVRDEVICE_H
 
+#define DBGPRINTF(...) printf(__VA_ARGS__);
+//#define DBGPRINTF(...)
+
 void RDeviceItem_Register();
 void RDeviceItem_SignalRedraw(void *Item);
 void RDeviceItem_DetachDevice(void *Item);

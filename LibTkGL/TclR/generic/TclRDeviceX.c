@@ -36,6 +36,7 @@ typedef struct TCtx {
     int         FontFace;           // Font face currently in use
     char        FontFamily[201];    // Font family currently in use
     Tk_Font     TkFont;             // Current font
+    double      InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
 } TCtx;
 
 // Point buffer
@@ -73,7 +74,7 @@ static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
 
         // Convert the coodinates into the X world
         for(i=0; i<N; ++i) {
-            DBGPRINTF("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
+            XDBGPRINTF("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
             XPOINT_BUF[i].x = (short)round(X[i]);
             XPOINT_BUF[i].y = (short)(Ctx->H - (int)round(Y[i]));
         }
@@ -224,12 +225,13 @@ Pixmap TclRDeviceX_GetPixmap(void* GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
+    XDBGPRINTF("RCol=%u (%u,%u,%u)\n",RCol,R_RED(RCol),R_GREEN(RCol),R_BLUE(RCol));
+
     // Set the XColor structure
     XColor col;
     col.red     = R_RED(RCol)<<8;//|0x77;
     col.green   = R_GREEN(RCol)<<8;//|0x77;
     col.blue    = R_BLUE(RCol)<<8;//|0x77;
-    DBGPRINTF("RCol=%u (%u,%u,%u)\n",RCol,R_RED(RCol),R_GREEN(RCol),R_BLUE(RCol));
 
     // Check if we need to change the color
     if( !Ctx->Col || Ctx->Col->red!=col.red || Ctx->Col->green!=col.green || Ctx->Col->blue!=col.blue ) {
@@ -245,7 +247,7 @@ static void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
         XGCValues xgc;
         xgc.foreground = tkcol->pixel;
         XChangeGC(Ctx->Display,Ctx->GC,GCForeground,&xgc);
-        DBGPRINTF("Foreground changed to %lu\n",xgc.foreground);
+        XDBGPRINTF("Foreground changed to %lu\n",xgc.foreground);
     }
 }
 
@@ -268,7 +270,8 @@ static void TclRDeviceX_GCColor(TCtx *restrict Ctx,rcolor RCol) {
 static void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
     int lstyle=LineSolid,capstyle=CapRound,joinstyle=JoinRound;
 
-    DBGPRINTF("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
+    XDBGPRINTF("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
+
     switch( GEC->lty ) {
         case 1: lstyle=LineSolid;       break;
         case 2: lstyle=LineOnOffDash;   break;
@@ -315,7 +318,7 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC)
         int     nobj=0;
         Tk_Font font;
 
-        DBGPRINTF("Font family(%s|%s) cex(%g) ps(%g) lineheight(%g) fontface(%d|%d) -- fontsize(%d|%d)\n",
+        XDBGPRINTF("Font family(%s|%s) cex(%g) ps(%g) lineheight(%g) fontface(%d|%d) -- fontsize(%d|%d)\n",
                 GEC->fontfamily,Ctx->FontFamily,GEC->cex,GEC->ps,GEC->lineheight,GEC->fontface,Ctx->FontFace,fontsize,Ctx->FontSize);
 
         // Specify the family (Keep the same one if none is specified)
@@ -408,7 +411,7 @@ static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restr
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     int r=(int)round(R),x=(int)round(X)-r,y=ctx->H-(int)round(Y)+r,d=r*2;
 
-    DBGPRINTF("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
+    XDBGPRINTF("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
     // Check if we need to fill the circle
     if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
@@ -483,7 +486,7 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
 */
 static void TclRDeviceX_Close(pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
-    DBGPRINTF("Freeing RDevice\n");
+    XDBGPRINTF("Freeing RDevice\n");
 
     // Detach this device from the associated item
     RDeviceItem_DetachDevice(ctx->Item);
@@ -551,11 +554,10 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
 static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    DBGPRINTF("Line [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    XDBGPRINTF("Line [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     TclRDeviceX_GCLine(ctx,GEC);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)round(X0),ctx->H-(int)round(Y0),(int)round(X1),ctx->H-(int)round(Y1));
-
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -596,7 +598,7 @@ static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *A
     Tk_FontMetrics fm;
 
     Tk_GetFontMetrics(ctx->TkFont,&fm);
-    DBGPRINTF("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+    XDBGPRINTF("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
 
     *Ascent = fm.ascent;
     *Descent = fm.descent;
@@ -628,7 +630,7 @@ static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *A
 static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    DBGPRINTF("Mode set to %d\n",Mode);
+    XDBGPRINTF("Mode set to %d\n",Mode);
     // Device stopped drawing, signal a refresh
     if( Mode == 0 ) {
         RDeviceItem_SignalRedraw(ctx->Item);
@@ -658,7 +660,8 @@ static void TclRDeviceX_Mode(int Mode,pDevDesc Dev) {
 static void TclRDeviceX_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    DBGPRINTF("CLEAR\n");
+    XDBGPRINTF("CLEAR\n");
+
     // Reset clipping
     XSetClipMask(ctx->Display,ctx->GC,None);
 
@@ -698,7 +701,8 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
 
-    DBGPRINTF("Polygon (%d)\n",N);
+    XDBGPRINTF("Polygon (%d)\n",N);
+
     if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Check if we need to fill the polygon
         if( GEC->fill != NA_INTEGER ) {
@@ -743,7 +747,8 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
     TCtx    *ctx = (TCtx*)Dev->deviceSpecific;
     XPoint  *xp;
 
-    DBGPRINTF("Polyline (%d)\n",N);
+    XDBGPRINTF("Polyline (%d)\n",N);
+
     if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Draw the lines
         TclRDeviceX_GCLine(ctx,GEC);
@@ -782,11 +787,12 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
-    TCtx *ctx       = (TCtx*)Dev->deviceSpecific;
+    TCtx            *ctx=(TCtx*)Dev->deviceSpecific;
     unsigned int    w=(unsigned int)round(X1-X0),h=(unsigned int)round(Y1-Y0);
     int             x=(int)round(X0),y=ctx->H-(int)round(Y0)-h;
 
-    DBGPRINTF("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    XDBGPRINTF("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+
     // Check if we need to fill the rectangle
     if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
@@ -844,7 +850,7 @@ static void TclRDeviceX_Raster(unsigned int *Raster,int W,int H,double X,double 
     double  angle = Rot*DEG2RAD;
     char    *data,swap;
 
-    DBGPRINTF("Raster [%.4f,%.4f]+[%.4f,%.4f] (Ori: %dx%d) Interp=%d Rot=%.4f\n",X,Y,Width,Height,W,H,Interp,Rot);
+    XDBGPRINTF("Raster [%.4f,%.4f]+[%.4f,%.4f] (Ori: %dx%d) Interp=%d Rot=%.4f\n",X,Y,Width,Height,W,H,Interp,Rot);
 
     // Make sure we have an image
     if( !ctx->Img ) {
@@ -1082,7 +1088,7 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    DBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(ctx->TkFont,Str,strlen(Str)));
+    XDBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(ctx->TkFont,Str,strlen(Str)));
     TclRDeviceX_GCFont(ctx,GEC);
     return Tk_TextWidth(ctx->TkFont,Str,strlen(Str));
 }
@@ -1117,7 +1123,7 @@ static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC
 static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double HAdj,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    DBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
+    XDBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     TclRDeviceX_GCFont(ctx,GEC);
     TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y),Rot);
@@ -1150,12 +1156,8 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
     pDevDesc dev = calloc(1,sizeof(*dev));
 
     if( dev ) {
-        //int screen;
-        //double pxw,pxh;
-
-        //screen = Tk_ScreenNumber(Ctx->TkWin);
-        //pxw = ((double)(DisplayWidthMM(Ctx->Display,screen))/(double)(DisplayWidth(Ctx->Display,screen))) * MM2INCH;
-        //pxh = ((double)(DisplayHeightMM(Ctx->Display,screen))/(double)(DisplayHeight(Ctx->Display,screen))) * MM2INCH;
+        Tk_FontMetrics fm;
+        Tk_GetFontMetrics(Ctx->TkFont,&fm);
 
         // Device physical parameters
         dev->left       = 0.;
@@ -1171,9 +1173,9 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->yLineBias  = 0.1;
         dev->ipr[0]     = 1.0/72.0; /* Inches per raster; [0]=x, [1]=y */
         dev->ipr[1]     = 1.0/72.0;
-        dev->cra[0]     = 10;       /* Character size in rasters; [0]=x, [1]=y */
-        dev->cra[1]     = 10;
-        //dev->gamma      = 1.;
+        dev->cra[0]     = Tk_TextWidth(Ctx->TkFont,"m",1)*Ctx->InPxX*72.0;       /* Character size in rasters; [0]=x, [1]=y */
+        dev->cra[1]     = fm.linespace*Ctx->InPxX*72.0;
+        dev->gamma      = 1.;
 
         // Device capabilities
         dev->canClip            = TRUE;
@@ -1198,7 +1200,7 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->startfill  = R_TRANWHITE;
         dev->startlty   = LTY_SOLID;
         dev->startfont  = Ctx->FontFace;
-        dev->startgamma = 1;
+        dev->startgamma = 1.;
 
         // Device specific
         dev->deviceSpecific = (void*)Ctx;
@@ -1257,10 +1259,11 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Font,int W,int H) {
-    pDevDesc dev = NULL;
-    pGEDevDesc ge = NULL;
-    TCtx *ctx = NULL;
-    TkFont *font = (TkFont*)Font;   /*This is an ugly hack, but how else am I suppose to get the necessary font specs?*/
+    pDevDesc    dev = NULL;
+    pGEDevDesc  ge = NULL;
+    TCtx        *ctx = NULL;
+    TkFont      *font = (TkFont*)Font;   /*This is an ugly hack, but how else am I suppose to get the necessary font specs?*/
+    int         screen = Tk_ScreenNumber(TkWin);
 
     // Make sure we have a slot for the device
     if( R_CheckDeviceAvailableBool() == FALSE ) {
@@ -1290,6 +1293,8 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fon
     ctx->FontSize   = font->fa.size;    /*This is an ugly hack*/
     ctx->FontFace   = font->fa.weight==TK_FW_NORMAL ? font->fa.slant==TK_FS_ROMAN?1:3 : font->fa.slant==TK_FS_ROMAN?2:4;  /*This has to be the acme of ugly hacks*/
     ctx->TkFont     = Font;
+    ctx->InPxX      = ((double)(DisplayWidthMM(ctx->Display,screen))/(double)(DisplayWidth(ctx->Display,screen))) * MM2INCH;
+    ctx->InPxY      = ((double)(DisplayHeightMM(ctx->Display,screen))/(double)(DisplayHeight(ctx->Display,screen))) * MM2INCH;
     strcpy(ctx->FontFamily,strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4);    /*Believe it or not, I think this is an even uglier hack*/
     if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(TkWin),W,H,Tk_Depth(TkWin))) == None ) {
         Tcl_AppendResult(Interp,"Could not create pixmap",NULL);
