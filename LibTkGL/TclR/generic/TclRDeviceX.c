@@ -274,9 +274,9 @@ static void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC)
     XDBGPRINTF("lwd(%f) lty(%d) lend(%d) ljoin(%d)\n",GEC->lwd,GEC->lty,GEC->lend,GEC->ljoin);
 
     switch( GEC->lty ) {
-        case 1: lstyle=LineSolid;       break;
-        case 2: lstyle=LineOnOffDash;   break;
-        case 6: lstyle=LineDoubleDash;  break;
+        case LTY_SOLID:     lstyle=LineSolid;       break;
+        case LTY_DASHED:    lstyle=LineOnOffDash;   break;
+        case LTY_TWODASH:   lstyle=LineDoubleDash;  break;
     }
 
     switch( GEC->lend ) {
