@@ -1,7 +1,10 @@
 #ifndef TKCANVRDEVICE_H
 #define TKCANVRDEVICE_H
 
-#define DBGPRINTF(...) printf(__VA_ARGS__);
+#include <tcl.h>
+#include <tk.h>
+
+#define DBGPRINTF(...) printf(__VA_ARGS__)
 //#define DBGPRINTF(...)
 
 void RDeviceItem_Register();

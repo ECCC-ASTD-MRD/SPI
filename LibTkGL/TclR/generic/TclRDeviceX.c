@@ -22,15 +22,16 @@
 #define MM2INCH     0.0393701
 
 typedef struct TCtx {
-    void        *Item;              // RDeviceItem (needs to be passed to signal a redraw)
-    int         W,H;                // Width and Height of the device
-    int         PxW,PxH;            // Width and height of the underlying pixmap
+    Tcl_Obj     *PS;                // PostScript buffer (MUST be first to use the PS functionality)
+    Tk_Window   TkWin;              // TkWindow (MUST be second for PS functionality)
     Display     *Display;           // Connection to the X server
-    Tk_Window   TkWin;              // TkWindow
     Pixmap      Pixmap;             // Pixmap where we will draw all the R primitives
     GC          GC;                 // X Graphic context
     XColor      *Col;               // Color currently in use
     XImage      *Img;               // Image used to show rasters
+    void        *Item;              // RDeviceItem (needs to be passed to signal a redraw)
+    int         W,H;                // Width and Height of the device
+    int         PxW,PxH;            // Width and height of the underlying pixmap
     int         ImgSize;            // True size of the image buffer
     int         FontSize;           // Font Size currently in use
     int         FontFace;           // Font face currently in use
@@ -1278,6 +1279,7 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fon
     }
 
     // Init the context
+    ctx->PS         = NULL;
     ctx->Item       = Item;
     ctx->W          = W;
     ctx->H          = H;

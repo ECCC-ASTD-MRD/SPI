@@ -9,6 +9,8 @@
 #include "tkInt.h"
 #include "tkCanvas.h"
 #include "TclRDeviceX.h"
+#include "TclRDevice2PS.h"
+#include "tkCanvRDevice.h"
 #include <math.h>
 
 /*
@@ -494,160 +496,15 @@ static void RDeviceTranslate(Tk_Canvas Canv,Tk_Item *ItemPtr,double DX, double D
  *---------------------------------------------------------------------------------------------------------------
 */
 static int RDeviceToPostscript(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int prepass) {
-    // TODO
-    //BitmapItem *bmapPtr = (BitmapItem *) itemPtr;
-    //double x, y;
-    //int width, height, rowsAtOnce, rowsThisTime;
-    //int curRow;
-    //XColor *fgColor;
-    //XColor *bgColor;
-    //Pixmap bitmap;
-    //Tk_State state = itemPtr->state;
-    //Tcl_Obj *psObj;
-    //Tcl_InterpState interpState;
+    RDeviceItem *rdv    = (RDeviceItem*)ItemPtr;
+    Tcl_Obj     *psObj  = Tcl_NewObj();
 
-    //if (state == TK_STATE_NULL) {
-    //    state = Canvas(canvas)->canvas_state;
-    //}
-    //fgColor = bmapPtr->fgColor;
-    //bgColor = bmapPtr->bgColor;
-    //bitmap = bmapPtr->bitmap;
-    //if (Canvas(canvas)->currentItemPtr == itemPtr) {
-    //    if (bmapPtr->activeFgColor!=NULL) {
-    //        fgColor = bmapPtr->activeFgColor;
-    //    }
-    //    if (bmapPtr->activeBgColor!=NULL) {
-    //        bgColor = bmapPtr->activeBgColor;
-    //    }
-    //    if (bmapPtr->activeBitmap!=None) {
-    //        bitmap = bmapPtr->activeBitmap;
-    //    }
-    //} else if (state == TK_STATE_DISABLED) {
-    //    if (bmapPtr->disabledFgColor!=NULL) {
-    //        fgColor = bmapPtr->disabledFgColor;
-    //    }
-    //    if (bmapPtr->disabledBgColor!=NULL) {
-    //        bgColor = bmapPtr->disabledBgColor;
-    //    }
-    //    if (bmapPtr->disabledBitmap!=None) {
-    //        bitmap = bmapPtr->disabledBitmap;
-    //    }
-    //}
+    TclRDevice2PS_Dev2PS(Interp,rdv->RDev,psObj);
+    Tcl_AppendObjToObj(Tcl_GetObjResult(Interp), psObj);
 
-    //if (bitmap == None) {
-    //    return TCL_OK;
-    //}
+    Tcl_DecrRefCount(psObj);
 
-    ///*
-    // * Compute the coordinates of the lower-left corner of the bitmap, taking
-    // * into account the anchor position for the bitmp.
-    // */
-
-    //x = bmapPtr->x;
-    //y = Tk_CanvasPsY(canvas, bmapPtr->y);
-    //Tk_SizeOfBitmap(Tk_Display(Tk_CanvasTkwin(canvas)), bitmap,
-    //        &width, &height);
-    //switch (bmapPtr->anchor) {
-    //    case TK_ANCHOR_NW:               y -= height;        break;
-    //    case TK_ANCHOR_N:       x -= width/2.0; y -= height;        break;
-    //    case TK_ANCHOR_NE:       x -= width;       y -= height;        break;
-    //    case TK_ANCHOR_E:       x -= width;       y -= height/2.0;    break;
-    //    case TK_ANCHOR_SE:       x -= width;                break;
-    //    case TK_ANCHOR_S:       x -= width/2.0;            break;
-    //    case TK_ANCHOR_SW:                        break;
-    //    case TK_ANCHOR_W:               y -= height/2.0;    break;
-    //    case TK_ANCHOR_CENTER: x -= width/2.0; y -= height/2.0;    break;
-    //}
-
-    ///*
-    // * Make our working space.
-    // */
-
-    //psObj = Tcl_NewObj();
-    //interpState = Tcl_SaveInterpState(interp, TCL_OK);
-
-    ///*
-    // * Color the background, if there is one.
-    // */
-
-    //if (bgColor != NULL) {
-    //    Tcl_AppendPrintfToObj(psObj,
-    //            "%.15g %.15g moveto %d 0 rlineto 0 %d rlineto "
-    //            "%d 0 rlineto closepath\n",
-    //            x, y, width, height, -width);
-
-    //    Tcl_ResetResult(interp);
-    //    if (Tk_CanvasPsColor(interp, canvas, bgColor) != TCL_OK) {
-    //        goto error;
-    //    }
-    //    Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
-
-    //    Tcl_AppendToObj(psObj, "fill\n", -1);
-    //}
-
-    ///*
-    // * Draw the bitmap, if there is a foreground color. If the bitmap is very
-    // * large, then chop it up into multiple bitmaps, each consisting of one or
-    // * more rows. This is needed because Postscript can't handle single
-    // * strings longer than 64 KBytes long.
-    // */
-
-    //if (fgColor != NULL) {
-    //    Tcl_ResetResult(interp);
-    //    if (Tk_CanvasPsColor(interp, canvas, fgColor) != TCL_OK) {
-    //        goto error;
-    //    }
-    //    Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
-
-    //    if (width > 60000) {
-    //        Tcl_SetObjResult(interp, Tcl_NewStringObj(
-    //                    "can't generate Postscript for bitmaps more than 60000"
-    //                    " pixels wide", -1));
-    //        Tcl_SetErrorCode(interp, "TK", "CANVAS", "PS", "MEMLIMIT", NULL);
-    //        goto error;
-    //    }
-
-    //    rowsAtOnce = 60000/width;
-    //    if (rowsAtOnce < 1) {
-    //        rowsAtOnce = 1;
-    //    }
-
-    //    Tcl_AppendPrintfToObj(psObj, "%.15g %.15g translate\n", x, y+height);
-
-    //    for (curRow = 0; curRow < height; curRow += rowsAtOnce) {
-    //        rowsThisTime = rowsAtOnce;
-    //        if (rowsThisTime > (height - curRow)) {
-    //            rowsThisTime = height - curRow;
-    //        }
-
-    //        Tcl_AppendPrintfToObj(psObj,
-    //                "0 -%.15g translate\n%d %d true matrix {\n",
-    //                (double) rowsThisTime, width, rowsThisTime);
-
-    //        Tcl_ResetResult(interp);
-    //        if (Tk_CanvasPsBitmap(interp, canvas, bitmap,
-    //                    0, curRow, width, rowsThisTime) != TCL_OK) {
-    //            goto error;
-    //        }
-    //        Tcl_AppendObjToObj(psObj, Tcl_GetObjResult(interp));
-
-    //        Tcl_AppendToObj(psObj, "\n} imagemask\n", -1);
-    //    }
-    //}
-
-    ///*
-    // * Plug the accumulated postscript back into the result.
-    // */
-
-    //(void) Tcl_RestoreInterpState(interp, interpState);
-    //Tcl_AppendObjToObj(Tcl_GetObjResult(interp), psObj);
-    //Tcl_DecrRefCount(psObj);
     return TCL_OK;
-
-//error:
-    //Tcl_DiscardInterpState(interpState);
-    //Tcl_DecrRefCount(psObj);
-    //return TCL_ERROR;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
