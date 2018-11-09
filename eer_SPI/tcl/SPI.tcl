@@ -1408,13 +1408,13 @@ proc SPI::IcoAdd { Frame Group Color Icos } {
       lappend Ico(Groups) $Group
       .menu.disp.menu.icons add checkbutton -label "$Group" -variable SPI::Ico(Set$Group) \
          -command "Page::UpdateItems $Page::Data(Frame)"
-      set Ico(Set$Group) 1
    } else {
       if { [winfo exists $Ico(Frame$Group).page.canvas] } {
          $Ico(Frame$Group).page.canvas delete $Group
       }
    }
 
+   set Ico(Set$Group) 1
    set Ico(Frame$Group) $Frame
    set Ico(Def$Group)   $Icos
    set Ico(Col$Group)   $Color

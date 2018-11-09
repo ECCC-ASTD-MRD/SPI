@@ -124,6 +124,7 @@ proc APViz::Source { Path Widget } {
       set Param(Layout)        ""
       set Param(Title)         ""
       set Param(Description)   ""
+      set Param(Icons)         ""
       
       set Value(NbLayers)        0   ; # Nombre de couches creees au total
       set Value(NbCalcLayers)    0   ; # Nombre de couches de calcul      
@@ -244,6 +245,7 @@ proc APViz::Source { Path Widget } {
          variable Value
          variable Range
          variable Layers
+         variable Mod
          
          switch $Option {
             "Models"    { set lockType Model; set idx 1 }
@@ -258,17 +260,15 @@ proc APViz::Source { Path Widget } {
          
          if { $Range(${lockType}Lock) } {
             set newValue $Value($Option,$Index)
+            
             #----- Change all other values
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
                set opts [split [lindex $Layers $i] :] 
                if { [string index [lindex $opts $idx] 0]=="<" && ($i!=$Index) && ($Value(RowIDLayer$i)>=0) } {
-                  #----- Check if a delta is defined (ex:<Hours>+06)
-                 if { [info exists ::APViz::${Product}::Mod($Option,$i)] } {
-                     eval set Value($Option,$i) \[format %0${idx}i \[expr [string trimleft $newValue 0]$Mod($Option,$i)\]\]
-                  } else {
-                     set Value($Option,$i) $newValue
-                  }
-#                  APViz::AssignVariable $Product $i
+                  set Value($Option,$i) $newValue
+               } 
+               if { [info exists Mod($Option,$Index)] && [info exists Mod($Option,$i)]} {
+                  set Mod($Option,$i) $Mod($Option,$Index)
                }
             }
             for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
@@ -401,7 +401,7 @@ proc APViz::Source { Path Widget } {
                CreateRangeWidget $Product $hour    $Widget $no Hours true 13 
                $Widget.range.variableGrid.run configure -text ""
             } else {
-               CreateRangeWidget $Product $run     $Widget $no Runs true 2 
+               CreateRangeWidget $Product $run     $Widget $no Runs true 3 
                CreateRangeWidget $Product $hour    $Widget $no Hours true 3
             }           
 
@@ -502,7 +502,17 @@ proc APViz::Source { Path Widget } {
                dict lappend APViz::Data(Ranges) $Options \{$Range($rangeType)\}
             }
             if { [info exists Mod($Options,$Index)] } {
-               entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
+               if { $Options=="Runs" || $Options=="Hours" } {
+                  if { $Mod($Options,$Index)=="+-" } {
+                     spinbox $path -values { -48 -42 -36 -30 -24 -18 -12 -06 00 +06 +12 +18 +24 +30 +36 +42 +48 } -width 3 -textvariable APViz::${Product}::Mod($Options,$Index) -bg $GDefs(ColorLight) \
+                        -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
+                     set Mod($Options,$Index) -06
+                  } else {
+                     entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
+                  }
+               } else {
+                  entry $path -textvariable APViz::${Product}::Value($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
+               }
             } elseif { $IsSpinBox } {
                spinbox $path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
@@ -524,12 +534,6 @@ proc APViz::Source { Path Widget } {
                set APViz::${Product}::Value($Options,$Index) [lindex $Range($range) $Index]
             }
             
-            #----- Add increment if defined
-            if { [info exists Mod($Options,$Index)] && ($Options=="Runs" || $Options=="Hours") } {
-               if { $Options=="Runs" } { set w 2 } else { set w 3 }
-               eval set Value($Options,$Index) \[format %0${w}i \[expr [string trimleft $Value($Options,$Index) 0]\$Mod($Options,$Index)\]\]
-            }
-
          } else {
             label $path -width $Width -text $Style -textvariable APViz::${Product}::Value($Options,$Index)
             set APViz::${Product}::Value($Options,$Index) $Style
@@ -686,6 +690,7 @@ proc APViz::Source { Path Widget } {
       #-------------------------------------------------------------------------------
       
       proc Load { Path } {
+         global env
          variable Layers
          variable CalcLayers
          variable Range
@@ -716,6 +721,11 @@ proc APViz::Source { Path Widget } {
             }
          }
          SPI::LayoutLoad ${::APViz::Data(Frame)} $layout
+          puts stderr ...$Param(Icons)...
+         foreach icon $Param(Icons) {
+         puts stderr $icon
+            eval SPI::IcoOpen $icon
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -891,6 +901,7 @@ proc APViz::Source { Path Widget } {
       }
    }
    
+   SPI::IcoClear
    ${product}::Load $Path
 
    set Data(ConfigPath) $Path        
@@ -1063,13 +1074,23 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    if { $ip3=="-" || $ip3=="" } { set ip3 -1 }
    if { $lev=="-" || $lev=="" } { set lev -1 }
      
+   #----- Check if we need to increment the hour
+   if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)!="=" } {
+      eval set hour \[format %03i \[expr [scan $hour %d]\$Mod(Hours,$Index)\]\]
+   }
+   
    #----- Check if we need to increment the date on a run increment
    set date $Data(Date)
    if { [info exists Mod(Runs,$Index)] } {
+      eval set run \[expr [scan $run %d]\$Mod(Runs,$Index)\]
       if { $run<0 || $run>=24 } {
          set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Mod(Runs,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
-         set run [format %02i [expr $run-$Mod(Runs,$Index)]]
+         set run  [expr $run%24]
       }
+      if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)=="=" } {
+         eval set hour \[format %03i \[expr [scan $hour %d]-\$Mod(Runs,$Index)\]\]
+      }
+      set run  [format %02i $run]
    }
    
    if { ![APViz::ValidateDate $date] } {
@@ -1137,7 +1158,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { [catch {eval dataspec configure $obsID $Param($var) }] } {
                #----- Configurations par defaut TODO: Choose a colormap that exists
                dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
-                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFONT12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
+                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font FONT12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
          }
          
@@ -1215,15 +1236,18 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
                return
             }
             
+            #----- Apply var modifier
             if { [info exists Mod(Vars,$Index)] } {
-               vexpr $fieldID fkernel($fieldID,KERNEL_BLUR)
+               switch -glob $Mod(Vars,$Index) {
+                  "filter*" { vexpr $fieldID fkernel($fieldID,[string toupper $Mod(Vars,$Index)]) }
+               }
             }
             
             #----- Apply variable configs from config file 
             if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}] } {
                if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                   #----- Valeur par defaut
-                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font FONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True
                }
             }
 
@@ -1451,7 +1475,7 @@ proc APViz::CalculateExpression { Product Index } {
                if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
                   if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                      #----- Valeur par defaut
-                     fstdfield configure $fieldID -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+                     fstdfield configure $fieldID -font FONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
                   }
                }
             }
@@ -1599,27 +1623,25 @@ proc APViz::ConstructTreeBranches { Tree ParentNode Path Level } {
    set fileList [glob -nocomplain -tails -path $Path/ *]
    
    foreach file $fileList {
-      if {($file ni { "Colormap" "Layout" "APViz_Data.tcl" })} {
-         #----- Create node
-         $Tree insert $ParentNode end $file
+      #----- Create node
+      $Tree insert $ParentNode end $file
 
-         #----- Set node attributes
-         $Tree set $file name $file
-         
-         if {$Level < 3} {
-            $Tree set $file open True
-         } else {
-            $Tree set $file open False
-         }
-         
-         if {[file isdirectory [set newPath ${Path}/$file]]} {
-            #----- Appel recursif
-            APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
-            $Tree set $file path ""
-         } else {
-            $Tree set $file path ${Path}/$file
-             lappend Data(ProductPaths) $Path/$file
-         }
+      #----- Set node attributes
+      $Tree set $file name $file
+      
+      if {$Level < 3} {
+         $Tree set $file open True
+      } else {
+         $Tree set $file open False
+      }
+      
+      if {[file isdirectory [set newPath ${Path}/$file]]} {
+         #----- Appel recursif
+         APViz::ConstructTreeBranches $Tree $file $newPath [expr $Level + 1]
+         $Tree set $file path ""
+      } else {
+         $Tree set $file path ${Path}/$file
+            lappend Data(ProductPaths) $Path/$file
       }
    }
 }
@@ -1711,10 +1733,10 @@ proc APViz::CreateFileTree { Path } {
    
    #----- Source APViz_Data.tcl file
    set oldDefaultColormap $Data(DefaultColormap)
-   if {[catch { source ${Path}/APViz_Data.tcl }]} {
+   if { [catch { source ${Path}/APViz_Data.tcl } err] } {
       lappend msg "Fichier APViz_Data.tcl manquant de $Path"
       lappend msg "File APViz_Data.tcl containing paths missing from $Path"
-      ::Dialog::Error . $msg
+      ::Dialog::Error . $msg $err
    } else {
       if {$Data(DefaultColormap) eq ""} {
          #----- Find an existing colormap
@@ -1723,7 +1745,7 @@ proc APViz::CreateFileTree { Path } {
    }
 
    #----- Construct tree with all files and directories from configs path
-   APViz::ConstructTreeBranches FILETREE root $Path 0
+   APViz::ConstructTreeBranches FILETREE root $Path/Config 0
 
    CVTree::Create $Data(Tab).filetree.canvas APViz::FILETREE \
       IdCmd APViz::GetTreeId \
@@ -1855,7 +1877,6 @@ proc APViz::FetchAllDates { Product } {
                set shortestLst $dates
             }
          }
-puts stderr .$shortestLst.
 
          #----- For all dates contained in the shortest date list, verify if contained in all other lists
          foreach date $shortestLst {
@@ -1950,7 +1971,6 @@ proc APViz::FetchAllDatesJP { Product } {
 #          set finalDateLst [lindex $dateLst 0]
 #       }
       set finalDateLst [lsort -increasing -unique $dateLst]
-puts stderr .$finalDateLst.
       
       #----- Display dates in Available Dates combo box
       if { ($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)] } {
@@ -2909,6 +2929,7 @@ proc APViz::Start { } {
    variable Lbl
    
    catch {
+      font create FONT8 -family Helvetica -weight bold -size -8
       font create FONT10 -family Helvetica -weight bold -size -10
       font create FONT12 -family Helvetica -weight bold -size -12
       font create FONT14 -family Helvetica -weight bold -size -14
@@ -2924,8 +2945,6 @@ proc APViz::Start { } {
       font create EFONT20 -family Helvetica -weight bold -size -20
       font create EFONT24 -family Helvetica -weight bold -size -24
    }
-   
-   vector create KERNEL_BLUR { { 1 1 1 } { 1 2 1 } { 1 1 1 } }
    
    if { [info exists env(SPI_APVIZ)] } {
       foreach path [split $env(SPI_APVIZ) :] {
