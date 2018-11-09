@@ -79,8 +79,8 @@ static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
         // Convert the coodinates into the X world
         for(i=0; i<N; ++i) {
             XDBGPRINTF("\t[%d] [%.4f,%.4f]\n",i,X[i],Y[i]);
-            XPOINT_BUF[i].x = (short)round(X[i]);
-            XPOINT_BUF[i].y = (short)(Ctx->H - (int)round(Y[i]));
+            XPOINT_BUF[i].x = (short)X[i];
+            XPOINT_BUF[i].y = (short)(Ctx->H - (int)Y[i]);
         }
     }
 
@@ -415,7 +415,7 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC)
 */
 static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
-    int r=(int)round(R),x=(int)round(X)-r,y=ctx->H-(int)round(Y)+r,d=r*2;
+    int r=(int)round(R),x=(int)X-r,y=ctx->H-(int)Y+r,d=r*2;
 
     XDBGPRINTF("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
     // Check if we need to fill the circle
@@ -460,13 +460,13 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     XRectangle clip;
 
-    clip.x = (short)(X0<=X1 ? X0 : X1);
-    clip.y = (short)(Y0<=Y1 ? Y0 : Y1);
+    clip.width = (unsigned short)abs((int)X1-(int)X0)-1;
+    clip.height = (unsigned short)abs((int)Y1-(int)Y0)-1;
 
-    clip.width = (unsigned short)fabs(X1-X0);
-    clip.height = (unsigned short)fabs(Y1-Y0);
+    clip.x = (short)(X0<=X1 ? X0 : X1) + 1;
+    clip.y = ctx->H - (short)(Y0<=Y1 ? Y0 : Y1) - clip.height;
 
-    DBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    XDBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     XSetClipRectangles(ctx->Display,ctx->GC,0,0,&clip,1,Unsorted);
 }
 
@@ -563,7 +563,7 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
     XDBGPRINTF("Line [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     TclRDeviceX_GCLine(ctx,GEC);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-    XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)round(X0),ctx->H-(int)round(Y0),(int)round(X1),ctx->H-(int)round(Y1));
+    XDrawLine(ctx->Display,ctx->Pixmap,ctx->GC,(int)X0,ctx->H-(int)Y0,(int)X1,ctx->H-(int)Y1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -793,9 +793,25 @@ static void TclRDeviceX_Polyline(int N,double *X,double *Y,const pGEcontext rest
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEcontext restrict GEC,pDevDesc Dev) {
-    TCtx            *ctx=(TCtx*)Dev->deviceSpecific;
-    unsigned int    w=(unsigned int)round(X1-X0),h=(unsigned int)round(Y1-Y0);
-    int             x=(int)round(X0),y=ctx->H-(int)round(Y0)-h;
+    TCtx    *ctx=(TCtx*)Dev->deviceSpecific;
+    int     x,y,w,h;
+
+    if( X1 < X0 ) {
+        w = (int)X0 - (int)X1;
+        x = (int)X1;
+    } else {
+        w = (int)X1 - (int)X0;
+        x = (int)X0;
+    }
+
+    if( Y1 < Y0 ) {
+        h = (int)Y0 - (int)Y1;
+        y = (int)Y0;
+    } else {
+        h = (int)Y1 - (int)Y0;
+        y = (int)Y1;
+    }
+    y = ctx->H - y;
 
     XDBGPRINTF("Rect [%.4f,%.4f] -> [%.4f,%.4f]\n",X0,Y0,X1,Y1);
 
@@ -877,10 +893,10 @@ static void TclRDeviceX_Raster(unsigned int *Raster,int W,int H,double X,double 
     }
 
     // Get the width/height and coords of the image
-    x       = (int)round(X);
-    y       = (int)round(Y);
-    imgW    = (int)round(Width);
-    imgH    = (int)round(Height);
+    x       = (int)X;
+    y       = (int)Y;
+    imgW    = (int)Width;
+    imgH    = (int)Height;
     bufs    = imgW*imgH;
 
     // Adjust values based on transformation
@@ -896,8 +912,8 @@ static void TclRDeviceX_Raster(unsigned int *Raster,int W,int H,double X,double 
         // Adjust the position of the bottom left corner
         R_GE_rasterRotatedOffset(imgW,imgH,angle,1,&rotX,&rotY);
 
-        x = (int)round(X-(rotW-imgW)*0.5-rotX);
-        y = (int)round(Y-(rotH-imgH)*0.5-rotY);
+        x = (int)(X-(rotW-imgW)*0.5-rotX);
+        y = (int)(Y-(rotH-imgH)*0.5-rotY);
     }
 
     // Make sure we have a big enough memory buffer
@@ -1132,7 +1148,7 @@ static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double
     XDBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     TclRDeviceX_GCFont(ctx,GEC);
-    TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)round(X),ctx->H-(int)round(Y),Rot);
+    TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)X,ctx->H-(int)Y,Rot);
 }
 
 //static void (*onExit)(pDevDesc Dev);
