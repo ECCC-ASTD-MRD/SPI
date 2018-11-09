@@ -2947,6 +2947,8 @@ proc APViz::Start { } {
    }
    
    if { [info exists env(SPI_APVIZ)] } {
+      ProjCam::Read $env(SPI_APVIZ)
+      
       foreach path [split $env(SPI_APVIZ) :] {
          lappend Param(ConfigPath) $path
          #----- Getting config files path
@@ -2963,12 +2965,12 @@ proc APViz::Start { } {
          }
          
          #----- Getting colormaps
-         if {[file isdirectory ${path}/Colormap/]} {
+         if { [file isdirectory ${path}/Colormap/] } {
             lappend DataSrc(Colormaps) ${path}/Colormap/
          }
       }
       
-      if {[llength $Param(ConfigPath)] <= 0} {
+      if { [llength $Param(ConfigPath)] <= 0 } {
          ::Dialog::Error . $Lbl(envSPI_APVIZ)
       }
    } else {

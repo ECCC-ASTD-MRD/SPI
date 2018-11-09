@@ -479,21 +479,21 @@ proc ProjCam::Mem { Cam Name } {
 #
 #----------------------------------------------------------------------------
 
-proc ProjCam::Read { } {
+proc ProjCam::Read { { Paths {} } } {
    global env
    variable Data
 
-   set Data(Names) ""
-
-   set paths $env(HOME)/.spi
-   if { [info exists env(SPI_TOOL)] } {
-      set paths [concat [split $env(SPI_TOOL) :] $paths]
+   if { ![llength $Paths] } {
+      set Paths $env(HOME)/.spi
+      if { [info exists env(SPI_TOOL)] } {
+         set Paths [concat [split $env(SPI_TOOL) :] $Paths]
+      }
    }
    
-   foreach path $paths {
+   foreach path $Paths {
       if { [file exists $path/ProjCam] } {
 
-         set file [open $env(HOME)/.spi/ProjCam r]
+         set file [open $path/ProjCam r]
 
          while { ![eof $file] } {
 
@@ -633,7 +633,6 @@ proc ProjCam::Save { Combo Name } {
 
       #----- Add to list of camera
       ComboBox::Add $Combo $Data(Name)
-      ProjCam::Read
 
       Dialog::Info . $Msg(Saved)
    } else {
