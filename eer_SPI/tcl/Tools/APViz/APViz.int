@@ -548,7 +548,7 @@ proc APViz::AddNewLayer { Widget } {
    
    #------ Verify if all mandatory fields are filled (optional: IP3 and VP)
    foreach type $Data(ColNames) {
-      if {($type ne "IP3") && ($type ne "Etiket") && ($type ne "Viewports")} {
+      if {($type ne "IP3s") && ($type ne "Etikets") && ($type ne "Viewports")} {
          if {![info exists APViz::Data(AddLayer$type,Value)] || ($APViz::Data(AddLayer$type,Value) eq "")} {
             ::Dialog::Info . $Lbl(EmptyFields)
             return
@@ -564,18 +564,20 @@ proc APViz::AddNewLayer { Widget } {
    
    #----- Get all ranges and default values  
    foreach type $Data(ColNames) {
-      set default [string trim $Data(AddLayer$type,Value)]
-      if {[info exists Data(Range,$type)] && ($Data(Range,$type) ne "") && ($Data(Range,$type) ne "NONE")} {
-         set range$type <[string trim $Data(RangeName,$type)]>
-      } else { 
-         set range$type $default
-      }
-      
-      eval set layer [string cat ${layer}: \$range$type]
-      #----- Set default 
-      if {$product ne ""} {
-         set def [string range $type 0 end-1]
-         set ${product}::Range($def) $default
+      if {($type ne "Viewports")} {
+         set default [string trim $Data(AddLayer$type,Value)]
+         if {[info exists Data(Range,$type)] && ($Data(Range,$type) ne "") && ($Data(Range,$type) ne "NONE")} {
+            set range$type <[string trim $Data(RangeName,$type)]>
+         } else { 
+            set range$type $default
+         }
+         
+         eval set layer [string cat ${layer}: \$range$type]
+         #----- Set default 
+         if {$product ne ""} {
+            set def [string range $type 0 end-1]
+            set ${product}::Range($def) $default
+         }
       }
    }
    
