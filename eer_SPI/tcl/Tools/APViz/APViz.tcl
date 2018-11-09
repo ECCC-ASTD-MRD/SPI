@@ -901,6 +901,7 @@ proc APViz::Source { Path Widget } {
    }
    
    SPI::IcoClear
+   Areas::Clear
    ${product}::Load $Path
 
    set Data(ConfigPath) $Path        

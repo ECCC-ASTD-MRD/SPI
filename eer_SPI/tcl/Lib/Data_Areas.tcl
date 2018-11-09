@@ -227,6 +227,46 @@ proc Areas::Display { args { All "" } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Areas::Clear>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Supprime toutes les regions de la projection.
+#
+# Parametres :
+#  <args>    : Liste des identificateurs de la liste de regions.
+#  <All>     : Force display of areas.
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Areas::Clear { } {
+   global GDefs
+   variable Data
+
+   foreach type $Data(Layers) {
+      set type [lindex $type 0]
+      set Data(All$type) False
+      
+      for { set n 0 } { $n<[ogrlayer define $type -nb] } { incr n } {
+         set Data(Toggle$type$n) 0
+      }
+      ogrlayer define $type -featurehighlight {}
+
+      set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $type]
+      if { [set idx [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $type]]!=-1 } {
+         set Viewport::Data(Data$Page::Data(Frame)) [lreplace $Viewport::Data(Data$Page::Data(Frame)) $idx $idx]
+      }
+   }
+   set Viewport::Data(Data) $Viewport::Data(Data$Page::Data(Frame))
+
+   projection configure $Page::Data(Frame) -data $Viewport::Data(Data$Page::Data(Frame))
+   Page::Update $Page::Data(Frame)
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Areas::DisplayToggle>
 # Creation : Aout 2003 - J.P. Gauthier - CMC/CMOE
 #
