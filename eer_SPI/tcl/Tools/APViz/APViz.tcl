@@ -389,7 +389,7 @@ proc APViz::Source { Path Widget } {
 
             #----- CreateRangeWidget { Product Style Path Index Options IsSpinBox Width Default}
             CreateRangeWidget $Product $model   $Widget $no Models false 5 
-            CreateRangeWidget $Product $ip3     $Widget $no IP3 true 2 
+            CreateRangeWidget $Product $ip3     $Widget $no IP3s true 2 
             CreateRangeWidget $Product $vp      $Widget $no Viewports false 2
 
             #----- Process Dates range
@@ -417,14 +417,14 @@ proc APViz::Source { Path Widget } {
             button $Widget.range.variableGrid.layer${no}_param  -image PARAMS -bd 1 -height 16 -relief flat -overrelief raised -command "APViz::SetParam $no $Product ; SPI::Params . $tab"
             
             #----- Create entry for etiket and bind
-            entry $Widget.range.variableGrid.layer${no}_etiket -width 5 -textvariable APViz::${Product}::Value(Etiket,$no) -bg $GDefs(ColorLight)
+            entry $Widget.range.variableGrid.layer${no}_etiket -width 5 -textvariable APViz::${Product}::Value(Etikets,$no) -bg $GDefs(ColorLight)
             set APViz::${Product}::Value(EtiketWidget,$no) $Widget.range.variableGrid.layer${no}_etiket
             bind $Widget.range.variableGrid.layer${no}_etiket <Return> "APViz::${Product}::SetEtiketBubble $Widget.range.variableGrid.layer${no}_etiket $no; APViz::AssignVariable $Product $no; APViz::Refresh $Product"
             
             set Value(RowIDLayer$no) [expr $no - $Value(RowIDLayer)]
             
             #----- Place widgets in grid        
-            set itemList [list toggle Models Runs Hours Sources Vars Levels IP3 Viewports etiket param delete]
+            set itemList [list toggle Models Runs Hours Sources Vars Levels IP3s Viewports etiket param delete]
             set colNb 0
             foreach item $itemList {
                grid $Widget.range.variableGrid.layer${no}_$item      -column $colNb -row [expr $no + 1] -padx 0.1
@@ -640,7 +640,7 @@ proc APViz::Source { Path Widget } {
          
          #----- Ajustement du rowID
          incr Value(RowIDLayer)
-         set itemList [list toggle Models Runs Hours Sources Vars Levels IP3 Viewports etiket param delete]
+         set itemList [list toggle Models Runs Hours Sources Vars Levels IP3s Viewports etiket param delete]
   
          #----- Adjust all rowIds below range.variableGrid.layer${no}_toggle
          for {set i 0} {$i < $Value(NbLayers)} {incr i} {
@@ -1063,8 +1063,8 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
    set hour	$Value(Hours,$Index)
    set src	$Value(Sources,$Index)
    set vp       $Value(Viewports,$Index)
-   set ip3      $Value(IP3,$Index)
-   set etiket   $Value(Etiket,$Index)
+   set ip3      $Value(IP3s,$Index)
+   set etiket   $Value(Etikets,$Index)
    
    puts "Assigning variable for $model $var"
    
@@ -2667,7 +2667,7 @@ proc APViz::ReinitializeVP { } {
       
       #----- Reset etiket value
       for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-         set Value(Etiket,$i) ""
+         set Value(Etikets,$i) ""
       }
    }
    
