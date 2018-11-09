@@ -366,6 +366,8 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC)
             if( GEC->fontfamily[0] != '\0' )
                 strcpy(Ctx->FontFamily,GEC->fontfamily);
 
+            XSetFont(Ctx->Display,Ctx->GC,Tk_FontId(font));
+
             // Update the font on the item too (useful if querried)
             RDeviceItem_SetFont(Ctx->Item,Ctx->TkFont);
         } else {
