@@ -19,6 +19,9 @@
 #include "TclRDeviceX.h"
 #include "tkCanvRDevice.h"
 
+//#define XDBGPRINTF(...) printf(__VA_ARGS__);
+#define XDBGPRINTF(...)
+
 #define MM2INCH     0.0393701
 
 typedef struct TCtx {
@@ -1089,8 +1092,8 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    XDBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(ctx->TkFont,Str,strlen(Str)));
     TclRDeviceX_GCFont(ctx,GEC);
+    XDBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(ctx->TkFont,Str,strlen(Str)));
     return Tk_TextWidth(ctx->TkFont,Str,strlen(Str));
 }
 

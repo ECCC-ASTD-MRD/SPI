@@ -10,8 +10,8 @@
 // Driver includes
 #include "TclRDevice2PS.h"
 
-#define PSDBGPRINTF(...) printf(__VA_ARGS__);
-//#define PSDBGPRINTF(...)
+//#define PSDBGPRINTF(...) printf(__VA_ARGS__);
+#define PSDBGPRINTF(...)
 
 typedef struct TCtx {
     Tcl_Obj     *PS;                // PostScript buffer (MUST be first)

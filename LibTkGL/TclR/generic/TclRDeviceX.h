@@ -4,9 +4,6 @@
 #include <tcl.h>
 #include <tk.h>
 
-//#define DBGPRINTF(...) printf(__VA_ARGS__);
-#define XDBGPRINTF(...)
-
 void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Font,int W,int H);
 void TclRDeviceX_Destroy(void* GE);
 void TclRDeviceX_Redraw(void *GE);

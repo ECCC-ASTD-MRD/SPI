@@ -13,6 +13,9 @@
 #include "tkCanvRDevice.h"
 #include <math.h>
 
+//#define DBGPRINTF(...) printf(__VA_ARGS__)
+#define DBGPRINTF(...)
+
 /*
  * The structure below defines the record for each RDevice item.
  */

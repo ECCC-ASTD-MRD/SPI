@@ -4,9 +4,6 @@
 #include <tcl.h>
 #include <tk.h>
 
-#define DBGPRINTF(...) printf(__VA_ARGS__)
-//#define DBGPRINTF(...)
-
 void RDeviceItem_Register();
 void RDeviceItem_SignalRedraw(void *Item);
 void RDeviceItem_DetachDevice(void *Item);
