@@ -721,9 +721,8 @@ proc APViz::Source { Path Widget } {
             }
          }
          SPI::LayoutLoad ${::APViz::Data(Frame)} $layout
-          puts stderr ...$Param(Icons)...
+
          foreach icon $Param(Icons) {
-         puts stderr $icon
             eval SPI::IcoOpen $icon
          }
       }

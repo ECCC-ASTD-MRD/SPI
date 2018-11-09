@@ -183,6 +183,7 @@ proc Areas::Read { File FillColor LineColor Id Fill { Field "" } } {
 #
 # Parametres :
 #  <args>    : Liste des identificateurs de la liste de regions.
+#  <All>     : Force display of areas.
 #
 # Retour:
 #
@@ -190,16 +191,20 @@ proc Areas::Read { File FillColor LineColor Id Fill { Field "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Areas::Display { args } {
+proc Areas::Display { args { All "" } } {
    global GDefs
    variable Data
 
    foreach type $args {
       set f {}
 
+      if { $All!="" } {
+         set Data(All$type) $All
+      }
+      
       for { set n 0 } { $n<[ogrlayer define $type -nb] } { incr n } {
 
-         if { $Data(All$args) } {
+         if { $Data(All$type) } {
             set Data(Toggle$type$n) 1
             lappend f $n
          } else {
