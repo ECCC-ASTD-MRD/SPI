@@ -2115,7 +2115,10 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $product $fileID
-
+      
+      #----- New letter attribution (Letters will be attributed in different order when config file is read)
+      APViz::NewLetterAttribution $product 
+      
       #----- Variable Style Configs
       puts -nonewline $fileID "\n"
       APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex [expr $rangeStartIndex - 1]]  $colormapLst
@@ -2127,7 +2130,10 @@ proc APViz::GenerateConfigFile { Path } {
       #----- Write Layers
       puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
-            
+      
+      #----- New formula with newly attributes letters
+      #APViz::NewFormulaAttribution $Product 
+      
       #----- Write CalcLayers
       puts -nonewline $fileID "\n"
       APViz::WriteCalcLayers $product $fileID
@@ -2344,18 +2350,33 @@ proc APViz::GetTreeId { Tree Branch Leaf } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::GetVariableConfigs { Product ColorMaps } {
+proc APViz::GetVariableConfigs { Product ColorMaps {IsLayer True}} {
    variable Data
    variable ${Product}::Value
 
    set configLst {}
+   if {$IsLayer} {
+      set nbLayers $Value(NbLayers)
+      set idLst LayerIDs
+      set letterLst NewLetter
+      set rowLst RowIDLayer
+   } else {
+      set nbLayers $Value(NbCalcLayers)
+      set var CALC
+      set idLst CalcIDs
+      set letterLst CNewLetter
+      set rowLst RowIDCalc
+   }
 
-   for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
-      if { [set rowID $Value(RowIDLayer$i)] >= 0 } {
-         set var $Value(Vars,$i)
-         set level $Value(Levels,$i)
-         set ID [lindex $Data(LayerIDs) $rowID]
-         set alpha $Value(Letter,$i)
+   for { set i 0 } { $i < $nbLayers } { incr i } {
+      if { [set rowID $Value(${rowLst}$i)] >= 0 } {
+         if {$IsLayer} {
+            set var $Value(Vars,$i)
+            set level $Value(Levels,$i)
+         }
+
+         set ID [lindex $Data(${idLst}) $rowID]
+         set alpha $Value(${letterLst},$i)
 
          
          #---- Set command depending on type
@@ -2374,7 +2395,13 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
 
          foreach param $paramLst {
             if { $param eq "colormap" } {
-               set value [lindex $ColorMaps $Value(RowIDLayer$i)]
+               if {$IsLayer} {
+                  set value [lindex $ColorMaps $Value(RowIDLayer$i)]
+               } else {
+                  #---- TODO: Manage colormap modif for calc layers too
+                  set value [fstdfield configure $ID -$param]
+               }
+               
             } else {
                if { $isFstdField } {
                   set value [fstdfield configure $ID -$param]
@@ -2599,6 +2626,93 @@ proc APViz::MoveDone { Frame VP } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <APViz::NewLetterAttribution>
+# Creation : Novembre 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer de nouvelles lettres avant l'ecriture du fichier de confi
+#
+# Parametres :
+#   <Product>  : Identificateur du produit
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::NewLetterAttribution { Product } {
+   variable ${Product}::Value
+   variable Data
+   
+   set alphabet { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   
+   set alphaCount 0
+   #----- New letter attribution for 
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $Value(RowIDLayer$i)] >= 0} {
+         set currentLetter $Value(Letter,$i)
+         set Value(NewLetter,$i) [lindex $alphabet $i]
+         puts "For index $i new letter will be $Value(NewLetter,$i)"
+         #---- Inserer la nouvelle valeur dans le OldToNewLetterDict -> key: old ,value: new
+         dict set Data(NewAlphaDict) $currentLetter $Value(NewLetter,$i)
+         incr alphaCount
+      }
+   }
+   
+   #----- New letter attribution for calcLayers
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $Value(RowIDCalc$i)] >= 0} {
+         set currentLetter $Value(CLetter,$i)
+         set Value(CNewLetter,$i) [lindex $alphabet [expr $i + $alphaCount]]
+         puts "For index $i new letter will be $Value(CNewLetter,$i)"
+         dict set Data(NewAlphaDict) $currentLetter $Value(CNewLetter,$i)
+      }
+   }
+}
+
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::NewFormulaAttribution>
+# Creation : Novembre 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer de nouvelles lettres avant l'ecriture du fichier de confi
+#
+# Parametres :
+#   <Product>  : Identificateur du produit
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::NewFormulaAttribution { Product } {
+   variable ${Product}::Value
+   variable Data
+   
+   set alphabet { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   
+   set alphaCount 0
+   #----- New letter attribution for 
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $Value(RowIDLayer$i)] >= 0} {
+         set currentLetter $Value(Letter,$i)
+         set Value(NewLetter,$i) [lindex $alphabet $i]
+         puts "For index $i new letter will be $Value(NewLetter,$i)"
+         #---- Inserer la nouvelle valeur dans le OldToNewLetterDict -> key: old ,value: new
+         dict set Data(NewAlphaDict) $currentLetter $Value(NewLetter,$i)
+         incr alphaCount
+      }
+   }
+   
+   #----- New letter attribution for calcLayers
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $Value(RowIDCalc$i)] >= 0} {
+         set currentLetter $Value(CLetter,$i)
+         set Value(CNewLetter,$i) [lindex $alphabet [expr $i + $alphaCount]]
+         puts "For index $i new letter will be $Value(CNewLetter,$i)"
+         dict set Data(NewAlphaDict) $currentLetter $Value(CNewLetter,$i)
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <APViz::PageActivate>
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
@@ -2701,6 +2815,7 @@ proc APViz::ReinitializeVP { } {
    set Data(RangeNames) ""
    set Data(Ranges) ""
    set Data(AlphaDict) ""
+   set Data(NewAlphaDict) ""
    
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
@@ -3615,6 +3730,11 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    #----- Get current configs
    puts $FileID "\#----- Variable Style Configurations"
    set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
+   set calcConfigLst [APViz::GetVariableConfigs $Product $ColormapLst False]
+   
+   foreach calcConfig $calcConfigLst {
+      lappend configLst $calcConfig
+   }
    
    foreach config $configLst {
       puts $FileID $config
