@@ -2083,6 +2083,9 @@ proc APViz::FilePathDefine { Path } {
 proc APViz::GenerateConfigFile { Path } {
    variable Data
    variable DataSrc
+   
+   #TODO: remove
+   puts "GENERATING CONFIG FILE"
 
    if {[set product $Data(CurrentProduct)] ne ""} {
       variable ${product}::Value
@@ -3314,19 +3317,19 @@ proc APViz::WriteCalcLayers { Product FileID } {
 
    puts $FileID "\#----- CalcLayers (On:FormulaName:VP)"
    puts $FileID "set CalcLayers \{"
-   
-   #----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)
+   #----- CalcLayers (On:Formula:VP)
    for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
       if {[set rowID $Value(RowIDCalc$i)] >= 0} {
          #----- Get all params
          set toggle             $Value(CalcToggle,$i)
          set vp                 $Value(CalcVP,$i)
          
-         #----- Get formula name from formula
-         set formulaName [APViz::GetFormulaName $Value(Formula,$i)]
-         puts $FileID "   $toggle:$formulaName:$vp"
+         #----- Get formula
+         set formula $Value(Formula,$i)
+         puts $FileID "   $toggle:$formula:$vp"
       }
    }
+   
    puts $FileID "\}"
 }
 
@@ -3403,6 +3406,8 @@ proc APViz::WriteLayers { Product FileID } {
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $Value(RowIDLayer$i)] >= 0} {
          puts $FileID "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
+         #TODO: Remove
+         puts "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
       }
    }
    puts $FileID "\}"
@@ -3467,6 +3472,8 @@ proc APViz::WriteRanges { Product FileID } {
       if { [lsearch -exact [array names FieldList] $rangeConfig] < 0 } {
          set rangeValues $Range($rangeConfig)
          puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+         #TODO: remove
+         puts "set Range($rangeConfig) \{$rangeValues\}"
       }
    }
 }
