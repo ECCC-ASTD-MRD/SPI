@@ -503,9 +503,9 @@ proc APViz::Source { Path Widget } {
             if { [info exists Mod($Options,$Index)] } {
                if { $Options=="Runs" || $Options=="Hours" } {
                   if { $Mod($Options,$Index)=="+-" } {
-                     set Mod($Options,$Index) -06
                      spinbox $path -values { -48 -42 -36 -30 -24 -18 -12 -06 00 +06 +12 +18 +24 +30 +36 +42 +48 } -width 3 -textvariable APViz::${Product}::Mod($Options,$Index) -bg $GDefs(ColorLight) \
                         -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
+                     set Mod($Options,$Index) -06
                   } else {
                      entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                   }
@@ -1077,11 +1077,12 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
       eval set run \[expr [scan $run %d]\$Mod(Runs,$Index)\]
       if { $run<0 || $run>=24 } {
          set date [clock format [expr [clock scan $Data(Date) -format "%Y%m%d" -timezone :UTC]+$Mod(Runs,$Index)*3600] -format "%Y%m%d" -timezone :UTC]
-         set run  [format %02i [expr $run%24]]
+         set run  [expr $run%24]
       }
       if { [info exists Mod(Hours,$Index)] && $Mod(Hours,$Index)=="=" } {
          eval set hour \[format %03i \[expr [scan $hour %d]-\$Mod(Runs,$Index)\]\]
       }
+      set run  [format %02i $run]
    }
    
    if { ![APViz::ValidateDate $date] } {
@@ -1229,8 +1230,8 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             
             #----- Apply var modifier
             if { [info exists Mod(Vars,$Index)] } {
-               switch $Mod(Vars,$Index) {
-                  "filter*" { vexpr $fieldID fkernel($fieldID,[string toupper $Mod(Vars,$Index)]) }
+               switch -glob $Mod(Vars,$Index) {
+                  "filter*" { vexpr $fieldID fkernel($fieldID,[string toupper $Mod(Vars,$Index)]); puts stderr "fkernel($fieldID,[string toupper $Mod(Vars,$Index)])" }
                }
             }
             
