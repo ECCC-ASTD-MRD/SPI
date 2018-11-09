@@ -124,6 +124,7 @@ proc APViz::Source { Path Widget } {
       set Param(Layout)        ""
       set Param(Title)         ""
       set Param(Description)   ""
+      set Param(Icons)         ""
       
       set Value(NbLayers)        0   ; # Nombre de couches creees au total
       set Value(NbCalcLayers)    0   ; # Nombre de couches de calcul      
@@ -689,6 +690,7 @@ proc APViz::Source { Path Widget } {
       #-------------------------------------------------------------------------------
       
       proc Load { Path } {
+         global env
          variable Layers
          variable CalcLayers
          variable Range
@@ -719,6 +721,11 @@ proc APViz::Source { Path Widget } {
             }
          }
          SPI::LayoutLoad ${::APViz::Data(Frame)} $layout
+          puts stderr ...$Param(Icons)...
+         foreach icon $Param(Icons) {
+         puts stderr $icon
+            eval SPI::IcoOpen $icon
+         }
       }
       
       #-------------------------------------------------------------------------------
@@ -894,6 +901,7 @@ proc APViz::Source { Path Widget } {
       }
    }
    
+   SPI::IcoClear
    ${product}::Load $Path
 
    set Data(ConfigPath) $Path        
@@ -1150,7 +1158,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { [catch {eval dataspec configure $obsID $Param($var) }] } {
                #----- Configurations par defaut TODO: Choose a colormap that exists
                dataspec configure $obsID -desc "$model (${timestamp}_)" -size 10 -icon CIRCLE -color black -colormap $Data(DefaultColormap) \
-                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font XFONT12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
+                  -mapall True -rendertexture 1 -rendercontour 1 -rendervalue 1 -font FONT12 -intervals { 1 5 10 15 20 30 40 50 75 100 125 150 200 } -active $Value(Toggle,$Index)
             }
          }
          
@@ -1231,7 +1239,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             #----- Apply var modifier
             if { [info exists Mod(Vars,$Index)] } {
                switch -glob $Mod(Vars,$Index) {
-                  "filter*" { vexpr $fieldID fkernel($fieldID,[string toupper $Mod(Vars,$Index)]); puts stderr "fkernel($fieldID,[string toupper $Mod(Vars,$Index)])" }
+                  "filter*" { vexpr $fieldID fkernel($fieldID,[string toupper $Mod(Vars,$Index)]) }
                }
             }
             
@@ -1239,7 +1247,7 @@ proc APViz::AssignVariable { Product Index { Refresh True } } {
             if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(Letter,$Index))}] } {
                if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                   #----- Valeur par defaut
-                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True
+                  fstdfield configure $fieldID -colormap $Data(DefaultColormap) -color black -font FONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True
                }
             }
 
@@ -1467,7 +1475,7 @@ proc APViz::CalculateExpression { Product Index } {
                if { [catch {eval fstdfield configure $fieldID $Param(${var}:$Value(CLetter,$Index))} ]} {
                   if { [catch {eval fstdfield configure $fieldID $Param($var)}] } {
                      #----- Valeur par defaut
-                     fstdfield configure $fieldID -font XFONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
+                     fstdfield configure $fieldID -font FONT12 -efont EFONT12 -width 1 -rendertexture 1 -mapall True -colormap $Data(DefaultColormap) -color black
                   }
                }
             }
@@ -1869,7 +1877,6 @@ proc APViz::FetchAllDates { Product } {
                set shortestLst $dates
             }
          }
-puts stderr .$shortestLst.
 
          #----- For all dates contained in the shortest date list, verify if contained in all other lists
          foreach date $shortestLst {
@@ -1964,7 +1971,6 @@ proc APViz::FetchAllDatesJP { Product } {
 #          set finalDateLst [lindex $dateLst 0]
 #       }
       set finalDateLst [lsort -increasing -unique $dateLst]
-puts stderr .$finalDateLst.
       
       #----- Display dates in Available Dates combo box
       if { ($Data(DateCBWidget) ne "") && [winfo exists $Data(DateCBWidget)] } {
@@ -2923,6 +2929,7 @@ proc APViz::Start { } {
    variable Lbl
    
    catch {
+      font create FONT8 -family Helvetica -weight bold -size -8
       font create FONT10 -family Helvetica -weight bold -size -10
       font create FONT12 -family Helvetica -weight bold -size -12
       font create FONT14 -family Helvetica -weight bold -size -14
