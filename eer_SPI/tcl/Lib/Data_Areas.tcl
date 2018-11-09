@@ -78,14 +78,16 @@ proc Areas::CreateWidget { Parent } {
       foreach l $layer {
          $Parent.areas.t$no add separator
 
-         for { set i 0 } { $i<[ogrlayer define $l -nb] } { incr i } {
-           if { $i && ![expr $i%20] } {
-              $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
-                 -command "Areas::DisplayToggle $l $i" -columnbreak 1
-           } else {
-              $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
-                 -command "Areas::DisplayToggle $l $i"
-           }
+         if { [set nb [ogrlayer define $l -nb]]<50 } {
+            for { set i 0 } { $i<[ogrlayer define $l -nb] } { incr i } {
+               if { $i && ![expr $i%20] } {
+                  $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
+                     -command "Areas::DisplayToggle $l $i" -columnbreak 1
+               } else {
+                  $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
+                     -command "Areas::DisplayToggle $l $i"
+               }
+            }
          }
       }
 
@@ -122,6 +124,9 @@ proc Areas::Init { } {
    Areas::Read $GDefs(Dir)/data/TimeZone.shp                                     #AAAA00 #FFFF00 False True TZ
    Areas::Read $GDefs(Dir)/data/RADAR.shp                                        #AAAAAA #FFFFFF False True ID
    Areas::Read $GDefs(Dir)/data/ModelDomain.shp                                  #00C0CA #000000 False False NAME
+   Areas::Read $GDefs(Dir)/data/land_PubMesoZone.shp                             #CCCCCC #BDBDBD False False NAME
+   Areas::Read $GDefs(Dir)/data/land_PubStdZone.shp                              #CCCCCC #BDBDBD False False NAME
+   Areas::Read $GDefs(Dir)/data/water_MarStdZone.shp                             #C5DAFF #B3CFCF False False NAME
 }
 
 #----------------------------------------------------------------------------
@@ -135,6 +140,7 @@ proc Areas::Init { } {
 #   <Fill>   : Couleur de remplissage
 #   <Line>   : Couleur du contour
 #   <Field>  : Champs a afficher
+#   <Name>   : Nom a afficherChamps a afficher
 #
 # Retour:
 #
@@ -161,7 +167,7 @@ proc Areas::Read { File FillColor LineColor Id Fill { Field "" } } {
       }
       lappend layerid $l
 
-      ogrlayer configure $l -width 4 -font XFont16 -activeoutline $LineColor -activefill [expr {"$Fill"?"$FillColor":""}] -labelvar [expr {"$Id"?"$Data(Field$l)":""}] -transparency 50
+      ogrlayer configure $l -width 2 -font XFont16 -activeoutline $LineColor -activefill [expr {"$Fill"?"$FillColor":""}] -labelvar [expr {"$Id"?"$Data(Field$l)":""}] -transparency 50
    }
    set Data(Id$layerid) $Id
    set Data(Fill$layerid) $Fill
