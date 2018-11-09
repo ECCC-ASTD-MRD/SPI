@@ -1913,8 +1913,10 @@ int Tclr_Init(Tcl_Interp *Interp) {
     // Initialize the R lib
     TclR_RInit();
 
-    // Install our home made graphical device
-    TCL_ASRT( TclRDevice_Install(Interp) );
+    // Install our home made graphical device if running under tk
+    if( Tcl_GetVar(Interp,"tk_version",TCL_GLOBAL_ONLY) ) {
+        TCL_ASRT( TclRDevice_Install(Interp) );
+    }
 
     return TCL_OK;
 }
