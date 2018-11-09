@@ -3381,6 +3381,72 @@ proc APViz::WriteConfigSection { FileID DataSource } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::WriteDefaultValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Recuperer les valeurs de defaut et les ecrire dans le fichier
+#            de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#       <DataSource> : Liste contenant le contenu du fichier de config source
+#       <StartIndex> : Index a partir duquel copier les lignes dans le nouveau fichier
+#       <EndIndex>   : Index de la derniere ligne a recopier dans le nouveau fichier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::GetValueTypeWithLayerIndex { Index } {
+   switch $Index {
+      "0"       { return Toggle }
+      "1"       { return Models }
+      "2"       { return Runs   }
+      "3"       { return Hours  }
+      "4"       { return Sources }
+      "5"       { return Vars   }
+      "6"       { return Levels }
+      default   { puts "Value type not found for $Index"; return }
+   }
+}
+
+proc APViz::WriteDefaultValues { Product FileID DefaultTypeLst } { 
+   variable ${Product}::Value
+   variable ${Product}::Range
+   variable ${Product}::Layers
+
+   #----- Avec la liste de ranges de valeurs de defaut, verifier si une valeur de defaut a ete modifiee, sinon, l'ajouter telle quelle 
+   puts -nonewline $FileID "\n"
+   puts $FileID "\#----- Default Values"
+   foreach defaultType $DefaultTypeLst {
+      #----- Verify if rangeType used in layer
+      set rangeType <${defaultType}s>
+      set defaultValue $Range($defaultType)
+         
+      #----- In all layers, verify if range was used      
+      for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
+         if {$Value(RowIDLayer$i)>=0} {
+            set optIndex 0
+            foreach opt [split [lindex $Layers $i] :] {
+               if {[string equal $rangeType $opt]} {
+                  #----- Get type of value
+                  set valueType [APViz::GetValueTypeWithLayerIndex $optIndex]
+                  #----- Get default value
+                  set defaultValue $Value($valueType,$i)
+               }
+               incr optIndex
+            } 
+         }
+      }
+      
+      #----- Write to config file
+      puts $FileID "set Range($defaultType) \{$defaultValue\}"
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::WriteLayers>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
@@ -3406,11 +3472,36 @@ proc APViz::WriteLayers { Product FileID } {
    for {set i 0} {$i < $Value(NbLayers)} {incr i} {
       if {[set rowID $Value(RowIDLayer$i)] >= 0} {
          puts $FileID "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
-         #TODO: Remove
-         puts "   [lindex $Data(Layers) $Value(LayerType,$rowID)]"
       }
    }
    puts $FileID "\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteLockValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de verrou et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteLockValues { Product FileID LockValues } {
+   variable ${Product}::Value
+   
+   puts -nonewline $FileID "\n"
+   puts $FileID "\#----- Locked values"
+   foreach lockValue $LockValues {
+      puts $FileID $lockValue
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -3450,7 +3541,8 @@ proc APViz::WriteProjectionConfigs { FileID } {
 # Nom      : <APViz::WriteRanges>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : Ecrire la section des ranges dans le fichier de config
+# But      : Ecrire la section des ranges dans le fichier de config - s'occupe
+#            aussi a ecrire les baleurs par defaut.
 #
 # Parametres    :
 #       <Product>     : Le nom du produit selectionne (aussi le namespace) 
@@ -3465,17 +3557,40 @@ proc APViz::WriteProjectionConfigs { FileID } {
 proc APViz::WriteRanges { Product FileID } {
    variable ${Product}::Range
    variable FieldList
+   #----- Copy default and lock values afterwards
+   set defaultValuesLst {}
+   set lockValues {}
    
    #----- Copy the range configs
    puts $FileID "\#----- Ranges"
    foreach rangeConfig [array names Range] {
-      if { [lsearch -exact [array names FieldList] $rangeConfig] < 0 } {
-         set rangeValues $Range($rangeConfig)
-         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
-         #TODO: remove
-         puts "set Range($rangeConfig) \{$rangeValues\}"
+      #----- Adding everything except default values
+      if { [lsearch -exact [array names FieldList] $rangeConfig] < 0} {
+         #----- Getting last letter index
+         set i [expr [string length $rangeConfig] -1]
+         
+         #----- Verify if range list or default value
+         if {[string index $rangeConfig $i] eq "s"} { 
+            set rangeValues $Range($rangeConfig)
+            puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+            
+         } elseif {[string first Lock $rangeConfig] > 0} {
+            #----- Add to lock values
+            lappend lockValues "set Range($rangeConfig) $Range($rangeConfig)"
+         
+         } else {
+            #----- Add to default values
+            lappend defaultValuesLst $rangeConfig
+         }
       }
+
    }
+   
+   #----- Write default values
+   APViz::WriteDefaultValues $Product $FileID $defaultValuesLst
+   
+   #----- Write Lock values
+   APViz::WriteLockValues $Product $FileID $lockValues 
 }
 
 #----------------------------------------------------------------------------
