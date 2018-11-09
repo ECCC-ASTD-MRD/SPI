@@ -1872,6 +1872,7 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
 
          // as long as the function is increasing or decreasing move along the y axe
          Def_GetMod(Field->Def,ip,zm);
+         
          idx=ip+Field->Def->NI;
          Def_GetMod(Field->Def,idx,zmm);
          high=(zm<=zmm);
@@ -1883,7 +1884,9 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
                zm=zn;
                continue;
             }
-
+            // Discard is nan or nodata
+            if (zm!=zm || zm==Field->Def->NoData) continue;
+            
             // check if it is really a max or a min over the chunk area
             j0=(jp-jchk<=0?0:jp-jchk);
             j1=(jp+jchk>=Field->Def->NJ-1?Field->Def->NJ-1:jp+jchk);
