@@ -2083,15 +2083,13 @@ proc APViz::FilePathDefine { Path } {
 proc APViz::GenerateConfigFile { Path } {
    variable Data
    variable DataSrc
-   
-   #TODO: remove
-   puts "GENERATING CONFIG FILE"
 
    if {[set product $Data(CurrentProduct)] ne ""} {
       variable ${product}::Value
       
       #----- Verify if colormaps have changed
       set colormapLst [APViz::ManageColormaps $product $Path]
+      #----- TODO: Manage modified colormaps for calcs
       
       #----- Get data from original config file
       set origFileID [open $Data(ConfigPath) r]
@@ -2132,7 +2130,7 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteLayers $product $fileID
       
       #----- New formula with newly attributes letters
-      #APViz::NewFormulaAttribution $Product 
+      APViz::NewFormulaAttribution $product 
       
       #----- Write CalcLayers
       puts -nonewline $fileID "\n"
@@ -2650,7 +2648,6 @@ proc APViz::NewLetterAttribution { Product } {
       if {[set rowID $Value(RowIDLayer$i)] >= 0} {
          set currentLetter $Value(Letter,$i)
          set Value(NewLetter,$i) [lindex $alphabet $i]
-         puts "For index $i new letter will be $Value(NewLetter,$i)"
          #---- Inserer la nouvelle valeur dans le OldToNewLetterDict -> key: old ,value: new
          dict set Data(NewAlphaDict) $currentLetter $Value(NewLetter,$i)
          incr alphaCount
@@ -2662,7 +2659,6 @@ proc APViz::NewLetterAttribution { Product } {
       if {[set rowID $Value(RowIDCalc$i)] >= 0} {
          set currentLetter $Value(CLetter,$i)
          set Value(CNewLetter,$i) [lindex $alphabet [expr $i + $alphaCount]]
-         puts "For index $i new letter will be $Value(CNewLetter,$i)"
          dict set Data(NewAlphaDict) $currentLetter $Value(CNewLetter,$i)
       }
    }
@@ -2687,27 +2683,32 @@ proc APViz::NewFormulaAttribution { Product } {
    variable Data
    
    set alphabet { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
-   
-   set alphaCount 0
-   #----- New letter attribution for 
-   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
-      if {[set rowID $Value(RowIDLayer$i)] >= 0} {
-         set currentLetter $Value(Letter,$i)
-         set Value(NewLetter,$i) [lindex $alphabet $i]
-         puts "For index $i new letter will be $Value(NewLetter,$i)"
-         #---- Inserer la nouvelle valeur dans le OldToNewLetterDict -> key: old ,value: new
-         dict set Data(NewAlphaDict) $currentLetter $Value(NewLetter,$i)
-         incr alphaCount
-      }
-   }
+   set formulaLetters {}
    
    #----- New letter attribution for calcLayers
    for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
       if {[set rowID $Value(RowIDCalc$i)] >= 0} {
-         set currentLetter $Value(CLetter,$i)
-         set Value(CNewLetter,$i) [lindex $alphabet [expr $i + $alphaCount]]
-         puts "For index $i new letter will be $Value(CNewLetter,$i)"
-         dict set Data(NewAlphaDict) $currentLetter $Value(CNewLetter,$i)
+         set currentFormula $Value(Formula,$i)
+         
+         #----- Sortir les lettres contenues dans la formule 
+         for {set j 0} {$j < [string length currentFormula]} {incr j} {
+            if {[lsearch -exact $alphabet [set letter [string index $currentFormula $j]]]} {
+               if {[lsearch -exact $formulaLetters $letter] == -1} {
+                  lappend formulaLetters $letter
+               }
+            }
+         }
+         
+         #---- For all letters in formula, replace with new letters
+         foreach formulaLetter $formulaLetters {
+            if {[lsearch -exact [dict keys $Data(NewAlphaDict)] $formulaLetter] >= 0} {
+               set newLetter [dict get $Data(NewAlphaDict) $formulaLetter]
+               regsub -all $formulaLetter $currentFormula $newLetter currentFormula
+            }
+
+         }
+         
+         set Value(NewAttributedFormula,$i) $currentFormula
       }
    }
 }
@@ -3440,7 +3441,7 @@ proc APViz::WriteCalcLayers { Product FileID } {
          set vp                 $Value(CalcVP,$i)
          
          #----- Get formula
-         set formula $Value(Formula,$i)
+         set formula $Value(NewAttributedFormula,$i)
          puts $FileID "   $toggle:$formula:$vp"
       }
    }
