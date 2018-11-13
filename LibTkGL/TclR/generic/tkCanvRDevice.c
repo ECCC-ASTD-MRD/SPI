@@ -24,7 +24,6 @@ typedef struct RDeviceItem  {
     Tk_Item     Header;     // Generic stuff that's the same for all types. MUST BE FIRST IN STRUCTURE
     void        *RDev;      // R Device (Volontarily opaque type)
     Tk_Canvas   Canv;       // Canvas containing the item
-    GC          GC;         // X Graphic Context
     Tk_Font     Font;       // Font for any text in the device
 } RDeviceItem;
 
@@ -119,7 +118,6 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     }
 
     // Initialize item's record.
-    rdv->GC = None;
     rdv->Canv = Canv;
     rdv->RDev = NULL;
 
@@ -140,7 +138,7 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
         goto error;
     }
 
-    // Make sure the XWindow exists (needed for the RDevice) instead of having to call "update ideltasks" in the tcl code
+    // Make sure the XWindow exists (needed for the RDevice) instead of having to call "update idletasks" in the tcl code
     Tk_MakeWindowExist(win);
 
     // Create the device in R
