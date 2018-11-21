@@ -45,18 +45,20 @@ namespace eval Grid {
    set Data(Color2)       red                        
    set Data(Color3)       yellow                        
    set Data(Color4)       green                         
- 
+   set Data(SavePath)     ""
+   
    colormap create GRID0; colormap control GRID0 -add 255 000 000 000 255; colormap control GRID0 -add 0 128 128 128 255
    colormap create GRID1; colormap control GRID1 -add 255 000 000 128 255; colormap control GRID1 -add 0 000 000 255 255
    colormap create GRID2; colormap control GRID2 -add 255 128 000 000 255; colormap control GRID2 -add 0 255 000 000 255
    colormap create GRID3; colormap control GRID3 -add 255 128 128 000 255; colormap control GRID3 -add 0 255 255 000 255
    colormap create GRID4; colormap control GRID4 -add 255 000 128 000 255; colormap control GRID3 -add 0 000 255 000 255
 
-   set Data(GenPhysX_Host)   ppp1
-   set Data(GenPhysX_Target) GDPS_5.1
-   set Data(GenPhysX_Time)   21600
-   set Data(GenPhysX_Memory) 100G
-   set Data(GenPhysX_CPU)    8
+   set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS_5.1 AURAMS }
+   set GenPhysX(Target)  GDPS_5.1
+   set GenPhysX(Host)    ppp1
+   set GenPhysX(Time)    21600
+   set GenPhysX(Memory)  100G
+   set GenPhysX(CPU)     8
    
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field

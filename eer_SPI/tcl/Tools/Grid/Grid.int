@@ -69,13 +69,14 @@ proc Grid::Window { } {
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.add -image GRIDADD -relief flat -bd 1 -overrelief raised -command { Grid::Add }
          button $Data(Tab).head.del -image GRIDDEL -relief flat -bd 1 -overrelief raised -command { Grid::Del }
-         button $Data(Tab).head.run -image GRIDRUN -relief flat -bd 1 -overrelief raised -command { Grid::Launch [FileBox::Create . "" Path {}] }
+         button $Data(Tab).head.load -image GRIDSAVE -relief flat -bd 1 -overrelief raised -command { Grid::ProjectLoad [FileBox::Create . "" Path {}] }
+         button $Data(Tab).head.save -image GRIDRUN -relief flat -bd 1 -overrelief raised -command { Grid::WindowSave }
          IcoMenu::Create $Data(Tab).head.size $GDefs(Dir)/share/bitmap \
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm fill.xbm" "0 1 2 3 4 5 6 7" \
                Grid::Data(GridSize) "Grid::ConfigSet" 0 -relief groove -bd 2
          IcoMenu::Set $Data(Tab).head.size $Data(GridSize)
          pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.del $Data(Tab).head.size -side left -padx 2
-         pack $Data(Tab).head.run -side right
+         pack $Data(Tab).head.save $Data(Tab).head.load -side right
       pack $Data(Tab).head -side top -fill x -padx 2 -pady 2
  
       Grid::Frame $Data(Tab) True
@@ -107,7 +108,7 @@ proc Grid::Window { } {
    set Data(GridId) MODELGRID$Data(GridNo)
    for { set i 0 } { $i<[llength $Data(GridParams)] } { incr i } { lappend grids $i }
    Option::Set $Data(Tab).grid.sel.no $grids
-   Grid::Settings
+   Grid::SettingsShow
    
    raise  .gridmaker
 }
@@ -186,16 +187,16 @@ proc Grid::Frame { Frame { Multi False } } {
       pack $Frame.grid.ll1.lbl $Frame.grid.ll1.lat $Frame.grid.ll1.lon -side left 
    frame $Frame.grid.ref
       label $Frame.grid.ref.lbl -text [lindex $Lbl(Reference) $GDefs(Lang)]
-      entry $Frame.grid.ref.latr -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(LatR) -width 8 -state disabled
-      entry $Frame.grid.ref.lonr -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(LonR) -width 9 -state disabled
+      spinbox $Frame.grid.ref.latr -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(LatR) -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Apply }
+      spinbox $Frame.grid.ref.lonr -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(LonR) -width 9 -from 0.0 -to 360.0 -increment 1.0 -command { Grid::Apply }
       pack $Frame.grid.ref.lbl $Frame.grid.ref.latr $Frame.grid.ref.lonr -side left
    frame $Frame.grid.mid
          label $Frame.grid.mid.lbl -text [lindex $Lbl(Center) $GDefs(Lang)]
          spinbox $Frame.grid.mid.xlat1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat1) -width 8 -width 8 -from -90.0 -to 90.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Apply }
          spinbox $Frame.grid.mid.xlon1 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLon1) -width 9 -from -180.0 -to 180.0 -increment 1.0 -command { Grid::Center $Grid::Param(XLat1) $Grid::Param(XLon1) False; Grid::Apply }
-         checkbutton $Frame.grid.mid.lock -image LINK -height 17 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorLight) \
-            -command {  } -variable Grid::Param(LockCenter) -onvalue True -offvalue False -indicatoron False
-         pack $Frame.grid.mid.lbl $Frame.grid.mid.xlat1 $Frame.grid.mid.xlon1 $Frame.grid.mid.lock -side left
+#         checkbutton $Frame.grid.mid.lock -image LINK -height 17 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorLight) \
+#            -command {  } -variable Grid::Param(LockCenter) -onvalue True -offvalue False -indicatoron False
+         pack $Frame.grid.mid.lbl $Frame.grid.mid.xlat1 $Frame.grid.mid.xlon1 -side left
    frame $Frame.grid.rot
          label $Frame.grid.rot.lbl -text [lindex $Lbl(RotLL) $GDefs(Lang)]
          entry $Frame.grid.rot.xlat2 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat2) -width 8 -state disabled
@@ -229,6 +230,43 @@ proc Grid::Frame { Frame { Multi False } } {
    Bubble::Create $Frame.grid.dim   $Bubble(Dimension)
 }
 
+proc Grid::WindowSave { } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable GenPhysX
+
+   toplevel     .gridmakersave -relief raised -bd 1
+   wm title     .gridmakersave [lindex $Lbl(Exec) $GDefs(Lang)]
+   wm protocol  .gridmakersave WM_DELETE_WINDOW { }
+#   wm resizable .gridmakersave 0 0
+   wm geom      .gridmakersave +[winfo rootx .gridmaker]+[winfo rooty .gridmaker]
+   wm transient .gridmakersave .gridmaker
+
+   labelframe .gridmakersave.physx -text "GenPhysX"
+      frame .gridmakersave.physx.target
+         label .gridmakersave.physx.target.lbl -text [lindex $Lbl(Target) $GDefs(Lang)] -width 12 -anchor w
+         ComboBox::Create .gridmakersave.physx.target.sel GenPhysX(Target) noedit sorted nodouble -1 $GenPhysX(Targets) 18 5 {}
+         pack .gridmakersave.physx.target.lbl -side left 
+         pack .gridmakersave.physx.target.sel -side left -fill x -expand True
+      pack .gridmakersave.physx.target -side top -fill x -expand True
+
+   labelframe .gridmakersave.path -text [lindex $Lbl(Path) $GDefs(Lang)]
+      label .gridmakersave.path.lbl -text [lindex $Lbl(Path) $GDefs(Lang)] -width 12 -anchor w
+      entry .gridmakersave.path.ent -textvariable Grid::Data(SavePath) -bg $GDefs(ColorLight)
+      button .gridmakersave.path.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised -command { set Grid::Data(SavePath) [FileBox::Create . "" Path {}] }
+      pack .gridmakersave.path.lbl -side left 
+      pack .gridmakersave.path.ent -side left -fill x -expand True
+      pack .gridmakersave.path.sel -side left 
+   
+   frame .gridmakersave.cmd -relief sunken -bd 1
+      button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { Grid::ProjectSave $Grid::Data(SavePath) }
+      button .gridmakersave.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { destroy .gridmakersave }
+      pack .gridmakersave.cmd.go .gridmakersave.cmd.cancel -side left -fill x -expand True
+      
+   pack .gridmakersave.physx .gridmakersave.path .gridmakersave.cmd -padx 5 -pady 5 -side top -fill x -expand True
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <Grid::WindowSet>
 # Creation : Juin 2015 - J.P. Gauthier - CMC/CMOE
@@ -257,8 +295,10 @@ proc Grid::WindowSet { Frame } {
    $Frame.dim.nj    configure -state normal 
    $Frame.mid.xlat1 configure -state disabled 
    $Frame.mid.xlon1 configure -state disabled
-   $Frame.mid.lock  configure -state disabled
+#   $Frame.mid.lock  configure -state disabled
    $Frame.rot.angle configure -state disabled
+   $Frame.ref.latr  configure -state disabled 
+   $Frame.ref.lonr  configure -state disabled 
    
    switch $Param(Type) {
       "PS"   - 
@@ -270,7 +310,10 @@ proc Grid::WindowSet { Frame } {
                   $Frame.rot.angle configure -state normal
                   $Frame.mid.xlat1 configure -state normal
                   $Frame.mid.xlon1 configure -state normal
-                  $Frame.mid.lock  configure -state normal
+#                  $Frame.mid.lock  configure -state normal
+               } else {
+                  $Frame.ref.latr  configure -state normal
+                  $Frame.ref.lonr  configure -state normal
                }
              }
       "UTM"  { $Frame.dim.ni configure -state disabled 

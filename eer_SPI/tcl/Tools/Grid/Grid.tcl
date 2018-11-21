@@ -93,6 +93,7 @@ proc Grid::Add { } {
    }
    
    set Data(GridNo) [llength $Data(GridParams)]
+   set Data(GridId) MODELGRID$Data(GridNo)
    lappend Data(GridParams) [array get Grid::Param]
 
    set Param(LockCenter) [expr $Data(GridNo)>0?True:False]
@@ -104,11 +105,16 @@ proc Grid::Add { } {
    Grid::Create $Data(GridId)
 }
 
-proc Grid::Del { } {
+proc Grid::Del { { All False } } {
    variable Param
    variable Data
    
-   if { [llength $Data(GridParams)]>1 } {
+   if { $All } {
+      set Data(GridParams) {}
+      set Data(GridNo) 0
+      Viewport::UnAssign $Data(Frame) $Data(VP)
+      Option::Set $Data(Tab).grid.sel.no {}
+   } elseif { [llength $Data(GridParams)]>1 } {
       Viewport::UnAssign $Data(Frame) $Data(VP) $Data(GridId)
       set Data(GridParams) [lreplace $Data(GridParams) $Data(GridNo) $Data(GridNo)]
 
@@ -263,7 +269,7 @@ proc Grid::Center { Lat Lon { Update True } } {
              }
    }
 
-   if { $Update} {
+   if { $Update } {
       Grid::Create $Data(GridId) 
    }
 }
@@ -286,10 +292,15 @@ proc Grid::Center { Lat Lon { Update True } } {
 proc Grid::BBoxOrder { } {
 
    uplevel {
-      set Lat0 [expr $Lat0+$Param(LatM)]
-      set Lon0 [expr $Lon0+$Param(LonM)]
-      set Lat1 [expr $Lat1+$Param(LatM)]
-      set Lon1 [expr $Lon1+$Param(LonM)]
+      if { $Data(GridNo)>0 } {
+         set LatR [expr $LatR+$Param(LatM)]
+         set LonR [expr $LonR+$Param(LonM)]
+      } else {
+         set Lat0 [expr $Lat0+$Param(LatM)]
+         set Lon0 [expr $Lon0+$Param(LonM)]
+         set Lat1 [expr $Lat1+$Param(LatM)]
+         set Lon1 [expr $Lon1+$Param(LonM)]
+      }
 
       if { $Lat1<$Lat0 } {
          set tmp $Lat0
@@ -303,8 +314,9 @@ proc Grid::BBoxOrder { } {
          set Lon1 $tmp
       }
             
-      #----- If this is a cascaded grid, store the size differences
+      #----- If this is a cascaded grid
       if { [set idx [lsearch $Grid::Data(GridParams) $Grid::Data(GridNo)]]>0 } {
+         #----- Store the size differences
          array set grid [lindex $Grid::Data(GridParams) [expr $idx-1]]
          set Param(LatD0) [expr $Lat0-$grid(Lat0)]
          set Param(LatD1) [expr $Lat1-$grid(Lat1)]
@@ -361,11 +373,24 @@ proc Grid::NIJ { } {
             if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResM)+1] }
 
             if { $Data(GridNo)>$Data(GridDepend) } {
-               set Param(NI) [expr ($spi+$Param(DNI))/$Param(ResM)]
-               set Param(NJ) [expr ($spj+$Param(DNJ))/$Param(ResM)]
+               set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResM))]
+               set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResM))]
             } else {
                set Param(DNI) [expr $si - $spi]
                set Param(DNJ) [expr $sj - $spj]
+            }
+            
+            #----- Check LatR,LonR translations
+            if { $LatR!=0.0 || $LonR!=180.0 } {
+               set plat0 [expr $gridp(Lat0)+$gridp(LatR)]
+               set plon0 [expr $gridp(Lon0)+($gridp(LonR)-180)]
+               set plat1 [expr $gridp(Lat1)+$gridp(LatR)]
+               set plon1 [expr $gridp(Lon1)+($gridp(LonR)-180)]
+               
+               if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
+               if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
+               if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
+               if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
             }
          }
 
@@ -373,15 +398,34 @@ proc Grid::NIJ { } {
          set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Res]]
          set Param(Lon1) [set Lon1 [expr $Lon0+$Param(NI)*$Res]]
       }
+      
       set Param(XLat1) [expr ($Lat0+$Lat1)*0.5]
       set Param(XLon1) [expr ($Lon0+$Lon1)*0.5]
    }
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Grid::Apply>
+# Creation : November 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Apply parameters to the grid and it's dependencies
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
 proc Grid::Apply { } {
+   variable Param
+
    Grid::Create $Grid::Data(GridId)
+   set Param(LatM) 0
+   set Param(LonM) 0
    Grid::Cascade
-   Grid::Settings
+   Grid::SettingsShow
 }
 
 proc Grid::Cascade { } {
@@ -410,6 +454,85 @@ proc Grid::Cascade { } {
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Grid::SettingsRead>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Read a gem settings file 
+#
+# Parametres :
+#    <File>  : Path to gem settings file
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::SettingsRead { File } {
+   variable Settings
+
+   if { $File=="" } {
+      return
+   }
+
+   if { ![file exists $File] } {
+      Log::Print WARNING "Could not find the namelist $File"
+      return
+   }
+   
+   array unset Settings
+
+   set f [open $File r]
+   while { ![eof $f] } {
+      gets $f line
+
+      #----- Check for block beginning
+      set tok [string index [string trimleft $line] 0]
+      if { $tok=="&" || $tok=="$" } {
+         gets $f line
+
+         #----- While not at a block end
+         set char [string index [string trimleft $line] 0]
+         while { $char!="/" && $char!="$" && $char!="&" && ![eof $f] } {
+
+            #----- Insert all settings in Settings array
+            foreach item [split $line ,] {
+               if { [string trim $item]!="" } {
+
+                  #----- Get the token name if not an array of values
+                  if { [llength [set item [split $item =]]]==2 } {
+                     set token [string toupper [string trim [lindex $item 0]]]
+                  }
+                  lappend Settings($token) [string map -nocase { "'" "" ".true." "True" .false. "False" } [string trim [lindex $item end]]]
+               }
+            }
+            gets $f line
+            set char [string index [string trimleft $line] 0]
+         }
+      }
+   }
+   close $f
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Grid::SettingsBuild>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Build the gem settings strings for the Grd and optional Grdc 
+#
+# Parametres :
+#    <Params>: Grid parameters
+#    <C>     : Generate Grdc string
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
 proc Grid::SettingsBuild { Params { C False } } {
    
    array set param $Params
@@ -419,8 +542,8 @@ proc Grid::SettingsBuild { Params { C False } } {
   Grdc_ni     = %i, Grdc_nj     = %i,
   Grdc_dx     = %.4f, Grdc_dy     = %.4f,
   Grdc_lonr   = %9.4f, Grdc_latr  = %8.4f,
-  Grdc_maxcfl = %i\n" \
-  Grdc_nbits  = \n" \
+  Grdc_maxcfl = %i \
+  Grdc_nbits  = \
   Grdc_nfe    = \n" \
          $param(NI) $param(NJ) $param(ResLL) $param(ResLL) $param(LonR) $param(LatR) $param(MaxCFL)]
                    } else {      
@@ -438,7 +561,23 @@ proc Grid::SettingsBuild { Params { C False } } {
    }
 }
 
-proc Grid::Settings { } {
+#----------------------------------------------------------------------------
+# Nom      : <Grid::SettingsShow>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Generate the gem settings and show them in the interface 
+#
+# Parametres :
+#    <Path>  : Tree path
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::SettingsShow { } {
    variable Param
    variable Data
    
@@ -449,43 +588,128 @@ proc Grid::Settings { } {
    }
 }
 
-proc Grid::Launch { Path } {
+#----------------------------------------------------------------------------
+# Nom      : <Grid::ProjectSave>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Save grid information and GenPhysX job to a modeling tree 
+#
+# Parametres :
+#    <Path>  : Tree path
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::ProjectSave { Path } {
    variable Data
 
    if { $Path=="" } {
       return
    }
    
-   #----- Create job file
-   set f [open ${Path}/jobfile.sh w 0755]
-   puts $f "#!/bin/bash"
-
    set no    [llength $Data(GridParams)]
    set gridc {}
    foreach grid $Data(GridParams) {
-   
+      array set param $grid
+      
+      #----- Figure out the extension in km (ex: 1p0 2p5 0p25)
+      set resk [format "%.2f" [expr $param(ResM)/1000.0]]
+      if { [expr $resk-floor($resk)]==0 } {
+         set res [expr int(floor($resk))]p0
+      } else {
+         set res [string trimright [string map { . p } $resk] 0]
+      }
+      file mkdir $Path/$res/
+      
       #----- Write namelist grid and gridc
-      exec echo [Grid::SettingsBuild $grid] > ${Path}/grid$no.nml
+      exec echo [Grid::SettingsBuild $grid] > $Path/$res/gem_settings.nml
       if { [llength $gridc] } {
-         exec echo [Grid::SettingsBuild $gridc True] >> ${Path}/grid$no.nml     
+         exec echo [Grid::SettingsBuild $gridc True] >> $Path/$res/gem_settings.nml     
       }
       set gridc $grid
       
       #----- Write RPN grid file
-      file delete -force ${Path}/grid$no.fstd 
-      fstdfile open FILE write ${Path}/grid$no.fstd 
+      file delete -force $Path/$res/grid.fstd 
+      fstdfile open FILE write $Path/$res/grid.fstd 
       Grid::Write FILE MODELGRID[expr $no-1]
       fstdfile close FILE
 
-      #----- Add GenphysX call
-      puts $f "GenPhysX -gridfile ${Path}/grid$no.fstd -target $Data(GenPhysX_Target) -result ${Path}/geo$no -batch -mach $Data(GenPhysX_Host) -t $Data(GenPhysX_Time) -cm $Data(GenPhysX_Memory) -cpus $Data(GenPhysX_CPU) &"
-     
+      #----- Create GenphysX job file
+      set f [open $Path/$res/geophy.sh w 0755]
+      puts $f "#!/bin/bash"
+      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target $GenPhysX(Target) -result $Path/$res/geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU) &"
+      close $f
+      
       incr no -1
-   }
-   
-   close $f
+   } 
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <Grid::ProjectLoad>
+# Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Load grid information from a modeling tree
+#
+# Parametres :
+#    <Path>  : Tree path
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::ProjectLoad { Path } {
+   variable Data
+   variable Param
+   variable Settings
+
+   if { $Path=="" } {
+      return
+   }
+   
+   Grid::Del True
+   
+   foreach path [lsort -increasing [glob -nocomplain $Path/*p*]] {
+      Log::Print INFO "Loading $path"
+      if { [file exists $path/gem_settings.nml] } {
+         Grid::SettingsRead $path/gem_settings.nml
+#???         Grd_iref   = 675      ,     Grd_jref  = 600
+
+         set Param(Type)   ZE
+         set Param(NI)     $Settings(GRD_NI)
+         set Param(NJ)     $Settings(GRD_NJ)
+         set Param(ResLL)  $Settings(GRD_DX)
+         set Param(ResLL)  $Settings(GRD_DY)
+         set Param(LonR)   $Settings(GRD_LONR)
+         set Param(LatR)   $Settings(GRD_LATR)
+         set Param(XLon1)  $Settings(GRD_XLON1)
+         set Param(XLat1)  $Settings(GRD_XLAT1)
+         set Param(XLon2)  $Settings(GRD_XLON2)
+         set Param(XLat2)  $Settings(GRD_XLAT2)
+         set Param(MaxCFL) $Settings(GRD_MAXCFL)
+         
+         set Param(ResM)  [expr $Param(ResLL)*$Param(LL2M)]
+         set Param(Lat0)  [expr $Param(XLat1)-($Param(NJ)*$Param(ResLL)*0.5)]
+         set Param(Lon0)  [expr $Param(XLon1)-($Param(NI)*$Param(ResLL)*0.5)]
+         set Param(Lat1)  [expr $Param(XLat1)+($Param(NJ)*$Param(ResLL)*0.5)]
+         set Param(Lon1)  [expr $Param(XLon1)+($Param(NI)*$Param(ResLL)*0.5)]
+
+         Grid::Add
+      }
+   }
+   
+   #----- Select 1st grid to start with
+   set Data(GridNo) 0
+   Grid::Switch
+   
+   Viewport::GoTo $Data(Frame) $Param(XLat1) $Param(XLon1)
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::Create>
@@ -523,7 +747,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
          "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResM) $Param(NI) $Param(NJ) $ID }
          "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
          "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
-         "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $Param(Angle) $ID }
+         "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(LatR) $Param(LonR) $Param(ResLL) $Param(Angle) $ID }
          "UTM"   { Grid::CreateUTM $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLL) $ID }
       }
       set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResM) $Param(ResLL)]
@@ -797,7 +1021,7 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 Res { ID MODELGRID } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check True } } {
+proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR Res Angle { ID MODELGRID } { Check True } } {
    variable Param
    variable Data
 
@@ -815,14 +1039,14 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check Tru
    
    #----- Create the grid 
    catch { georef create ${ID} }
-   georef define ${ID} -rpn $Param(NI) $Param(NJ) $Res $Res $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2) $Param(MaxCFL)
+   georef define ${ID} -rpn $Param(NI) $Param(NJ) $Res $Res $Param(XLat1) $Param(XLon1) $Param(XLat2) $Param(XLon2) $LatR $LonR $Param(MaxCFL)
 
    #----- Get size, it is possible that the grid build algorithm adjusts the nixnj
    set sz [georef define ${ID} -size]
    set ni [lindex $sz 0]
    set nj [lindex $sz 1]
    set Param(Extend) [expr $ni-$Param(NI)]
-   
+  
    fstdfield create ${ID} $ni $nj 1 $Param(Data)
    fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
@@ -830,6 +1054,7 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 Res Angle { ID MODELGRID } { Check Tru
    set dni [expr $ni-$d]
    set dnj [expr $nj-$d]
    
+   #----- Mark the inside grid
    vexpr - ${ID}(($d,$dni),($d,$dnj))=1
    
    set Param(PGSM) ""
@@ -994,42 +1219,46 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { ETIKET GRID } { Grid 
 #
 #----------------------------------------------------------------------------
 
-proc Grid::MoveInit { Canvas VP } {
+proc Grid::MoveInit { Canvas VP { Modifier "" } } {
    variable Data
    
    set Data(VP)     $VP
 }
 
-proc Grid::Move { Frame VP } {
+proc Grid::Move { Frame VP { Modifier "" } } {
    variable Sim
    variable Param
    variable Data
 
-   if { !$Param(LockCenter) } {
-      set Data(VP)    $VP
+   set Data(VP)    $VP
 
-      set Param(LatM) $Viewport::Map(LatD)
-      set Param(LonM) $Viewport::Map(LonD)
+   set Param(LatM) $Viewport::Map(LatD)
+   set Param(LonM) $Viewport::Map(LonD)
 
-      Grid::Apply 
-   }
+   Grid::Apply 
 }
 
-proc Grid::MoveDone { Canvas VP } {
+proc Grid::MoveDone { Canvas VP { Modifier "" } } {
    variable Param
    variable Data
    
    set Data(VP)    $VP
 
-   set Param(Lat0) [expr $Param(Lat0)+$Param(LatM)]
-   set Param(Lon0) [expr $Param(Lon0)+$Param(LonM)]
-   set Param(Lat1) [expr $Param(Lat1)+$Param(LatM)]
-   set Param(Lon1) [expr $Param(Lon1)+$Param(LonM)]
+   if { $Data(GridNo)>0 } {
+      set Param(LatR) [expr $Param(LatR)+$Param(LatM)]
+      set Param(LonR) [expr $Param(LonR)+$Param(LonM)]
+   } else {
+      set Param(Lat0) [expr $Param(Lat0)+$Param(LatM)]
+      set Param(Lon0) [expr $Param(Lon0)+$Param(LonM)]
+      set Param(Lat1) [expr $Param(Lat1)+$Param(LatM)]
+      set Param(Lon1) [expr $Param(Lon1)+$Param(LonM)]
+   }
+   
    set Param(LatM) 0
    set Param(LonM) 0
 }
 
-proc Grid::DrawInit { Canvas VP } {
+proc Grid::DrawInit { Canvas VP { Modifier "" } } {
    variable Param
    variable Data
    
@@ -1039,7 +1268,7 @@ proc Grid::DrawInit { Canvas VP } {
    set Param(Lon0) $Viewport::Map(LonCursor)
 }
 
-proc Grid::Draw     { Canvas VP } {
+proc Grid::Draw     { Canvas VP { Modifier "" } } {
    variable Param
    variable Data
    
@@ -1056,7 +1285,7 @@ proc Grid::Draw     { Canvas VP } {
    Grid::Apply 
 }
 
-proc Grid::DrawDone { Canvas VP } {
+proc Grid::DrawDone { Canvas VP { Modifier "" } } {
    variable Param
    variable Data
    
@@ -1129,6 +1358,8 @@ proc Grid::UpdateItems { Frame } {
          $Data(Tab).grid.ll1.lon configure -increment $d
          $Data(Tab).grid.mid.xlat1 configure -increment $d
          $Data(Tab).grid.mid.xlon1 configure -increment $d
+         $Data(Tab).grid.ref.latr configure -increment $d
+         $Data(Tab).grid.ref.lonr configure -increment $d
       }
       
 #      Viewport::DrawRange $Data(Frame) $Data(VP) $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) GRIDMAKER red

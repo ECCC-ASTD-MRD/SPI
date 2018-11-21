@@ -38,6 +38,11 @@ namespace eval Grid {
    set Lbl(LL0)        { "Premier coin      " "First corner      " }
    set Lbl(LL1)        { "Deuxième coin     " "Second corner     " }
    set Lbl(MaxCFL)     { "MaxCFL            " "MaxCFL            " }
+   set Lbl(Exec)       { "Paramètres d'exécution" "Execution parameters" }
+   set Lbl(Cancel)     { "Annuler" "Cancel" }
+   set Lbl(Launch)     { "Lancer" "Launch" }
+   set Lbl(Target)     { "Cible" "Target" }
+   set Lbl(Path)       { "Répertoire" "Directory" }
 
    #----- Messages
 
