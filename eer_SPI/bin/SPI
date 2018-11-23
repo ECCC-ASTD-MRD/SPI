@@ -18,7 +18,7 @@ do
    if [[ $flag = "-batch" ]]
    then
       XVFB=1
-      [[ -v vg ]] || SOFT=1
+      [[ -n $vg ]] || SOFT=1
    fi
 
    if [[ $flag = "-soft" ]]
@@ -71,7 +71,17 @@ fi
 #----- Let's start up the software
 if [[ $XVFB -eq 1 ]]
 then
-   exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+   if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so ]]; then
+      #----- If Xorg's dummy driver is present (TODO: need a unique number for cluster with containers instead of $$)
+      Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile $TMPDIR/xorg-spi$$.log -config ${SPI_PATH}/share/xorg/xorg.conf :$$ &
+      xpid=$!
+      export DISPLAY=:$$
+      ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+      kill -9 $xpid
+   else 
+      #----- Otherwise use the old Xvfb
+      exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+   fi
 else
    exec ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
 fi

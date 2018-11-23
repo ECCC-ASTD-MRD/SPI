@@ -720,8 +720,8 @@ proc APViz::Source { Path Widget } {
                }
             }
          }
-         SPI::LayoutLoad ${::APViz::Data(Frame)} $layout
-
+         SPI::LayoutLoad $APViz::Data(Frame) $layout
+         ProjCam::Select $APViz::Data(Frame) $APViz::Data(Frame) $Param(Camera) True
          foreach icon $Param(Icons) {
             eval SPI::IcoOpen $icon
          }
@@ -2089,6 +2089,7 @@ proc APViz::GenerateConfigFile { Path } {
       
       #----- Verify if colormaps have changed
       set colormapLst [APViz::ManageColormaps $product $Path]
+      #----- TODO: Manage modified colormaps for calcs
       
       #----- Get data from original config file
       set origFileID [open $Data(ConfigPath) r]
@@ -2112,7 +2113,10 @@ proc APViz::GenerateConfigFile { Path } {
       APViz::WriteCameraConfigs $fileID
       APViz::WriteProjectionConfigs $fileID
       APViz::WriteViewportConfigs $product $fileID
-
+      
+      #----- New letter attribution (Letters will be attributed in different order when config file is read)
+      APViz::NewLetterAttribution $product 
+      
       #----- Variable Style Configs
       puts -nonewline $fileID "\n"
       APViz::WriteVariableConfigs $product $fileID [lrange $origData $styleStartIndex [expr $rangeStartIndex - 1]]  $colormapLst
@@ -2124,7 +2128,10 @@ proc APViz::GenerateConfigFile { Path } {
       #----- Write Layers
       puts -nonewline $fileID "\n"
       APViz::WriteLayers $product $fileID
-            
+      
+      #----- New formula with newly attributes letters
+      APViz::NewFormulaAttribution $product 
+      
       #----- Write CalcLayers
       puts -nonewline $fileID "\n"
       APViz::WriteCalcLayers $product $fileID
@@ -2341,18 +2348,33 @@ proc APViz::GetTreeId { Tree Branch Leaf } {
 #
 #----------------------------------------------------------------------------
 
-proc APViz::GetVariableConfigs { Product ColorMaps } {
+proc APViz::GetVariableConfigs { Product ColorMaps {IsLayer True}} {
    variable Data
    variable ${Product}::Value
 
    set configLst {}
+   if {$IsLayer} {
+      set nbLayers $Value(NbLayers)
+      set idLst LayerIDs
+      set letterLst NewLetter
+      set rowLst RowIDLayer
+   } else {
+      set nbLayers $Value(NbCalcLayers)
+      set var CALC
+      set idLst CalcIDs
+      set letterLst CNewLetter
+      set rowLst RowIDCalc
+   }
 
-   for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
-      if { [set rowID $Value(RowIDLayer$i)] >= 0 } {
-         set var $Value(Vars,$i)
-         set level $Value(Levels,$i)
-         set ID [lindex $Data(LayerIDs) $rowID]
-         set alpha $Value(Letter,$i)
+   for { set i 0 } { $i < $nbLayers } { incr i } {
+      if { [set rowID $Value(${rowLst}$i)] >= 0 } {
+         if {$IsLayer} {
+            set var $Value(Vars,$i)
+            set level $Value(Levels,$i)
+         }
+
+         set ID [lindex $Data(${idLst}) $rowID]
+         set alpha $Value(${letterLst},$i)
 
          
          #---- Set command depending on type
@@ -2371,7 +2393,13 @@ proc APViz::GetVariableConfigs { Product ColorMaps } {
 
          foreach param $paramLst {
             if { $param eq "colormap" } {
-               set value [lindex $ColorMaps $Value(RowIDLayer$i)]
+               if {$IsLayer} {
+                  set value [lindex $ColorMaps $Value(RowIDLayer$i)]
+               } else {
+                  #---- TODO: Manage colormap modif for calc layers too
+                  set value [fstdfield configure $ID -$param]
+               }
+               
             } else {
                if { $isFstdField } {
                   set value [fstdfield configure $ID -$param]
@@ -2596,6 +2624,96 @@ proc APViz::MoveDone { Frame VP } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <APViz::NewLetterAttribution>
+# Creation : Novembre 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer de nouvelles lettres avant l'ecriture du fichier de confi
+#
+# Parametres :
+#   <Product>  : Identificateur du produit
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::NewLetterAttribution { Product } {
+   variable ${Product}::Value
+   variable Data
+   
+   set alphabet { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   
+   set alphaCount 0
+   #----- New letter attribution for 
+   for {set i 0} {$i < $Value(NbLayers)} {incr i} {
+      if {[set rowID $Value(RowIDLayer$i)] >= 0} {
+         set currentLetter $Value(Letter,$i)
+         set Value(NewLetter,$i) [lindex $alphabet $i]
+         #---- Inserer la nouvelle valeur dans le OldToNewLetterDict -> key: old ,value: new
+         dict set Data(NewAlphaDict) $currentLetter $Value(NewLetter,$i)
+         incr alphaCount
+      }
+   }
+   
+   #----- New letter attribution for calcLayers
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $Value(RowIDCalc$i)] >= 0} {
+         set currentLetter $Value(CLetter,$i)
+         set Value(CNewLetter,$i) [lindex $alphabet [expr $i + $alphaCount]]
+         dict set Data(NewAlphaDict) $currentLetter $Value(CNewLetter,$i)
+      }
+   }
+}
+
+
+#-------------------------------------------------------------------------------
+# Nom      : <APViz::NewFormulaAttribution>
+# Creation : Novembre 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Attribuer de nouvelles lettres avant l'ecriture du fichier de confi
+#
+# Parametres :
+#   <Product>  : Identificateur du produit
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc APViz::NewFormulaAttribution { Product } {
+   variable ${Product}::Value
+   variable Data
+   
+   set alphabet { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   set formulaLetters {}
+   
+   #----- New letter attribution for calcLayers
+   for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
+      if {[set rowID $Value(RowIDCalc$i)] >= 0} {
+         set currentFormula $Value(Formula,$i)
+         
+         #----- Sortir les lettres contenues dans la formule 
+         for {set j 0} {$j < [string length currentFormula]} {incr j} {
+            if {[lsearch -exact $alphabet [set letter [string index $currentFormula $j]]]} {
+               if {[lsearch -exact $formulaLetters $letter] == -1} {
+                  lappend formulaLetters $letter
+               }
+            }
+         }
+         
+         #---- For all letters in formula, replace with new letters
+         foreach formulaLetter $formulaLetters {
+            if {[lsearch -exact [dict keys $Data(NewAlphaDict)] $formulaLetter] >= 0} {
+               set newLetter [dict get $Data(NewAlphaDict) $formulaLetter]
+               regsub -all $formulaLetter $currentFormula $newLetter currentFormula
+            }
+
+         }
+         
+         set Value(NewAttributedFormula,$i) $currentFormula
+      }
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <APViz::PageActivate>
 # Creation : Octobre 2003 - J.P. Gauthier - CMC/CMOE
 #
@@ -2698,6 +2816,7 @@ proc APViz::ReinitializeVP { } {
    set Data(RangeNames) ""
    set Data(Ranges) ""
    set Data(AlphaDict) ""
+   set Data(NewAlphaDict) ""
    
    foreach column $Data(ColNames) {
       dict lappend Data(RangeNames) $column NONE
@@ -3316,19 +3435,19 @@ proc APViz::WriteCalcLayers { Product FileID } {
 
    puts $FileID "\#----- CalcLayers (On:FormulaName:VP)"
    puts $FileID "set CalcLayers \{"
-   
-   #----- CalcLayers (On:FormulaName:A_rowNb:B_rowNb:VP)
+   #----- CalcLayers (On:Formula:VP)
    for {set i 0} {$i < $Value(NbCalcLayers)} {incr i} {
       if {[set rowID $Value(RowIDCalc$i)] >= 0} {
          #----- Get all params
          set toggle             $Value(CalcToggle,$i)
          set vp                 $Value(CalcVP,$i)
          
-         #----- Get formula name from formula
-         set formulaName [APViz::GetFormulaName $Value(Formula,$i)]
-         puts $FileID "   $toggle:$formulaName:$vp"
+         #----- Get formula
+         set formula $Value(NewAttributedFormula,$i)
+         puts $FileID "   $toggle:$formula:$vp"
       }
    }
+   
    puts $FileID "\}"
 }
 
@@ -3380,6 +3499,72 @@ proc APViz::WriteConfigSection { FileID DataSource } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <APViz::WriteDefaultValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      : Recuperer les valeurs de defaut et les ecrire dans le fichier
+#            de config
+#
+# Parametres    :
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#       <DataSource> : Liste contenant le contenu du fichier de config source
+#       <StartIndex> : Index a partir duquel copier les lignes dans le nouveau fichier
+#       <EndIndex>   : Index de la derniere ligne a recopier dans le nouveau fichier
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::GetValueTypeWithLayerIndex { Index } {
+   switch $Index {
+      "0"       { return Toggle }
+      "1"       { return Models }
+      "2"       { return Runs   }
+      "3"       { return Hours  }
+      "4"       { return Sources }
+      "5"       { return Vars   }
+      "6"       { return Levels }
+      default   { puts "Value type not found for $Index"; return }
+   }
+}
+
+proc APViz::WriteDefaultValues { Product FileID DefaultTypeLst } { 
+   variable ${Product}::Value
+   variable ${Product}::Range
+   variable ${Product}::Layers
+
+   #----- Avec la liste de ranges de valeurs de defaut, verifier si une valeur de defaut a ete modifiee, sinon, l'ajouter telle quelle 
+   puts -nonewline $FileID "\n"
+   puts $FileID "\#----- Default Values"
+   foreach defaultType $DefaultTypeLst {
+      #----- Verify if rangeType used in layer
+      set rangeType <${defaultType}s>
+      set defaultValue $Range($defaultType)
+         
+      #----- In all layers, verify if range was used      
+      for { set i 0 } { $i < $Value(NbLayers) } { incr i } {
+         if {$Value(RowIDLayer$i)>=0} {
+            set optIndex 0
+            foreach opt [split [lindex $Layers $i] :] {
+               if {[string equal $rangeType $opt]} {
+                  #----- Get type of value
+                  set valueType [APViz::GetValueTypeWithLayerIndex $optIndex]
+                  #----- Get default value
+                  set defaultValue $Value($valueType,$i)
+               }
+               incr optIndex
+            } 
+         }
+      }
+      
+      #----- Write to config file
+      puts $FileID "set Range($defaultType) \{$defaultValue\}"
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <APViz::WriteLayers>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
@@ -3408,6 +3593,33 @@ proc APViz::WriteLayers { Product FileID } {
       }
    }
    puts $FileID "\}"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <APViz::WriteLockValues>
+# Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
+#
+# But      :    Recupere les parametres de verrou et les ecrire dans le 
+#               fichier de config
+#
+# Parametres    :
+#       <Product>  : Le nom du produit selectionne (aussi le namespace) 
+#       <FileID>     : Identifiant du fichier dans lequel ecrire
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc APViz::WriteLockValues { Product FileID LockValues } {
+   variable ${Product}::Value
+   
+   puts -nonewline $FileID "\n"
+   puts $FileID "\#----- Locked values"
+   foreach lockValue $LockValues {
+      puts $FileID $lockValue
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -3447,7 +3659,8 @@ proc APViz::WriteProjectionConfigs { FileID } {
 # Nom      : <APViz::WriteRanges>
 # Creation : Juillet 2018 - C. Nguyen - CMC/CMOE
 #
-# But      : Ecrire la section des ranges dans le fichier de config
+# But      : Ecrire la section des ranges dans le fichier de config - s'occupe
+#            aussi a ecrire les baleurs par defaut.
 #
 # Parametres    :
 #       <Product>     : Le nom du produit selectionne (aussi le namespace) 
@@ -3462,15 +3675,40 @@ proc APViz::WriteProjectionConfigs { FileID } {
 proc APViz::WriteRanges { Product FileID } {
    variable ${Product}::Range
    variable FieldList
+   #----- Copy default and lock values afterwards
+   set defaultValuesLst {}
+   set lockValues {}
    
    #----- Copy the range configs
    puts $FileID "\#----- Ranges"
    foreach rangeConfig [array names Range] {
-      if { [lsearch -exact [array names FieldList] $rangeConfig] < 0 } {
-         set rangeValues $Range($rangeConfig)
-         puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+      #----- Adding everything except default values
+      if { [lsearch -exact [array names FieldList] $rangeConfig] < 0} {
+         #----- Getting last letter index
+         set i [expr [string length $rangeConfig] -1]
+         
+         #----- Verify if range list or default value
+         if {[string index $rangeConfig $i] eq "s"} { 
+            set rangeValues $Range($rangeConfig)
+            puts $FileID "set Range($rangeConfig) \{$rangeValues\}"
+            
+         } elseif {[string first Lock $rangeConfig] > 0} {
+            #----- Add to lock values
+            lappend lockValues "set Range($rangeConfig) $Range($rangeConfig)"
+         
+         } else {
+            #----- Add to default values
+            lappend defaultValuesLst $rangeConfig
+         }
       }
+
    }
+   
+   #----- Write default values
+   APViz::WriteDefaultValues $Product $FileID $defaultValuesLst
+   
+   #----- Write Lock values
+   APViz::WriteLockValues $Product $FileID $lockValues 
 }
 
 #----------------------------------------------------------------------------
@@ -3495,6 +3733,11 @@ proc APViz::WriteVariableConfigs { Product FileID DataSource ColormapLst } {
    #----- Get current configs
    puts $FileID "\#----- Variable Style Configurations"
    set configLst [APViz::GetVariableConfigs $Product $ColormapLst]
+   set calcConfigLst [APViz::GetVariableConfigs $Product $ColormapLst False]
+   
+   foreach calcConfig $calcConfigLst {
+      lappend configLst $calcConfig
+   }
    
    foreach config $configLst {
       puts $FileID $config
