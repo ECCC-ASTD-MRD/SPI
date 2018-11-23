@@ -38,7 +38,7 @@ if [ ! -d "\${GDB_PATH}" ]; then
       export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
    else
       #----- On the EC side
-      export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo
+      export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
    fi
 fi
 
@@ -72,7 +72,7 @@ if [ -z \${GDB_PATH} ]; then
       setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
    else
       #----- On the EC side
-      setenv GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
+      setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
    fi
 fi
 
