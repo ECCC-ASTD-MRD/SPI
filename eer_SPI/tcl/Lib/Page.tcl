@@ -1030,6 +1030,16 @@ proc Page::ModeData { Frame VP } {
    $c bind PAGE$VP <B2-Motion>       "set Viewport::Map(LatD) \[expr \$Viewport::Map(LatCursor)-\$Viewport::Map(Lat0)\]; set Viewport::Map(LonD) \[expr \$Viewport::Map(LonCursor)-\$Viewport::Map(Lon0)\]; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP }"
    $c bind PAGE$VP <ButtonRelease-2> "set Viewport::Map(LatD) 0.0; set Viewport::Map(LonD) 0.0; $c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP"
 
+   #----- Evenements de selection de region
+   $c bind PAGE$VP <Control-ButtonPress-1>   "Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::DrawInit $Frame $VP Control"
+   $c bind PAGE$VP <Control-B1-Motion>       "$c config -cursor sizing; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Draw $Frame $VP Control }"
+   $c bind PAGE$VP <Control-ButtonRelease-1> "$c config -cursor hand1; \$Page::Data(ToolMode)::DrawDone $Frame $VP Control"
+
+   #----- Evenement de deplacement de region (A implementer chez le client)
+   $c bind PAGE$VP <Control-ButtonPress-2>   "set Viewport::Map(Lat0) \$Viewport::Map(LatCursor); set Viewport::Map(Lon0) \$Viewport::Map(LonCursor); $c config -cursor fleur; Viewport::Activate $Frame $VP; \$Page::Data(ToolMode)::MoveInit $Frame $VP Control"
+   $c bind PAGE$VP <Control-B2-Motion>       "set Viewport::Map(LatD) \[expr \$Viewport::Map(LatCursor)-\$Viewport::Map(Lat0)\]; set Viewport::Map(LonD) \[expr \$Viewport::Map(LonCursor)-\$Viewport::Map(Lon0)\]; if { \[Viewport::Follow $Frame $VP \[$c canvasx %x\] \[$c canvasy %y\]\] } { \$Page::Data(ToolMode)::Move $Frame $VP Control }"
+   $c bind PAGE$VP <Control-ButtonRelease-2> "set Viewport::Map(LatD) 0.0; set Viewport::Map(LonD) 0.0; $c config -cursor hand1; \$Page::Data(ToolMode)::MoveDone $Frame $VP Control"
+
    $c config -cursor hand1
 }
 
