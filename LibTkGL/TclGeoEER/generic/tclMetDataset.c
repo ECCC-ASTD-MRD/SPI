@@ -622,7 +622,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                      if (bcv->flags & FLAG_CLASS31) {
                         err=0;
-                        bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
+                        bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err,NULL);
                         if (err) {
                            App_Log(WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
                            set->data_flag |= BUFR_FLAG_INVALID;
@@ -725,7 +725,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                   if (bcv->flags & FLAG_CLASS31) {
                      err=0;
-                     bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err);
+                     bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err,NULL);
                      if (err) {
                         App_Log(WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
                         set->data_flag |= BUFR_FLAG_INVALID;

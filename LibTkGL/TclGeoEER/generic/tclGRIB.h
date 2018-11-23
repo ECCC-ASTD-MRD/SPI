@@ -19,7 +19,7 @@
 #ifndef _tclGRIB_h
 #define _tclGRIB_h
 
-#ifdef HAVE_GRIB
+#ifdef HAVE_ECCODES
 
 #include "grib_api.h"
 #include "tclData.h"

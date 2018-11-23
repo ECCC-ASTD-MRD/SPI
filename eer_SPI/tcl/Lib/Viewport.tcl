@@ -301,6 +301,7 @@ proc Viewport::Activate { Frame { VP "" } } {
 #  <VP>      : Identificateur du Viewport
 #  <Ids>     : Identificateurs des donnees
 #  <Force>   : Forcer le reaffichage
+#  <Index>   : Index d'insertion pour l'ordre d'affichage
 #
 # Retour:
 #  <ok>      : Ajout effectue
@@ -309,7 +310,7 @@ proc Viewport::Activate { Frame { VP "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::Assign { Frame VP Ids { Force 0 } } {
+proc Viewport::Assign { Frame VP Ids { Force 0 } { Index end } } {
    variable Data
 
    set idx 0
@@ -317,7 +318,7 @@ proc Viewport::Assign { Frame VP Ids { Force 0 } } {
    if { [info exists Viewport::Data(Active$VP)] } {
       foreach id $Ids {
          if { [set idx [lsearch -exact $Data(Data$VP) $id]]==-1 } {
-            lappend Data(Data$VP) $id
+            set Data(Data$VP) [linsert $Data(Data$VP) $Index $id]
          }
 
          #----- Definir les tags aux emplacements

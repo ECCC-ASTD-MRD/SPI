@@ -1583,6 +1583,10 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   if (!Field->GRef->Ids)
                      Field->GRef->Ids=(int*)malloc(1*sizeof(int));
 
+                  Field->GRef->IG1=head->IG1;
+                  Field->GRef->IG2=head->IG2;
+                  Field->GRef->IG3=head->IG3;
+                  Field->GRef->IG4=head->IG4;
                   Field->GRef->Ids[Field->GRef->NId]=c_ezgdef_fmem(Field->Def->NI,Field->Def->NJ,Field->GRef->Grid,fieldAX->GRef->Grid,head->IG1,head->IG2,head->IG3,head->IG4,Field->GRef->AX,Field->GRef->AY);
                   RPN_IntUnlock();
                }
@@ -1643,6 +1647,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                      }
                      Field->ZRef->Levels=(float*)realloc(Field->ZRef->Levels,Field->Def->NJ*sizeof(float));
+                  } else if (grtyp[0]=='Z' && grtyp[1]=='E') {
+                        // Do nothing as it should be built with georef define function
+                        Field->GRef->Grid[0]='Z';
+                        Field->GRef->Grid[1]='E';
+                        grtyp=NULL;
                   }
                }
             }
@@ -2785,6 +2794,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    int          ok=-1,ip1,datyp,nid;
    unsigned long k,idx;
    void         *p;
+   char         *grtyp;
 
    // Verifier l'existence du champs
    if (!Field) {
@@ -2824,6 +2834,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    head->FID=file->Id;
    datyp=(NPack>0 && head->DATYP==1)?5:head->DATYP;
    NPack=NPack==0?-head->NBITS:(NPack>0?-NPack:NPack);
+   grtyp=(Field->GRef?((Field->GRef->Grid[0]=='W' && Field->GRef->Grid[1]!='\0')?&Field->GRef->Grid[1]:Field->GRef->Grid):"X");
 
    // Check for compression flag and adjust datyp accordingly
    if (Compress) {
@@ -2837,7 +2848,6 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
    }
 
    RPN_FieldLock();
-
    for(k=0;k<Field->Def->NK;k++) {
       idx=k*FSIZE2D(Field->Def);
 
@@ -2851,7 +2861,7 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       c_fst_data_length(TDef_Size[Field->Def->Type]);
       ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
                   ip1,head->IP2,head->IP3,head->TYPVAR,head->NOMVAR,head->ETIKET,
-                  (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
+                  grtyp,head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
 
       // Ecriture des champs complementaires
       if (Field->Def->Data[1]) {
@@ -2861,16 +2871,14 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
                Def_Pointer(Field->Def,1,idx,p);
                c_fst_data_length(TDef_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
-                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,
-                           (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
+                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->VV,head->ETIKET,grtyp,head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
             }
             // Ecriture du champs complementaire 3D
             if (Field->Def->Data[2] && uvw->WW) {
                Def_Pointer(Field->Def,2,idx,p);
                c_fst_data_length(TDef_Size[Field->Def->Type]);
                ok=c_fstecr(p,NULL,NPack,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
-                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,
-                           (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
+                           ip1,head->IP2,head->IP3,head->TYPVAR,uvw->WW,head->ETIKET,grtyp,head->IG1,head->IG2,head->IG3,head->IG4,datyp,Rewrite);
             }
          }
       }
@@ -2880,10 +2888,8 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
          p=&Field->Def->Mask[idx];
          c_fst_data_length(1);
          ok=c_fstecr(p,NULL,-1,file->Id,head->DATEO,head->DEET,head->NPAS,Field->Def->NI,Field->Def->NJ,1,
-                     ip1,head->IP2,head->IP3,"@@",head->NOMVAR,head->ETIKET,
-                     (Field->GRef?(Field->GRef->Grid[1]!='\0'?&Field->GRef->Grid[1]:Field->GRef->Grid):"X"),head->IG1,head->IG2,head->IG3,head->IG4,2,Rewrite);                  
-      }
-      
+                     ip1,head->IP2,head->IP3,"@@",head->NOMVAR,head->ETIKET,grtyp,head->IG1,head->IG2,head->IG3,head->IG4,2,Rewrite);                  
+      } 
    }
    RPN_FieldUnlock();
 
@@ -2896,6 +2902,63 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Could not write field (c_fstecr failed)",(char*)NULL);
       return(TCL_ERROR);
    }
+}
+
+int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
+   
+   TRPNFile   *file;
+   TRPNHeader *head=(TRPNHeader*)Field->Head;
+   float       tmp[6];
+   char        *e,etiket[13]="GRID        ";
+   int         ok,i;
+   
+   // Verifier l'existence du champs
+   if (!Field) {
+      Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
+      return(TCL_ERROR);
+   }
+   
+   file=FSTD_FileGet(Interp,Id);
+   if (FSTD_FileSet(Interp,file)<0)
+      return(TCL_ERROR);
+   
+   e=Eticket?Eticket:etiket;
+   if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z') {
+      if (!Field->GRef->AX || !Field->GRef->AX) {
+         Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptior not defined",(char*)NULL);
+         return(TCL_ERROR);       
+      }
+      if (Field->GRef->Grid[0]=='Y') {
+         ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
+            head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
+            head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
+      } else if (Field->GRef->Grid[0]=='W') {
+         ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
+            head->IG1,head->IG2,head->IG3,"X ",">>",e,Field->GRef->Grid[0],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
+            head->IG1,head->IG2,head->IG3,"X ","^^",e,Field->GRef->Grid[0],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+      } else {
+         ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
+            head->IG1,head->IG2,head->IG3,"X ",">>",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,1,Field->Def->NJ,1,
+            head->IG1,head->IG2,head->IG3,"X ","^^",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+      }
+   } else if (Field->GRef->Grid[0]=='W') { 
+      if (!Field->GRef->Transform || !Field->GRef->String) {
+         Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid transform and/or WKT definition not defined",(char*)NULL);
+         return(TCL_ERROR);       
+      }
+      for(i=0;i<6;i++) {
+         tmp[i]=Field->GRef->Transform[i];
+      }
+      ok=c_fstecr(tmp,NULL,-32,file->Id,head->DATEO,0,0,6,1,1,
+         head->IG1,head->IG2,head->IG3,"X ","MTRX",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1); 
+      c_fst_data_length(TDef_Size[2]);
+      ok=c_fstecr(Field->GRef->String,NULL,-8,file->Id,head->DATEO,0,0,strlen(Field->GRef->String),1,1,
+         head->IG1,head->IG2,head->IG3,"X ","PROJ",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,2,1);                  
+   } 
+   return(TCL_OK);
 }
 
 int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress) {

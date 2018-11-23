@@ -82,9 +82,9 @@ AC_DEFUN([AX_LIB_RMN],
     if test -n "$rmn_prefix"; then
         rmn_include_dir="$rmn_prefix/include"
         if test "$rmn_prefix" = "/usr"; then
-            rmn_lib_flags="-lezscint -eer"
+            rmn_lib_flags="-lezscint -lrmn"
         else
-            rmn_lib_flags="-L$rmn_prefix/lib -lezscint -lrmneer"
+            rmn_lib_flags="-L$rmn_prefix/lib -lezscint -lrmn"
         fi
         run_rmn_test="yes"
     elif test "$rmn_requested" = "yes"; then
@@ -125,7 +125,7 @@ AC_DEFUN([AX_LIB_RMN],
             AC_MSG_RESULT([found])
             ],
             [
-            rmn_header_found="no"
+            rmn_header_found="no"                      
             AC_MSG_RESULT([not found])
             ]
         )

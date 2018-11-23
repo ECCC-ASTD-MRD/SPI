@@ -2387,6 +2387,7 @@ proc CVTree::OnDblClick { Canvas Tree Branch Open IsLeaf } {
     variable Data
 
     if { $IsLeaf && $Data(DblClickSelect$Tree) } {
+#Test selection on non leaf    if { $Data(DblClickSelect$Tree) } 
         #----- Mark the box according to the Open state
 
         if { [$Tree keyexists $Branch box] } {

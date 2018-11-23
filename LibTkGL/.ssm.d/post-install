@@ -15,32 +15,29 @@ rm -f ${profilePath} ${loginPath}
 mkdir -p ${profileDirPath}
 
 cat > ${profilePath} << EOF
+
 export SPI_LIB="${packageHome}"
 export EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
 export EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 
 #----- GDAL data
-export GDAL_DATA=\${SPI_LIB}/share/gdal
 export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
-#----- PROJ4 data
-export PROJ_LIB=\${SPI_LIB}/share/proj
+#type sscp >/dev/null 2>&1 || . ssmuse-sh -d hpcs/ext/sscp
 
-#----- Force GRIB API Tables
-export GRIB_SAMPLES_PATH=\${SPI_LIB}/share/grib_api/samples
-export GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
-
-#----- GDB data
-if [ ! -d "\${GDB_PATH}" ]; then
-   if [ `domainname -d` = "science.gc.ca" ]; then
-      #----- On the SCIENCE side
-      export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-   else
-      #----- On the EC side
-      export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo
-   fi
+#----- Dependencies
+if [ `domainname -d` = "science.gc.ca" ]; then
+   #----- On the SCIENCE side
+   [ -n "\${OPAL_PREFIX}" ]             || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+else 
+   #----- On the EC side
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
+
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc
 if [ -z \${AFSISIO} ]; then
@@ -54,26 +51,18 @@ setenv EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
 setenv EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 
 #----- GDAL data
-setenv GDAL_DATA=\${SPI_LIB}/share/gdal
 setenv GDAL_PAM_ENABLED=NO
 setenv CPL_LOG=/dev/null
 
-#----- PROJ4 data
-setenv PROJ_LIB=\${SPI_LIB}/share/proj
-
-#----- Force GRIB API Tables
-setenv GRIB_SAMPLES_PATH=\${SPI_LIB}/share/grib_api/samples
-setenv GRIB_DEFINITION_PATH=\${SPI_LIB}/share/grib_api/definitions
-
-#----- GDB data
-if [ -z \${GDB_PATH} ]; then
-   if [ `domainname -d` = "science.gc.ca" ]; then
-      #----- On the SCIENCE side
-      setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-   else
-      #----- On the EC side
-      setenv GDB_PATH=/cnfs/ops/production/cmoe/geo/DBGeo/data
-   fi
+if [ `domainname -d` = "science.gc.ca" ]; then
+   #----- On the SCIENCE side
+   [ -n "\${OPAL_PREFIX}" ]             || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+else 
+   #----- On the EC side
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
 
 #----- Force BURP table dir since it's hardcoded with RMN and problem outside cmc

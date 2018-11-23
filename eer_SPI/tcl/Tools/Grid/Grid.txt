@@ -1,0 +1,64 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : Grid.txt
+# Creation : Octobre 2017
+#
+# Description:
+#
+#    Description des divers textes et messages
+#
+#===============================================================================
+
+namespace eval Grid {
+   variable Lbl
+   variable Msg
+   variable Bubble
+
+   #---- Labels
+
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No" }
+   set Lbl(GridNo)     { "Grille          # " "Grid            # " }
+   set Lbl(GridType)   { "Type de grille    " "Grid type         " }
+   set Lbl(ResM)       { "Résolution    (m) " "Resolution    (m) " }
+   set Lbl(ResLL)      { "Résolution  (deg) " "Resolution  (deg) " }
+   set Lbl(Size)       { "Dimension (ni,nj) " "Dimension (ni,nj) " }
+   set Lbl(BBox)       { "Couverture" "Bounding box" }
+   set Lbl(Yes)        { "Oui" "Yes" }
+   set Lbl(No)         { "Non" "No" }
+   set Lbl(Coords)     { "Coordonnées       " "Coordinates       " }
+   set Lbl(Center)     { "Centre de grille  " "Grid center       " }
+   set Lbl(Reference)  { "Référence         " "Reference         " }
+   set Lbl(RotLL)      { "Axe de rotation   " "Rotation axis     " }
+   set Lbl(LL0)        { "Premier coin      " "First corner      " }
+   set Lbl(LL1)        { "Deuxième coin     " "Second corner     " }
+   set Lbl(MaxCFL)     { "MaxCFL            " "MaxCFL            " }
+   set Lbl(Exec)       { "Paramètres d'exécution" "Execution parameters" }
+   set Lbl(Cancel)     { "Annuler" "Cancel" }
+   set Lbl(Launch)     { "Lancer" "Launch" }
+   set Lbl(Target)     { "Cible" "Target" }
+   set Lbl(Path)       { "Répertoire" "Directory" }
+
+   #----- Messages
+
+   set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
+   set Msg(GridAdd)      { "Vous ne pouvez ajouter une grille tant que la première grille n'est définie." "You cannot add a new grid until the first one is defined." }
+
+   #----- Bulles d'aides
+   
+   set Bubble(Mode)      { "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(GridAdd)   { "Ajouter une grille" "Add a grid" }
+   set Bubble(GridDel)   { "Supprimer la grille courante" "Delete current grid" }
+   set Bubble(GridRun)   { "Exécuter la modélisation" "Run the modeling" }
+   set Bubble(Types)     { "Sélection du type de grille:\n\tPS  : Polaire stéréographique\n\tPS_N: Polaire stéréographique centrée au pôle nord\n\tPS_S: Polaire stéréographique centrée au pôle sud\n\tLL  : LatLon traditionelle (GRTYP=L)\n\tZL  : LatLon utilisant des ^^ << (GRTYP=Z)\n\tZE  : Grille Tournée GEM ^^ << (GRTYP=Z)\n\tUTM : Universelle mercator transveralle (GRTYP=Z)"
+                          "Grid type selection:\n\tPS  : Polar stereographic\n\tPS_N: Polar stereographic centered on north pole\n\tPS_S: Polar stereographic centered on south pole\n\tLL  : LatLon traditionnal (GRTYP=L)\n\tZL  : LatLon using ^^ << (GRTYP=Z)\n\tZL  : GEM Rotated LatLon using ^^ << (GRTYP=Z)\n\tUTM : Universal transverse mercator (GRTYP=Z)" }
+   set Bubble(ResM)      { "Résolution en mètres (selon l'axe des latitudes pour les grilles latlon)" "Resolution in meters (on the latutide axis for latlon grids)" }
+   set Bubble(ResLL)     { "Résolution en degrées" "Resolution in degrees" }
+   set Bubble(Dimension) { "Nombre de points de grilles" "Number of gridpoints" }
+   set Bubble(Coverage)  { "Couverture de la grille en latlon, spécifié par les coins opposés" "Grid coverage specified by the opposite corners in latlon" }
+}

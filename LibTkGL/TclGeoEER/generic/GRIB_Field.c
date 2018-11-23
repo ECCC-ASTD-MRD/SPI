@@ -14,7 +14,7 @@
 *
 *==============================================================================
 */
-#ifdef HAVE_GRIB
+#ifdef HAVE_ECCODES
 
 #include "App.h"
 #include "tclGRIB.h"

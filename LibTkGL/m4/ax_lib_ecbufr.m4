@@ -27,9 +27,9 @@ AC_DEFUN([AX_LIB_ECBUFR],
         ),
         [
         if test "$withval" = "yes"; then
-            if test -d /usr/local/include/bufr_api.h ; then 
+            if test -d /usr/local/include/libecbufr/bufr_api.h ; then 
                 ecbufr_prefix=/usr/local
-            elif test -d /usr/include/bufr_api.h ; then
+            elif test -d /usr/include/libecbufr/bufr_api.h ; then
                 ecbufr_prefix=/usr
             else
                 ecbufr_prefix=""
@@ -45,9 +45,9 @@ AC_DEFUN([AX_LIB_ECBUFR],
         ],
         [
         # Default behavior is implicit yes
-        if test -d /usr/local/include/bufr_api.h ; then 
+        if test -d /usr/local/include/libecbufr/bufr_api.h ; then 
             ecbufr_prefix=/usr/local
-        elif test -d /usr/include/bufr_api.h ; then
+        elif test -d /usr/include/libecbufr/bufr_api.h ; then
             ecbufr_prefix=/usr
         else
             ecbufr_prefix="" 
@@ -80,7 +80,7 @@ AC_DEFUN([AX_LIB_ECBUFR],
     run_ecbufr_test="no"
 
     if test -n "$ecbufr_prefix"; then
-        ecbufr_include_dir="$ecbufr_prefix/include"
+        ecbufr_include_dir="$ecbufr_prefix/include/libecbufr/"
         if test "$ecbufr_prefix" = "/usr"; then
             ecbufr_lib_flags="-lecbufr"
         else

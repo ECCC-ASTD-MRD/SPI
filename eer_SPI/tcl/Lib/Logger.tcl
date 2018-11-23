@@ -307,7 +307,7 @@ proc Args::ParseInput { File Var } {
 proc Log::CheckSPI { Version } {
    global env
 
-   if { $Version!="" && $env(SPI_VERSION)!="x.x.x" && ![package vsatisfies $env(SPI_VERSION) $Version] } {
+   if { $Version!="" && $env(SPI_VERSION)!="x.x.x" && ![package vsatisfies $env(SPI_VERSION) ${Version}-] } {
       Log::Print ERROR "The version of SPI provided ($env(SPI_VERSION)) does not meet the minimum requirement ($Version)"
       Log::End 1 True
    }
