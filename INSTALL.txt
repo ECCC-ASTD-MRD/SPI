@@ -31,10 +31,33 @@ System requirements:
 
    Software:
 
-     Xvfb       (For batch mode)
-     ImageMagik (For image output)
+     Provided with the package:
+        tcl8.6.6            (Tcl)
+        tk8.6.6             (Tk)
+        Tcllib-1.18         (Tcl librarie of tools)
+        Tktable2.10         (Tk table extension)
+        tcltls-1.7.12       (Tcl OpenSSL bindings)
+        tdom-master         (Tcl DOM esxtension)
+        tkdnd2.8            (Tk drag'n drop extension)
+        tkimg1.4.6          (Tk image extension)
+        mesa-7.9.2          (Mesa software OpenGL implementation)
+        gdb                 (ECCC vectorial basemap)
+    
+     Not provided with the package:
+     
+     Necessary:
+        gdal-1.9            (Geospatial Data Abstraction Layer https://gdal.org/)
+        rmnlib-16.2         (RPN file format support           https://github.com/armnlib/librmn)
+        ImageMagik          (For image output                  https://www.imagemagick.org/script/index.php)
+     
+     Optional:
+        libeccodes          (GRIB support                      https://launchpad.net/ubuntu/+source/eccodes)
+        libecbufr           (BUFR and BURP support             https://launchpad.net/libecbufr)
+        liburp              (URP radar support)
+        libflt              (OpenFlight support                https://sourceforge.net/projects/fltlib)
+        Xvfb or Xorg xdummy (For batch mode                    https://launchpad.net/ubuntu/+source/xserver-xorg-driver-dummy)
 
-     Graphic drivers for direct rendering (use glxinfo to confirm)
+     Make sure your graphic drivers are up to date for direct rendering (use glxinfo to confirm)
 
 Installation:
 
@@ -43,8 +66,8 @@ Installation:
       - Geographical database (GDB), contains the base geographical data used by default by SPI
             DBGeo.tgz
 
-      - The SPI libraries, the compiled librairies needed by SPI. Choose the one for your system
-         libSPI_x.x.x_platform.tgz
+      - The SPI libraries source code
+         libSPI_x.x.x.tgz
          
       - The SPI application, the tcl part of SPI
          SPI_x.x.x.tgz

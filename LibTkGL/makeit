@@ -10,8 +10,8 @@ VERSION="8.0.0"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 BUILDINFO=`git describe --always`
 
-if [[ (-z $EXT_SRC_PATH) || (-z $EXT_LIB_PATH) ]]; then
-   echo "(ERROR) Variables EXT_SRC_PATH and EXT_LIB_PATH not defined."
+if [[ (-z $SSM_DEV) ]]; then
+   echo "(ERROR) Variables SSM_DEV not defined."
    exit 1
 fi
 
@@ -50,7 +50,7 @@ while [ $# -gt 0 ]; do
         -src)     SRC=1;;
         -reconf)  REC=1;;
         -clean)   CLN=1;;
-        -all)     SPI=1;SSM=1;SRC=1;REC=1; printf -- "\n\nYou can go for a coffee, ... make it 2 coffee\n\n";;
+        -all)     EXT=1;SPI=1;SSM=1;SRC=1;REC=1; printf -- "\n\nYou can go for a coffee, ... make it 2 coffee\n\n";;
 
         -h|-help)     printf -- "$HELP\n"; exit 0;;
         -v|-version)  printf -- "$VERSION\n"; exit 0;;
@@ -68,10 +68,10 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
+
 LIB_EER=${SSM_DEV}/workspace/eerUtils_3.4.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
-EXT_LIB_PATH=${EXT_LIB_PATH}/${ORDENV_PLAT}
 EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/shared/master/ubuntu-14.04-amd64-64
-#. ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/extsup/shared/master
+EXT_LIB=/home/nil000/links/eccc-ppp1/storage/master/ubuntu-14.04-amd64-64
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -107,23 +107,17 @@ if [[ $EXT -eq 1 ]]; then
 
    #----- Package to be compiled / installed
    TCL_VERSION=8.6.6
-   TCLLIB=1.18
+   TCLLIB=Tcllib-1.18
    TCLTLS=tcltls-1.7.12
    TKIMG=tkimg1.4.6
    TKTABLE=Tktable2.10
    TKDND=tkdnd2.8
    TDOM=tdom-master
-
-#   MYSQL=mysql-5.1
+   GDB=gdb
+   
 #   OCI=instantclient_11_2
 #   FGDB=FileGDB_API
-#   MESA=mesa-13.0.2
    MESA=mesa-7.9.2
-
-   #----- not recompiled yet
-   EZSCINT=ezscint
-   EZINTERPV=cezinterpv
-   RMN=librmn-16.2
 
    #----- Create output directories (link to SSM workspace)
    rm -f -r ${LIB_PATH}
@@ -131,54 +125,41 @@ if [[ $EXT -eq 1 ]]; then
 
    [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
    mkdir -p "${TMP_PATH}"
-   echo "Temporary directory is : $TMP_PATH"
-   echo "Install directory is   : $LIB_PATH"
+   echo "- Temporary directory is : $TMP_PATH"
+   echo "- Install directory is   : $LIB_PATH"
 
-   #----- RMN, copies libs and BUFR and RPN dictionnaries
-   echo "Copying precompiled $RMN from $EXT_LIB_PATH"
-   cp -frd $EXT_LIB_PATH/$RMN/lib/* $LIB_PATH/lib
-   cp -frd $EXT_LIB_PATH/$RMN/include/* $LIB_PATH/include
-   mkdir -p $LIB_PATH/share/rmn
-   cd $AFSISIO/datafiles/constants/
-   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent $LIB_PATH/share/rmn
-
-   #----- EZSCINT, copies libs
-   echo "Copying precompiled $EZSCINT from $EXT_LIB_PATH"
-   cp -frd $EXT_LIB_PATH/$EZSCINT/lib/* $LIB_PATH/lib
-   cp -frd $EXT_LIB_PATH/$EZSCINT/include/* $LIB_PATH/include
-
-   #----- EZINTERPV, copies libs
-   echo "Copying precompiled $EZINTERPV from $EXT_LIB_PATH"
-   cp -frd $EXT_LIB_PATH/$EZINTERPV/lib/* $LIB_PATH/lib
-   cp -frd $EXT_LIB_PATH/$EZINTERPV/include/* $LIB_PATH/include
    set -e
 
    #----- Mesa
    if [[ $ARCH != "AIX" ]]; then
-      echo "Building ${TMP_PATH}/${MESA}/build.log"
+      echo "- Building ${TMP_PATH}/${MESA}/build.log"
       mkdir ${TMP_PATH}/${MESA}
       cd ${TMP_PATH}/${MESA}
-      cp -r -p ${EXT_SRC_PATH}/${MESA}/ ${TMP_PATH}/
+      cp -r -p ${SSM_DEV}/src/${MESA}/ ${TMP_PATH}/
 #mesa-13+      ./configure --prefix=${LIB_PATH}/GL --disable-driglx-direct --enable-glx=xlib -disable-dri --with-gallium-drivers=swrast --disable-egl
       (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct --disable-egl
       make 
       make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
    
-   #----- Tcl Specifics
-
+   #----- gdb
+   echo "- Building ${TMP_PATH}/${GDB}/build.log"
+   cp -r -p ${SSM_DEV}/src/${GDB}/ ${TMP_PATH}/
+   cd ${TMP_PATH}/${GDB}/src
+   (make; cp -d libgdb.a ${LIB_PATH}/lib) > ${TMP_PATH}/${GDB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+     
    #----- Tcl
-   echo "Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
+   echo "- Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tcl${TCL_VERSION}
    cd ${TMP_PATH}/tcl${TCL_VERSION}
-   (${EXT_SRC_PATH}/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
+   (${SSM_DEV}/src/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
    make install) > ${TMP_PATH}/tcl${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tk
-   echo "Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
+   echo "- Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tk${TCL_VERSION}
    cd ${TMP_PATH}/tk${TCL_VERSION}
-   (${EXT_SRC_PATH}/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
+   (${SSM_DEV}/src/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
 
    #----- Remove visibility-hidden flag from makefile for glCanvas to work
    mv Makefile Makefile.hidden
@@ -186,55 +167,56 @@ if [[ $EXT -eq 1 ]]; then
    make install) > ${TMP_PATH}/tk${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tcllib
-   cd ${EXT_SRC_PATH}/Tcllib-${TCLLIB}
-   ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/tcllib${TCLLIB} || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   echo "- Installing ${TMP_PATH}/${TCLLIB}/build.log"
+   cd ${SSM_DEV}/src/${TCLLIB}
+   ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/${TCLLIB} > ${TMP_PATH}/${TCLLIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tcltls
-   echo "Building ${TMP_PATH}/${TCLTLS}/build.log"
+   echo "- Building ${TMP_PATH}/${TCLTLS}/build.log"
    mkdir ${TMP_PATH}/${TCLTLS}
    cd ${TMP_PATH}/${TCLTLS}
-   (${EXT_SRC_PATH}/${TCLTLS}/configure --prefix=${LIB_PATH}/TCL --with-tcl=${LIB_PATH}/TCL/lib
+   (${SSM_DEV}/src/${TCLTLS}/configure --prefix=${LIB_PATH}/TCL --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TCLTLS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- TkImg
 #    if [[ $ARCH != "AIX" ]]; then
-#       echo "Building ${TMP_PATH}/${TKIMG}/build.log"
+#       echo "- Building ${TMP_PATH}/${TKIMG}/build.log"
 #       mkdir ${TMP_PATH}/${TKIMG}
 #       cd ${TMP_PATH}/${TKIMG}
 #       
 #       #----- Because some setup enable jbig without the big stuff
-#       (${EXT_SRC_PATH}/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
+#       (${SSM_DEV}/src/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
 #       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
 #       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
 #       make install) > ${TMP_PATH}/${TKIMG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 #    fi
 
    #----- TkTable
-   echo "Building ${TMP_PATH}/${TKTABLE}/build.log"
+   echo "- Building ${TMP_PATH}/${TKTABLE}/build.log"
    mkdir ${TMP_PATH}/${TKTABLE}
    cd ${TMP_PATH}/${TKTABLE}
-   (${EXT_SRC_PATH}/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${SSM_DEV}/src/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKTABLE}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tkdnd
-   echo "Building ${TMP_PATH}/${TKDND}/build.log"
+   echo "- Building ${TMP_PATH}/${TKDND}/build.log"
    mkdir ${TMP_PATH}/${TKDND}
    cd ${TMP_PATH}/${TKDND}
-   (${EXT_SRC_PATH}/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${SSM_DEV}/src/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- tDOM
    if [[ $ARCH != "AIX" ]]; then
-      echo "Building ${TMP_PATH}/${TDOM}/build.log"
+      echo "- Building ${TMP_PATH}/${TDOM}/build.log"
       mkdir ${TMP_PATH}/${TDOM}
       cd ${TMP_PATH}/${TDOM}
-      (${EXT_SRC_PATH}/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
+      (${SSM_DEV}/src/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
       make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
    cd $SRC_PATH
 
-   #----- Copy local share definitions (GRIB adjustment for ARGOS GRIB1)
+   #----- Copy local share definitions (CMC constant files and GRIB adjustment for ARGOS GRIB1)
    cp -rp share ${LIB_PATH}
 
    rm -f -r ${TMP_PATH}
@@ -265,7 +247,7 @@ if [[ $SPI -eq 1 ]]; then
    type -P autoconf2.50 && autoconf=autoconf2.50 || autoconf=autoconf
    export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
    
-   #System with no OpenGL
+   #----- System with no OpenGL
    ldconfig -p | grep -q 'libGL\.so ' || export LDFLAGS="-L$LIB_PATH/GL/lib"
 
 
@@ -314,14 +296,14 @@ if [[ $SPI -eq 1 ]]; then
       --enable-64bit \
       --with-tcl=${LIB_PATH}/TCL/lib \
       --with-tk=${LIB_PATH}/TCL/lib \
-      --with-gdal=${EXT_LIB}/bin/gdal-config  \
+      --with-gdb=${LIB_PATH} \
+      --with-eer=${LIB_EER} \
+      --with-rmn=${LIB_EER} \
+      --with-gdal=`which gdal-config` \
       --with-eccodes=${EXT_LIB} \
       --with-ecbufr=${EXT_LIB} \
       --with-flt=${EXT_LIB} \
-      --with-eer=${LIB_EER}\
-      --with-rmn=${LIB_PATH} \
-      --with-gdb=${EXT_LIB_PATH}/gdb \
-      --with-urp=${EXT_LIB_PATH}/URP
+      --with-urp=${EXT_LIB}
    fi
    make install || exit 1
 
@@ -355,6 +337,7 @@ if [[ $SPI -eq 1 ]]; then
    ln -fs libTclR0.3.so libTclR.so
 
    cd ${SRC_PATH}
+
 fi
 
 if [[ $SSM -eq 1 ]]; then
@@ -383,6 +366,11 @@ if [[ $SRC -eq 1 ]]; then
    cp -r ../LibTkGL ${SSM_DEV}/workspace/libSPI-${VERSION}
    find ${SSM_DEV}/workspace/libSPI-${VERSION} -name .svn -prune -exec rm -f -r {} \+
    find ${SSM_DEV}/workspace/libSPI-${VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   
+   #-----Copy constant files
+   cd $AFSISIO/datafiles/constants/
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/workspace/libSPI-${VERSION}/LibTkGL/share/rmn
+   
    cd ${SSM_DEV}/workspace; tar -zcvf ${SSM_DEV}/package/libSPI-${VERSION}_src.tgz libSPI-${VERSION}
 fi
 
