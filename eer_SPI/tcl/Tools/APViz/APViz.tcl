@@ -720,8 +720,8 @@ proc APViz::Source { Path Widget } {
                }
             }
          }
-         SPI::LayoutLoad ${::APViz::Data(Frame)} $layout
-
+         SPI::LayoutLoad $APViz::Data(Frame) $layout
+         ProjCam::Select $APViz::Data(Frame) $APViz::Data(Frame) $Param(Camera) True
          foreach icon $Param(Icons) {
             eval SPI::IcoOpen $icon
          }
