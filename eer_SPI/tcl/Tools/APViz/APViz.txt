@@ -68,7 +68,8 @@ namespace eval APViz {
 
    set Bubble(Mode)    		  { "Mode de sélection de l'outils" "Tool selection mode" }
    set Bubble(Param)		  { "Modifier les paramètres" "Modify Parameters" }
-   set Bubble(Save)		  { "Enregistrer sous" "Save As" }
+   set Bubble(Save)		  { "Sauvegarder le produit" "Save product" }
+   set Bubble(SaveImg)            { "Sauvegarder l'image" "Save image" }
    set Bubble(BlockDate)	  { "Bloquer la mise à jour automatique de la date sélectionnée" "Block the automatic update of the selected date"}
    set Bubble(Lock)               { "Cliquer pour bloquer/débloquer" "Click to lock/unlock" }
    set Bubble(AddRange)           { "Ajouter un range" "Add a range" }
@@ -77,4 +78,6 @@ namespace eval APViz {
    set Bubble(SelectDefaultValue) { "Inscrivez une valeur par defaut." "Insert default value." }
    set Bubble(RangeValues)        { "Insérez les valeurs du range en les séparant d'un espace \" \"" "Insert range values, seperated by a space \" \"" }
    set Bubble(RangeNum)           { "Calculer range numérique" "Compute numerical range" }
+   set Bubble(AddLayer)           { "Ajouter une couche" "Add a Layer" }
+   set Bubble(Anim)               { "Animer le produit temporellement" "Animate product over time" }
 }

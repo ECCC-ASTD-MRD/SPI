@@ -83,19 +83,25 @@ proc APViz::Window { } {
       
       #----- Outils
       frame $Data(Tab).head
-         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue APViz -offvalue SPI \
-            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
-            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
-         button $Data(Tab).head.saveImg -image CAMSAVE -bd 1 -relief flat -overrelief raised -width 28 -anchor w -command { APViz::SaveImg }
+#         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue APViz -offvalue SPI \
+#            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+#            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         button $Data(Tab).head.save -image DOCSAVE -bd 1 -relief flat -overrelief raised -command { APViz::SaveAsWindow }
+         button $Data(Tab).head.saveImg -image SAVE -bd 1 -relief flat -overrelief raised -width 28 -anchor w -command { APViz::SaveImg }
+         menubutton $Data(Tab).head.add -image PLUS -compound left -bd 1 
          checkbutton $Data(Tab).head.play -image VCRPLAYF -indicatoron False -variable Animator::Play(Stop) -onvalue 0 -offvalue 1 -bd 1 -relief sunken -overrelief raised -offrelief flat -command { APViz::GetPlayList $APViz::Data(CurrentProduct); set Animator::Play(Dir) 1; Animator::Play }
+         scale $Data(Tab).head.frame -resolution 1 -variable Animator::Play(Idx) -relief raised -bd 1 \
+            -relief flat -orient horizontal -width 18 -sliderlength 10 -command "Animator::StepTo" -showvalue False
+         bind $Data(Tab).head.frame <ButtonPress-4> "Animator::Step 1"
+         bind $Data(Tab).head.frame <ButtonPress-5> "Animator::Step -1"
          
          menubutton $Data(Tab).head.saveImg.down -image OPTIONS -relief flat -bd 0 -menu $Data(Tab).head.saveImg.down.menu
          place $Data(Tab).head.saveImg.down -relx 1.0 -rely 0.0 -anchor ne -relheight 1.0
          menu $Data(Tab).head.saveImg.down.menu
          $Data(Tab).head.saveImg.down.menu add command -label [lindex $Lbl(SaveAs) $GDefs(Lang)] -command "APViz::SaveImageAsWindow"
          
-         pack $Data(Tab).head.mode $Data(Tab).head.save $Data(Tab).head.saveImg $Data(Tab).head.play -side left -padx 2
+         pack $Data(Tab).head.save $Data(Tab).head.saveImg $Data(Tab).head.add $Data(Tab).head.play -side left -padx 2
+         pack $Data(Tab).head.frame -side left -padx 2 -fill x -expand True 
          
          #----- Configurable date
          frame $Data(Tab).head.dateConfig
@@ -133,33 +139,37 @@ proc APViz::Window { } {
          pack $Data(Tab).filetree.scrollx -side bottom -fill x
          pack $Data(Tab).filetree.canvas -side left -fill both -expand true
          pack $Data(Tab).filetree.scrolly -side left -fill y
-      pack $Data(Tab).filetree -side top -fill both -expand True
+      pack $Data(Tab).filetree -side top -fill both -padx 5 -pady 5 -expand True
       
       bind $Data(Tab).filetree.canvas <Button-4> "$Data(Tab).filetree.canvas yview scroll -1 units"
       bind $Data(Tab).filetree.canvas <Button-5> "$Data(Tab).filetree.canvas yview scroll 1 units"
 
       #----- Description
       labelframe $Data(Tab).desc -text [lindex $Lbl(Description) $GDefs(Lang)]
-	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 250 -anchor w -bg "beige" -justify left
+	label $Data(Tab).desc.message -text [lindex $Lbl(DescriptionMSG) $GDefs(Lang)] -wraplength 500 -anchor w -justify left
 	pack $Data(Tab).desc.message -side top -fill x -expand true
-      pack $Data(Tab).desc -side top -fill both -expand False
+      pack $Data(Tab).desc -side top -fill both -padx 5 -expand False
 
       #----- Range
       labelframe $Data(Tab).range -text [lindex $Lbl(Variables) $GDefs(Lang)]
 	set Data(RangeSection) $Data(Tab).range
-      pack $Data(Tab).range -side top -fill both -expand True
+      pack $Data(Tab).range -side top -fill both -padx 5 -pady 5 -expand True
       
       #----- Dock
       frame .apviz.dock -relief raised -bd 1
          button .apviz.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool APViz }
          button .apviz.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command APViz::Close
-         entry .apviz.dock.coo -textvariable APViz::Data(Msg) -bg $GDefs(ColorLight) -width 50 -bd 1
+         entry .apviz.dock.coo -textvariable APViz::Data(Msg) -bg $GDefs(ColorLight) -width 53 -bd 1
          pack .apviz.dock.sel .apviz.dock.del -side left
          pack .apviz.dock.coo -side left -fill both -expand true
       pack .apviz.dock -side bottom -fill x
 
-      Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
-      Bubble::Create $Data(Tab).head.save $Bubble(Save)
+      Bubble::Create $Data(Tab).head.mode    $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.save    $Bubble(Save)
+      Bubble::Create $Data(Tab).head.saveImg $Bubble(SaveImg)
+      Bubble::Create $Data(Tab).head.add     $Bubble(AddLayer)
+      Bubble::Create $Data(Tab).head.play    $Bubble(Anim)
+      Bubble::Create $Data(Tab).head.frame   $Bubble(Anim)
    }
    raise  .apviz
    

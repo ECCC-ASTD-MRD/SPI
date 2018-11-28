@@ -546,7 +546,7 @@ proc Animator::EmptyPlayList { } {
 proc Animator::GetPlayList { } {
    variable Play
 
-   if { $Play(Stop) } {
+   if { $Play(Stop) || $Play(Canvas)=="" } {
       set Play(Dir) 0
       return
    }

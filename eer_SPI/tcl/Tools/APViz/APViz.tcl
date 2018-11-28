@@ -109,8 +109,6 @@ proc APViz::Source { Path Widget } {
       variable Value
       variable Param
       
-      set Label(AddCalculation)	{ "Ajouter une couche de calcul" "Add calculation layer" }
-      set Label(AddLayer)	{ "Ajouter une couche" "Add a Layer" }
       set Label(Calcul)		{ "Couches de calcul" "Calculation Layers" }
       set Label(Hour)		{ "Heure" "Hour" }
       set Label(Layer)		{ "Couches" "Layers" }
@@ -750,7 +748,7 @@ proc APViz::Source { Path Widget } {
          variable Param
                   
          #----- Set Geography parameters
-         if { [info exists Param(Projection)] } {
+         if { [info exists Param(Projection)] } {           
              eval projection configure ${::APViz::Data(Frame)} $Param(Projection)
          }
 
@@ -816,35 +814,31 @@ proc APViz::Source { Path Widget } {
          #----- Creation des couches         
          CreateLayers $Product $Layers $Widget
          
-         pack $Widget.range -side top -fill x -anchor nw
+         pack $Widget.range -side top -fill x -padx 5 -pady 5 -ipadx 2 -ipady 2 -anchor nw
 
          set dateList [APViz::FetchAllDates $Product]
          set APViz::Data(Date) [lindex $dateList [expr [llength $dateList] - 1]]
          
-         ::APViz::DeleteWidget $Widget.add      ; # Liberer le widget
+         ::APViz::DeleteWidget $Widget.head.add.menu     ; # Liberer le widget
          
-         menubutton $Widget.add -image PLUS -text [lindex $Label(AddLayer) $GDefs(Lang)] -compound left -bd 1 -menu $Widget.add.menu
-         
-         menu $Widget.add.menu
+         $APViz::Data(Tab).head.add configure -menu $APViz::Data(Tab).head.add.menu
+                  menu $APViz::Data(Tab).head.add.menu
          set no 0
          foreach layer $Layers {
             #----- Layer description
             regsub \(True:|False:\) $layer "" desc
-            $Widget.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True $no"
+            $APViz::Data(Tab).head.add.menu add command -label "Type$no: $desc" -command "APViz::${Product}::CreateLayers $Product $layer $Widget True $no"
             lappend ::APViz::Data(Layers) $layer                ; #save layer configs
             incr no
          }
-         $Widget.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"
-         
-         $Widget.add.menu add separator
-         $Widget.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
-         
-         pack $Widget.add -side top -padx 2 -pady 2 -anchor nw
+         $APViz::Data(Tab).head.add.menu add command -label [lindex ${APViz::Lbl(CreateNewLayer)} $GDefs(Lang)] -command "APViz::AddLayerWindow"        
+         $APViz::Data(Tab).head.add.menu add separator
+         $APViz::Data(Tab).head.add.menu add command -label "Ajouter couche de calcul" -command "APViz::${Product}::AddCalcLayer $Product $Widget"
          
          ::APViz::DeleteWidget $Widget.calc     ; # Liberer le widget
          
          labelframe $Widget.calc -text [lindex $Label(Calcul) $GDefs(Lang)]
-         pack $Widget.calc -side bottom -fill both -expand True
+         pack $Widget.calc -side bottom -fill both -padx 5 -ipadx 2 -ipady 2 -expand True
          
          #----- Create formula lists
          APViz::CreateFormulaLists
@@ -966,6 +960,7 @@ proc APViz::GetPlayList { Product } {
       set Animator::Play(Length) [expr [llength $Animator::Play(Frames)]-1]
       set Animator::Play(Cycle)  1
       set Animator::Play(Type)   DATE
+      $Data(Tab).head.frame configure -from 0 -to $Animator::Play(Length)
       Animator::Limits
    }
 }

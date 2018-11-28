@@ -534,7 +534,7 @@ proc ProjCam::Read { { Paths {} } } {
 #
 #----------------------------------------------------------------------------
 
-proc ProjCam::Set { Name To From Up Lens CFX CFY CFZ CTX CTY CTZ Lat Lon } {
+proc ProjCam::Set { Name To From Up Lens CFX CFY CFZ CTX CTY CTZ Lat Lon { No -1 } } {
    variable Data
 
    set Data(Params$Name) [list $To $From $Up $Lens $CFX $CFY $CFZ $CTX $CTY $CTZ $Lat $Lon]
@@ -543,6 +543,9 @@ proc ProjCam::Set { Name To From Up Lens CFX CFY CFZ CTX CTY CTZ Lat Lon } {
       if { [winfo exists .bar.cam.sel] } {
          ComboBox::Add .bar.cam.sel $Name
       }
+   }
+   if { $No!=-1 } {
+      bind . <Control-KeyPress-$No> "ProjCam::Select \$Page::Data(Frame) \$Page::Data(Frame) $Name"
    }
 }
 
