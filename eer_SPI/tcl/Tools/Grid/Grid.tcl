@@ -114,7 +114,7 @@ proc Grid::Del { { All False } } {
       set Data(GridNo) 0
       Viewport::UnAssign $Data(Frame) $Data(VP)
       Option::Set $Data(Tab).grid.sel.no {}
-   } elseif { [llength $Data(GridParams)]>1 } {
+   } elseif { $Data(GridNo) && [llength $Data(GridParams)]>1 } {
       Viewport::UnAssign $Data(Frame) $Data(VP) $Data(GridId)
       set Data(GridParams) [lreplace $Data(GridParams) $Data(GridNo) $Data(GridNo)]
 
@@ -169,6 +169,8 @@ proc Grid::Reset { } {
 
    set Param(NI)         0                                                         ;# Number of gridpoint in I
    set Param(NJ)         0                                                         ;# Number of gridpoint in J
+   set Param(RNI)        0                                                         ;# Real number of gridpoint in I
+   set Param(RNJ)        0                                                         ;# Real number of gridpoint in J
    set Param(Lat0)       0                                                         ;# Latitude of first bbox corner
    set Param(Lat1)       0                                                         ;# Latitude of second bbox corner
    set Param(Lon0)       0                                                         ;# Longitude of first bbox corner
@@ -177,8 +179,6 @@ proc Grid::Reset { } {
    set Param(LatD1)      0                                                         ;# Latitude delta relative to inside grid
    set Param(LonD0)      0                                                         ;# Longitude delta relative to inside grid
    set Param(LonD1)      0                                                         ;# Longitude delta relative to inside grid
-   set Param(LatM)       0                                                         ;# Delta on latitute translating grid
-   set Param(LonM)       0                                                         ;# Delta on longitude whehn translating grid
    set Param(PGSM)       ""                                                        ;# Grid description for PGSM
    set Param(GridInfo)   ""                                                        ;# General grid description
    set Param(LatR)       0.0                                                       ;
@@ -189,7 +189,8 @@ proc Grid::Reset { } {
    set Param(XLat2)      0                                                         ;# Rotation axis latitude
    set Param(XLon2)      90                                                        ;# Rotation axis longitude
    set Param(Angle)      0                                                         ;# Rotation angle
-   set Param(Extend)     0                                                         ;# Internal extension
+   set Param(EI)         0                                                         ;# Internal extension in I
+   set Param(EJ)         0                                                         ;# Internal extension in J
    set Param(LockCenter) False                                                     ;# Fixe the grid center
    
    lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
@@ -293,15 +294,20 @@ proc Grid::BBoxOrder { } {
 
    uplevel {
       if { $Data(GridNo)>0 } {
-         set LatR [expr $LatR+$Param(LatM)]
-         set LonR [expr $LonR+$Param(LonM)]
+         if { $Param(Type)=="ZE"  } {
+            set LatR [expr $LatR+$Data(LatM)]
+            set LonR [expr $LonR+$Data(LonM)]
+         }
       } else {
-         set Lat0 [expr $Lat0+$Param(LatM)]
-         set Lon0 [expr $Lon0+$Param(LonM)]
-         set Lat1 [expr $Lat1+$Param(LatM)]
-         set Lon1 [expr $Lon1+$Param(LonM)]
+         if { $Param(Type)=="ZE"  } {
+            set LatR 0.0
+            set LonR 180.0
+         }
+         set Lat0 [expr $Lat0+$Data(LatM)]
+         set Lon0 [expr $Lon0+$Data(LonM)]
+         set Lat1 [expr $Lat1+$Data(LatM)]
+         set Lon1 [expr $Lon1+$Data(LonM)]
       }
-
       if { $Lat1<$Lat0 } {
          set tmp $Lat0
          set Lat0 $Lat1
@@ -358,45 +364,54 @@ proc Grid::NIJ { } {
 
          set Param(NI) $ni
          set Param(NJ) $nj
+      }
+      
+      #----- Check inclusiveness
+      if { $Data(GridNo)>0 } {
+         array set gridp [lindex $Data(GridParams) [expr $Data(GridNo)-1]]
+         
+         #----- Minimal distance between grids
+         set d [expr $Param(Frontier)*$Param(ResM)*2]
 
-         #----- Check inclusiveness
-         if { $Data(GridNo)>0 } {
-            array set gridp [lindex $Data(GridParams) [expr $Data(GridNo)-1]]
+         set si  [expr ($Param(NI)+$Param(EI))*$Param(ResM)]
+         set sj  [expr ($Param(NJ)+$Param(EJ))*$Param(ResM)]
+         set spi [expr $gridp(RNI)*$gridp(ResM)+$d]
+         set spj [expr $gridp(RNJ)*$gridp(ResM)+$d]
+         
+         
+         #----- Make sure the grid encloses completely the previous grid
+         if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResM)-$Param(EI)+1] }
+         if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResM)-$Param(EJ)+1] }
+#             if { $Data(GridNo)>$Data(GridDepend) } {
+#                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResM)-$Param(EI))]
+#                set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResM)-$Param(EJ))]
+#             } else {
+#                set Param(DNI) [expr $si - $spi]
+#                set Param(DNJ) [expr $sj - $spj]
+#             }
+         #----- Check LatR,LonR translations
+         if { [info exists LatR] && $Data(GridNo)<2 && ($LatR!=0.0 || $LonR!=180.0) } {
+            set plat0 [expr $gridp(XLat1)+$gridp(LatR)-($spj/(1852*60)*0.5)]
+            set plon0 [expr $gridp(XLon1)+($gridp(LonR)-180)-($spi/(1852*60)*0.5)]
+            set plat1 [expr $gridp(XLat1)+$gridp(LatR)+($spj/(1852*60)*0.5)]
+            set plon1 [expr $gridp(XLon1)+($gridp(LonR)-180)+($spi/(1852*60)*0.5)]
             
-            set si  [expr $Param(NI)*$Param(ResM)]
-            set sj  [expr $Param(NJ)*$Param(ResM)]
-            set spi [expr $gridp(NI)*$gridp(ResM)]
-            set spj [expr $gridp(NJ)*$gridp(ResM)]
-            
-            #----- Make sure the grid encloses completely the previous grid
-            if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResM)+1] }
-            if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResM)+1] }
-
-            if { $Data(GridNo)>$Data(GridDepend) } {
-               set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResM))]
-               set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResM))]
-            } else {
-               set Param(DNI) [expr $si - $spi]
-               set Param(DNJ) [expr $sj - $spj]
-            }
-            
-            #----- Check LatR,LonR translations
-            if { $LatR!=0.0 || $LonR!=180.0 } {
-               set plat0 [expr $gridp(Lat0)+$gridp(LatR)]
-               set plon0 [expr $gridp(Lon0)+($gridp(LonR)-180)]
-               set plat1 [expr $gridp(Lat1)+$gridp(LatR)]
-               set plon1 [expr $gridp(Lon1)+($gridp(LonR)-180)]
-               
-               if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
-               if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
-               if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
-               if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
-            }
+            if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
+            if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
+            if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
+            if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
          }
+      }
 
+      if { $Param(GetNIJ) } {
       } else {
-         set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Res]]
-         set Param(Lon1) [set Lon1 [expr $Lon0+$Param(NI)*$Res]]
+         #----- If not first grid, we have to keep the same center
+         if { $Data(GridNo)>0 } {
+            set Lat0 [expr $Param(XLat1)-($Param(NJ)*$Res)*0.5]
+            set Lon0 [expr $Param(XLon1)-($Param(NI)*$Res)*0.5]
+         } 
+         set Lat1 [expr $Lat0+$Param(NJ)*$Res]
+         set Lon1 [expr $Lon0+$Param(NI)*$Res]
       }
       
       set Param(XLat1) [expr ($Lat0+$Lat1)*0.5]
@@ -419,11 +434,9 @@ proc Grid::NIJ { } {
 #----------------------------------------------------------------------------
 
 proc Grid::Apply { } {
-   variable Param
+   variable Data
 
    Grid::Create $Grid::Data(GridId)
-   set Param(LatM) 0
-   set Param(LonM) 0
    Grid::Cascade
    Grid::SettingsShow
 }
@@ -438,6 +451,10 @@ proc Grid::Cascade { } {
    
    #----- Loop on cascaded grids
    set pno $Data(GridNo)
+   set latm $Data(LatM)
+   set lonm $Data(LonM)
+   set Data(LatM) 0
+   set Data(LonM) 0
    for { set no [expr $pno+1] } { $no<[llength $Data(GridParams)] } { incr no } {
       array set gridp [lindex $Data(GridParams) [expr $no-1]]
       array set Grid::Param [lindex $Data(GridParams) $no]
@@ -445,11 +462,11 @@ proc Grid::Cascade { } {
       set Param(XLon1) $gridp(XLon1)
       set Param(Angle) $gridp(Angle)
       
-      set Param(NI) [expr $Param(DNI)+$gridp(NI)]
-      set Param(NJ) [expr $Param(DNJ)+$gridp(NJ)]
       set Data(GridNo) $no
       Grid::Create MODELGRID$no
    }
+   set Data(LatM) $latm
+   set Data(LonM) $lonm
    set Data(GridNo) $pno
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
 }
@@ -606,6 +623,7 @@ proc Grid::SettingsShow { } {
 
 proc Grid::ProjectSave { Path } {
    variable Data
+   variable GenPhysX
 
    if { $Path=="" } {
       return
@@ -866,10 +884,11 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
 
 proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
    variable Param
+   variable Data
 
    set xg3 $Res
-   set lat [expr $Lat+$Param(LatM)]
-   set lon [expr $Lon+$Param(LonM)]
+   set lat [expr $Lat+$Data(LatM)]
+   set lon [expr $Lon+$Data(LonM)]
 
    #----- choix de l'hemisphere SUD on NORD
    if { $lat<=0 } {
@@ -1043,19 +1062,21 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR Res Angle { ID MODELGRID } {
 
    #----- Get size, it is possible that the grid build algorithm adjusts the nixnj
    set sz [georef define ${ID} -size]
-   set ni [lindex $sz 0]
-   set nj [lindex $sz 1]
-   set Param(Extend) [expr $ni-$Param(NI)]
+   set Param(RNI) [lindex $sz 0]
+   set Param(RNJ) [lindex $sz 1]
+   set Param(EI)  [expr $Param(RNI)-$Param(NI)]
+   set Param(EJ)  [expr $Param(RNJ)-$Param(NJ)]
   
-   fstdfield create ${ID} $ni $nj 1 $Param(Data)
+   fstdfield create ${ID} $Param(RNI) $Param(RNJ) 1 $Param(Data)
    fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
-   set d [expr $Param(Extend)]
-   set dni [expr $ni-$d]
-   set dnj [expr $nj-$d]
+   set di  [expr $Param(EI)]
+   set dj  [expr $Param(EJ)]
+   set dni [expr $Param(RNI)-$Param(EI)]
+   set dnj [expr $Param(RNJ)-$Param(EJ)]
    
    #----- Mark the inside grid
-   vexpr - ${ID}(($d,$dni),($d,$dnj))=1
+   vexpr - ${ID}(($di,$dni),($dj,$dnj))=1
    
    set Param(PGSM) ""
 
@@ -1232,8 +1253,8 @@ proc Grid::Move { Frame VP { Modifier "" } } {
 
    set Data(VP)    $VP
 
-   set Param(LatM) $Viewport::Map(LatD)
-   set Param(LonM) $Viewport::Map(LonD)
+   set Data(LatM) $Viewport::Map(LatD)
+   set Data(LonM) $Viewport::Map(LonD)
 
    Grid::Apply 
 }
@@ -1245,17 +1266,19 @@ proc Grid::MoveDone { Canvas VP { Modifier "" } } {
    set Data(VP)    $VP
 
    if { $Data(GridNo)>0 } {
-      set Param(LatR) [expr $Param(LatR)+$Param(LatM)]
-      set Param(LonR) [expr $Param(LonR)+$Param(LonM)]
+      set Param(LatR) [expr $Param(LatR)+$Data(LatM)]
+      set Param(LonR) [expr $Param(LonR)+$Data(LonM)]
    } else {
-      set Param(Lat0) [expr $Param(Lat0)+$Param(LatM)]
-      set Param(Lon0) [expr $Param(Lon0)+$Param(LonM)]
-      set Param(Lat1) [expr $Param(Lat1)+$Param(LatM)]
-      set Param(Lon1) [expr $Param(Lon1)+$Param(LonM)]
+      set Param(Lat0) [expr $Param(Lat0)+$Data(LatM)]
+      set Param(Lon0) [expr $Param(Lon0)+$Data(LonM)]
+      set Param(Lat1) [expr $Param(Lat1)+$Data(LatM)]
+      set Param(Lon1) [expr $Param(Lon1)+$Data(LonM)]
    }
-   
-   set Param(LatM) 0
-   set Param(LonM) 0
+  
+   set Data(LatM) 0.0
+   set Data(LonM) 0.0
+
+   Grid::Create $Data(GridId) 
 }
 
 proc Grid::DrawInit { Canvas VP { Modifier "" } } {

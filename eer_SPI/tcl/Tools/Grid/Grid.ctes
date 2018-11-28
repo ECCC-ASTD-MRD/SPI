@@ -46,6 +46,8 @@ namespace eval Grid {
    set Data(Color3)       yellow                        
    set Data(Color4)       green                         
    set Data(SavePath)     ""
+   set Data(LatM)         0                                                        ;# Delta on latitute translating grid
+   set Data(LonM)         0                                                        ;# Delta on longitude when translating grid
    
    colormap create GRID0; colormap control GRID0 -add 255 000 000 000 255; colormap control GRID0 -add 0 128 128 128 255
    colormap create GRID1; colormap control GRID1 -add 255 000 000 128 255; colormap control GRID1 -add 0 000 000 255 255
@@ -62,7 +64,7 @@ namespace eval Grid {
    
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field
-   set Param(Type)       "ZL"                                                      ;# Current grid type
+   set Param(Type)       "ZE"                                                      ;# Current grid type
    set Param(Types)      { "PS" "PS_N" "PS_S" "LL" "ZL" "ZE" "UTM" }               ;# List of grid types
    set Param(ResM)       10000                                                     ;# Grid resolution in meters
    set Param(ResMs)      { 1 5 10 100 250 500 1000 2000 2500 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
@@ -79,10 +81,9 @@ namespace eval Grid {
    set Param(LatD1)      0                                                         ;# Latitude delta relative to inside grid
    set Param(LonD0)      0                                                         ;# Longitude delta relative to inside grid
    set Param(LonD1)      0                                                         ;# Longitude delta relative to inside grid
-   set Param(LatM)       0                                                         ;# Delta on latitute translating grid
-   set Param(LonM)       0                                                         ;# Delta on longitude when translating grid
    set Param(PGSM)       ""                                                        ;# Grid description for PGSM
    set Param(GridInfo)   ""                                                        ;# General grid description
+   set Param(Frontier)   40                                                        ;# Number of gridpoint for buffer between resolutions
    set Param(NIJWarn)    4000000                                                   ;# Warning grid size 2000x2000
    set Param(SizeWarn)   [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
    set Param(LL2M)       [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
@@ -96,6 +97,7 @@ namespace eval Grid {
    set Param(XLat2)    0                                                           ;# Rotation axis latitude
    set Param(XLon2)    90                                                          ;# Rotation axis longitude
    set Param(Angle)    0                                                           ;# Rotation angle
-   set Param(Extend)   0                                                           ;# Internal extension
+   set Param(EI)       0                                                           ;# Internal extension in I
+   set Param(EJ)       0                                                           ;# Internal extension in J
 }
 

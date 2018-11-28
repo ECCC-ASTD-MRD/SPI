@@ -99,7 +99,8 @@ proc Grid::Window { } {
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
       Bubble::Create $Data(Tab).head.add  $Bubble(GridAdd)
       Bubble::Create $Data(Tab).head.del  $Bubble(GridDel)
-      Bubble::Create $Data(Tab).head.run  $Bubble(GridRun)
+      Bubble::Create $Data(Tab).head.load $Bubble(GridLoad)
+      Bubble::Create $Data(Tab).head.save $Bubble(GridSave)
    }
    
    Grid::WindowSet $Data(Tab).grid
@@ -160,7 +161,7 @@ proc Grid::Frame { Frame { Multi False } } {
          spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
          label $Frame.grid.dim.x -text x
          spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
-         entry $Frame.grid.dim.ext -textvariable Grid::Param(Extend) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
+         entry $Frame.grid.dim.ext -textvariable Grid::Param(EI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
          pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.ext -side left
       frame $Frame.grid.maxcfl
          label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
@@ -260,7 +261,7 @@ proc Grid::WindowSave { } {
       pack .gridmakersave.path.sel -side left 
    
    frame .gridmakersave.cmd -relief sunken -bd 1
-      button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { Grid::ProjectSave $Grid::Data(SavePath) }
+      button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { Grid::ProjectSave $Grid::Data(SavePath); destroy .gridmakersave }
       button .gridmakersave.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { destroy .gridmakersave }
       pack .gridmakersave.cmd.go .gridmakersave.cmd.cancel -side left -fill x -expand True
       
