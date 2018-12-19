@@ -607,9 +607,7 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
  *                blank space added by the designer of the font
  *  <Descent    : [OUT] Amount in pixels that any letter sticks below the baseline, plus any extra
  *                blank space added by the designer of the font
- *  <Width>     : [OUT] Sum of the ascent and descent. Indicates how far apart two lines of text in the same
- *                font should be placed so that none of the characters in one line overlap any of the characters
- *                in the other line
+ *  <Width>     : [OUT] Width of the char
  *  <Dev>       : The device on which to act
  *
  * Retour       :
@@ -630,13 +628,28 @@ static void TclRDeviceX_Line(double X0,double Y0,double X1,double Y1,const pGEco
 static void TclRDeviceX_MetricInfo(int C,const pGEcontext restrict GEC,double *Ascent,double *Descent,double *Width,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     Tk_FontMetrics fm;
+    int width,n;
+    char str[TCL_UTF_MAX];
 
+    TclRDeviceX_GCFont(ctx,GEC,Dev);
+
+    // Get the ascent and descent
     Tk_GetFontMetrics(ctx->TkFont,&fm);
-    XDBGPRINTF("Font metrics queried ascent=%d descent=%d width=%d\n",fm.ascent,fm.descent,fm.linespace);
+
+    // Get the width
+    if( C < 0 ) {
+        // We have a UCS-2 string, which is what Tcl uses for its UniChar, so just convert it back to utf-8 so we can get its width
+        n = Tcl_UniCharToUtf(-C,str);
+    } else {
+        n = 1;
+        str[0] = (char)C;
+    }
+    width = Tk_TextWidth(ctx->TkFont,str,n);
+    XDBGPRINTF("Font metrics queried ascent=%d descent=%d linespace=%d width=%d (%.*s)\n",fm.ascent,fm.descent,fm.linespace,width,n,str);
 
     *Ascent = fm.ascent;
     *Descent = fm.descent;
-    *Width = fm.linespace;
+    *Width = width;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
