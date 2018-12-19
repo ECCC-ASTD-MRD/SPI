@@ -9,22 +9,36 @@
 #include "tkInt.h"
 #include "tkCanvas.h"
 #include "TclRDeviceX.h"
+#include "TclRDeviceGL.h"
 #include "TclRDevice2PS.h"
 #include "tkCanvRDevice.h"
+#include "glStuff.h"
 #include <math.h>
+
+// For dynamic linking
+#include <dlfcn.h>
 
 //#define DBGPRINTF(...) printf(__VA_ARGS__)
 #define DBGPRINTF(...)
 
+#define IS_GLDEV(x) (((Tk_Item*)x)->typePtr == &tkglRDeviceType)
+#define IS_XDEV(x)  (((Tk_Item*)x)->typePtr == &tkRDeviceType)
+
 /*
  * The structure below defines the record for each RDevice item.
  */
+
 
 typedef struct RDeviceItem  {
     Tk_Item     Header;     // Generic stuff that's the same for all types. MUST BE FIRST IN STRUCTURE
     void        *RDev;      // R Device (Volontarily opaque type)
     Tk_Canvas   Canv;       // Canvas containing the item
     Tk_Font     Font;       // Font for any text in the device
+
+    void        (*destroy)(void *RDev);                                         // Destroy function for the device
+    void        (*redraw)(void *RDev);                                          // Redraw function of the device
+    void        (*resize)(void *RDev,int W,int H);                              // Resize function of the device
+    void        (*tkredraw)(Tk_Canvas canvas,int x1,int y1,int x2,int y2);      // Signals to Tk that a redraw is needed
 } RDeviceItem;
 
 /*
@@ -53,6 +67,7 @@ static int      RDeviceConfigure(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *Item
 static int      TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,struct Tk_Item *ItemPtr,int Objc,Tcl_Obj *const Objv[]);
 static void     RDeviceDelete(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display);
 static void     RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Drawable D,int X,int Y,int Width,int Height);
+static void     RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Drawable D,int X,int Y,int Width,int Height);
 static void     RDeviceScale(Tk_Canvas Canv,Tk_Item *ItemPtr,double OriginX,double OriginY,double ScaleX,double ScaleY);
 static void     RDeviceTranslate(Tk_Canvas Canv,Tk_Item *ItemPtr,double DeltaX,double DeltaY);
 
@@ -70,6 +85,31 @@ Tk_ItemType tkRDeviceType = {
     RDeviceCoords,          /* coordProc */
     RDeviceDelete,          /* deleteProc */
     RDeviceDisplay,         /* displayProc */
+    TK_CONFIG_OBJS,         /* flags */
+    RDeviceDistToPoint,     /* pointProc */
+    RDeviceAreaOverlap,     /* areaProc */
+    RDeviceToPostscript,    /* postscriptProc */
+    RDeviceScale,           /* scaleProc */
+    RDeviceTranslate,       /* translateProc */
+    NULL,                   /* indexProc */
+    NULL,                   /* icursorProc */
+    NULL,                   /* selectionProc */
+    NULL,                   /* insertProc */
+    NULL,                   /* dTextProc */
+    NULL,                   /* nextPtr */
+    NULL, 0, NULL, NULL
+};
+
+
+Tk_ItemType tkglRDeviceType = {
+    "rdevice",              /* name */
+    sizeof(RDeviceItem),    /* itemSize */
+    TkcCreateRDevice,       /* createProc */
+    configSpecs,            /* configSpecs */
+    RDeviceConfigure,       /* configureProc */
+    RDeviceCoords,          /* coordProc */
+    RDeviceDelete,          /* deleteProc */
+    RDeviceDisplayGL,       /* displayProc */
     TK_CONFIG_OBJS,         /* flags */
     RDeviceDistToPoint,     /* pointProc */
     RDeviceAreaOverlap,     /* areaProc */
@@ -118,8 +158,25 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     }
 
     // Initialize item's record.
-    rdv->Canv = Canv;
-    rdv->RDev = NULL;
+    rdv->Canv   = Canv;
+    rdv->RDev   = NULL;
+    rdv->Font   = NULL;
+    if( IS_XDEV(ItemPtr) ) {
+        rdv->destroy    = TclRDeviceX_Destroy;
+        rdv->redraw     = TclRDeviceX_Redraw;
+        rdv->resize     = TclRDeviceX_Resize;
+        rdv->tkredraw   = Tk_CanvasEventuallyRedraw;
+    } else if( IS_GLDEV(ItemPtr) ) {
+        rdv->destroy    = TclRDeviceGL_Destroy;
+        rdv->redraw     = TclRDeviceGL_Redraw;
+        rdv->resize     = TclRDeviceGL_Resize;
+        rdv->tkredraw   = dlsym(NULL,"Tk_glCanvasEventuallyRedraw");
+    } else {
+        rdv->destroy    = NULL;
+        rdv->redraw     = NULL;
+        rdv->resize     = NULL;
+        rdv->tkredraw   = NULL;
+    }
 
     // Check where configure argument starts
     for(i=0; i<Objc; ++i) {
@@ -142,8 +199,14 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     Tk_MakeWindowExist(win);
 
     // Create the device in R
-    if( !(rdv->RDev=TclRDeviceX_Init(Interp,(void*)rdv,win,rdv->Font,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1)) ) {
-        goto error;
+    if( IS_XDEV(ItemPtr) ) {
+        if( !(rdv->RDev=TclRDeviceX_Init(Interp,(void*)rdv,win,rdv->Font,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1)) ) {
+            goto error;
+        }
+    } else if( IS_GLDEV(ItemPtr) ) {
+        if( !(rdv->RDev=TclRDeviceGL_Init(Interp,(void*)rdv,win,rdv->Font,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1)) ) {
+            goto error;
+        }
     }
 
     return TCL_OK;
@@ -222,7 +285,8 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
 
     // Update the device since we resized it
     DBGPRINTF("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
-    TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    if( rdv->resize )
+        rdv->resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 
     return TCL_OK;
 }
@@ -280,7 +344,8 @@ static void RDeviceDelete(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display) {
     RDeviceItem *rdv = (RDeviceItem*)ItemPtr;
 
     // Free the device
-    TclRDeviceX_Destroy(rdv->RDev);
+    if( rdv->destroy )
+        rdv->destroy(rdv->RDev);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -342,6 +407,41 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
     }
 }
 
+static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Drawable Drawable,int X,int Y,int Width,int Height) {
+    RDeviceItem     *rdv = (RDeviceItem*)ItemPtr;
+    int             x,y,w,h;
+    short           drawX,drawY;
+    GLuint          fbuf;
+
+    // Find the x coordinate and the width of the region to copy relative to our framebuffer coordinates
+    x = X>rdv->Header.x1 ? X-rdv->Header.x1 : 0;
+    w = (X+Width<rdv->Header.x2?X+Width:rdv->Header.x2) - rdv->Header.x1 - x;
+    // Find the y coordinate and the height of the region to copy relative to our framebuffer coordinates
+    y = Y+Height>rdv->Header.y2 ? 0 : rdv->Header.y2-(Y+Height);
+    h = rdv->Header.y2 - (Y>rdv->Header.y1?Y:rdv->Header.y1) - y;
+
+    if( w<=0 || h<=0 )
+        return;
+
+    // Get those coordinates in the portion of the canvas actually shown
+    Tk_CanvasDrawableCoords(Canv,rdv->Header.x1+x,rdv->Header.y1+h,&drawX,&drawY);
+    DBGPRINTF("Drawable coords : %hd %hd (Canvas dim : %d %d)\n",drawX,drawY,Tk_Width(Canv),Tk_Height(Canv));
+    DBGPRINTF("x(%d) y(%d) w(%d) h(%d)\n",x,y,w,h);
+
+    // Blit (copy) the RDevice's framebuffer into the screen framebuffer
+    if( (fbuf=TclRDeviceGL_GetFramebuffer(rdv->RDev)) ) {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER,fbuf);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
+        glDrawBuffer(GL_BACK);
+
+        drawY = (short)Tk_Height(Canv)-drawY;
+        glBlitFramebuffer(x,y,w,h,drawX,drawY,drawX+w,drawY+h,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+
+        glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+    }
+}
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <RDeviceDistToPoint>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
@@ -396,27 +496,6 @@ static int RDeviceAreaOverlap(Tk_Canvas Canv,Tk_Item *ItemPtr,double *Rect) {
     }
     return 0;
 }
-
-/*
- *--------------------------------------------------------------
- *
- * ScaleBitmap --
- *
- *    This function is invoked to rescale a bitmap item in a canvas. It is
- *    one of the standard item functions for bitmap items, and is invoked by
- *    the generic canvas code.
- *
- * Results:
- *    None.
- *
- * Side effects:
- *    The item referred to by itemPtr is rescaled so that the following
- *    transformation is applied to all point coordinates:
- *        x' = originX + scaleX*(x-originX)
- *        y' = originY + scaleY*(y-originY)
- *
- *--------------------------------------------------------------
- */
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <RDeviceScale>
@@ -448,7 +527,8 @@ static void RDeviceScale(Tk_Canvas Canv,Tk_Item *ItemPtr,double OriginX,double O
 
     // Update the device since we resized it
     DBGPRINTF("Scaled to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
-    TclRDeviceX_Resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    if( rdv->resize )
+        rdv->resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -500,6 +580,7 @@ static int RDeviceToPostscript(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPt
     RDeviceItem *rdv    = (RDeviceItem*)ItemPtr;
     Tcl_Obj     *psObj  = Tcl_NewObj();
 
+    // TODO translate to the rdevice's position in the canvas
     TclRDevice2PS_Dev2PS(Interp,rdv->RDev,psObj);
     Tcl_AppendObjToObj(Tcl_GetObjResult(Interp), psObj);
 
@@ -525,7 +606,9 @@ static int RDeviceToPostscript(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPt
 */
 void RDeviceItem_SignalRedraw(void *Item) {
     RDeviceItem *rdv = (RDeviceItem*)Item;
-    Tk_CanvasEventuallyRedraw(rdv->Canv,rdv->Header.x1,rdv->Header.y1,rdv->Header.x2,rdv->Header.y2);
+
+    if( rdv->tkredraw )
+        rdv->tkredraw(rdv->Canv,rdv->Header.x1,rdv->Header.y1,rdv->Header.x2,rdv->Header.y2);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -581,5 +664,13 @@ void RDeviceItem_SetFont(void *Item,Tk_Font Font) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void RDeviceItem_Register() {
+    void (*createItemType)(Tk_ItemType *Type);
+
+    // Register to a Tk canvas
     Tk_CreateItemType(&tkRDeviceType);
+
+    // Register to our glCanvas (if package is loaded)
+    if( (createItemType=dlsym(NULL,"Tk_glCreateItemType")) ) {
+        createItemType(&tkglRDeviceType);
+    }
 }
