@@ -60,7 +60,7 @@
 #include <dlfcn.h>
 
 // TclRDevice include
-#include "TclRDevice.h"
+#include "tkCanvRDevice.h"
 
 // Interface defines
 
@@ -1915,7 +1915,7 @@ int Tclr_Init(Tcl_Interp *Interp) {
 
     // Install our home made graphical device if running under tk
     if( Tcl_GetVar(Interp,"tk_version",TCL_GLOBAL_ONLY) ) {
-        TCL_ASRT( TclRDevice_Install(Interp) );
+        RDeviceItem_Register();
     }
 
     return TCL_OK;
