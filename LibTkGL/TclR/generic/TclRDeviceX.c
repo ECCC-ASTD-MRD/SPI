@@ -213,6 +213,43 @@ Pixmap TclRDeviceX_GetPixmap(void* GE) {
 
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_CtxFree>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Free the context
+ *
+ * Parametres   :
+ *  <Ctx>       : The context to free
+ *
+ * Retour       :
+ *
+ * Remarque     :
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceX_CtxFree(TCtx *Ctx) {
+    if( Ctx ) {
+        // Free the X resources
+        if( Ctx->Pixmap != None )
+            Tk_FreePixmap(Ctx->Display,Ctx->Pixmap);
+        if( Ctx->GC != None )
+            XFreeGC(Ctx->Display,Ctx->GC);
+        if( Ctx->Col )
+            Tk_FreeColor(Ctx->Col);
+        if( Ctx->Img )
+            XDestroyImage(Ctx->Img);
+
+        // Free Tcl/Tk resources
+        if( Ctx->TkFont )
+            Tk_FreeFont(Ctx->TkFont);
+        if( Ctx->FontFamily )
+            Tcl_DecrRefCount(Ctx->FontFamily);
+
+        // Free the context
+        free(Ctx);
+    }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDeviceX_GCColor>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
@@ -508,26 +545,6 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
     // Detach this device from the associated item
     RDeviceItem_DetachDevice(ctx->Item);
 
-    // Free the X resources
-    if( ctx->Pixmap != None )
-        Tk_FreePixmap(ctx->Display,ctx->Pixmap);
-    if( ctx->GC != None )
-        XFreeGC(ctx->Display,ctx->GC);
-    if( ctx->Col )
-        Tk_FreeColor(ctx->Col);
-    if( ctx->Img )
-        XDestroyImage(ctx->Img);
-    if( ctx->TkFont )
-        Tk_FreeFont(ctx->TkFont);
-
-    ctx->Display    = NULL;
-    ctx->TkWin      = NULL;
-    ctx->Pixmap     = None;
-    ctx->GC         = None;
-    ctx->Col        = NULL;
-    ctx->Img        = NULL;
-    ctx->TkFont     = NULL;
-
     // Free the xpoint buffer
     if( XPOINT_BUF ) {
         free(XPOINT_BUF);
@@ -536,7 +553,7 @@ static void TclRDeviceX_Close(pDevDesc Dev) {
     }
 
     // Free the context
-    free(ctx);
+    TclRDeviceX_CtxFree(ctx);
     Dev->deviceSpecific = NULL;
 }
 
@@ -1364,13 +1381,7 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fon
     return (void*)ge;
 err:
     // An error occured, free all the resources
-    if( ctx ) {
-        if( ctx->Pixmap != None )
-            Tk_FreePixmap(ctx->Display,ctx->Pixmap);
-        if( ctx->GC != None )
-            XFreeGC(ctx->Display,ctx->GC);
-        free(ctx);
-    }
+    TclRDeviceX_CtxFree(ctx);
     free(dev);
     return NULL;
 }
