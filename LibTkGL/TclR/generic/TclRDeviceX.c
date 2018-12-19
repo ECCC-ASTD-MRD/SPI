@@ -38,7 +38,7 @@ typedef struct TCtx {
     int         ImgSize;            // True size of the image buffer
     int         FontSize;           // Font Size currently in use
     int         FontFace;           // Font face currently in use
-    char        FontFamily[201];    // Font family currently in use
+    Tcl_Obj     *FontFamily;        // Font family currently in use
     Tk_Font     TkFont;             // Current font
     double      InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
 } TCtx;
@@ -307,6 +307,7 @@ static void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC)
  * Parametres   :
  *  <Ctx>       : Device context
  *  <GEC>       : R graphical engine context
+ *  <Dev>       : The device
  *
  * Retour       :
  *
@@ -314,44 +315,47 @@ static void TclRDeviceX_GCLine(TCtx *restrict Ctx,const pGEcontext restrict GEC)
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC) {
+static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC,pDevDesc Dev) {
     int fontsize = (int)round(GEC->ps*GEC->cex);
+    int fontface = GEC->fontface-1;
+    int famchange = (GEC->fontfamily[0]!='\0'&&strcmp(Tcl_GetString(Ctx->FontFamily),GEC->fontfamily));
 
-    if( Ctx->FontSize!=fontsize || Ctx->FontFace!=GEC->fontface || (GEC->fontfamily[0]!='\0'&&strcmp(Ctx->FontFamily,GEC->fontfamily)) ) {
-        Tcl_Obj *objs[8],*lst;
-        int     nobj=0;
+    // Strings that will be used to query fonts
+    static Tcl_Obj *str_family=NULL,*str_size,*str_weight,*str_slant,*str_bold,*str_normal,*str_roman,*str_italic;
+    if( !str_family ) {
+        Tcl_IncrRefCount( str_family    = Tcl_NewStringObj("-family",7) );
+        Tcl_IncrRefCount( str_size      = Tcl_NewStringObj("-size",5) );
+        Tcl_IncrRefCount( str_weight    = Tcl_NewStringObj("-weight",7) );
+        Tcl_IncrRefCount( str_slant     = Tcl_NewStringObj("-slant",6) );
+        Tcl_IncrRefCount( str_bold      = Tcl_NewStringObj("bold",4) );
+        Tcl_IncrRefCount( str_normal    = Tcl_NewStringObj("normal",6) );
+        Tcl_IncrRefCount( str_roman     = Tcl_NewStringObj("roman",5) );
+        Tcl_IncrRefCount( str_italic    = Tcl_NewStringObj("italic",6) );
+    }
+
+    if( Ctx->FontSize!=fontsize || Ctx->FontFace!=fontface || famchange ) {
+        Tcl_Obj *lst,*objs[8];
         Tk_Font font;
 
         XDBGPRINTF("Font family(%s|%s) cex(%g) ps(%g) lineheight(%g) fontface(%d|%d) -- fontsize(%d|%d)\n",
-                GEC->fontfamily,Ctx->FontFamily,GEC->cex,GEC->ps,GEC->lineheight,GEC->fontface,Ctx->FontFace,fontsize,Ctx->FontSize);
+                GEC->fontfamily,Tcl_GetString(Ctx->FontFamily),GEC->cex,GEC->ps,GEC->lineheight,fontface,Ctx->FontFace,fontsize,Ctx->FontSize);
 
         // Specify the family (Keep the same one if none is specified)
-        objs[nobj++] = Tcl_NewStringObj("-family",7);
-        objs[nobj++] = Tcl_NewStringObj(GEC->fontfamily[0]!='\0' ? GEC->fontfamily : Ctx->FontFamily,-1);
+        objs[0] = str_family;
+        objs[1] = famchange ? Tcl_NewStringObj(GEC->fontfamily,-1) : Ctx->FontFamily;
 
-        // Add the font size (in points) from the "cex" and "ps" params
-        objs[nobj++] = Tcl_NewStringObj("-size",5);
-        objs[nobj++] = Tcl_ObjPrintf("%d",fontsize);
+        // Specify the font size (in points) from the "cex" and "ps" params
+        objs[2] = str_size;
+        objs[3] = Tcl_NewIntObj(fontsize);
 
-        // Add the style from the "fontface" param (1=plain, 2=bold, 3=italic, 4=bold-italic)
-        objs[nobj++] = Tcl_NewStringObj("-weight",7);
-        switch( GEC->fontface ) {
-            case 1:
-            case 3: objs[nobj++] = Tcl_NewStringObj("normal",6); break;
-            case 2:
-            case 4: objs[nobj++] = Tcl_NewStringObj("bold",4);   break;
-        }
+        // Add the style from the "fontface" param (originally 1=plain, 2=bold, 3=italic, 4=bold-italic, 5=plain symbol,
+        // but we set it back to a zero-based value so the following code works)
+        objs[4] = str_weight;
+        objs[5] = fontface&1 ? str_bold : str_normal;
+        objs[6] = str_slant;
+        objs[7] = fontface&2 ? str_italic : str_roman;
 
-        objs[nobj++] = Tcl_NewStringObj("-slant",6);
-        switch( GEC->fontface ) {
-            case 1:
-            case 2: objs[nobj++] = Tcl_NewStringObj("roman",5);  break;
-            case 3:
-            case 4: objs[nobj++] = Tcl_NewStringObj("italic",6); break;
-        }
-
-        // Make a list out of the arguments
-        lst = Tcl_NewListObj(nobj,objs);
+        lst = Tcl_NewListObj(8,objs);
 
         // Get the font
         if( (font=Tk_AllocFontFromObj(NULL,Ctx->TkWin,lst)) ) {
@@ -360,11 +364,18 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC)
 
             // Assign the new font
             Ctx->FontSize   = fontsize;
-            Ctx->FontFace   = GEC->fontface;
+            Ctx->FontFace   = fontface;
             Ctx->TkFont     = font;
 
-            if( GEC->fontfamily[0] != '\0' )
-                strcpy(Ctx->FontFamily,GEC->fontfamily);
+            if( famchange ) {
+                Tcl_DecrRefCount(Ctx->FontFamily);
+                Ctx->FontFamily = objs[1];
+                Tcl_IncrRefCount(Ctx->FontFamily);
+            }
+
+            // Also update the character size in rasters
+            Dev->cra[0] = 0.9*fontsize/(Ctx->InPxX*72.0);
+            Dev->cra[1] = 1.2*fontsize/(Ctx->InPxY*72.0);
 
             XSetFont(Ctx->Display,Ctx->GC,Tk_FontId(font));
 
@@ -1110,7 +1121,7 @@ static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *T
 static double TclRDeviceX_StrWidth(const char *Str,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
-    TclRDeviceX_GCFont(ctx,GEC);
+    TclRDeviceX_GCFont(ctx,GEC,Dev);
     XDBGPRINTF("StrWidth of (%s)(%d) is %d\n",Str,(int)strlen(Str),Tk_TextWidth(ctx->TkFont,Str,strlen(Str)));
     return Tk_TextWidth(ctx->TkFont,Str,strlen(Str));
 }
@@ -1147,7 +1158,7 @@ static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double
 
     XDBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-    TclRDeviceX_GCFont(ctx,GEC);
+    TclRDeviceX_GCFont(ctx,GEC,Dev);
     TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)X,ctx->H-(int)Y,Rot);
 }
 
@@ -1195,8 +1206,8 @@ static DevDesc* TclRDeviceX_NewDev(TCtx *Ctx) {
         dev->yLineBias  = 0.1;
         dev->ipr[0]     = 1.0/72.0; /* Inches per raster; [0]=x, [1]=y */
         dev->ipr[1]     = 1.0/72.0;
-        dev->cra[0]     = Tk_TextWidth(Ctx->TkFont,"m",1)*Ctx->InPxX*72.0;       /* Character size in rasters; [0]=x, [1]=y */
-        dev->cra[1]     = fm.linespace*Ctx->InPxX*72.0;
+        dev->cra[0]     = 0.9*Ctx->FontSize/(Ctx->InPxX*72.0);       /* Character size in rasters; [0]=x, [1]=y */
+        dev->cra[1]     = 1.2*Ctx->FontSize/(Ctx->InPxY*72.0);
         dev->gamma      = 1.;
 
         // Device capabilities
@@ -1313,12 +1324,13 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fon
     ctx->Col        = NULL;
     ctx->Img        = NULL;
     ctx->ImgSize    = 0;
-    ctx->FontSize   = font->fa.size;    /*This is an ugly hack*/
+    ctx->FontSize   = font->fa.size;
+    ctx->FontFace   = (font->fa.slant==TK_FS_ITALIC)<<1|(font->fa.weight==TK_FW_BOLD);
+    ctx->FontFamily = Tcl_NewStringObj(strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4,-1); Tcl_IncrRefCount(ctx->FontFamily);
     ctx->FontFace   = font->fa.weight==TK_FW_NORMAL ? font->fa.slant==TK_FS_ROMAN?1:3 : font->fa.slant==TK_FS_ROMAN?2:4;  /*This has to be the acme of ugly hacks*/
     ctx->TkFont     = Font;
     ctx->InPxX      = ((double)(DisplayWidthMM(ctx->Display,screen))/(double)(DisplayWidth(ctx->Display,screen))) * MM2INCH;
     ctx->InPxY      = ((double)(DisplayHeightMM(ctx->Display,screen))/(double)(DisplayHeight(ctx->Display,screen))) * MM2INCH;
-    strcpy(ctx->FontFamily,strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4);    /*Believe it or not, I think this is an even uglier hack*/
     if( (ctx->Pixmap=Tk_GetPixmap(ctx->Display,Tk_WindowId(TkWin),W,H,Tk_Depth(TkWin))) == None ) {
         Tcl_AppendResult(Interp,"Could not create pixmap",NULL);
         goto err;
