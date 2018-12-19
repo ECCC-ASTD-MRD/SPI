@@ -154,8 +154,8 @@ proc Grid::Frame { Frame { Multi False } } {
       }   
 
       Option::Create $Frame.grid.type  [lindex $Lbl(GridType) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame.grid"
-      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply"
-      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
+      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResMX) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLLY) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply"
+      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMX) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
          spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
