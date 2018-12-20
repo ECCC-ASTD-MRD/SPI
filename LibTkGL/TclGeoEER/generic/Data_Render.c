@@ -2021,6 +2021,9 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         /*Get the components*/
                         Def_Get(Field->Def,0,idx,u);
                         Def_Get(Field->Def,2,idx,w);
+                        
+                        // Discard is nan or nodata
+                        if (!DEFVALID(Field->Def,u)) continue;
 
                         /*If the horizontal components are not section oriented but geographicaly N-S E-W*/
                         if (!Field->Spec->GridVector) {
@@ -2057,9 +2060,11 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                   if (VALWITHIN(Field->Spec,len)) {
                      DataSpec_ColorSet(Interp,Field->Spec,len);
                      
-                     Def_Get(Field->Def,0,idx,u);
+                     Def_Get(Field->Def,0,idx,u); 
+                     if (!DEFVALID(Field->Def,u)) continue;
+                     
                      if (Field->Def->Data[1]) {
-                        Def_Get(Field->Def,1,idx,v);
+                        Def_Get(Field->Def,1,idx,v);                        
                         size=VP->Ratio*VECTORSIZE(Field->Spec,len);
                         dir=180+RAD2DEG(atan2(u,v));
                      } else {
@@ -2087,7 +2092,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                         
                   if (Field->GRef->UnProject(Field->GRef,&i0,&j0,coo.Lat,coo.Lon,1,1)) {
                   
-                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {                  
+                     if (Field->GRef->Value(Field->GRef,Field->Def,Field->Spec->InterpDegree[0],0,i0,j0,0,&len,&dir)) {
                         if (VALWITHIN(Field->Spec,len)) {
                            DataSpec_ColorSet(Interp,Field->Spec,len);
                            size=VP->Ratio*VECTORSIZE(Field->Spec,len);
@@ -2184,10 +2189,12 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             n=0;
             for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
                for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
-                  dz=FIDX2D(Field->Def,i,j);
-                  if (!mask || Field->Def->Mask[dz]) {
-                     ll[n]=ll[dz];
-                     ll[mem+n]=ll[mem+dz];
+                  dn=FIDX2D(Field->Def,i,j);
+                  dz=dn*Field->Def->Level;
+                  Def_Get(Field->Def,0,dn,u);
+                  if (DEFVALID(Field->Def,u) && (!mask || Field->Def->Mask[dn])) {
+                     ll[n]=ll[dn];
+                     ll[mem+n]=ll[mem+dn];
                      n++;
                   }
                }

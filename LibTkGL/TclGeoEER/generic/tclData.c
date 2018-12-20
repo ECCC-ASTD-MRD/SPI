@@ -594,7 +594,7 @@ TData* Data_GetShell(Tcl_Interp *Interp,char *Name){
 */
 void Data_GetStat(TData *Field){
 
-   TDef     *def;
+   TDef          *def;
    double        val=0.0,mode;
    int           i,j,k,d,imin=0,jmin=0,imax=0,jmax=0,kmin=0,kmax=0;
    unsigned long idxk,idx,n=0;
@@ -615,8 +615,8 @@ void Data_GetStat(TData *Field){
       }
       if (def->Mode) {
          for (k=0;k<def->NK;k++) {
-         idxk=FSIZE2D(def)*k;
-         for (j=0;j<def->NJ;j++) {
+            idxk=FSIZE2D(def)*k;
+            for (j=0;j<def->NJ;j++) {
                idx=idxk+j*def->NI;
                for (i=0;i<def->NI;i++,idx++) {
                   mode=0;
@@ -624,7 +624,11 @@ void Data_GetStat(TData *Field){
                      Def_Get(def,d,idx,val);
                      mode+=val*val;
                   }
-                  Def_SetMod(def,idx,sqrt(mode));
+                  if (DEFVALID(Field->Def,val)) {
+                     Def_SetMod(def,idx,sqrt(mode));
+                  } else {
+                     Def_SetMod(def,idx,val);
+                  }
                }
             }
          }
