@@ -186,6 +186,42 @@ void TclRDeviceX_Resize(void *GE,int W,int H) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceX_SetFont>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Force a font change from the widget. Useful to change the font family without going through R.
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *  <Font>      : The new font to use
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be called by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void TclRDeviceX_SetFont(void *GE,Tk_Font Font) {
+    if( GE && Font ) {
+        TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
+
+        if( ctx->TkFont != Font ) {
+            TkFont *font = (TkFont*)Font;   /*This is an ugly hack, but how else am I suppose to get the necessary font specs?*/
+
+            if( ctx->FontFamily ) {
+                Tcl_DecrRefCount(ctx->FontFamily);
+            }
+
+            // Note that we do NOT need to free the old font, because that is already taken care of by the associated tk widget
+            ctx->FontSize   = font->fa.size;
+            ctx->FontFace   = (font->fa.slant==TK_FS_ITALIC)<<1|(font->fa.weight==TK_FW_BOLD);
+            ctx->FontFamily = Tcl_NewStringObj(strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4,-1); Tcl_IncrRefCount(ctx->FontFamily);
+            ctx->TkFont     = Font;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDeviceX_GetPixmap>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
@@ -239,8 +275,9 @@ static void TclRDeviceX_CtxFree(TCtx *Ctx) {
             XDestroyImage(Ctx->Img);
 
         // Free Tcl/Tk resources
-        if( Ctx->TkFont )
-            Tk_FreeFont(Ctx->TkFont);
+        // We do NOT need to free the font, because that will be taken care of by the associated tk widget
+        //if( Ctx->TkFont )
+        //    Tk_FreeFont(Ctx->TkFont);
         if( Ctx->FontFamily )
             Tcl_DecrRefCount(Ctx->FontFamily);
 
@@ -396,8 +433,8 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC,
 
         // Get the font
         if( (font=Tk_AllocFontFromObj(NULL,Ctx->TkWin,lst)) ) {
-            // Free the previous font
-            Tk_FreeFont(Ctx->TkFont);
+            // It is NOT needed to free the font as it will be managed by the associated Tk widget
+            //Tk_FreeFont(Ctx->TkFont);
 
             // Assign the new font
             Ctx->FontSize   = fontsize;
@@ -416,7 +453,7 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC,
 
             XSetFont(Ctx->Display,Ctx->GC,Tk_FontId(font));
 
-            // Update the font on the item too (useful if querried)
+            // Update the font on the item (the old font will be freed there)
             RDeviceItem_SetFont(Ctx->Item,Ctx->TkFont);
         } else {
             fprintf(stderr,"%s: Could not get font for params \"%s\"\n",__func__,Tcl_GetStringFromObj(lst,NULL));

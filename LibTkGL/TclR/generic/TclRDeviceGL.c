@@ -40,6 +40,7 @@ typedef struct TCtx {
     int             FontFace;           // Font face currently in use
     Tcl_Obj         *FontFamily;        // Font family currently in use
     Tk_Font         TkFont;             // Current font
+    int             Alias;              // Whether we use anti-aliasing or not
     double          InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
     GLint           VP[4];              // Viewport to restore after drawing
 } TCtx;
@@ -47,7 +48,7 @@ typedef struct TCtx {
 static union {char bytes[2]; uint16_t ushort;} BYTEORDER = {.ushort=0x1122};
 #define IS_BIG_ENDIAN (BYTEORDER.bytes[0]==0x11)
 
-static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H);
+static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Alias);
 static void TclRDeviceGL_GCColor(TCtx *restrict Ctx,rcolor RCol);
 
 
@@ -120,7 +121,7 @@ void TclRDeviceGL_Resize(void *GE,int W,int H) {
         TCtx *ctx = (TCtx*)dev->deviceSpecific;
 
         // Free and create a new pixmap if we need a bigger one in one or both dimension(s)
-        if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H) ) {
+        if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H,-1) ) {
             // Let's hope this never happens
             TclRDeviceGL_Destroy(GE);
             return;
@@ -164,6 +165,69 @@ GLuint TclRDeviceGL_GetFramebuffer(void* GE) {
     return None;
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_SetFont>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Force a font change from the widget. Useful to change the font family without going through R.
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *  <Font>      : The new font to use
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be called by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void TclRDeviceGL_SetFont(void *GE,Tk_Font Font) {
+    if( GE && Font ) {
+        TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
+
+        if( ctx->TkFont != Font ) {
+            TkFont *font = (TkFont*)Font;   /*This is an ugly hack, but how else am I suppose to get the necessary font specs?*/
+
+            if( ctx->FontFamily ) {
+                Tcl_DecrRefCount(ctx->FontFamily);
+            }
+
+            // Note that we do NOT need to free the old font, because that is already taken care of by the associated tk widget
+            ctx->FontSize   = font->fa.size;
+            ctx->FontFace   = (font->fa.slant==TK_FS_ITALIC)<<1|(font->fa.weight==TK_FW_BOLD);
+            ctx->FontFamily = Tcl_NewStringObj(strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4,-1); Tcl_IncrRefCount(ctx->FontFamily);
+            ctx->TkFont     = Font;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_GetFramebuffer>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Set whether we use anti-aliasing or not
+ *
+ * Parametres   :
+ *  <GE>        : Graphics Engine description pointer
+ *  <Alias>     : 0 to disable anti-aliasing, any other value to enable it
+ *
+ * Retour       :
+ *
+ * Remarque     : This function should only be called by the rdevice canvas item
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+void TclRDeviceGL_SetAlias(void* GE,int Alias) {
+    if( GE ) {
+        TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
+
+        if( !TclRDeviceGL_ResizeFramebuffer(ctx,ctx->W,ctx->H,Alias!=0) ) {
+            // Let's hope this never happens
+            TclRDeviceGL_Destroy(GE);
+            return;
+        }
+    }
+}
 
 // Helper functions
 
@@ -218,8 +282,9 @@ static void TclRDeviceGL_CtxFree(TCtx *Ctx) {
             gluDeleteTess(Ctx->Tess);
 
         // Free Tcl/Tk resources
-        if( Ctx->TkFont )
-            Tk_FreeFont(Ctx->TkFont);
+        // We do NOT need to free the font, because that will be taken care of by the associated tk widget
+        //if( Ctx->TkFont )
+        //    Tk_FreeFont(Ctx->TkFont);
         if( Ctx->FontFamily )
             Tcl_DecrRefCount(Ctx->FontFamily);
 
@@ -242,15 +307,19 @@ static void TclRDeviceGL_CtxFree(TCtx *Ctx) {
  *  <Ctx>       : Device context
  *  <W>         : Desired width
  *  <H>         : Desired height
+ *  <Alias>     : Whether we want anti-aliasing or not (-1 to use current config)
  *
  * Retour       : 1 if OK, 0 in case of error
  *
  * Remarque     :
  *---------------------------------------------------------------------------------------------------------------
 */
-static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H) {
-    // Check if we need to resize
-    if( !Ctx->FBuf || !Ctx->RBuf || Ctx->PxW<W || Ctx->PxH<H ) {
+static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Alias) {
+    if( Alias < 0 )
+        Alias = Ctx->Alias;
+
+    // Check if we need to do something
+    if( !Ctx->FBuf || !Ctx->RBuf || Ctx->PxW<W || Ctx->PxH<H || Ctx->Alias!=Alias ) {
         // Free the old framebuffer object
         if( Ctx->FBuf ) {
             glDeleteFramebuffers(1,&Ctx->FBuf);
@@ -270,16 +339,20 @@ static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H) {
         // Create the renderbuffer
         glGenRenderbuffers(1,&Ctx->RBuf);
         glBindRenderbuffer(GL_RENDERBUFFER,Ctx->RBuf);
-        glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,W,H);
-        //printf("Max samples : %d\n",GL_MAX_INTEGER_SAMPLES);
-        //glRenderbufferStorageMultisample(GL_RENDERBUFFER,4,GL_RGBA8,W,H);
-        //glEnable(GL_MULTISAMPLE);
+        if( Alias ) {
+            //printf("Max samples : %d\n",GL_MAX_INTEGER_SAMPLES);
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER,4,GL_RGBA8,W,H);
+            glEnable(GL_MULTISAMPLE);
+        } else {
+            glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,W,H);
+        }
 
         // Link the renderbuffer to the framebuffer
         glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,Ctx->RBuf);
 
         Ctx->PxW = W;
         Ctx->PxH = H;
+        Ctx->Alias = Alias;
 
         // Check for errors
         return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
@@ -329,6 +402,24 @@ static void TclRDeviceGL_TessCombine(GLdouble Coords[3],void *restrict DataIn[4]
     Ctx->TessBuf += 2;
 }
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_LineJoinCap>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Handle the line join and line ending as it is not handled by OpenGL itself
+ *
+ * Parametres   :
+ *  <N>         : Number of points
+ *  <X>         : X coordinate of points
+ *  <Y>         : Y coordinates of points
+ *  <GEC>       : R graphical engine context
+ *  <Loop>      : True if the last point connects to the first point (i.e for a polygon), false else.
+ *
+ * Retour       : 1 if OK, 0 in case of error
+ *
+ * Remarque     :
+ *---------------------------------------------------------------------------------------------------------------
+*/
 static void TclRDeviceGL_LineJoinCap(int N,double *X,double *Y,const pGEcontext restrict GEC,int Loop) {
     double pts[16],ax,ay,bx,by,vx,vy,sc,lwd=GEC->lwd*0.5;
     int i,j,n,loops;
@@ -653,8 +744,8 @@ static void TclRDeviceGL_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC
 
         // Get the font
         if( (font=Tk_AllocFontFromObj(NULL,Ctx->TkWin,lst)) ) {
-            // Free the previous font
-            Tk_FreeFont(Ctx->TkFont);
+            // It is NOT needed to free the font as it will be managed by the associated Tk widget
+            //Tk_FreeFont(Ctx->TkFont);
 
             // Assign the new font
             Ctx->FontSize   = fontsize;
@@ -673,7 +764,7 @@ static void TclRDeviceGL_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC
 
             glFontUse(Ctx->Display,font);
 
-            // Update the font on the item too (useful if querried)
+            // Update the font on the item (the old font will be freed there)
             RDeviceItem_SetFont(Ctx->Item,Ctx->TkFont);
         } else {
             fprintf(stderr,"%s: Could not get font for params \"%s\"\n",__func__,Tcl_GetStringFromObj(lst,NULL));
@@ -1747,11 +1838,12 @@ void* TclRDeviceGL_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fo
     ctx->FontFace   = (font->fa.slant==TK_FS_ITALIC)<<1|(font->fa.weight==TK_FW_BOLD);
     ctx->FontFamily = Tcl_NewStringObj(strncasecmp(font->fa.family,"itc ",4)?font->fa.family:font->fa.family+4,-1); Tcl_IncrRefCount(ctx->FontFamily);
     ctx->TkFont     = Font;
+    ctx->Alias      = 1;
     ctx->InPxX      = ((double)(DisplayWidthMM(ctx->Display,screen))/(double)(DisplayWidth(ctx->Display,screen))) * MM2INCH;
     ctx->InPxY      = ((double)(DisplayHeightMM(ctx->Display,screen))/(double)(DisplayHeight(ctx->Display,screen))) * MM2INCH;
 
     // Allocate the framebuffer
-    if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H) ) {
+    if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H,-1) ) {
         Tcl_AppendResult(Interp,"Could not create GL framebuffer",NULL);
         goto err;
     }

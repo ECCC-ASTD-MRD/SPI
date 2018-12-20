@@ -34,10 +34,13 @@ typedef struct RDeviceItem  {
     void        *RDev;      // R Device (Volontarily opaque type)
     Tk_Canvas   Canv;       // Canvas containing the item
     Tk_Font     Font;       // Font for any text in the device
+    int         Alias;      // Wether we use anti-aliasing on the RDevice or not. Note that not all rdevices may support that option.
 
     void        (*destroy)(void *RDev);                                         // Destroy function for the device
     void        (*redraw)(void *RDev);                                          // Redraw function of the device
     void        (*resize)(void *RDev,int W,int H);                              // Resize function of the device
+    void        (*setfont)(void *RDev,Tk_Font Font);                            // Set wether to use anti-aliasing or not
+    void        (*setalias)(void *RDev,int Alias);                              // Set wether to use anti-aliasing or not
     void        (*tkredraw)(Tk_Canvas canvas,int x1,int y1,int x2,int y2);      // Signals to Tk that a redraw is needed
 } RDeviceItem;
 
@@ -45,13 +48,12 @@ typedef struct RDeviceItem  {
  * Information used for parsing configuration specs:
  */
 
-static const Tk_CustomOption tagsOption = {
-    Tk_CanvasTagsParseProc, Tk_CanvasTagsPrintProc, NULL
-};
+static const Tk_CustomOption tagsOption = {Tk_CanvasTagsParseProc,Tk_CanvasTagsPrintProc,NULL};
 
 static const Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_CUSTOM,  "-tags",    NULL,NULL,NULL,             0,                              TK_CONFIG_NULL_OK,  &tagsOption},
     {TK_CONFIG_FONT,    "-font",    NULL,NULL,"TkDefaultFont",  Tk_Offset(RDeviceItem,Font),    0,                  NULL},
+    {TK_CONFIG_BOOLEAN, "-alias",   NULL,NULL,"True",           Tk_Offset(RDeviceItem,Alias),   0,                  NULL},
     {TK_CONFIG_END,     NULL,       NULL,NULL,NULL,             0,                              0,                  NULL}
 };
 
@@ -126,6 +128,37 @@ Tk_ItemType tkglRDeviceType = {
 };
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <RDeviceSyncConfig>
+ * Creation     : Décembre 2018 - E. Legault-Ouellet
+ *
+ * But          : Push the current configuration to the RDevice
+ *
+ * Parametres   :
+ *  <Interp>    : Interpreter for error reporting
+ *  <Canv>      : Canvas to hold new item
+ *  <ItemPtr>   : Record to hold new item; header has been initialized by caller
+ *  <Objc>      : Number of arguments in objv
+ *  <Objv>      : Arguments describing rectangle
+ *
+ * Retour       : A standard Tcl return value. If an error occurred in creating the
+ *                item, then an error message is left in the interp's result; in this
+ *                case itemPtr is left uninitialized, so it can be safely freed by the
+ *                caller.
+ *
+ * Side effects : A new rdevice item is created.
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void RDeviceSyncConfig(RDeviceItem *Rdv) {
+    if( Rdv->RDev ) {
+        if( Rdv->setfont )
+            Rdv->setfont(Rdv->RDev,Rdv->Font);
+        if( Rdv->setalias )
+            Rdv->setalias(Rdv->RDev,Rdv->Alias);
+    }
+}
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TkcCreateRDevice>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
@@ -165,16 +198,22 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
         rdv->destroy    = TclRDeviceX_Destroy;
         rdv->redraw     = TclRDeviceX_Redraw;
         rdv->resize     = TclRDeviceX_Resize;
+        rdv->setfont    = TclRDeviceX_SetFont;
+        rdv->setalias   = NULL;
         rdv->tkredraw   = Tk_CanvasEventuallyRedraw;
     } else if( IS_GLDEV(ItemPtr) ) {
         rdv->destroy    = TclRDeviceGL_Destroy;
         rdv->redraw     = TclRDeviceGL_Redraw;
         rdv->resize     = TclRDeviceGL_Resize;
+        rdv->setfont    = TclRDeviceGL_SetFont;
+        rdv->setalias   = TclRDeviceGL_SetAlias;
         rdv->tkredraw   = dlsym(NULL,"Tk_glCanvasEventuallyRedraw");
     } else {
         rdv->destroy    = NULL;
         rdv->redraw     = NULL;
         rdv->resize     = NULL;
+        rdv->setfont    = NULL;
+        rdv->setalias   = NULL;
         rdv->tkredraw   = NULL;
     }
 
@@ -208,6 +247,9 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
             goto error;
         }
     }
+
+    // Sync the config with the underlying RDevice
+    RDeviceSyncConfig(rdv);
 
     return TCL_OK;
 error:
@@ -319,6 +361,9 @@ static int RDeviceConfigure(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     if (TCL_OK != Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canv),configSpecs,Objc,(const char**)Objv,(char*)rdv,Flags|TK_CONFIG_OBJS)) {
         return TCL_ERROR;
     }
+
+    // Sync the config with the underlying RDevice
+    RDeviceSyncConfig(rdv);
 
     return TCL_OK;
 }
@@ -641,12 +686,18 @@ void RDeviceItem_DetachDevice(void *Item) {
  *
  * Retour       :
  *
- * Side effects : Updates the font in the item
+ * Side effects : Updates the font in the item and frees the previous one
  *
  *---------------------------------------------------------------------------------------------------------------
 */
 void RDeviceItem_SetFont(void *Item,Tk_Font Font) {
-    ((RDeviceItem*)Item)->Font = Font;
+    RDeviceItem *rdv = (RDeviceItem*)Item;
+
+    // Free the previous font
+    Tk_FreeFont(rdv->Font);
+
+    // Assign the new font
+    rdv->Font = Font;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
