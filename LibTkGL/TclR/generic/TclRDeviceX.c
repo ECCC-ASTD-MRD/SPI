@@ -500,19 +500,19 @@ static void TclRDeviceX_GCFont(TCtx *restrict Ctx,const pGEcontext restrict GEC,
 */
 static void TclRDeviceX_Circle(double X,double Y,double R,const pGEcontext restrict GEC,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
-    int r=(int)round(R),x=(int)X-r,y=ctx->H-(int)Y+r,d=r*2;
+    int r=(int)round(R),x=(int)X-r,y=ctx->H-(int)Y-r,d=r*2;
 
     XDBGPRINTF("Circle @[%.4f,%.4f] r=%.4f\n",X,Y,R);
     // Check if we need to fill the circle
     if( GEC->fill != NA_INTEGER ) {
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
-        XFillArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
+        XFillArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*64);
     }
     // Check if we need to draw the borders
     if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
         TclRDeviceX_GCLine(ctx,GEC);
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
-        XDrawArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*60);
+        XDrawArc(ctx->Display,ctx->Pixmap,ctx->GC,x,y,d,d,0,360*64);
     }
 }
 
