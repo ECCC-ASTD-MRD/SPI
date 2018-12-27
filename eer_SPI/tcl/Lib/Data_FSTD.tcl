@@ -1172,15 +1172,14 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          dataspec configure $Spec -desc $desc
       }
       
-      #----- Set a colormap
-      set map [dataspec configure $Spec -colormap]
+      #----- Set a colormap    
       if { ![colormap is FLDMAP$Spec] } {
-         colormap create FLDMAP$Spec
          #----- Use previous on if not already defined
+         set map [dataspec configure $Spec -colormap]
          if { ![colormap is $map] } {
-            colormap copy   FLDMAP$Spec FLDMAPDEFAULT
+            colormap copy FLDMAP$Spec FLDMAPDEFAULT
          } else {
-            colormap copy   FLDMAP$Spec $map
+            colormap copy FLDMAP$Spec $map
          }
       }
       dataspec configure $Spec -colormap FLDMAP$Spec
