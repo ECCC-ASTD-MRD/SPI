@@ -139,7 +139,8 @@ proc Grid::Frame { Frame { Multi False } } {
    
    set Data(Canvas) $Page::Data(Canvas)
    set Data(Frame)  $Page::Data(Frame)
-
+   set Data(PNI)    0
+   
    if { [winfo exists $Frame.grid] } {
       return
    }
@@ -158,11 +159,11 @@ proc Grid::Frame { Frame { Multi False } } {
       Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMX) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
-         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Param(GetNIJ) True }
          label $Frame.grid.dim.x -text x
-         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
-         entry $Frame.grid.dim.ext -textvariable Grid::Param(EI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
-         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.ext -side left
+         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
+         entry $Frame.grid.dim.pil -textvariable Grid::Param(PI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
+         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.pil -side left
       frame $Frame.grid.maxcfl
          label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
          spinbox $Frame.grid.maxcfl.val -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(MaxCFL) -width 3 -from 0 -to 20 -increment 1 -command { Grid::Apply }
@@ -225,10 +226,11 @@ proc Grid::Frame { Frame { Multi False } } {
    bind $Frame.grid.ref.latr   <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ref.lonr   <Return> "catch { Grid::Apply }"
   
-   Bubble::Create $Frame.grid.type  $Bubble(Types)
-   Bubble::Create $Frame.grid.reskm $Bubble(ResM)
-   Bubble::Create $Frame.grid.resll $Bubble(ResLL)
-   Bubble::Create $Frame.grid.dim   $Bubble(Dimension)
+   Bubble::Create $Frame.grid.type    $Bubble(Types)
+   Bubble::Create $Frame.grid.reskm   $Bubble(ResM)
+   Bubble::Create $Frame.grid.resll   $Bubble(ResLL)
+   Bubble::Create $Frame.grid.dim.pil $Bubble(Pilot)
+   Bubble::Create $Frame.grid.dim     $Bubble(Dimension)
 }
 
 proc Grid::WindowSave { } {

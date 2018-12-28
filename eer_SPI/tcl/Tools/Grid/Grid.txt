@@ -62,4 +62,5 @@ namespace eval Grid {
    set Bubble(ResLL)     { "Résolution en degrées" "Resolution in degrees" }
    set Bubble(Dimension) { "Nombre de points de grilles" "Number of gridpoints" }
    set Bubble(Coverage)  { "Couverture de la grille en latlon, spécifié par les coins opposés" "Grid coverage specified by the opposite corners in latlon" }
+   set Bubble(Pilot)     { "Dimension de la zone de pilotage" "Size of the pilot zone" }
 }

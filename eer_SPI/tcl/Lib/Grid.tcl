@@ -65,11 +65,12 @@ namespace eval Grid {
    set Param(LonD1)      0                                                         ;# Longitude delta relative to inside grid
    set Param(PGSM)       ""                                                        ;# Grid description for PGSM
    set Param(GridInfo)   ""                                                        ;# General grid description
-   set Param(Frontier)   40                                                        ;# Number of gridpoint for buffer between resolutions
+   set Param(ND)         40                                                        ;# Number of gridpoint for buffer between resolutions
    set Param(NIJWarn)    4000000                                                   ;# Warning grid size 2000x2000
    set Param(SizeWarn)   [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
    set Param(LL2M)       [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
    set Param(LockCenter) False                                                     ;# Fixe the grid center
+   set Param(FFT)        1                                                         ;# Direction of FFT check
 
    set Param(LatR)     0.0                                                         ;
    set Param(LonR)     180.0                                                       ;
@@ -79,8 +80,8 @@ namespace eval Grid {
    set Param(XLat2)    0                                                           ;# Rotation axis latitude
    set Param(XLon2)    90                                                          ;# Rotation axis longitude
    set Param(Angle)    0                                                           ;# Rotation angle
-   set Param(EI)       0                                                           ;# Internal extension in I
-   set Param(EJ)       0                                                           ;# Internal extension in J
+   set Param(PI)       0                                                           ;# Internal pilot zone in I
+   set Param(PJ)       0                                                           ;# Internal pilot zone in J
 }
 
 #----------------------------------------------------------------------------
@@ -124,8 +125,8 @@ proc Grid::Reset { } {
    set Param(XLat2)      0                                                         ;# Rotation axis latitude
    set Param(XLon2)      90                                                        ;# Rotation axis longitude
    set Param(Angle)      0                                                         ;# Rotation angle
-   set Param(EI)         0                                                         ;# Internal extension in I
-   set Param(EJ)         0                                                         ;# Internal extension in J
+   set Param(PI)         0                                                         ;# Internal extension in I
+   set Param(PJ)         0                                                         ;# Internal extension in J
    set Param(LockCenter) False                                                     ;# Fixe the grid center
    
    lset Data(GridParams) $Data(GridNo) [array get Grid::Param]
@@ -217,7 +218,7 @@ proc Grid::Center { Lat Lon { Update True } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Grid::BBoxOrder>
+# Nom      : <Grid::CheckBBoxOrder>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Ordonne les coordonnees de la bounding box
@@ -231,7 +232,7 @@ proc Grid::Center { Lat Lon { Update True } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::BBoxOrder { } {
+proc Grid::CheckBBoxOrder { } {
 
    uplevel {
       if { $Data(GridNo)>0 } {
@@ -274,7 +275,49 @@ proc Grid::BBoxOrder { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Grid::NIJ>
+# Nom      : <Grid::CheckFFT>
+# Creation : Decembre 2018 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Calcul du prochain entier > M qui se factorise en K
+#
+# Parametres :
+#     <N>    : Dimension a vérifier
+#     <D>    : Direction de l'incrément (défaut: 1)
+#     <M>    : Valeur minimale (défaut: 8)
+#     <K>    : Liste des facteurs  (défaut: {2 3 5})
+#
+# Retour:
+#     <N>    : Valeur factorisable
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Grid::CheckFFT { N { D 1 } { M 8 } { K { 2 3 5 } } } {
+
+   if { $N<=8 } { set N [expr $M+1] }
+
+   set up $N
+   while { $up!=1 } {
+      set nk 0
+      foreach k $K {
+         if { [expr $up%$k]==0 } { 
+            set up [expr $up/$k]
+            break
+         }
+         incr nk
+      }
+      if { $nk==[llength $K] } {
+         set up [incr N $D]
+      }
+   }
+ 
+   if { $N<=8 } { set N [expr $M+1] }
+   return $N
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Grid::CheckNIJ>
 # Creation : Juin 2018 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Calcule les NIJ ou les Lat1 Lon1 selon le cas
@@ -287,7 +330,7 @@ proc Grid::BBoxOrder { } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::NIJ { } {
+proc Grid::CheckNIJ { } {
    variable Msg
    variable Lbl
 
@@ -306,27 +349,27 @@ proc Grid::NIJ { } {
          set Param(NI) $ni
          set Param(NJ) $nj
       }
-      
+     
       #----- Check inclusiveness
       if { $Data(GridNo)>0 } {
          array set gridp [lindex $Data(GridParams) [expr $Data(GridNo)-1]]
          
          #----- Minimal distance between grids
-         set dx [expr $Param(Frontier)*$Param(ResMX)*2]
-         set dy [expr $Param(Frontier)*$Param(ResMY)*2]
+         set dx [expr $Param(ND)*$Param(ResMX)*2]
+         set dy [expr $Param(ND)*$Param(ResMY)*2]
 
-         set si  [expr ($Param(NI)+$Param(EI))*$Param(ResMX)]
-         set sj  [expr ($Param(NJ)+$Param(EJ))*$Param(ResMY)]
+         set si  [expr ($Param(NI)+$Param(PI))*$Param(ResMX)]
+         set sj  [expr ($Param(NJ)+$Param(PJ))*$Param(ResMY)]
          set spi [expr $gridp(RNI)*$gridp(ResMX)+$dx]
          set spj [expr $gridp(RNJ)*$gridp(ResMY)+$dy]
          
          
          #----- Make sure the grid encloses completely the previous grid
-         if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResMX)-$Param(EI)+1] }
-         if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResMY)-$Param(EJ)+1] }
+         if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResMX)-$Param(PI)+1] }
+         if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResMY)-$Param(PJ)+1] }
 #             if { $Data(GridNo)>$Data(GridDepend) } {
-#                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResMX)-$Param(EI))]
-#                set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResMY)-$Param(EJ))]
+#                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResMX)-$Param(PI))]
+#                set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResMY)-$Param(PJ))]
 #             } else {
 #                set Param(DNI) [expr $si - $spi]
 #                set Param(DNJ) [expr $sj - $spj]
@@ -345,15 +388,20 @@ proc Grid::NIJ { } {
          }
       }
 
+      #----- Check FFT constraint
+      if { $Param(Type)=="ZE"  } {    
+          set Param(NI) [Grid::CheckFFT $Param(NI) $Param(FFT)]
+      }
+      
       if { $Param(GetNIJ) } {
       } else {
          #----- If not first grid, we have to keep the same center
          if { $Data(GridNo)>0 } {
-            set Lat0 [expr $Param(XLat1)-($Param(NJ)*$Res)*0.5]
-            set Lon0 [expr $Param(XLon1)-($Param(NI)*$Res)*0.5]
+            set Lat0 [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY))*0.5]
+            set Lon0 [expr $Param(XLon1)-($Param(NI)*$Param(ResLLX))*0.5]
          } 
-         set Lat1 [expr $Lat0+$Param(NJ)*$Res]
-         set Lon1 [expr $Lon0+$Param(NI)*$Res]
+         set Lat1 [expr $Lat0+$Param(NJ)*$Param(ResLLY)]
+         set Lon1 [expr $Lon0+$Param(NI)*$Param(ResLLX)]
       }
       
       set Param(XLat1) [expr ($Lat0+$Lat1)*0.5]
@@ -579,8 +627,8 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 ResX ResY  { ID MODELGRID } } {
    variable Param
    variable Data
 
-   Grid::BBoxOrder
-   Grid::NIJ
+   Grid::CheckBBoxOrder
+   Grid::CheckNIJ
 
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP L $Lat0 $Lon0 $ResY $ResX
@@ -619,8 +667,8 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    variable Param
    variable Data
 
-   Grid::BBoxOrder
-   Grid::NIJ
+   Grid::CheckBBoxOrder
+   Grid::CheckNIJ
 
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
    fstdfield create ${ID}TIC $Param(NI) 1 1
@@ -638,6 +686,47 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
 
    #----- Compute tac grid coordinates.
    set lat $Lat0
+   for { set j 0 } { $j < $Param(NJ) } { incr j } {
+      fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
+      set lat [expr $lat+$ResY]
+   }
+   
+   #----- Create the grid ans assign the tic/tac
+   fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
+   fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZL
+   fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
+
+   set Param(PGSM) ""
+
+   return ${ID}
+}
+
+proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY { ID MODELGRID } } {
+   variable Param
+   variable Data
+
+#   Grid::CheckBBoxOrder
+#   Grid::CheckNIJ
+
+   set Param(NI) $NI
+   set Param(NJ) $NJ
+   
+   fstdfield free ${ID} ${ID}TIC ${ID}TAC
+   fstdfield create ${ID}TIC $Param(NI) 1 1
+   fstdfield create ${ID}TAC 1 $Param(NJ) 1
+
+   fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
+   fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
+
+   #----- Compute tic grid coordinates.
+   set lon [expr $LonC-$ResX*$Param(NI)/2]
+   for { set i 0 } { $i < $Param(NI) } { incr i } {
+      fstdfield stats ${ID}TIC -gridvalue $i 0 $lon
+      set lon [expr $lon+$ResX]
+   }
+
+   #----- Compute tac grid coordinates.
+   set lat [expr $LatC-$ResY*$Param(NJ)/2]
    for { set j 0 } { $j < $Param(NJ) } { incr j } {
       fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
       set lat [expr $lat+$ResY]
@@ -682,8 +771,8 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGR
    variable Data
 
    if { $Check } {
-      Grid::BBoxOrder
-      Grid::NIJ
+      Grid::CheckBBoxOrder
+      Grid::CheckNIJ
    }
 
    set ll [projection function $Page::Data(Frame) -circle $Param(XLat1) $Param(XLon1) [expr $ResX*1852.0*60*0.75*$Param(NI)] [expr $Angle-90.0]]
@@ -701,19 +790,19 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGR
    set sz [georef define ${ID} -size]
    set Param(RNI) [lindex $sz 0]
    set Param(RNJ) [lindex $sz 1]
-   set Param(EI)  [expr $Param(RNI)-$Param(NI)]
-   set Param(EJ)  [expr $Param(RNJ)-$Param(NJ)]
+   set Param(PI)  [expr $Param(RNI)-$Param(NI)]
+   set Param(PJ)  [expr $Param(RNJ)-$Param(NJ)]
   
    fstdfield create ${ID} $Param(RNI) $Param(RNJ) 1 $Param(Data)
    fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
-   set di  [expr $Param(EI)]
-   set dj  [expr $Param(EJ)]
-   set dni [expr $Param(RNI)-$Param(EI)]
-   set dnj [expr $Param(RNJ)-$Param(EJ)]
+   set di  [expr $Param(PI)]
+   set dj  [expr $Param(PJ)]
+   set dni [expr $Param(RNI)-$Param(PI)]
+   set dnj [expr $Param(RNJ)-$Param(PJ)]
    
    #----- Mark the inside grid
-   vexpr - ${ID}(($di,$dni),($dj,$dnj))=1
+   catch { vexpr - ${ID}(($di,$dni),($dj,$dnj))=1 }
    
    set Param(PGSM) ""
 
@@ -749,7 +838,7 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    variable Msg
    variable Lbl
 
-   Grid::BBoxOrder
+   Grid::CheckBBoxOrder
 
    set zone     [expr int(ceil((180+(($Lon1+$Lon0)/2))/6))]
    set meridian [expr -((180-($zone*6))+3)]
@@ -847,9 +936,9 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { ETIKET GRID } { Grid 
       set IP2 [string range $dateo 3 5]
       set IP3 [string range $dateo 6 9]
    }
-    
-   switch [fstdfield define $ID -GRTYP] {
-      "Z"     { fstdfield define ${ID} -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0 }
+ 
+   switch -glob [fstdfield define $ID -GRTYP] {
+      "Z*"    { fstdfield define ${ID} -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0 }
       "W"     { fstdfield define ${ID} -DATEO $dateo -TYPVAR X -IG1 $IP1 -IG2 $IP2 -IG3 $IP3 -IG4 0 }
       default { fstdfield define ${ID} -DATEO $dateo }
    }
