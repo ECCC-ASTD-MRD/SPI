@@ -223,8 +223,8 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    Tcl_Obj     *obj;
    double       nd;
 
-   static CONST char *sopt[] = { "vector","alias","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
-   enum                opt { VECTOR,ALIAS,COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
+   static CONST char *sopt[] = { "all","vector","alias","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
+   enum                opt { ALL,VECTOR,ALIAS,COPY,COPYHEAD,FREE,CONFIGURE,DEFINE,STATS,SORT,CLEAR,CLEAN,WIPE,IS };
 
    Tcl_ResetResult(Interp);
 
@@ -239,6 +239,10 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
    switch ((enum opt)idx) {
 
+      case ALL:
+         TclY_HashAll(Interp,&TData_Table);
+         break;
+         
       case VECTOR:
          if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
