@@ -155,8 +155,8 @@ proc Grid::Frame { Frame { Multi False } } {
       }   
 
       Option::Create $Frame.grid.type  [lindex $Lbl(GridType) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame.grid"
-      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResMX) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLLY) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply"
-      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMX) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
+      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResMX) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLLY) \[set Grid::Param(ResLLX) \[expr \$Grid::Param(ResMX)/$Param(LL2M)\]\]; Grid::Apply"
+      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMY) \[set Grid::Param(ResMX) \[expr \$Grid::Param(ResLLX)*$Param(LL2M)\]\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
          spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Param(GetNIJ) True }
@@ -208,8 +208,8 @@ proc Grid::Frame { Frame { Multi False } } {
 
    pack $Frame.grid.ll $Frame.grid.ll0 $Frame.grid.ll1 $Frame.grid.mid $Frame.grid.rot $Frame.grid.ref -side top -fill x
 
-   bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply }"
-   bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLLX) \[expr \$Grid::Param(ResMX)/$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResMX) \[expr \$Grid::Param(ResLLX)*$Param(LL2M)\]; Grid::Apply }"
    bind $Frame.grid.dim.ni     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
    bind $Frame.grid.dim.nj     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
    bind $Frame.grid.ll0.lat    <Return> "catch { Grid::Apply }"
