@@ -5,7 +5,7 @@
  * Dorval, Quebec
  *
  * Projet       : Package Tcl pour interfacer avec la librairie R
- * Fichier      : tclData.c
+ * Fichier      : TclR.c
  * Creation     : Août 2015 - E. Legault-Ouellet
  *
  * Description  : Fonctions de conversion entre variables tcl et
@@ -58,9 +58,6 @@
 
 // To load FSTD functions
 #include <dlfcn.h>
-
-// TclRDevice include
-#include "tkCanvRDevice.h"
 
 // Interface defines
 
@@ -1876,10 +1873,10 @@ static void TclR_CmdDelete(ClientData CData) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclR_CmdDelete>
+ * Nom          : <Tclr_Init>
  * Creation     : Août 2015 - E. Legault-Ouellet
  *
- * But          : Transforme une variable R en une variable Tcl
+ * But          : Initialise la librairie. Cette fonction est appellée par Tcl via la commande "load".
  *
  * Parametres   :
  *   <Interp>   : Interpreteur Tcl
@@ -1912,11 +1909,6 @@ int Tclr_Init(Tcl_Interp *Interp) {
 
     // Initialize the R lib
     TclR_RInit();
-
-    // Install our home made graphical device if running under tk
-    if( Tcl_GetVar(Interp,"tk_version",TCL_GLOBAL_ONLY) ) {
-        RDeviceItem_Register();
-    }
 
     return TCL_OK;
 }
