@@ -281,38 +281,38 @@ proc Grid::CheckBBoxOrder { } {
 # But      : Calcul du prochain entier > M qui se factorise en K
 #
 # Parametres :
-#     <N>    : Dimension a vérifier
-#     <D>    : Direction de l'incrément (défaut: 1)
-#     <M>    : Valeur minimale (défaut: 8)
-#     <K>    : Liste des facteurs  (défaut: {2 3 5})
+#     <N>       : Dimension a vérifier
+#     <Incr>    : Direction de l'incrément (défaut: 1)
+#     <Min>     : Valeur minimale (défaut: 8)
+#     <Factors> : Liste des facteurs  (défaut: {2 3 5})
 #
 # Retour:
-#     <N>    : Valeur factorisable
+#     <N>    : Valeur factorisable selon la liste K
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CheckFFT { N { D 1 } { M 8 } { K { 2 3 5 } } } {
+proc Grid::CheckFFT { N { Incr 1 } { Min 8 } { Factors { 2 3 5 } } } {
 
-   if { $N<=8 } { set N [expr $M+1] }
+   if { $N<$Min } { set N [expr $Min+1] }
 
-   set up $N
-   while { $up!=1 } {
+   set v $N
+   while { $v!=1 } {
       set nk 0
-      foreach k $K {
-         if { [expr $up%$k]==0 } { 
-            set up [expr $up/$k]
+      foreach k $Factors {
+         if { [expr $v%$k]==0 } { 
+            set v [expr $v/$k]
             break
          }
          incr nk
       }
-      if { $nk==[llength $K] } {
-         set up [incr N $D]
+      if { $nk==[llength $Factors] } {
+         set v [incr N $Incr]
       }
    }
  
-   if { $N<=8 } { set N [expr $M+1] }
+   if { $N<$Min } { set N [expr $Min+1] }
    return $N
 }
 

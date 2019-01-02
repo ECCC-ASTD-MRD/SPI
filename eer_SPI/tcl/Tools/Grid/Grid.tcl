@@ -291,7 +291,7 @@ proc Grid::SettingsBuild { Params { C False } } {
   Grdc_maxcfl = %i \
   Grdc_nbits  = \
   Grdc_nfe    = \n" \
-         $param(NI) $param(NJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
+         $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
                    } else {      
                       return [format "&grid
   Grd_typ_S  = 'LU',
@@ -301,9 +301,9 @@ proc Grid::SettingsBuild { Params { C False } } {
   Grd_xlon1  = %9.4f, Grd_xlat1 = %8.4f,
   Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
   Grd_maxcfl = %i\n" \
-         $param(NI) $param(NJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
+         $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
                    }
-                  }
+                 }
    }
 }
 
@@ -358,7 +358,7 @@ proc Grid::ProjectSave { Path } {
       return
    }
    
-   set no    [llength $Data(GridParams)]
+   set no    0
    set gridc {}
    foreach grid $Data(GridParams) {
       array set param $grid
@@ -382,16 +382,18 @@ proc Grid::ProjectSave { Path } {
       #----- Write RPN grid file
       file delete -force $Path/$res/grid.fstd 
       fstdfile open FILE write $Path/$res/grid.fstd 
-      Grid::Write FILE MODELGRID[expr $no-1]
+      Grid::Write FILE MODELGRID$no
       fstdfile close FILE
 
       #----- Create GenphysX job file
       set f [open $Path/$res/geophy.sh w 0755]
       puts $f "#!/bin/bash"
-      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target $GenPhysX(Target) -result $Path/$res/geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU) &"
+      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target HRDPS_NAT -result $Path/$res/geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
       close $f
       
-      incr no -1
+      exec $Path/$res/geophy.sh &
+      
+      incr no
    } 
 }
 

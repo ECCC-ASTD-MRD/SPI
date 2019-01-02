@@ -38,11 +38,13 @@ namespace eval Grid {
    set Lbl(LL0)        { "Premier coin      " "First corner      " }
    set Lbl(LL1)        { "Deuxième coin     " "Second corner     " }
    set Lbl(MaxCFL)     { "MaxCFL            " "MaxCFL            " }
+   set Lbl(SaveTo)     { "Enregistrer dans" "Save in" }
    set Lbl(Exec)       { "Paramètres d'exécution" "Execution parameters" }
    set Lbl(Cancel)     { "Annuler" "Cancel" }
    set Lbl(Launch)     { "Lancer" "Launch" }
    set Lbl(Target)     { "Cible" "Target" }
    set Lbl(Path)       { "Répertoire" "Directory" }
+   set Lbl(Host)       { "Hôte" "Host" }
 
    #----- Messages
 
@@ -51,7 +53,7 @@ namespace eval Grid {
 
    #----- Bulles d'aides
    
-   set Bubble(Mode)      { "Mode de sélection de l'outils" "Tool selection mode" }
+   set Bubble(Mode)      { "Mode de sélection de l'outils\n   Boutton gauche: Dessiner une grille\n   Boutton centre: Déplacer la grille" "Tool selection mode\n   Left button : Draw grid\n   Center button: Mode grid" }
    set Bubble(GridAdd)   { "Ajouter une grille" "Add a grid" }
    set Bubble(GridDel)   { "Supprimer la grille courante" "Delete current grid" }
    set Bubble(GridLoad)  { "Lire une configuration de grille" "Read a grid configuration" }
