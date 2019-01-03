@@ -350,7 +350,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
 int FSTD_FieldReadMesh(TData *Field) {
 
    TRPNHeader *head=(TRPNHeader*)Field->Head;
-   int         key,ni,nj,nk,nijk=0;
+   int         key,ni,nj,nk;
 
    // !! -> NI==3 ### Field->Def->NI<4 || 
    if (!Field->GRef || !(Field->GRef->Type&(GRID_SPARSE|GRID_VARIABLE|GRID_VERTICAL)) || (Field->GRef->NY==1 && Field->GRef->Grid[0]!='Y' && Field->GRef->Grid[1]!='Y' && Field->GRef->Grid[0]!='M'))
@@ -364,7 +364,7 @@ int FSTD_FieldReadMesh(TData *Field) {
       switch(Field->GRef->Grid[0]) {
          case 'M':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
 
             /* Lire le champs d'indexes*/
             if (!Field->GRef->Idx) {
@@ -389,12 +389,12 @@ int FSTD_FieldReadMesh(TData *Field) {
          case 'W':
             if (Field->GRef->Grid[1]=='X' || Field->GRef->Grid[1]=='Y' || Field->GRef->Grid[1]=='Z') {
                if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-               if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+               if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             }
             
             if (Field->GRef->Grid[1]=='Y') {
                if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
-               if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
+               if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
                if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             }
             break;
@@ -402,20 +402,20 @@ int FSTD_FieldReadMesh(TData *Field) {
          case 'Y':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
-            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
          case 'X':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             GeoRef_BuildIndex(Field->GRef);          
             break;
 
           case 'V':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) nijk=FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             FSTD_FieldReadVLevels(Field);
             break;
       }
@@ -2910,7 +2910,7 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
    TRPNHeader *head=(TRPNHeader*)Field->Head;
    float       tmp[6];
    char        *e,etiket[13]="GRID        ";
-   int         ok,i;
+   int         ok=0,i;
    
    // Verifier l'existence du champs
    if (!Field) {
@@ -2958,7 +2958,7 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
       ok=c_fstecr(Field->GRef->String,NULL,-8,file->Id,head->DATEO,0,0,strlen(Field->GRef->String),1,1,
          head->IG1,head->IG2,head->IG3,"X ","PROJ",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,2,1);                  
    } 
-   return(TCL_OK);
+   return(ok>=0?TCL_OK:TCL_ERROR);
 }
 
 int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Halo,int NPack,int Rewrite,int Compress) {

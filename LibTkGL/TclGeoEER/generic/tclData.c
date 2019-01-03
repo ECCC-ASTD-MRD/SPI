@@ -1685,19 +1685,22 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
    TList       *list;
    T3DArray    *array;
    Vect3d      *vbuf;
-   int          n,i,ni,nj,index,idx,b,f,tr=1,ex,c1,c2;
-   int          nb,len,nobj;
+   int          n,i,j,ni,nj,index,idx,b,f,tr=1,ex,c1,c2,ci,cj;
+   int          nb,len,nobj,mode;
    long         npt;
    double       dlat,dlon,dlat0,dlon0,dlat1,dlon1,dx,dy,dx0,dy0,dx1,dy1,val,val1,dl,dv,tmpd,min,max;
    float       *levels;
-   char         buf[32],mode='L';
+   char         buf[32];
    const char **lvls;
 
    extern int FFStreamLine(TGeoPos *GPos,TDef *Def,ViewportItem *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 
-   static CONST char *sopt[] = { "-tag","-size","-component","-image","-nodata","-max","-min","-avg","-high","-low","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
+   static CONST char *sfrmt[] = { "LIST","KML","GML","JSON","JAVASCRIPT",NULL };
+   enum  frmt { LIST,KML,GML,JSON,JAVASCRIPT };
+   
+   static CONST char *sopt[] = { "-tag","-size","-component","-image","-nodata","-max","-min","-avg","-high","-low","-boundary","-grid","-gridcell","-gridlat","-gridlon","-gridpoint","-gridbox","-coordpoint","-project","-unproject","-gridvalue","-coordvalue",
       "-gridstream","-coordstream","-gridcontour","-coordcontour","-within","-withinvalue","-height","-levelindex","-level","-levels","-leveltype","-pressurelevels","-meterlevels","-limits","-coordlimits","-sample","-matrix","-mask","-celldim","-top","-ref","-coef","-poff","-datacopy", NULL };
-   enum        opt {  TAG,SIZE,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
+   enum        opt {  TAG,SIZE,COMPONENT,IMAGE,NODATA,MAX,MIN,AVG,HIGH,LOW,BOUNDARY,GRID,GRIDCELL,GRIDLAT,GRIDLON,GRIDPOINT,GRIDBOX,COORDPOINT,PROJECT,UNPROJECT,GRIDVALUE,COORDVALUE,
       GRIDSTREAM,COORDSTREAM,GRIDCONTOUR,COORDCONTOUR,WITHIN,WITHINVALUE,HEIGHT,LEVELINDEX,LEVEL,LEVELS,LEVELTYPE,PRESSURELEVELS,METERLEVELS,LIMITS,COORDLIMITS,SAMPLE,MATRIX,MASK,CELLDIM,TOP,REF,COEF,POFF,DATACOPY };
 
    if (!Field ) {
@@ -2397,7 +2400,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
 
          case COORDCONTOUR:
             if (Objc>4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [Polygon] [GML|KML]");
+               Tcl_WrongNumArgs(Interp,2,Objv,"[Resolution] [Polygon] [LIST|GML|KML|JSON|JAVASCRIPT]");
                return(TCL_ERROR);
             }
             len=1;
@@ -2410,10 +2413,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
 
-            mode='L';
-            if (Objc>3) {
-               mode=Tcl_GetString(Objv[++i])[0];
-               i++;
+            if (Tcl_GetIndexFromObj(Interp,Objv[++i],sfrmt,"type",TCL_EXACT,&mode)!=TCL_OK) {
+               return(TCL_ERROR);
             }
 
             if (!Field->Stat)
@@ -2433,19 +2434,26 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   ex=tr=0;
 
                   f=0;
-
                   for (n=0;n<array->Size-1;n++) {
-                     /*Clip to extent limits*/
+                     // Clip to extent limits
                      if ((ex=LiangBarsky_LineClip2D(array->Data[n],array->Data[n+1],&c1,&c2,Field->Def->CoordLimits[0][0],Field->Def->CoordLimits[1][0],Field->Def->CoordLimits[0][1],Field->Def->CoordLimits[1][1]))) {
-                        if (mode=='G' || mode=='K') {
+                        if (mode!=LIST) {
                            if (!f) {
                               switch(mode) {
-                                 case 'K': Tcl_AppendResult(Interp,"<LineString><coordinates>",(char*)NULL);break;
-                                 case 'G': Tcl_AppendResult(Interp," <gml:lineStringMember><gml:LineString><gml:coordinates>",(char*)NULL);break;
+                                 case KML:       Tcl_AppendResult(Interp,"<LineString><coordinates>",(char*)NULL);break;
+                                 case GML:       Tcl_AppendResult(Interp," <gml:lineStringMember><gml:LineString><gml:coordinates>",(char*)NULL);break;
+                                 case JSON:      Tcl_AppendResult(Interp,"{\n\t\"type\": \"LineString\",\n\t\"coordinates\": [",(char*)NULL);break;
+                                 case JAVASCRIPT:Tcl_AppendResult(Interp,"[",(char*)NULL);break;
                               }
                               f=1;
                            }
-                           snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]);
+                           switch(mode) {
+                              case KML:
+                              case GML:        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]); break;
+                              case JSON:
+                              case JAVASCRIPT: if (n) snprintf(buf,1,","); snprintf(buf,32,"[%.5f,%.5f]",array->Data[n][0],array->Data[n][1]); break;
+                           }
+                           
                            Tcl_AppendResult(Interp,buf,(char*)NULL);
                         } else {
                            Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
@@ -2454,34 +2462,90 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                         tr=1;
                      }
                   }
-                  /*If last segment was visible, add its end point*/
+                  // If last segment was visible, add its end point
                   if (ex){
-                     if (mode=='G' || mode=='K') {
-                        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]);
-                        Tcl_AppendResult(Interp,buf,(char*)NULL);
-                     } else {
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
-                        Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
+                     switch(mode) {
+                        case KML:
+                        case GML:        snprintf(buf,32,"%.5f,%.5f ",array->Data[n][0],array->Data[n][1]);
+                                         Tcl_AppendResult(Interp,buf,(char*)NULL);
+                                         break;
+                        case JSON:
+                        case JAVASCRIPT: snprintf(buf,32,",[%.5f,%.5f]",array->Data[n][0],array->Data[n][1]);
+                                         Tcl_AppendResult(Interp,buf,(char*)NULL);
+                                         break;
+                        case LIST:       Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][0]));
+                                         Tcl_ListObjAppendElement(Interp,sub,Tcl_NewDoubleObj(array->Data[n][1]));
                      }
                   }
                   if (f) {
                      switch(mode) {
-                        case 'K': Tcl_AppendResult(Interp,"</coordinates></LineString>",(char*)NULL);break;
-                        case 'G': Tcl_AppendResult(Interp," <gml:LineString></gml:coordinates></gml:lineStringMember>",(char*)NULL);break;
+                        case KML:        Tcl_AppendResult(Interp,"</coordinates></LineString>",(char*)NULL);break;
+                        case GML:        Tcl_AppendResult(Interp,"</gml:coordinates></gml:LineString></gml:lineStringMember>",(char*)NULL);break;
+                        case JSON:       Tcl_AppendResult(Interp,"\n\t]\n}",(char*)NULL);break;
+                        case JAVASCRIPT: Tcl_AppendResult(Interp,"]",(char*)NULL);break;
                      }
                   }
-                  if (mode=='L' && tr) {
+                  if (mode==LIST && tr) {
                      Tcl_ListObjAppendElement(Interp,obj,sub);
                   }
                   list=list->Next;
                }
 
-               if (mode=='L') {
+               if (mode==LIST) {
                   Tcl_SetObjResult(Interp,obj);
                }
             }
             break;
 
+         case BOUNDARY:          
+            if (Objc>2) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"[LIST|GML|KML|JSON|JAVASCRIPT]");
+               return(TCL_ERROR);
+            }
+            if (Tcl_GetIndexFromObj(Interp,Objv[++i],sfrmt,"type",TCL_EXACT,&mode)!=TCL_OK) {
+               return(TCL_ERROR);
+            }
+                                   
+            obj=Tcl_NewListObj(0,NULL);
+            switch(mode) {
+               case KML:        Tcl_AppendResult(Interp,"<Polygon><outerBoundaryIs><LinearRing><coordinates>",(char*)NULL);break;
+               case GML:        Tcl_AppendResult(Interp,"<gml:Polygon><gml:Exterior><gml:LinearRing><gml:coordinates>",(char*)NULL);break;
+               case JSON:       Tcl_AppendResult(Interp,"{\n\t\"type\": \"Polygon\",\n\t\"coordinates\": [",(char*)NULL);break;
+               case JAVASCRIPT: Tcl_AppendResult(Interp,"[",(char*)NULL);break;
+            }
+            
+            i=0;j=0;
+            ci=1;cj=0;
+            while(1) {
+ 
+               Field->GRef->Project(Field->GRef,i,j,&dlat,&dlon,1,1);
+               switch(mode) {
+                  case KML:
+                  case GML:        snprintf(buf,32,"%.5f,%.5f ",dlat,dlon); 
+                                   Tcl_AppendResult(Interp,buf,(char*)NULL); break;
+                  case JSON:
+                  case JAVASCRIPT: if (n) snprintf(buf,1,","); snprintf(buf,32,"[%.5f,%.5f],",dlat,dlon); 
+                                   Tcl_AppendResult(Interp,buf,(char*)NULL); break;
+                  case LIST:       Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlat));
+                                   Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(dlon)); break;
+               }
+               // We loop on the gridpoints by going around the grid limits 
+               if (i==Field->Def->NI-1 && ci>0) { ci=0;  cj=1; }  // Check lower right corner 
+               if (j==Field->Def->NJ-1 && cj>0) { ci=-1; cj=0; }  // Check upper right corner 
+               if (i==0 && ci<0)                { ci=0;  cj=-1;}  // Check upper left corner
+               i+=ci;
+               j+=cj;
+               if (j==-1) break;
+            }
+            switch(mode) {
+               case KML:        Tcl_AppendResult(Interp,"</coordinates></LinearRing></outerBoundaryIs></Polygon>",(char*)NULL);break;
+               case GML:        Tcl_AppendResult(Interp,"</gml:coordinates></gml:LinearRing></gml:Exterior></gml:Polygon>",(char*)NULL);break;
+               case JSON:       Tcl_AppendResult(Interp,"\n\t]\n}",(char*)NULL);break;
+               case JAVASCRIPT: Tcl_AppendResult(Interp,"]",(char*)NULL);break;
+               case LIST:       Tcl_SetObjResult(Interp,obj);
+            }
+            break;
+               
          case LIMITS:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);

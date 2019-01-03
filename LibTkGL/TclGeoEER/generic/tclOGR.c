@@ -381,7 +381,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
       case NEW:
          if (Objc!=5 && Objc!=6 && Objc!=7) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"Id layer geom [georef] [ options]");
+            Tcl_WrongNumArgs(Interp,2,Objv,"Id layer geom [georef] [options]");
             return(TCL_ERROR);
          }
          
