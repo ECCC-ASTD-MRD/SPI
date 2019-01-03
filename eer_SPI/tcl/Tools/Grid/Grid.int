@@ -139,7 +139,8 @@ proc Grid::Frame { Frame { Multi False } } {
    
    set Data(Canvas) $Page::Data(Canvas)
    set Data(Frame)  $Page::Data(Frame)
-
+   set Data(PNI)    0
+   
    if { [winfo exists $Frame.grid] } {
       return
    }
@@ -154,15 +155,15 @@ proc Grid::Frame { Frame { Multi False } } {
       }   
 
       Option::Create $Frame.grid.type  [lindex $Lbl(GridType) $GDefs(Lang)] Grid::Param(Type) 0 -1 $Grid::Param(Types) "Grid::Init; Grid::WindowSet $Frame.grid"
-      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResM) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply"
-      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLL) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply"
+      Option::Create $Frame.grid.reskm [lindex $Lbl(ResM) $GDefs(Lang)] Grid::Param(ResMX) 1 7 $Grid::Param(ResMs) "set Grid::Param(ResLLY) \[set Grid::Param(ResLLX) \[expr \[set Grid::Param(ResMY) \$Grid::Param(ResMX)\]/$Param(LL2M)\]\]; Grid::Apply"
+      Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMY) \[set Grid::Param(ResMX) \[expr \[set Grid::Param(ResLLY) \$Grid::Param(ResLLX)\]*$Param(LL2M)\]\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
-         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Param(GetNIJ) True }
          label $Frame.grid.dim.x -text x
-         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 10000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
-         entry $Frame.grid.dim.ext -textvariable Grid::Param(EI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
-         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.ext -side left
+         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
+         entry $Frame.grid.dim.pil -textvariable Grid::Param(PI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
+         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.pil -side left
       frame $Frame.grid.maxcfl
          label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
          spinbox $Frame.grid.maxcfl.val -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(MaxCFL) -width 3 -from 0 -to 20 -increment 1 -command { Grid::Apply }
@@ -207,8 +208,8 @@ proc Grid::Frame { Frame { Multi False } } {
 
    pack $Frame.grid.ll $Frame.grid.ll0 $Frame.grid.ll1 $Frame.grid.mid $Frame.grid.rot $Frame.grid.ref -side top -fill x
 
-   bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLL) \[expr \$Grid::Param(ResM)/$Param(LL2M)\]; Grid::Apply }"
-   bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResM) \[expr \$Grid::Param(ResLL)*$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLLX) \[expr \$Grid::Param(ResMX)/$Param(LL2M)\]; Grid::Apply }"
+   bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResMX) \[expr \$Grid::Param(ResLLX)*$Param(LL2M)\]; Grid::Apply }"
    bind $Frame.grid.dim.ni     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
    bind $Frame.grid.dim.nj     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
    bind $Frame.grid.ll0.lat    <Return> "catch { Grid::Apply }"
@@ -225,10 +226,11 @@ proc Grid::Frame { Frame { Multi False } } {
    bind $Frame.grid.ref.latr   <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ref.lonr   <Return> "catch { Grid::Apply }"
   
-   Bubble::Create $Frame.grid.type  $Bubble(Types)
-   Bubble::Create $Frame.grid.reskm $Bubble(ResM)
-   Bubble::Create $Frame.grid.resll $Bubble(ResLL)
-   Bubble::Create $Frame.grid.dim   $Bubble(Dimension)
+   Bubble::Create $Frame.grid.type    $Bubble(Types)
+   Bubble::Create $Frame.grid.reskm   $Bubble(ResM)
+   Bubble::Create $Frame.grid.resll   $Bubble(ResLL)
+   Bubble::Create $Frame.grid.dim.pil $Bubble(Pilot)
+   Bubble::Create $Frame.grid.dim     $Bubble(Dimension)
 }
 
 proc Grid::WindowSave { } {
@@ -244,15 +246,7 @@ proc Grid::WindowSave { } {
    wm geom      .gridmakersave +[winfo rootx .gridmaker]+[winfo rooty .gridmaker]
    wm transient .gridmakersave .gridmaker
 
-   labelframe .gridmakersave.physx -text "GenPhysX"
-      frame .gridmakersave.physx.target
-         label .gridmakersave.physx.target.lbl -text [lindex $Lbl(Target) $GDefs(Lang)] -width 12 -anchor w
-         ComboBox::Create .gridmakersave.physx.target.sel GenPhysX(Target) noedit sorted nodouble -1 $GenPhysX(Targets) 18 5 {}
-         pack .gridmakersave.physx.target.lbl -side left 
-         pack .gridmakersave.physx.target.sel -side left -fill x -expand True
-      pack .gridmakersave.physx.target -side top -fill x -expand True
-
-   labelframe .gridmakersave.path -text [lindex $Lbl(Path) $GDefs(Lang)]
+   labelframe .gridmakersave.path -text [lindex $Lbl(SaveTo) $GDefs(Lang)]
       label .gridmakersave.path.lbl -text [lindex $Lbl(Path) $GDefs(Lang)] -width 12 -anchor w
       entry .gridmakersave.path.ent -textvariable Grid::Data(SavePath) -bg $GDefs(ColorLight)
       button .gridmakersave.path.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised -command { set Grid::Data(SavePath) [FileBox::Create . "" Path {}] }
@@ -260,12 +254,26 @@ proc Grid::WindowSave { } {
       pack .gridmakersave.path.ent -side left -fill x -expand True
       pack .gridmakersave.path.sel -side left 
    
+   labelframe .gridmakersave.physx -text "GenPhysX"
+      frame .gridmakersave.physx.host
+         label .gridmakersave.physx.host.lbl -text [lindex $Lbl(Host) $GDefs(Lang)] -width 12 -anchor w
+         ComboBox::Create .gridmakersave.physx.host.sel Grid::GenPhysX(Host) noedit sorted nodouble -1 $GenPhysX(Hosts) 18 5 {}
+         pack .gridmakersave.physx.host.lbl -side left 
+         pack .gridmakersave.physx.host.sel -side left -fill x -expand True
+      pack .gridmakersave.physx.host -side top -fill x -expand True
+      frame .gridmakersave.physx.target
+         label .gridmakersave.physx.target.lbl -text [lindex $Lbl(Target) $GDefs(Lang)] -width 12 -anchor w
+         ComboBox::Create .gridmakersave.physx.target.sel Grid::GenPhysX(Target) noedit sorted nodouble -1 $GenPhysX(Targets) 18 5 {}
+         pack .gridmakersave.physx.target.lbl -side left 
+         pack .gridmakersave.physx.target.sel -side left -fill x -expand True
+      pack .gridmakersave.physx.target -side top -fill x -expand True
+
    frame .gridmakersave.cmd -relief sunken -bd 1
       button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { Grid::ProjectSave $Grid::Data(SavePath); destroy .gridmakersave }
       button .gridmakersave.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { destroy .gridmakersave }
       pack .gridmakersave.cmd.go .gridmakersave.cmd.cancel -side left -fill x -expand True
       
-   pack .gridmakersave.physx .gridmakersave.path .gridmakersave.cmd -padx 5 -pady 5 -side top -fill x -expand True
+   pack .gridmakersave.path .gridmakersave.physx .gridmakersave.cmd -padx 5 -pady 5 -side top -fill x -expand True
 }
 
 #----------------------------------------------------------------------------

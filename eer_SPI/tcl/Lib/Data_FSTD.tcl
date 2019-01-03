@@ -1172,19 +1172,18 @@ proc FSTD::ParamInit { Field { Spec "" } } {
          dataspec configure $Spec -desc $desc
       }
       
-      #----- Set a colormap if not done
-      set map [dataspec configure $Spec -colormap]
+      #----- Set a colormap    
+      if { ![colormap is FLDMAP$Spec] } {
+         #----- Use previous on if not already defined
+         set map [dataspec configure $Spec -colormap]
+         if { ![colormap is $map] } {
+            colormap copy FLDMAP$Spec FLDMAPDEFAULT
+         } else {
+            colormap copy FLDMAP$Spec $map
+         }
+      }
+      dataspec configure $Spec -colormap FLDMAP$Spec
       
-      if { $map=="" } {
-         set map FLDMAP$Spec
-      }
- 
-      if { ![colormap is $map] } {
-         colormap create FLDMAP$Spec
-         colormap copy   FLDMAP$Spec FLDMAPDEFAULT
-         dataspec configure $Spec -colormap FLDMAP$Spec
-      }
-
       #----- Override particle fields params
       if { [fstdfield is $Field] && ([fstdfield define $Field -GRTYP]=="Y" || [fstdfield define $Field -NOMVAR]=="ZH") } {
          dataspec configure $Spec -renderparticle 2

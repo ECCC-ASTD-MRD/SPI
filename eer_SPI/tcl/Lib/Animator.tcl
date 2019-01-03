@@ -90,6 +90,7 @@ namespace eval Animator {
    set Play(Types)        { DATE IP1 IP2 IP3 ETIKET }
    set Play(Data)         {}              ;#Data a animer
    set Play(Mini)         {}              ;#Active miniplayer
+   set Play(Interp)       True            ;#Interpolate missing frames
 
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
    set Play(Mail)         ""              ;#Mail to adress for link info
@@ -146,7 +147,10 @@ namespace eval Animator {
    set Bubble(State)       { "Action en cours" "Current action" }
    set Bubble(Scroll)      { "Deroulement de l'animation" "Animation scroller" }
    set Bubble(Type)        { "Selection du type d'animation" "Animation type selection" }
-
+   set Bubble(Interp)      { "Interpolation des champs aux temps manquants" "Interpolate fields at missing time steps" }
+   set Bubble(ValidIP3)    { "Utiliser le IP3 lors de la recherche des champs à animer" "Use IP3 when looking for fields to animate" }
+   set Bubble(ValidTYPVAR) { "Utiliser le TYPVAR lors de la recherche des champs à animer" "Use TYPVAR when looking for fields to animate" }
+   
    set Bubble(FlyPreset) { "Sélection de vol prédéfini" "Selection of predefined flybys" }
    set Bubble(FlyDel)    { "Supprimer le point de contrôle courant" "Delete the current control point" }
    set Bubble(FlyIns)    { "Insérer un nouveau point de contrôle" "Insert a new control point" }
@@ -234,9 +238,16 @@ proc Animator::Window { { Parent .} } {
             -command "Animator::EmptyPlayList" -bd 1 -relief flat -overrelief raised
          pack $Data(Tab1).type.f.t$type -side top -fill x -expand True
       }
+      checkbutton $Data(Tab1).type.f.tDATE.interp -indicatoron false -variable Animator::Play(Interp) -text Interp -onvalue True -offvalue False \
+         -command "Animator::EmptyPlayList" -relief sunken -bd 1 -overrelief raised -offrelief flat
+      pack $Data(Tab1).type.f.tDATE.interp -side right
       pack $Data(Tab1).type.f -side top -fill both -padx 2 -pady 2
       pack $Data(Tab1).type -side top -fill both -padx 5 -pady 2
 
+      Bubble::Create $Data(Tab1).type.f.tDATE.interp $Bubble(Interp)
+      Bubble::Create $Data(Tab1).lbl.ip3             $Bubble(ValidIP3)
+      Bubble::Create $Data(Tab1).lbl.tvar            $Bubble(ValidTYPVAR)
+      
 #   frame .anim.tab.f2
 #   set Data(Tab2) [.anim.tab add .anim.tab.f2 -text [lindex $Lbl(Fly) $GDefs(Lang)]]
    set Data(Tab2) [TabFrame::Add .anim.tab 1 [lindex $Lbl(Fly) $GDefs(Lang)] False ""]
@@ -570,8 +581,9 @@ proc Animator::GetPlayList { } {
    set Play(VPs)    [lsort -dictionary -increasing -unique $Play(VPs)]
    set Play(Length) [llength $Play(Frames)]
    set Play(Length) [expr $Play(Length)>0?$Play(Length)-1:0]
-
+   
    #----- Ajouter les données aux pas de temps intermédiaire le plus petit
+   set a 0
    foreach vp $Play(VPs) {
       set pframe [lindex $Play(Frames) 0]
       foreach frame [lrange $Play(Frames) 1 end] {
@@ -581,11 +593,20 @@ proc Animator::GetPlayList { } {
                if { [fstdfield is $d] } {
                   set idx [lindex [split $d .] 1]
 
-                  #----- We might be missing one of the end frame
-                  catch {
-                     if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
-                        set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]
-                     }
+                  #----- If this field is not available at this time step   
+                  if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
+                     if { $Play(Type)=="DATE" && $Play(Interp) } {
+                        #----- find the time boundary fields
+                        set flds [lsort -dictionary [lsearch -inline -all -glob [fstdfield all] ANI.$idx.*]]
+                        if { [set n [expr [lsearch -exact $flds $d]+1]]<[llength $flds] } {
+                           fstdfield timeinterp ANII.$idx.$a $d [lindex $flds $n] [fstdstamp fromseconds $frame]
+                           fstdfield configure ANII.$idx.$a -dataspec [fstdfield configure $d -dataspec]
+                           set d ANII.$idx.$a
+                           incr a
+                        }
+                     } 
+                     #----- Add the new field to the animation frame
+                     set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]
                   }
                } else {
                   incr i
