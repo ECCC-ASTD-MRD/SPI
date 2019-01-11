@@ -387,10 +387,24 @@ proc Grid::CheckNIJ { } {
             if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
          }
       }
+      
+      #----- Check for even number alogn Y axis
+      if { [expr ($Param(NJ)+$Param(PJ))%2] } {
+         incr Param(NJ)
+      }
 
-      #----- Check FFT constraint
-      if { $Param(Type)=="ZE"  } {    
-          set Param(NI) [Grid::CheckFFT $Param(NI) $Param(FFT)]
+      set good False
+      while { !$good } {
+         #----- Check FFT constraint on the non pilot grid (NI)
+         if { $Param(Type)=="ZE"  } {    
+             set Param(NI) [Grid::CheckFFT $Param(NI) $Param(FFT)]
+         }
+         #----- Check for even number along X axis
+         if { [expr ($Param(NI)+$Param(PI))%2] } {
+            incr Param(NI)
+         } else {
+            set good True
+         }
       }
       
       if { $Param(GetNIJ) } {
@@ -440,9 +454,9 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
    if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
 
       switch $Param(Type) {
-         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(ResMY) $Param(NI) $Param(NJ) $ID }
+         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
          "PS_S"  -
-         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(ResMY) $Param(NI) $Param(NJ) $ID }
+         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
          "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
          "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
          "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(LatR) $Param(LonR) $Param(ResLLX) $Param(ResLLY) $Param(Angle) $ID }
