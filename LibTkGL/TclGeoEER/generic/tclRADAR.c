@@ -272,7 +272,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    if (Mode!='r' && Mode!='R') {
       Tcl_AppendResult(Interp,"   Radar_FileOpen: Can only open in read mode for now",(char*)NULL);
-      return TCL_ERROR;
+      return(TCL_ERROR);
    }
 
    // Creer l'entree dans la liste table de fichiers standards
@@ -315,11 +315,11 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    if (App_LogLevel(NULL)==DEBUG) 
       Radar_FileParse(&file->Data);
    
-   for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            /*Loop on the Sweeps*/
+   for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            // Loop on the Sweeps
       th[v]=file->Data.volScan[0]->sweep[v]->elevationAngle;
    }
    file->GRef=GeoRef_Find(GeoRef_RDRSetup(getLatitude(&file->Data),getLongitude(&file->Data),getGroundHeight(&file->Data)+getHornHeight(&file->Data),
-       file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep,file->Data.binResolutionKM*1000,file->Data.azimuthResolutionDegree));
+       file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep,file->Data.volScan[0]->sweep[0]->binResolutionKM*1000,file->Data.volScan[0]->sweep[0]->azimuthResolutionDegree));
    file->ZRef=ZRef_Define(LVL_ANGLE,file->Data.volScan[0]->numSweeps,th);
 
    obj=Tcl_NewListObj(0,NULL);

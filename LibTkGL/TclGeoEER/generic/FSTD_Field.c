@@ -2929,13 +2929,12 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
          return(TCL_ERROR);       
       }
       // If they're not already written
-      if ((cs_fstinf(file->Id,&ni,&nj,&nk,Head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
+      if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
          if (Field->GRef->Grid[0]=='Y') {         
             ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
                head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
             ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
                head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
-            }
          } else if (Field->GRef->Grid[0]=='W') {
             ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
                head->IG1,head->IG2,head->IG3,"X ",">>",e,Field->GRef->Grid[0],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
@@ -2954,7 +2953,7 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
          return(TCL_ERROR);       
       }
       // If they're not already written
-      if ((cs_fstinf(file->Id,&ni,&nj,&nk,Head->DATEO,e,head->IG1,head->IG2,head->IG3,"X","PROJ"))<=0) {
+      if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X","PROJ"))<=0) {
          for(i=0;i<6;i++) {
             tmp[i]=Field->GRef->Transform[i];
          }

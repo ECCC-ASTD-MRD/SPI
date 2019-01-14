@@ -2325,7 +2325,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
       }
 
       /*Gerer l'effet de transparence*/
-      if (Field->Spec->Map->Alpha) {
+      if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
          glEnable(GL_BLEND);
          glEnable(GL_CULL_FACE);
          glCullFace(GL_FRONT);
@@ -2341,7 +2341,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
             array=(T3DArray*)list->Data;
 
             VAL2COL(idx,Field->Spec,array->Value);
-            glColor4ubv(Field->Spec->Map->Color[idx]);
+            glColor4ub(Field->Spec->Map->Color[idx][0],Field->Spec->Map->Color[idx][1],Field->Spec->Map->Color[idx][2],Field->Spec->Map->Color[idx][3]*Field->Spec->Alpha*0.01);
+//            glColor4ubv(Field->Spec->Map->Color[idx]);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);
@@ -2356,7 +2357,8 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
             array=(T3DArray*)list->Data;
 
             VAL2COL(idx,Field->Spec,array->Value);
-            glColor4ubv(Field->Spec->Map->Color[idx]);
+            glColor4ub(Field->Spec->Map->Color[idx][0],Field->Spec->Map->Color[idx][1],Field->Spec->Map->Color[idx][2],Field->Spec->Map->Color[idx][3]*Field->Spec->Alpha*0.01);
+//            glColor4ubv(Field->Spec->Map->Color[idx]);
             glVertexPointer(3,GL_DOUBLE,2*sizeof(Vect3d),array->Data[1]);
             glNormalPointer(GL_DOUBLE,2*sizeof(Vect3d),array->Data);
             glDrawArrays(GL_TRIANGLES,0,array->Size>>1);

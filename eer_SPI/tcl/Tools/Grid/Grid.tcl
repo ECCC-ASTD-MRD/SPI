@@ -284,13 +284,12 @@ proc Grid::SettingsBuild { Params { C False } } {
    array set param $Params
    switch $param(Type) {
          "ZE"    { if { $C } {
-                      return [format "&grdc
+                      return [format "\\
+  &grdc
   Grdc_ni     = %i, Grdc_nj     = %i,
   Grdc_dx     = %.4f, Grdc_dy     = %.4f,
   Grdc_lonr   = %9.4f, Grdc_latr  = %8.4f,
-  Grdc_maxcfl = %i \
-  Grdc_nbits  = \
-  Grdc_nfe    = \n" \
+  Grdc_maxcfl = %i, Grdc_nbits  = 32, Grdc_nfe    = CASC_NESDT\n" \
          $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
                    } else {      
                       return [format "&grid
