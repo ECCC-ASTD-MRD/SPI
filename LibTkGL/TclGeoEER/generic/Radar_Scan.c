@@ -96,7 +96,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
    Radar_Head *head=(Radar_Head*)Rad->Head;
    Tcl_Obj    *obj;
    TGeoRef    *ref;
-   int         i,idx,v=-1,date,time;
+   int         i,idx,v=-1,date,time,n;
    char        buf[64];
    double      th;
    Coord       loc;
@@ -136,12 +136,14 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
          case TYPE:
             if (Objc==1) {
                switch(head->Data->radarType) {
-                  case IRIS   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("IRIS",-1)); break;
-                  case RDP    : Tcl_SetObjResult(Interp,Tcl_NewStringObj("RDP",-1)); break;
-                  case NEXRAD : Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEXRAD",-1)); break;
-                  case MCGILL : Tcl_SetObjResult(Interp,Tcl_NewStringObj("MCGILL",-1)); break;
-                  case KINGRDR: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDR",-1)); break;
-                  case KINGRDD: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDD",-1)); break;
+                  case IRIS   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("IRIS",-1)); break;    // Iris Radar
+                  case RDP    : Tcl_SetObjResult(Interp,Tcl_NewStringObj("RDP",-1)); break;     // RDP Radar
+                  case NEXRAD : Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEXRAD",-1)); break;  // NEXRAD Radar
+                  case MCGILL : Tcl_SetObjResult(Interp,Tcl_NewStringObj("MCGILL",-1)); break;  // McGill Radar
+                  case KINGRDR: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDR",-1)); break; // King RDR archive 
+                  case KINGRDD: Tcl_SetObjResult(Interp,Tcl_NewStringObj("KINGRDD",-1)); break; // King RDD (Doppler) archive
+                  case NEXRAD2: Tcl_SetObjResult(Interp,Tcl_NewStringObj("NEXRAD2",-1)); break; // NEXRAD Radar Level 2 (base data)
+                  case RAINBOW: Tcl_SetObjResult(Interp,Tcl_NewStringObj("RAINBOW",-1)); break; // Gematronix/Selex Rainbow XML format
                }
             } else {
             }
@@ -151,20 +153,6 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
          case SCAN:
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewStringObj(Radar_GetTypeString(head->Data->volScan[head->Scan]->dataType),-1));
-            } else {
-            }
-            break;
-
-         case AZRES:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(head->Data->azimuthResolutionDegree));
-            } else {
-            }
-            break;
-
-         case BNRES:
-            if (Objc==1) {
-               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj(head->Data->binResolutionKM));
             } else {
             }
             break;
@@ -229,6 +217,16 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
             }
             break;
 
+         case AZRES:
+            if (Objc==1) {
+               obj=Tcl_NewListObj(0,NULL);
+               for(v=0;v<head->Data->volScan[head->Scan]->numSweeps;v++) {
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(head->Data->volScan[head->Scan]->sweep[v]->azimuthResolutionDegree));
+               }
+               Tcl_SetObjResult(Interp,obj);
+            }
+            break;
+            
          case SWEEPANGLE:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -237,6 +235,13 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
                }
                Tcl_SetObjResult(Interp,obj);
             } else {
+            }
+            break;
+
+         case BNRES:
+            obj=Tcl_NewListObj(0,NULL);
+            for(v=0;v<head->Data->volScan[head->Scan]->numSweeps;v++) {
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(head->Data->volScan[head->Scan]->sweep[v]->binResolutionKM*1000));
             }
             break;
 
@@ -257,6 +262,7 @@ int Radar_ScanDefine(Tcl_Interp *Interp,TData *Rad,int Objc,Tcl_Obj *CONST Objv[
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Rad->Def->NJ));
             }
             break;
+            
          case LOCATION:
             if (Objc==1) {
                obj=Tcl_NewListObj(0,NULL);
@@ -351,7 +357,8 @@ int Radar_Read(Tcl_Interp *Interp,char *Id,char* File,int Scan) {
       return TCL_ERROR;
    }
 
-   ni=360/file->Data.azimuthResolutionDegree+1;
+//   ni=360/file->Data.azimuthResolutionDegree+1;
+   ni=file->Data.volScan[0]->maxNumRaysInVolume;
    nj=file->Data.volScan[0]->sweep[0]->maxNumBinsInSweep;
    nk=file->Data.volScan[0]->numSweeps;
 
@@ -389,14 +396,15 @@ int Radar_Parse(TData *Rad) {
    Radar_Head *head=(Radar_Head*)Rad->Head;
    VOLUME     *vol;
    RAY        *ray;
-   int         i,j,k;
+   int         i,j,k,r,idx;
    double      val,th;
 
    vol=head->Data->volScan[head->Scan];
-
    for (k=0;k<Rad->Def->NK;k++) {            // Loop on the Sweeps
+      r=head->Data->volScan[head->Scan]->maxNumRaysInVolume/vol->sweep[k]->numRays;
       for (j=0;j<Rad->Def->NJ;j++) {            // Loop on the Bins
-         for (i=0;i<Rad->Def->NI;i++) {           // Loop on the Azimuths
+//         for (i=0;i<Rad->Def->NI;i++) {           // Loop on the Azimuths
+         for (i=0;i<vol->sweep[k]->numRays;i++) {           // Loop on the Azimuths
 
             if (i==Rad->Def->NI-1) {
                Def_Get(Rad->Def,0,FIDX3D(Rad->Def,0,j,k),val);
@@ -404,7 +412,11 @@ int Radar_Parse(TData *Rad) {
             } else {
                ray=vol->sweep[k]->rays[i];             
                val=(j>=ray->numBins)?-32.0:N_DBZ(((unsigned char*)ray->rangeBin)[j]);
-               Def_Set(Rad->Def,0,FIDX3D(Rad->Def,i,j,k),val);
+               
+               // TODO: currently a hack to copy lower scan rate data to fill the gaps
+               idx=FIDX3D(Rad->Def,(i*r),j,k);
+               Def_Set(Rad->Def,0,idx,val);              
+               if (r==2) { idx++; Def_Set(Rad->Def,0,idx,val); }
             }
          }
       }
@@ -491,7 +503,7 @@ Vect3d* Radar_Grid(TData *Rad,void *Proj,int Level) {
             if (i==Rad->Def->NI-1) {
                Vect_Assign(Rad->GPos->Pos[Level][idxi],Rad->GPos->Pos[Level][j*Rad->Def->NI]);
             } else {
-               dt=j*head->Data->binResolutionKM*1000;
+               dt=j*vol->sweep[Level]->binResolutionKM*1000;
                Rad->GPos->Pos[Level][idxi][2]=Rad->GRef->Loc.Elev+sth*dt;
                Rad->GRef->Project(Rad->GRef,i,j,&Rad->GPos->Pos[Level][idxi][1],&Rad->GPos->Pos[Level][idxi][0],0,1);
             }
