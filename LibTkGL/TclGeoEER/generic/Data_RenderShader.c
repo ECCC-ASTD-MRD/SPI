@@ -385,7 +385,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
    if (Field->GRef->Grid[0]=='U') {
       idxk=FSIZE2D(Field->SDef[0])*Field->Def->Level+Field->Def->Idx;
-     Def_PointerMode(Field->SDef[0],idxk,ptr);
+      Def_PointerMode(Field->SDef[0],idxk,ptr);
    } else {
       idxk=FSIZE2D(Field->Def)*Field->Def->Level;
       Def_PointerMode(Field->Def,idxk,ptr);
