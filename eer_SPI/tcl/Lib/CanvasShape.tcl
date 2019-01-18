@@ -13,48 +13,53 @@
 #
 # Fonctions:
 #
-#    CVCompass::Create     { Frame X Y }
-#    CVCompass::Destroy    { Frame }
-#    CVCompass::Update     { Frame Bearing Angle Distance { Speed 0 } }
-#    CVCompass::Rotate     { Frame X Y }
-#    CVCompass::Write      { Frame File }
+#    CVCompass::Create      { Frame X Y }
+#    CVCompass::Destroy     { Frame }
+#    CVCompass::Update      { Frame Bearing Angle Distance { Speed 0 } }
+#    CVCompass::Rotate      { Frame X Y }
+#    CVCompass::Write       { Frame File }
 #
-#    CVClock::Create       { Frame X Y }
-#    CVClock::Destroy      { Frame }
-#    CVClock::Exist        { Frame }
-#    CVClock::Time         { Frame Sec Total }
-#    CVClock::Write        { Frame File }
+#    CVClock::Create        { Frame X Y }
+#    CVClock::Destroy       { Frame }
+#    CVClock::Exist         { Frame }
+#    CVClock::Time          { Frame Sec Total }
+#    CVClock::Write         { Frame File }
 #
-#    CVScale::Create       { Frame X Y Size }
-#    CVScale::Destroy      { Frame }
-#    CVScale::Update       { Frame VP }
-#    CVScale::Set          { Frame }
-#    CVScale::Write        { Frame File }
+#    CVProgressBar::Create  { Frame Location { Y "" } }
+#    CVProgressBar::Destroy { Frame }
+#    CVProgressBar::Set     { Frame Val }
+#    CVProgressBar::Incr    { Frame Incr }
 #
-#    CVGeoLegend::Create   { Frame X Y List }
-#    CVGeoLegend::Destroy  { Frame }
-#    CVGeoLegend::Update   { Frame List }
-#    CVGeoLegend::Write    { Frame File }
+#    CVScale::Create        { Frame X Y Size }
+#    CVScale::Destroy       { Frame }
+#    CVScale::Update        { Frame VP }
+#    CVScale::Set           { Frame }
+#    CVScale::Write         { Frame File }
 #
-#    CVText::Create        { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text "" } }
-#    CVText::Update        { Frame Tag Text }
-#    CVText::Destroy       { Frame Tag }
-#    CVText::Write         { Frame File }
-#    CVText::Move          { Canvas Tag }
-#    CVText::Scale         { Canvas Tag X Y }
-#    CVText::Init          { Canvas }
-#    CVText::Focus         { Canvas X Y }
-#    CVText::Copy          { Canvas }
-#    CVText::BackSpace     { Canvas }
-#    CVText::Delete        { Canvas }
-#    CVText::Drag          { Canvas X Y }
-#    CVText::Erase         { Canvas }
-#    CVText::Hit           { Canvas X Y { select 1 } }
-#    CVText::Insert        { Canvas Char }
-#    CVText::Go            { Canvas Incr }
-#    CVText::GoEnd         { Canvas Pos }
-#    CVText::Paste         { Canvas { X {} } { Y {} } }
-#    CVText::Select        { Canvas }
+#    CVGeoLegend::Create    { Frame X Y List }
+#    CVGeoLegend::Destroy   { Frame }
+#    CVGeoLegend::Update    { Frame List }
+#    CVGeoLegend::Write     { Frame File }
+#
+#    CVText::Create         { Frame { X0 0 } { Y0 0 } { Width 0 } { Height 0 } { Text "" } }
+#    CVText::Update         { Frame Tag Text }
+#    CVText::Destroy        { Frame Tag }
+#    CVText::Write          { Frame File }
+#    CVText::Move           { Canvas Tag }
+#    CVText::Scale          { Canvas Tag X Y }
+#    CVText::Init           { Canvas }
+#    CVText::Focus          { Canvas X Y }
+#    CVText::Copy           { Canvas }
+#    CVText::BackSpace      { Canvas }
+#    CVText::Delete         { Canvas }
+#    CVText::Drag           { Canvas X Y }
+#    CVText::Erase          { Canvas }
+#    CVText::Hit            { Canvas X Y { select 1 } }
+#    CVText::Insert         { Canvas Char }
+#    CVText::Go             { Canvas Incr }
+#    CVText::GoEnd          { Canvas Pos }
+#    CVText::Paste          { Canvas { X {} } { Y {} } }
+#    CVText::Select         { Canvas }
 #
 #    CVMagnifier::Activate   { Canvas X Y }
 #    CVMagnifier::DeActivate { Canvas }
@@ -848,6 +853,90 @@ proc CVGeoLegend::Write { Frame File } {
    puts $File "   #----- Affichage de la legende"
    set c [$Frame.page.canvas coords CVLEGENDLOC]
    puts $File "   CVGeoLegend::Create \$Frame [lindex $c 0] [lindex $c 1] \[list $Data(List)\]"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <CVProgressBar::Create>
+# Creation : Janvier 2019 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Dessine une barre de progression
+#
+# Parametres :
+#  <Frame>   : Identificateur de page
+#  <Location>: Position (U,UL,UR,L,LL,LR)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+namespace eval CVProgressBar { } {
+   variable Param
+
+   set Param(Label)      "" 
+   set Param(LabelColor) red 
+   set Param(LabelFont)  XFont12 
+   set Param(LabelTrans) 90
+   
+   set Param(Background) #aaaaaa 
+   set Param(BackTrans)  30
+
+   set Param(Foreground) #ffffff
+   set Param(ForeTrans)  75
+ 
+   set Param(Spacing)    5
+   set Param(Width)      16
+   set Param(Length)     300
+}
+
+proc CVProgressBar::Create { Frame Location { Y "" } } {
+   variable Param
+  
+   set w [Page::CanvasWidth  $Frame] 
+   set h [Page::CanvasHeight $Frame] 
+   set m [expr $Param(Length)/2]
+   
+   if { $Y!="" } {
+      set Param(Coords) [list $Location $Y [expr $Location+$Param(Length)] [expr $Y+$Param(Width]]
+   } else {
+      switch $Location {
+         "U"  { set Param(Coords) [list [expr $w/2-$m]                             $Param(Spacing)           [expr $w/2+$m]            [expr $Param(Spacing)+$Param(Width)]] }
+         "UL" { set Param(Coords) [list $Param(Spacing)                            $Param(Spacing)           [expr $Param(Spacing)+$m] [expr $Param(Spacing)+$Param(Width)]] }
+         "UR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Param(Length)] $Param(Spacing)             [expr $w-$Param(Spacing)] [expr $Param(Spacing)+$Param(Width)]]}
+         "L"  { set Param(Coords) [list [expr $w/2-$m]                             [expr $h-$Param(Spacing)] [expr $w/2+$m]            [expr $h-$Param(Spacing)-$Param(Width)]] }
+         "LL" { set Param(Coords) [list $Param(Spacing)                            [expr $h-$Param(Spacing)] [expr $Param(Spacing)+$m] [expr $h-$Param(Spacing)-$Param(Width)]] }
+         "LR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Param(Length)]   [expr $h-$Param(Spacing)] [expr $w-$Param(Spacing)] [expr $h-$Param(Spacing)-$Param(Width)]]}
+      }
+   }
+   $Frame.page.canvas create rectangle $Param(Coords) -fill $Param(Background) -transparency $Param(BackTrans) -width 1 -outline black -tags "CVPROGRESS CVPROGRESS_BG"
+   $Frame.page.canvas create rectangle $Param(Coords) -fill $Param(Foreground) -transparency $Param(ForeTrans) -width 1 -tags "CVPROGRESS CVPROGRESS_FG"
+   $Frame.page.canvas create text      [lindex $Param(Coords) 0] [lindex $Param(Coords) end] -fill $Param(LabelColor) -transparency $Param(LabelTrans) -font $Param(LabelFont) -anchor sw -text $Param(Label) -tags "CVPROGRESS CVPROGRESS_LBL"
+}
+
+proc CVProgressBar::Destroy { Frame } {
+
+   $Frame.page.canvas delete CVPROGRESS
+}
+
+proc CVProgressBar::Set { Frame Val } {
+   variable Param
+
+   set Param(Val) $Val
+   set coords $Param(Coords)
+   set c0 [lindex $Param(Coords) 0]
+   lset coords 2 [expr $c0+$Param(Val)*([lindex $Param(Coords) 2]-$c0)]
+   $Frame.page.canvas coords CVPROGRESS_FG $coords 
+}
+
+proc CVProgressBar::Incr { Frame Incr } {
+   variable Param
+
+   set Param(Val) [expr double($Param(Val)+$Incr)]
+   set coords $Param(Coords)
+   set c0 [lindex $Param(Coords) 0]
+   lset coords 2 [expr $c0+$Param(Val)*([lindex $Param(Coords) 2]-$c0)]
+   $Frame.page.canvas coords CVPROGRESS_FG $coords
 }
 
 #----------------------------------------------------------------------------

@@ -459,30 +459,32 @@ proc Mapper::Read { Files { Full False } { Mode ANY } } {
    variable Data
    variable Msg
 
-   if { $Files=="" } {
-      return
-   }
+   set id ""
 
-   Mapper::Cursor watch
+   if { [llength $Files] } {
+      Mapper::Cursor watch
 
-   foreach file $Files {
-       switch $Mode {
-          ANY  { if { [Mapper::GDAL::Read $file "" 3 $Full]=="" && [Mapper::OGR::Read $file]=="" } {
-                    Dialog::Error . $Msg(BadFile)
-                 }
-               }
-          GDAL { if { [Mapper::GDAL::Read $file "" 3 $Full]=="" } {
-                    Dialog::Error . $Msg(BadFile)
-                 }
-               }
-          OGR  { if { [Mapper::OGR::Read $file]=="" } {
-                    Dialog::Error . $Msg(BadFile)
-                 }
-               }
-      }
-      Mapper::UpdateData $Page::Data(Frame)
+      foreach file $Files {
+         switch $Mode {
+            ANY  { if { [set id [Mapper::GDAL::Read $file "" 3 $Full]]=="" && [set id [Mapper::OGR::Read $file]]=="" } {
+                     Dialog::Error . $Msg(BadFile)
+                  }
+                  }
+            GDAL { if { [set id [Mapper::GDAL::Read $file "" 3 $Full]]=="" } {
+                     Dialog::Error . $Msg(BadFile)
+                  }
+                  }
+            OGR  { if { [set id [Mapper::OGR::Read $file]]=="" } {
+                     Dialog::Error . $Msg(BadFile)
+                  }
+                  }
+         }
+         Mapper::UpdateData $Page::Data(Frame)
+      }   
+      Mapper::Cursor left_ptr
    }
-   Mapper::Cursor left_ptr
+   
+   return $id
 }
 
 proc Mapper::Progress { Object } {
