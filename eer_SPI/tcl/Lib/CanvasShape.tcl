@@ -25,7 +25,7 @@
 #    CVClock::Time          { Frame Sec Total }
 #    CVClock::Write         { Frame File }
 #
-#    CVProgressBar::Create  { Frame Location { Y "" } }
+#    CVProgressBar::Create  { Frame X Y Width Length { Label "" } }
 #    CVProgressBar::Destroy { Frame }
 #    CVProgressBar::Set     { Frame Val }
 #    CVProgressBar::Incr    { Frame Incr }
@@ -874,7 +874,6 @@ proc CVGeoLegend::Write { Frame File } {
 namespace eval CVProgressBar { } {
    variable Param
 
-   set Param(Label)      "" 
    set Param(LabelColor) red 
    set Param(LabelFont)  XFont12 
    set Param(LabelTrans) 90
@@ -886,32 +885,34 @@ namespace eval CVProgressBar { } {
    set Param(ForeTrans)  75
  
    set Param(Spacing)    5
-   set Param(Width)      16
-   set Param(Length)     300
 }
 
-proc CVProgressBar::Create { Frame Location { Y "" } } {
+proc CVProgressBar::Create { Frame X Y Width Length { Label "" } } {
    variable Param
   
+   set Param(Width)  $Width
+   set Param(Length) $Length
+
    set w [Page::CanvasWidth  $Frame] 
    set h [Page::CanvasHeight $Frame] 
    set m [expr $Param(Length)/2]
    
-   if { $Y!="" } {
-      set Param(Coords) [list $Location $Y [expr $Location+$Param(Length)] [expr $Y+$Param(Width]]
+   if { [string is integer $X] } {
+      set Param(Coords) [list $X $Y [expr $X+$Length] [expr $Y+$Width]]
    } else {
-      switch $Location {
-         "U"  { set Param(Coords) [list [expr $w/2-$m]                             $Param(Spacing)           [expr $w/2+$m]            [expr $Param(Spacing)+$Param(Width)]] }
-         "UL" { set Param(Coords) [list $Param(Spacing)                            $Param(Spacing)           [expr $Param(Spacing)+$m] [expr $Param(Spacing)+$Param(Width)]] }
-         "UR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Param(Length)] $Param(Spacing)             [expr $w-$Param(Spacing)] [expr $Param(Spacing)+$Param(Width)]]}
-         "L"  { set Param(Coords) [list [expr $w/2-$m]                             [expr $h-$Param(Spacing)] [expr $w/2+$m]            [expr $h-$Param(Spacing)-$Param(Width)]] }
-         "LL" { set Param(Coords) [list $Param(Spacing)                            [expr $h-$Param(Spacing)] [expr $Param(Spacing)+$m] [expr $h-$Param(Spacing)-$Param(Width)]] }
-         "LR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Param(Length)]   [expr $h-$Param(Spacing)] [expr $w-$Param(Spacing)] [expr $h-$Param(Spacing)-$Param(Width)]]}
+      set loc $X$Y
+      switch $loc {
+         "U"  { set Param(Coords) [list [expr $w/2-$m]                    $Param(Spacing)           [expr $w/2+$m]            [expr $Param(Spacing)+$Width]] }
+         "UL" { set Param(Coords) [list $Param(Spacing)                   $Param(Spacing)           [expr $Param(Spacing)+$m] [expr $Param(Spacing)+$Width]] }
+         "UR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Length] $Param(Spacing)           [expr $w-$Param(Spacing)] [expr $Param(Spacing)+$Width]]}
+         "L"  { set Param(Coords) [list [expr $w/2-$m]                    [expr $h-$Param(Spacing)] [expr $w/2+$m]            [expr $h-$Param(Spacing)-$Width]] }
+         "LL" { set Param(Coords) [list $Param(Spacing)                   [expr $h-$Param(Spacing)] [expr $Param(Spacing)+$m] [expr $h-$Param(Spacing)-$Width]] }
+         "LR" { set Param(Coords) [list [expr $w-$Param(Spacing)-$Length] [expr $h-$Param(Spacing)] [expr $w-$Param(Spacing)] [expr $h-$Param(Spacing)-$Width]]}
       }
    }
    $Frame.page.canvas create rectangle $Param(Coords) -fill $Param(Background) -transparency $Param(BackTrans) -width 1 -outline black -tags "CVPROGRESS CVPROGRESS_BG"
    $Frame.page.canvas create rectangle $Param(Coords) -fill $Param(Foreground) -transparency $Param(ForeTrans) -width 1 -tags "CVPROGRESS CVPROGRESS_FG"
-   $Frame.page.canvas create text      [lindex $Param(Coords) 0] [lindex $Param(Coords) end] -fill $Param(LabelColor) -transparency $Param(LabelTrans) -font $Param(LabelFont) -anchor sw -text $Param(Label) -tags "CVPROGRESS CVPROGRESS_LBL"
+   $Frame.page.canvas create text      [lindex $Param(Coords) 0] [lindex $Param(Coords) end] -fill $Param(LabelColor) -transparency $Param(LabelTrans) -font $Param(LabelFont) -anchor sw -text $Label -tags "CVPROGRESS CVPROGRESS_LBL"
 }
 
 proc CVProgressBar::Destroy { Frame } {
