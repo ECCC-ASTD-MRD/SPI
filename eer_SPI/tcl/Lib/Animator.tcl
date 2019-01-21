@@ -1370,82 +1370,9 @@ proc Animator::FlyPath { Cam Type } {
    upvar #0 ProjCam::Data${Cam}::Cam  cam
 
    set plen $Fly(Length)
-
-   set Fly(Controls) {}
-   set Fly(Coords)   {}
-   set Fly(From)     ""
-   set Fly(Up)       ""
-   set Fly(Length)   0
    
-   switch $Type {
-      "CIRCLE" {
-         projcam configure $Cam -from $cam(From) -up $cam(Up)
-         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+45] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+90] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+135] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+180] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+225] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+270] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+315] $cam(CFY) $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
-      }
-      "AROUND" {
-         set ll [projection configure $Cam -location]
-         foreach lon { 0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 -170 -160 -150 -140 -130 -120 -110 -100 -90 -80 -70 -60 -50 -40 -30 -20 -10 } {
-            lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens) [lindex $ll 0] [expr [lindex $ll 1]+$lon]]
-          }
-      }
-      "TO" {
-         projcam configure $Cam -from $cam(From) -up $cam(Up)
-         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
-
-         projcam define $Cam -circlefrom $cam(CFX) [expr (-89.0+$cam(CFY))/2.0] [expr $cam(CFZ)/3.0]
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-
-         projcam define $Cam -circlefrom $cam(CFX) -89.0 1e-20
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-      }
-      "THROUGH" {
-         projcam configure $Cam -from $cam(From) -up $cam(Up)
-         lappend Fly(Controls) [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+90.0] -89.0 0.0
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] $cam(Up) $cam(Lens)]
-
-         projcam define $Cam -circlefrom [expr $cam(CFX)+180.0] $cam(CFY)  $cam(CFZ)
-         lappend Fly(Controls) [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
-      }
-      "DEFAULT" {
-         foreach idx $Fly(List) {
-            lappend Fly(Controls) [list [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2] [lindex $ProjCam::Data(Params$idx) 3] [lindex $ProjCam::Data(Params$idx) end-1] [lindex $ProjCam::Data(Params$idx) end]]
-         }
-      }
-   }
-
-   if { $Fly(Controls)!="" } {
-      projcam define $Cam -path $Fly(Controls)
-      $Page::Data(Canvas) itemconf $Page::Data(VP) -camera $Page::Data(Frame)
-
-      set Fly(Length) [expr [llength $Fly(Controls)]-1]
-   }
-
-   set Fly(Length) [expr int($Fly(Length)/$Fly(Speed))]
+   set Fly(Length) [ProjCam::FlyPath $Cam $Type $Fly(List)]
+   set Fly(Length) [expr int(($Fly(Length)-1)/$Fly(Speed))]
    if { $plen!=$Fly(Length) } {
       Animator::Limits
    }

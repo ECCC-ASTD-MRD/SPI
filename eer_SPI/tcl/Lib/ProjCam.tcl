@@ -67,6 +67,7 @@ namespace eval ProjCam {
    set Param(Up)     { 0.0 1.0 0.0 }
    set Param(Lens)   1.0                   ;#Valeur de zoom
    set Param(Speed)  0.0                   ;#Valeur de vitesse
+   set Param(Proc)   ""                    ;#Print movement trace
 
    set Param(CFX) 0.0
    set Param(CFY) 0.0
@@ -417,6 +418,81 @@ proc ProjCam::Fly { Cam Frame } {
       Page::Update $Frame
       update
    }
+}
+
+proc ProjCam::FlyPath { Cam Type { List {}} } {
+   variable Data
+   variable Fly
+
+   upvar #0 ProjCam::Data${Cam}::Cam  cam
+
+   set flypath {}
+   
+   switch $Type {
+      "CIRCLE" {
+         projcam configure $Cam -from $cam(From) -up $cam(Up)
+         lappend flypath [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+45] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+90] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+135] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+180] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+225] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+270] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+315] $cam(CFY) $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         lappend flypath [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
+      }
+      "AROUND" {
+         set ll [projection configure $Cam -location]
+         foreach lon { 0 10 20 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 -170 -160 -150 -140 -130 -120 -110 -100 -90 -80 -70 -60 -50 -40 -30 -20 -10 } {
+            lappend flypath [list $cam(From) $cam(To) $cam(Up) $cam(Lens) [lindex $ll 0] [expr [lindex $ll 1]+$lon]]
+          }
+      }
+      "TO" {
+         projcam configure $Cam -from $cam(From) -up $cam(Up)
+         lappend flypath [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
+
+         projcam define $Cam -circlefrom $cam(CFX) [expr (-89.0+$cam(CFY))/2.0] [expr $cam(CFZ)/3.0]
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+
+         projcam define $Cam -circlefrom $cam(CFX) -89.0 1e-20
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+      }
+      "THROUGH" {
+         projcam configure $Cam -from $cam(From) -up $cam(Up)
+         lappend flypath [list $cam(From) $cam(To) $cam(Up) $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+90.0] -89.0 0.0
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] $cam(Up) $cam(Lens)]
+
+         projcam define $Cam -circlefrom [expr $cam(CFX)+180.0] $cam(CFY)  $cam(CFZ)
+         lappend flypath [list [projcam configure $Cam -from] [projcam configure $Cam -to] [projcam configure $Cam -up] $cam(Lens)]
+      }
+      "DEFAULT" {
+         foreach idx $List {
+            lappend flypath [list [lindex $ProjCam::Data(Params$idx) 1] [lindex $ProjCam::Data(Params$idx) 0] [lindex $ProjCam::Data(Params$idx) 2] [lindex $ProjCam::Data(Params$idx) 3] [lindex $ProjCam::Data(Params$idx) end-1] [lindex $ProjCam::Data(Params$idx) end]]
+         }
+      }
+   }
+
+   projcam define $Cam -path $flypath
+#   $Page::Data(Canvas) itemconf $Page::Data(VP) -camera $Page::Data(Frame)
+
+   return [llength $flypath]
 }
 
 proc ProjCam::ToDo { Cam Frame VP X Y } {
