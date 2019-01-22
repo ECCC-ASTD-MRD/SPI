@@ -29,6 +29,9 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
+#ifdef HAVE_SQLITE3
+
 #include "App.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -421,3 +424,6 @@ static int query_progress_callback(void *Params)
    fprintf(stderr, "\r %c\r", spinner[i++ % sizeof(spinner)]);
    return 0;
 }
+
+#endif
+#endif

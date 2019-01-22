@@ -40,6 +40,9 @@
  *
  *=========================================================
  */
+#ifdef HAVE_ECBUFR
+#ifdef HAVE_SQLITE3
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -391,4 +394,7 @@ int main(int argc, char *argv[])
    fprintf(stderr, "========================================\n\n");
    return 0;
 }
+
+#endif
+#endif
 #endif

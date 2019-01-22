@@ -1973,7 +1973,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    if(strstr(File,".sqlite") != NULL){
       type = MET_SQLITE;
    } else if (strstr(File, ".other") != NULL){
-     type = MET_SQLITE;
+      type = MET_SQLITE;
    }
 
    App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
@@ -1982,7 +1982,9 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       case MET_BURP: res=MetObs_LoadBURP(Interp,File,Obs);  break;
       case MET_BUFR: res=MetObs_LoadBUFR(Interp,File,Obs); break;
 //Not recognized      case 8 : res=MetObs_LoadBUFR(Interp,File,Obs);  break;
+#ifdef HAVE_SQLITE3
       case MET_SQLITE: res=MetObs_LoadSQLite(Interp,File,Obs); break;
+#endif
       case MET_OTHER: if ((res=MetObs_LoadSWOB(Interp,File,Obs))==TCL_ERROR) {
                   res=MetObs_LoadASCII(Interp,File,Obs);
                }

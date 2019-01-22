@@ -38,7 +38,6 @@
 #include <tk.h>
 #include <tcl.h>
 #include "tclCMap.h"
-#include "ogr_api.h"
 #include "Vector.h"
 #include "glStuff.h"
 #include "List.h"

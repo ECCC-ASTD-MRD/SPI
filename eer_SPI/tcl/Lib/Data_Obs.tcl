@@ -797,7 +797,7 @@ proc Obs::ParamUpdate { { Obs {} } } {
    ComboBox::DelAll $Data(Frame).var.sel
 
    foreach obs $Obs {
-      if { [metobs is $obs] } {
+      if { [info command metobs]!="" && [metobs is $obs] } {
          set model [metobs define $obs -MODEL]
          foreach item [metmodel define $model -items] {
             if { [lindex $item 2]!="" } {

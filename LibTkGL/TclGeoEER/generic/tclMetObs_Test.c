@@ -1,3 +1,5 @@
+#ifdef HAVE_ECBUFR
+
 #include "tclMetObs.h"
 #include "tclMetObs_Test.h"
 
@@ -93,3 +95,5 @@ int MetObs_CountElems(TMetLoc *Loc)
       nb++;
    return nb;
 }
+
+#endif

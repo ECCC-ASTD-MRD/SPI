@@ -1,3 +1,6 @@
+#ifdef HAVE_ECBUFR
+#ifdef HAVE_SQLITE3
+
 #ifndef _METOBSSQLITE_GETQUERIES_H
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <MetObsSQLite_GetQueries>
@@ -42,4 +45,7 @@
  *             du fichier de configuration.
  *--------------------------------------------------------------------------------------------------------------*/
 int MetObsSQLite_GetQueries(const char *filename, const char *key, char **obs_query_out, char **elem_query_out);
+#endif
+
+#endif
 #endif
