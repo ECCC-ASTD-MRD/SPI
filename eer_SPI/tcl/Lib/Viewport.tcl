@@ -2688,7 +2688,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } {
          set lon   $Map(Lon)
 
          set t0 [set Map(Grabbed) [clock click -milliseconds]]
-         set Map(Speed) [expr 10.0/$Map(Delay)]
+         set Map(Speed) [expr 20.0/$Map(Delay)]
         
          #----- While we are not there yet
          set n  [expr 1.0/$Map(Speed)/$dz]
