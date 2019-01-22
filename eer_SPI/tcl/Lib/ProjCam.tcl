@@ -62,12 +62,13 @@ namespace eval ProjCam {
 
    #----- Definitions des parametres de la camera
 
-   set Param(To)     { 0.0 0.0 1.0 }
-   set Param(From)   { 0.0 0.0 2.0 }
-   set Param(Up)     { 0.0 1.0 0.0 }
-   set Param(Lens)   1.0                   ;#Valeur de zoom
-   set Param(Speed)  0.0                   ;#Valeur de vitesse
-   set Param(Proc)   ""                    ;#Print movement trace
+   set Param(To)       { 0.0 0.0 1.0 }
+   set Param(From)     { 0.0 0.0 2.0 }
+   set Param(Up)       { 0.0 1.0 0.0 }
+   set Param(Lens)     1.0                   ;#Valeur de zoom
+   set Param(Speed)    0.0                   ;#Valeur de vitesse
+   set Param(Function) EXPONENTIAL           ;#Goto movement function
+   set Param(Proc)     ""                    ;#Print movement trace
 
    set Param(CFX) 0.0
    set Param(CFY) 0.0

@@ -68,6 +68,7 @@ namespace eval OpenGL {
    set Lbl(Delay)       { "Délai" "Delay" }
    set Lbl(Damping)     { "Amortissement" "Damping" }
    set Lbl(Dynamic)     { "Dynamique" "Dynamics" }
+   set Lbl(Function)        { "Fonction de zoom" "Zoom function" }
 
    glrender -shaderpath $Param(ShaderPath) -shaders $Param(Shaders)
    Log::Print INFO "System: GLX [glrender -info GLX_VERSION] by [glrender -info GLX_VENDOR]"
@@ -151,7 +152,7 @@ proc OpenGL::ParamFrame { Frame Apply } {
 
       frame $frame.move.disp
          label $frame.move.disp.lbl -text [lindex $Lbl(Movement) $GDefs(Lang)] -width 15 -anchor w
-         scale $frame.move.disp.sc -orient horizontal -from 10 -to 5000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
+         scale $frame.move.disp.sc -orient horizontal -from 10 -to 2000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
             -sliderlength 8  -bd 1 -resolution 10
          pack $frame.move.disp.lbl -side left
          pack $frame.move.disp.sc -side left -fill x -expand True
@@ -168,6 +169,16 @@ proc OpenGL::ParamFrame { Frame Apply } {
          pack $frame.move.delay.lbl -side left
          pack $frame.move.delay.sc -side left -fill x -expand True
       pack $frame.move.lbl $frame.move.disp $frame.move.damp $frame.move.delay -side top -fill x
+      frame $frame.move.mode
+         label $frame.move.mode.lbl -text [lindex $Lbl(Function) $GDefs(Lang)] -width 15 -anchor w
+         frame  $frame.move.mode.fr -relief sunken -bd 1
+            radiobutton $frame.move.mode.fr.mode0 -text "LINEAR"      -variable ProjCam::Param(Function) -indicatoron false -value LINEAR -bd 1
+            radiobutton $frame.move.mode.fr.mode1 -text "QUADRATIC"   -variable ProjCam::Param(Function) -indicatoron false -value QUADRATIC -bd 1
+            radiobutton $frame.move.mode.fr.mode2 -text "EXPONENTIAL" -variable ProjCam::Param(Function) -indicatoron false -value EXPONENTIAL -bd 1
+            pack $frame.move.mode.fr.mode0 $frame.move.mode.fr.mode1 $frame.move.mode.fr.mode2 -side left -fill x -expand True
+         pack $frame.move.mode.lbl -side left
+         pack $frame.move.mode.fr -side left -fill x -expand True
+      pack $frame.move.lbl $frame.move.disp $frame.move.damp $frame.move.delay $frame.move.mode -side top -fill x
    pack $frame.move -side top -padx 5 -pady 2 -fill x
 }
 

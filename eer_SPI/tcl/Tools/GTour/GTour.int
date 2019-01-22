@@ -1,0 +1,107 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : GTour.int
+# Creation : Avril 2006 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Outils de now-casting.
+#
+# Remarques :
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <GTour::Window>
+# Creation : Avril 2006 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Affiche l'interface.
+#
+# Parametres   :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc GTour::Window { { Type "" } } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+   variable Param
+
+   set Data(Active) 1
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
+   set Param(Window) .gtour
+
+   if { ![winfo exists .gtour] } {
+
+      if { $Param(Dock) } {
+         frame .gtour
+         SPI::Dock .gtour
+      } else {
+         toplevel         .gtour
+         wm title         .gtour "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+         eval wm geometry .gtour $Param(Geom)
+         wm resizable     .gtour 1 1
+         wm protocol      .gtour WM_DELETE_WINDOW { GTour::Close }
+      }
+
+      TabFrame::Create .gtour.tab 1 ""
+      set Data(Tab) [TabFrame::Add .gtour.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .gtour.tab -side top -fill both -expand true
+
+      frame .gtour.dock -relief raised -bd 1
+         button .gtour.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool GTour }
+         button .gtour.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command GTour::Close
+         label .gtour.dock.info -textvariable GTour::Data(Job) -relief sunken -bd 1 -anchor w -width 28 -bg $GDefs(ColorLight)
+         pack .gtour.dock.sel .gtour.dock.del -side left
+         pack .gtour.dock.info -side left -fill x -expand true
+      pack .gtour.dock -side bottom -fill x
+
+      frame $Data(Tab).head
+         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue GTour -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         button $Data(Tab).head.add -image DOCNEW -bd 1 -relief flat -overrelief raised -command "GTour::Add  \[FileBox::Create . \"\" Load \"\"\]"
+         button $Data(Tab).head.save -image SAVE -bd 1 -relief flat -overrelief raised -command "GTour::Save"
+         pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.save  -side left
+      pack $Data(Tab).head -side top -fill x
+
+      frame $Data(Tab).select
+         listbox $Data(Tab).select.list -relief sunken -bd 1 -yscrollcommand "$Data(Tab).select.scroll set" -selectmode single \
+            -width 1 -height 1 -background white -listvar nnn -selectbackground $GDefs(ColorHighLight) -selectforeground black \
+            -listvariable GTour::Data(Features) -exportselection false -width 20
+         scrollbar $Data(Tab).select.scroll -relief sunken -command "$Data(Tab).select.list yview" -bd 1 -width 10
+         pack $Data(Tab).select.list -side left -fill both -expand true
+         pack $Data(Tab).select.scroll -side left -fill y
+      pack $Data(Tab).select -side top -fill both -expand true
+      
+      frame $Data(Tab).params
+         frame $Data(Tab).params.name
+            label $Data(Tab).params.name.lbl -text [lindex $Lbl(Name) $GDefs(Lang)] -width 5 -anchor w
+            entry $Data(Tab).params.name.sel -textvariable GTour::Data(Name) -bd 1 -bg $GDefs(ColorLight)
+            pack $Data(Tab).params.name.lbl -side left -anchor nw 
+            pack $Data(Tab).params.name.sel -side left -fill x -expand True
+         pack  $Data(Tab).params.name -side top -fill x
+         frame $Data(Tab).params.desc
+            label $Data(Tab).params.desc.lbl -text [lindex $Lbl(Desc) $GDefs(Lang)] -width 5 -anchor w
+            text $Data(Tab).params.desc.sel  -bd 1 -bg $GDefs(ColorLight) -height 5 -width 5
+            pack $Data(Tab).params.desc.lbl -side left -anchor nw 
+            pack $Data(Tab).params.desc.sel -side left -fill x -expand True
+         pack  $Data(Tab).params.desc -side top -fill x
+      pack $Data(Tab).params -side top -fill x
+      
+      bind $Data(Tab).params.name.sel <Any-KeyRelease>   { lset GTour::Data($GTour::Data(Feature)) 4 $GTour::Data(Name); puts stderr $GTour::Data(Name) }
+      bind $Data(Tab).params.desc.sel <Any-KeyRelease>   { lset GTour::Data($GTour::Data(Feature)) 5 [$GTour::Data(Tab).params.desc.sel get 0.0 end] }
+      bind $Data(Tab).select.list     <ButtonRelease-1>  { GTour::Select [$GTour::Data(Tab).select.list get [$GTour::Data(Tab).select.list curselection]] }
+   }     
+}

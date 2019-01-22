@@ -38,7 +38,7 @@
 #    Viewport::ForceGrid      { Frame } { Clean False }
 #    Viewport::GoAlong        { Frame Speed Bearing Lat Lon { Damping True } }
 #    Viewport::GoARound       { Frame Speed Lat Lon { Damping True } }
-#    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
+#    Viewport::GoTo           { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } { Function "" } }
 #    Viewport::CloseUp        { Frame Lat0 Lon0 Lat1 Lon1 { Off 0.0 } } {
 #    Viewport::LinkDo         { VP }
 #    Viewport::LinkSet        { }
@@ -107,7 +107,7 @@ namespace eval Viewport {
    set Map(Elev)        1.0          ;#Facteur d'expansion des elevations
    set Map(GeoRef)      ""           ;#Geo-reference courante (Mode Grid)
    set Map(Grabbed)     0            ;#Etat de la vue
-   set Map(Delay)       500.0        ;#Temps de deplacement en millisecondes
+   set Map(Delay)       500.0         ;#Temps de deplacement en millisecondes
    set Map(Speed)       0.0          ;#Vitesse de deplacement en metres/millisecondes
    set Map(Damping)     1.07         ;#Facteur de l'effet de ralentissement
    set Map(Perspective) False        ;#Affichage en perspective
@@ -2612,6 +2612,7 @@ proc Viewport::GoAround { Frame Speed Lat Lon { Damping True } } {
 #  <From>    : Vecteur position de la camera
 #  <To>      : Vecteur point focal de la camera
 #  <Up>      : Vecteur direction haut de la camera
+#  <Function>: Zoom mode (LINEAR,QUADRATIC,EXPONENTIAL ou "" pour defaut)
 #
 # Retour:
 #
@@ -2619,7 +2620,7 @@ proc Viewport::GoAround { Frame Speed Lat Lon { Damping True } } {
 #
 #----------------------------------------------------------------------------
 
-proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } } {
+proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } { Function "" } } {
    variable Map
 
    upvar #0 ProjCam::Data${Frame}::Cam  cam
@@ -2629,6 +2630,10 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
    #----- Stop Flybys
    set Animator::Fly(Length) 0
    set Animator::Fly(Path)   ""
+
+   if { $Function=="" } {
+     set Function $ProjCam::Param(Function)
+   }
 
    #----- if we zoom, insert the previous zoom in the zoom back list
    if { $Zoom } {
@@ -2640,27 +2645,15 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
       }
    }
 
-   if { [set F [llength $From]] } {
-      set Fx [lindex $From 0]
-      set Fy [lindex $From 1]
-      set Fz [lindex $From 2]
-   } else {
+   if { ![set F [llength $From]] } {
       set From $cam(From)
    }
 
-   if { [set T [llength $To]] } {
-      set Tx [lindex $To 0]
-      set Ty [lindex $To 1]
-      set Tz [lindex $To 2]
-   } else {
+   if { ![set T [llength $To]] } {
       set To $cam(To)
    }
 
-   if { [set U [llength $Up]] } {
-      set Ux [lindex $Up 0]
-      set Uy [lindex $Up 1]
-      set Uz [lindex $Up 2]
-   } else {
+   if { ![set U [llength $Up]] } {
       set Up $cam(Up)
    }
 
@@ -2673,85 +2666,64 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
       if { $dp>10 || $Zoom || $F || $T || $U } {
 
          Viewport::Resolution $Frame 2
+         
+         set l 1
+         set dz 1
+         set path [list [list [projcam configure $Frame -from] [projcam configure $Frame -to] [projcam configure $Frame -up] [projcam configure $Frame -lens]] [list $From $To $Up $Zoom]]
 
-         set dx    0.0
-         set dt    0.0
+         #----- If location is out of the current view and the zoom is high enough
+         if { $cam(Lens)>10 && $Zoom>10 && [expr $Zoom/$cam(Lens)]<10.0 && [$Page::Data(VP) -project $Lat $Lon 0.0]=="" } {
+            set z [expr (6*6371000.0)/$dp]
+            if { $z<[expr min($cam(Lens),$Zoom)] } {
+               set l 2
+               set dz [expr log($dp)]
+               set path [linsert $path 1 [list $From $To $Up $z]]
+            }
+         }
+         
+         projcam define $Frame -path $path
          set dprr  1e32
-         set pdt   [set t0 [set Map(Grabbed) [clock click -milliseconds]]]
          set dir   [expr [projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
          set lat   $Map(Lat)
          set lon   $Map(Lon)
-         set zoom  $cam(Lens)
-         set Map(Speed) [set speed [expr $dp/$Map(Delay)]]
-         set min   [expr $speed/1000.0]
 
-         set fx [lindex $cam(From) 0]
-         set fy [lindex $cam(From) 1]
-         set fz [lindex $cam(From) 2]
-
-         set tx [lindex $cam(To) 0]
-         set ty [lindex $cam(To) 1]
-         set tz [lindex $cam(To) 2]
-
-         set ux [lindex $cam(Up) 0]
-         set uy [lindex $cam(Up) 1]
-         set uz [lindex $cam(Up) 2]
-
+         set t0 [set Map(Grabbed) [clock click -milliseconds]]
+         set Map(Speed) [expr 10.0/$Map(Delay)]
+        
          #----- While we are not there yet
-
-         while { [set dx [expr $dx+$Map(Speed)*$dt]]<$dp } {
+         set n  [expr 1.0/$Map(Speed)/$dz]
+         set n2 [expr $n*0.5]
+         set idx 0
+         while { $idx<1.0 } {
+            set i [expr $idx*$n]
+            switch $Function {
+               "EXPONENTIAL" { set spd [expr 1.0-(pow($i,10)*($n/pow($n,10)))/$n] }
+               "QUADRATIC"   { set spd [expr 1.0-(($i-$n2)*($i-$n2)+($i-$n2))*($n/(($n2*$n2)+$n2))/$n] }
+               "LINEAR"      { set spd 1.0 }
+            }
+            set idx [expr $idx+$spd*$Map(Speed)]
 
             #----- Calculate new position
-
-            set ll [projection function $Frame -circle $lat $lon $dx $dir]
+            set ll [projection function $Frame -circle $lat $lon [expr $dp*$idx] $dir]
             set Map(Lat)  [lindex $ll 0]
             set Map(Lon)  [lindex $ll 1]
 
             #----- Check of overshoot
-
             if { [set dpr [projection function $Frame -dist [list $Map(Lat) $Map(Lon) $Lat $Lon] 0.0]]>$dprr } {
                break
             }
             set dprr $dpr
-            set dprdp [expr $dpr/$dp]
-
-            #----- Zoom to new incremental zoom
-            if { $Zoom } {
-               projcam configure $Frame -lens [set cam(Lens) [expr $Zoom-(($Zoom-$zoom)*$dprdp)]]
-            }
-
-            #----- Move camera to new incremental position
-            if { $F } {
-               set cam(From) [list [expr $Fx-(($Fx-$fx)*$dprdp)] [expr $Fy-(($Fy-$fy)*$dprdp)] [expr $Fz-(($Fz-$fz)*$dprdp)]]
-               projcam configure $Frame -from $cam(From)
-            }
-            if { $T } {
-               set cam(To) [list [expr $Tx-(($Tx-$tx)*$dprdp)] [expr $Ty-(($Ty-$ty)*$dprdp)] [expr $Tz-(($Tz-$tz)*$dprdp)]]
-               projcam configure $Frame -to $cam(To)
-            }
-            if { $U } {
-               set cam(Up) [list [expr $Ux-(($Ux-$ux)*$dprdp)] [expr $Uy-(($Uy-$uy)*$dprdp)] [expr $Uz-(($Uz-$uz)*$dprdp)]]
-               projcam configure $Frame -up $cam(Up)
-            }
-
-            #----- TODO PrintProc
-#            puts stderr "\{ $Map(Lat) $Map(Lon) $cam(Lens) \{$cam(From)\} \{$cam(To)\} \{$cam(Up)\} \}"
-
-            #----- Rotate to new incremental position
+            
+            #----- Move to new incremental position
+            projcam define $Frame -fly [expr $idx*$l]
             projection configure $Frame -location $Map(Lat) $Map(Lon)
             Page::Update $Frame
 
-
-            #----- Get the time
-            set t [clock click -milliseconds]
-            if { [set dt [expr double($t-$pdt)]]>0 } {
-
-               #----- Damp the speed and calculate the displacement
-               set pdt $t
-               set Map(Speed) [expr $speed*(1.0-($dx/$dp))*2.0]
-               set Map(Speed) [expr $Map(Speed)<$min?$min:$Map(Speed)]
+            #----- Apply in movement proc
+            if { $ProjCam::Param(Proc)!="" } {
+               eval uplevel 2 \{ $ProjCam::Param(Proc) \}
             }
-
+            
             #----- check if we should continue
             update
             if { ![projection is $Frame] || $Map(Grabbed)>$t0 } {
@@ -2760,7 +2732,7 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } }
          }
 
          #----- Got to final destination
-         if { $dx==0 || $Map(Grabbed)<=$t0 } {
+         if { $Map(Grabbed)<=$t0 } {
             if { $F || $T || $U } {
                set cam(CFX)    0
                set cam(CFY)    0
