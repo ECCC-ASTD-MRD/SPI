@@ -82,9 +82,9 @@ AC_DEFUN([AX_LIB_URP],
     if test -n "$urp_prefix"; then
         urp_include_dir="$urp_prefix/include"
         if test "$urp_prefix" = "/usr"; then
-            urp_lib_flags="-lmut -ldrp -lurp -ldsp -lxml2 -lz -lbz2"
+            urp_lib_flags="-lmut -ldrp -lurp -ldsp -lm -lxml2 -lz -lbz2"
         else
-            urp_lib_flags="-L$urp_prefix/lib -lmut -ldrp -lurp -ldsp -lxml2 -lz -lbz2"
+            urp_lib_flags="-L$urp_prefix/lib -lmut -ldrp -lurp -ldsp -lm -lxml2 -lz -lbz2"
         fi
         run_urp_test="yes"
     elif test "$urp_requested" = "yes"; then
