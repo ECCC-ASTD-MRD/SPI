@@ -1418,15 +1418,13 @@ void* TclRDeviceX_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fon
     }
 
     // Create the associated graphic engine
-    //gsetVar(install(".Device"),mkString("TclRDevice"),R_NilValue);
     if( !(ge=GEcreateDevDesc(dev)) ) {
         Tcl_AppendResult(Interp,"Unable to create graphic engine for TclR Device",NULL);
         goto err;
     }
 
     // Initialise the graphic engine
-    GEaddDevice(ge);
-    GEinitDisplayList(ge);
+    GEaddDevice2(ge,"TclRDevice");
 
     return (void*)ge;
 err:
