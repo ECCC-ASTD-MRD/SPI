@@ -454,9 +454,15 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
 
 static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Drawable Drawable,int X,int Y,int Width,int Height) {
     RDeviceItem     *rdv = (RDeviceItem*)ItemPtr;
-    int             x,y,w,h;
-    short           drawX,drawY;
+    int             x,y,w,h,drawX,drawY;
     GLuint          fbuf;
+
+    // This canvas doesn't deal with updates the same way and rely mostly on GL's clipping.
+    // We'll therefore ignore the area to update and just overwrite the values with the whole visible part
+    X       = Canvas(Canv)->xOrigin;
+    Y       = Canvas(Canv)->yOrigin;
+    Width   = Tk_Width(Canvas(Canv)->tkwin);
+    Height  = Tk_Height(Canvas(Canv)->tkwin);
 
     // Find the x coordinate and the width of the region to copy relative to our framebuffer coordinates
     x = X>rdv->Header.x1 ? X-rdv->Header.x1 : 0;
@@ -465,12 +471,15 @@ static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Dr
     y = Y+Height>rdv->Header.y2 ? 0 : rdv->Header.y2-(Y+Height);
     h = rdv->Header.y2 - (Y>rdv->Header.y1?Y:rdv->Header.y1) - y;
 
+    // No visible part?
     if( w<=0 || h<=0 )
         return;
 
     // Get those coordinates in the portion of the canvas actually shown
-    Tk_CanvasDrawableCoords(Canv,rdv->Header.x1+x,rdv->Header.y1+h,&drawX,&drawY);
-    DBGPRINTF("Drawable coords : %hd %hd (Canvas dim : %d %d)\n",drawX,drawY,Tk_Width(Canv),Tk_Height(Canv));
+    //Tk_CanvasDrawableCoords(Canv,rdv->Header.x1+x,rdv->Header.y2-y,&drawX,&drawY);
+    drawX = rdv->Header.x1 + x - X;
+    drawY = rdv->Header.y2 - y - Y;
+    DBGPRINTF("Coords: orig=%d %d drawable=%d %d (Canvas dim : %d %d)\n",rdv->Header.x1+x,rdv->Header.y2-y,drawX,drawY,Width,Height);
     DBGPRINTF("x(%d) y(%d) w(%d) h(%d)\n",x,y,w,h);
 
     // Blit (copy) the RDevice's framebuffer into the screen framebuffer
@@ -480,8 +489,9 @@ static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Dr
         glReadBuffer(GL_COLOR_ATTACHMENT0);
         glDrawBuffer(GL_BACK);
 
-        drawY = (short)Tk_Height(Canv)-drawY;
-        glBlitFramebuffer(x,y,w,h,drawX,drawY,drawX+w,drawY+h,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+        drawY = Height-drawY;
+        DBGPRINTF("Blit: %d,%d -> %d,%d @ %d,%d -> %d,%d\n",x,y,x+w,y+h,drawX,drawY,drawX+w,drawY+h);
+        glBlitFramebuffer(x,y,x+w,y+h,drawX,drawY,drawX+w,drawY+h,GL_COLOR_BUFFER_BIT,GL_NEAREST);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
     }
