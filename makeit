@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+#----- On version change:
+#-----    Change version in TclGeoEER/configure.in
+#-----    Check for new versions of dict and burf in $CMCCONST
+
+#----- SSM specifics
+SPI_VERSION="8.0.0"
+EER_VERSION="3.4.0"
+
+if [[ -n $COMP_ARCH ]]; then
+   COMP=-${COMP_ARCH}
+fi
+ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
+
+BLD=0
+SRC=0
+CLR=0
+INS=0
+INSTALL_PATH=""
+
+HELP="Arguments must be:\n\n   Information parameters:
+\t-help        : This information
+\t-version     : Version
+
+   Commands:
+\t-clear       : Clear packages
+\t-build       : Build packages
+\t-install     : Install packages
+\t-src         : Build source package\n"
+
+#----- Get arguments.
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -clear)   CLR=1;;
+        -build)   BLD=1;;
+        -src)     SRC=1;;
+        -install) INS=1;INSTALL_PATH=$2;shift;;
+
+        -h|-help)    printf -- "$HELP\n"; exit 0;;
+        -v|-version) printf -- "$VERSION\n"; exit 0;;
+        --)          shift; break;;
+        *)           printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
+    esac
+    shift
+done
+
+if [[ $CLR -eq 1 ]]; then
+   printf -- "\n----- Cleaning -----\n"
+   cd libSPI-${SPI_VERSION}
+   ./makeit -clear
+
+   cd ..
+fi
+
+if [[ $BLD -eq 1 ]]; then
+
+   printf -- "\n----- Building packages in : $${SSM_DEV}/build  -----\n"
+   export SSM_DEV=`pwd`/..
+   mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
+   
+   cd ${SSM_DEV}/src/libeerUtils-${EER_VERSION}
+   ./makeit -build -ssm
+   
+   cd ${SSM_DEV}/src/libSPI-${SPI_VERSION}
+   ./makeit -ext -reconf -build -ssm
+
+   cd ${SSM_DEV}/src/SPI-${SPI_VERSION}
+   ./makeit -ssm
+fi
+
+if [[ $INS -eq 1 ]]; then
+
+   printf -- "\n----- Installing into ${INSTALL_PATH}  -----\n"
+   mkdir -p $INSTALL_PATH
+   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libeerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
+
+   printf -- "
+Add theses variables to you environment:
+   sh/ksh/bash shell:
+      export SPI_LIB=${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
+      export SPI_PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all
+      export PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
+      export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
+      
+   csh shell:
+      setenv SPI_LIB ${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
+      setenv SPI_PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all
+      setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
+      setenv GDB_PATH \[path where you uncompress DBGeo.tgz\]/data
+   
+and launch SPI with the command \"SPI\"\n"
+fi
+
+#----- Only used to prepare the src distribution package
+if [[ $SRC -eq 1 ]]; then
+
+   printf -- "\n----- Building source package : ${SSM_DEV}/src/SPI-${SPI_VERSION}  -----\n"
+
+   cd LibSPI; ./makeit -clear; cd -
+
+   rm -f -r ${SSM_DEV}/src/SPI* ${SSM_DEV}/src/libSPI* ${SSM_DEV}/src/INSTALL.txt ${SSM_DEV}/src/makeit
+   cp -r LibSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
+   cp -r SPI ${SSM_DEV}/src/SPI-${SPI_VERSION}
+   cp makeit INSTALL.txt ${SSM_DEV}/src
+   find ${SSM_DEV}/src/libSPI-${SPI_VERSION} -name .git -prune -exec rm -f -r {} \+
+   find ${SSM_DEV}/src/libSPI-${SPI_VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   
+   #-----Copy constant files
+   cd $AFSISIO/datafiles/constants/
+   mkdir ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   
+   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI-${SPI_VERSION}-src.tgz src
+fi
+
