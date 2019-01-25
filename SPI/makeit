@@ -1,32 +1,51 @@
-#!/bin/sh
+#!/bin/bash
 #----- On version change:
-#-----    Update version in .profile_spi and check ssm dependenciesw
-
-arg=$1
+#-----    Update version in .profile_spi and check ssm dependencies
 
 NAME="SPI"
 DESCRIPTION="Meteorological GIS, Processing and Modeling tool"
 SUMMARY="4D virtual globe for scientific visualisation and analytics"
-VERSION="8.0.0"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
-BUILDINFO=`git describe --always`
+export VERSION="8.0.0"
+export BUILDINFO=`git describe --always`
 
+HELP="Arguments must be:\n\n   Information parameters:
+\t-help        : This information
+\t-version     : Version
 
-SSM_NAME=${NAME}_${VERSION}_all
+   Commands:
+\t-clear       : Clear package
+\t-ssm         : Build SSM package\n"
 
-echo ""
-echo "----- Building platform : ${ORDENV_PLAT} -----"
-echo ""
+CLR=0
+BLD=0
+SSM=0
+INS=0
 
-if [[ $arg = "-ssm" ]]; then
+#----- Get arguments
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -clear)   CLR=1;;
+        -ssm)     SSM=1;;
 
-   echo ""
-   echo "----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} ----- "
-   echo ""
+        -h|-help)    printf -- "$HELP\n"; exit 0;;
+        -v|-version) printf -- "$VERSION\n"; exit 0;;
+        --)          shift; break;;
+        *)           printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
+    esac
+    shift
+done
+
+printf -- "\n----- Building platform : all -----\n"
+
+if [[ $SSM -eq 1 ]]; then
+   SSM_NAME=${NAME}_${VERSION}_all
+
+   printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
 
    rm -f -r ${SSM_DEV}/workspace/${SSM_NAME} ${SSM_DEV}/package/${SSM_NAME}.ssm 
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d ${SSM_DEV}/workspace/${SSM_NAME}/lib
-   cp -r  bin tcl share data/ .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
+   cp -r  bin tcl share data .profile_spi tclsh tclshd wish ${SSM_DEV}/workspace/${SSM_NAME}
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    find ${SSM_DEV}/workspace/${SSM_NAME} -name .svn -prune -exec rm -f -r {} \;
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -delete

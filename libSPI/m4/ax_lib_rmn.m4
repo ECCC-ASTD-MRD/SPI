@@ -84,7 +84,7 @@ AC_DEFUN([AX_LIB_RMN],
         if test "$rmn_prefix" = "/usr"; then
             rmn_lib_flags="-lrmn"
         else
-            rmn_lib_flags="-L$rmn_prefix/lib -lrmn"
+            rmn_lib_flags="-Wl,-rpath $rmn_prefix/lib -L$rmn_prefix/lib -lrmn"
         fi
         run_rmn_test="yes"
     elif test "$rmn_requested" = "yes"; then
