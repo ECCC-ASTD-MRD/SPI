@@ -72,7 +72,7 @@ AC_DEFUN([AX_LIB_ECBUFR],
 
     ECBUFR_CFLAGS=""
     ECBUFR_LDFLAGS=""
-    ECBUFR_VERSION=""
+    ECBUFR_VERSION="0.8.7"
 
     #
     # Collect include/lib paths and flags
@@ -80,7 +80,7 @@ AC_DEFUN([AX_LIB_ECBUFR],
     run_ecbufr_test="no"
 
     if test -n "$ecbufr_prefix"; then
-        ecbufr_include_dir="$ecbufr_prefix/include/libecbufr/"
+        ecbufr_include_dir="$ecbufr_prefix/include/libecbufr$ECBUFR_VERSION/"
         if test "$ecbufr_prefix" = "/usr"; then
             ecbufr_lib_flags="-lecbufr"
         else

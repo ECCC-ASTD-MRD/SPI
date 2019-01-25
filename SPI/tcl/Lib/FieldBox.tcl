@@ -57,7 +57,6 @@ package require ListboxBubble
 package require SelectBox
 package require DateStuff
 package require FileBox
-package require Info
 
 namespace eval FieldBox {
    variable Lbl

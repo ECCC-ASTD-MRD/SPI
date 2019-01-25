@@ -72,7 +72,8 @@ EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/shared/master/ubuntu-14.04-amd64-64
 EXT_LIB=/home/nil000/links/eccc-ppp1/storage/master/ubuntu-14.04-amd64-64
 
 #----- ECCC temporary
-EXT_LIB=${SSM_DEV}/workspace/prev/libSPI_8.0.0_ubuntu-14.04-amd64-64
+EXT_LIB=/local/drive1/cmdd/afsmsam/ssm/ubuntu-14.04-amd64-64/
+#EXT_LIB=${SSM_DEV}/workspace/prev/libSPI_8.0.0_ubuntu-14.04-amd64-64
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -298,13 +299,13 @@ if [[ $BLD -eq 1 ]]; then
       --with-gdb=${LIB_PATH} \
       --with-eer=${LIB_EER} \
       --with-rmn=${LIB_EER} \
-      --with-gdal=${EXT_LIB}/bin/gdal-config \
+      --with-gdal=`which gdal-config` \
       --with-ecbufr=${EXT_LIB} \
       --with-sqlite3 \
       --with-eccodes=${EXT_LIB} \
       --with-flt=${EXT_LIB} \
       --with-urp=${EXT_LIB}
-#      --with-gdal=`which gdal-config` 
+#      --with-gdal=${EXT_LIB}/bin/gdal-config 
    fi
    make install || exit 1
 
