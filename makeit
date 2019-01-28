@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
 #-----    Check for new versions of dict and burf in $CMCCONST
@@ -6,6 +6,7 @@
 #----- SSM specifics
 SPI_VERSION="8.0.0"
 EER_VERSION="3.4.0"
+GENPHYSX_VERSION="3.4.0"
 
 if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}
@@ -58,7 +59,7 @@ if [[ $BLD -eq 1 ]]; then
    export SSM_DEV=`pwd`/..
    mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
    
-   cd ${SSM_DEV}/src/libeerUtils-${EER_VERSION}
+   cd ${SSM_DEV}/src/eerUtils-${EER_VERSION}
    ./makeit -build -ssm
    
    cd ${SSM_DEV}/src/libSPI-${SPI_VERSION}
@@ -66,13 +67,16 @@ if [[ $BLD -eq 1 ]]; then
 
    cd ${SSM_DEV}/src/SPI-${SPI_VERSION}
    ./makeit -ssm
+
+   cd ${SSM_DEV}/src/GenPhysX-${GENPHYSX_VERSION}
+   ./makeit -ssm
 fi
 
 if [[ $INS -eq 1 ]]; then
 
    printf -- "\n----- Installing into ${INSTALL_PATH}  -----\n"
    mkdir -p $INSTALL_PATH
-   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libeerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
    tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
    tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
 
@@ -98,10 +102,12 @@ if [[ $SRC -eq 1 ]]; then
 
    printf -- "\n----- Building source package : ${SSM_DEV}/src/SPI-${SPI_VERSION}  -----\n"
 
-   cd LibSPI; ./makeit -clear; cd -
+   cd libSPI
+   ./makeit -clear
+   cd -
 
    rm -f -r ${SSM_DEV}/src/SPI* ${SSM_DEV}/src/libSPI* ${SSM_DEV}/src/INSTALL.txt ${SSM_DEV}/src/makeit
-   cp -r LibSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
+   cp -r libSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
    cp -r SPI ${SSM_DEV}/src/SPI-${SPI_VERSION}
    cp makeit INSTALL.txt ${SSM_DEV}/src
    find ${SSM_DEV}/src/libSPI-${SPI_VERSION} -name .git -prune -exec rm -f -r {} \+

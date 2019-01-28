@@ -420,28 +420,69 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
    GDAL_Band    *band=NULL;
 
    int          dv=0,dh=0,y1=0,y2=0,x1=0,x2=0,i=0,inc=0;
-   int          w,h,x,y;
+   int          w,h,x,y,nbdata=0;
 
-   glShadeModel(GL_FLAT);
-   glEnable(GL_SCISSOR_TEST);
-
-   if (cb->NbData) {
+   for (i=0;i<cb->NbData;i++) {
+      if ((fld=Data_Get(cb->Data[i]))) {
+         Data_PreInit(fld);
+         spec=fld->Spec;
+      } else if ((obs=Obs_Get(cb->Data[i]))) {
+         Obs_PreInit(obs);
+         spec=obs->Spec;
+      } else if ((layer=OGR_LayerGet(cb->Data[i]))) {
+         OGR_LayerPreInit(layer);
+         spec=layer->Spec;
+      } else if ((band=GDAL_BandGet(cb->Data[i]))) {
+         GDAL_BandPreInit(band);
+         spec=band->Spec;
+      } else {
+         spec=DataSpec_Get(cb->Data[i]);
+      }
+      
+      if (spec && spec->ShowMap)
+         nbdata++;
+   }      
+       
+   if (nbdata) {
       if (cb->Width<cb->Height) {
-         inc=(cb->header.y2-cb->header.y1-5*(cb->NbData-1))/cb->NbData;
+         inc=(cb->header.y2-cb->header.y1-5*(nbdata-1))/nbdata;
          y1=cb->header.y1;
          x1=cb->header.x1;
       } else {
-         inc=(cb->header.x2-cb->header.x1-5*(cb->NbData-1))/cb->NbData;
+         inc=(cb->header.x2-cb->header.x1-5*(nbdata-1))/nbdata;
          y1=cb->header.y1;
          x1=cb->header.x1;
       }
+   } else {
+      return;
    }
 
+   glShadeModel(GL_FLAT);
+   glEnable(GL_SCISSOR_TEST);
    glPushMatrix();
    glTranslated(-((TkCanvas *)Canvas)->xOrigin,-((TkCanvas *)Canvas)->yOrigin,0.0);
 
    for (i=0;i<cb->NbData;i++) {
 
+      if ((fld=Data_Get(cb->Data[i]))) {
+         Data_PreInit(fld);
+         spec=fld->Spec;
+      } else if ((obs=Obs_Get(cb->Data[i]))) {
+         Obs_PreInit(obs);
+         spec=obs->Spec;
+      } else if ((layer=OGR_LayerGet(cb->Data[i]))) {
+         OGR_LayerPreInit(layer);
+         spec=layer->Spec;
+      } else if ((band=GDAL_BandGet(cb->Data[i]))) {
+         GDAL_BandPreInit(band);
+         spec=band->Spec;
+      } else {
+         spec=DataSpec_Get(cb->Data[i]);
+      }
+      
+      if (!spec || !spec->ShowMap)
+         continue;
+      
       if (cb->Width<cb->Height) {
          y2=y1+inc;
          y2=y2>cb->header.y2?cb->header.y2:y2;
@@ -488,25 +529,6 @@ void ColorbarDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawable Draw,
          glEnd();
          glDisable(GL_BLEND);
       }
-
-      if ((fld=Data_Get(cb->Data[i]))) {
-         Data_PreInit(fld);
-         spec=fld->Spec;
-      } else if ((obs=Obs_Get(cb->Data[i]))) {
-         Obs_PreInit(obs);
-         spec=obs->Spec;
-      } else if ((layer=OGR_LayerGet(cb->Data[i]))) {
-         OGR_LayerPreInit(layer);
-         spec=layer->Spec;
-      } else if ((band=GDAL_BandGet(cb->Data[i]))) {
-         GDAL_BandPreInit(band);
-         spec=band->Spec;
-      } else {
-         spec=DataSpec_Get(cb->Data[i]);
-      }
-
-      if (!spec)
-         continue;
 
       cb->UColor=spec->Outline?spec->Outline:cb->FGColor;
       cb->UFont=spec->Font?spec->Font:cb->Font;
@@ -575,7 +597,7 @@ int Colorbar_RenderContour(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
          if (Spec->Width)
             glLineWidth(Spec->Width);
          if (Spec->Outline)
-            glColor3us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue);
+            glColor4us(Spec->Outline->red,Spec->Outline->green,Spec->Outline->blue,CB->Alpha*655);
       }
 
       if (Spec->Icon) {
@@ -975,7 +997,7 @@ void Colorbar_RenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,
          for (idx=0;idx<Spec->Map->NbPixels;idx++,y-=incr) {
 
             glColor4ubv(Spec->Map->Color[idx]);
-
+            
             /*Afficher la couleur*/
 
             if (Interp) {
@@ -1283,22 +1305,21 @@ void Colorbar_HRenderTexture(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec
       if (n) {
          incr=height/(double)(n-1);
 
+         txtr=X2-5;
+         x=5;
          for (idx=0;idx<n;idx++,x+=incr) {
-            txtr=X2-5;
-            x=0;
-
-            if (x>txt) {
+            if (x>=txt) {
                Tcl_ListObjIndex(Interp,Spec->InterLabels,idx,&obj);
                lbl=Tcl_GetString(obj);
-               txt+=Tk_TextWidth(CB->UFont,buf,strlen(buf))+CB->tkm.linespace*2;
+               txt=x+Tk_TextWidth(CB->UFont,lbl,strlen(lbl))+CB->tkm.linespace;
                if (txt>=txtr) {
                   break;
                }
 
                if (Interp) {
-                  glPostscriptText(Interp,CB->canvas,buf,X1+x,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,jan,1.0,jps);
+                  glPostscriptText(Interp,CB->canvas,lbl,X1+x,Tk_CanvasPsY(CB->canvas,xt),0,CB->UColor,jan,1.0,jps);
                } else {
-                  Colorbar_RenderText(CB,X1+x,xt,TK_JUSTIFY_LEFT,buf,Spec);
+                  Colorbar_RenderText(CB,X1+x,xt,idx==n-1?TK_JUSTIFY_RIGHT:TK_JUSTIFY_LEFT,lbl,Spec);
                }
             }
          }
@@ -1445,7 +1466,7 @@ int Colorbar_RenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,in
          if (Interp) {
             CMap_PostscriptColor(Interp,Spec->Map,col);
          } else {
-            glColor4ubv(Spec->Map->Color[col]);
+            glColor4ub(Spec->Map->Color[col][0],Spec->Map->Color[col][1],Spec->Map->Color[col][2],Spec->Map->Color[col][3]*CB->Alpha/100.0);
          }
       }
       size=VECTORSIZE(Spec,d);
@@ -1570,7 +1591,7 @@ int Colorbar_HRenderVector(Tcl_Interp *Interp,ColorbarItem *CB,TDataSpec *Spec,i
          if (Interp) {
             CMap_PostscriptColor(Interp,Spec->Map,col);
          } else {
-            glColor4ubv(Spec->Map->Color[col]);
+            glColor4ub(Spec->Map->Color[col][0],Spec->Map->Color[col][1],Spec->Map->Color[col][2],Spec->Map->Color[col][3]*CB->Alpha/100.0);
          }
       }
       size=VECTORSIZE(Spec,d);
