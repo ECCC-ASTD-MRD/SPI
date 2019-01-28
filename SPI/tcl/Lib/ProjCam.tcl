@@ -67,7 +67,7 @@ namespace eval ProjCam {
    set Param(Up)       { 0.0 1.0 0.0 }
    set Param(Lens)     1.0                   ;#Valeur de zoom
    set Param(Speed)    0.0                   ;#Valeur de vitesse
-   set Param(Function) EXPONENTIAL           ;#Goto movement function
+   set Param(Function) EXPONENTIAL           ;#Goto movement function (LINEAR, QUADRATIC,EXPONENTIAL)
    set Param(Proc)     ""                    ;#Print movement trace
 
    set Param(CFX) 0.0
