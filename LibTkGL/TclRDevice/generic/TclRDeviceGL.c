@@ -43,6 +43,7 @@ typedef struct TCtx {
     int             Alias;              // Whether we use anti-aliasing or not
     double          InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
     GLint           VP[4];              // Viewport to restore after drawing
+    int             Mode;               // Mode in which we are (0=idle, 1=drawing)
 } TCtx;
 
 static union {char bytes[2]; uint16_t ushort;} BYTEORDER = {.ushort=0x1122};
@@ -867,15 +868,18 @@ static void TclRDeviceGL_Circle(double X,double Y,double R,const pGEcontext rest
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceGL_Clip(double X0,double X1,double Y0,double Y1,pDevDesc Dev) {
-    DBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
+    // Sometimes, there are extra clipping calls after the mode is set to 0. This make sure the scissor test stays off.
+    if( ((TCtx*)Dev->deviceSpecific)->Mode ) {
+        DBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
 
-    Dev->clipLeft   = X0<=X1 ? floor(X0) : floor(X1);
-    Dev->clipRight  = X0<=X1 ? floor(X1) : floor(X0);
-    Dev->clipBottom = Y0<=Y1 ? floor(Y0) : floor(Y1);
-    Dev->clipTop    = Y0<=Y1 ? floor(Y1) : floor(Y0);
+        Dev->clipLeft   = X0<=X1 ? floor(X0) : floor(X1);
+        Dev->clipRight  = X0<=X1 ? floor(X1) : floor(X0);
+        Dev->clipBottom = Y0<=Y1 ? floor(Y0) : floor(Y1);
+        Dev->clipTop    = Y0<=Y1 ? floor(Y1) : floor(Y0);
 
-    glEnable(GL_SCISSOR_TEST);
-    glScissor((int)Dev->clipLeft,(int)Dev->clipBottom,(int)(Dev->clipRight-Dev->clipLeft),(int)(Dev->clipTop-Dev->clipBottom));
+        glEnable(GL_SCISSOR_TEST);
+        glScissor((int)Dev->clipLeft,(int)Dev->clipBottom,(int)(Dev->clipRight-Dev->clipLeft),(int)(Dev->clipTop-Dev->clipBottom));
+    }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1036,6 +1040,8 @@ static void TclRDeviceGL_Mode(int Mode,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
 
     DBGPRINTF("Mode set to %d\n",Mode);
+
+    ctx->Mode = Mode;
 
     switch( Mode ) {
         case 0: // Device stopped drawing
@@ -1841,6 +1847,7 @@ void* TclRDeviceGL_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fo
     ctx->Alias      = 1;
     ctx->InPxX      = ((double)(DisplayWidthMM(ctx->Display,screen))/(double)(DisplayWidth(ctx->Display,screen))) * MM2INCH;
     ctx->InPxY      = ((double)(DisplayHeightMM(ctx->Display,screen))/(double)(DisplayHeight(ctx->Display,screen))) * MM2INCH;
+    ctx->Mode       = 0;
 
     // Allocate the framebuffer
     if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H,-1) ) {
