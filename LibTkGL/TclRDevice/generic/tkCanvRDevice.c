@@ -35,6 +35,8 @@ typedef struct RDeviceItem  {
     Tk_Canvas   Canv;       // Canvas containing the item
     Tk_Font     Font;       // Font for any text in the device
     int         Alias;      // Wether we use anti-aliasing on the RDevice or not. Note that not all rdevices may support that option.
+    int         Blank;      // Wether we want the device to be blank or to show the graph. Can be usefull when resizing or when the graph is uninitialized.
+    int         Dirty;      // Wether the device was modified in blank mode
 
     void        (*destroy)(void *RDev);                                         // Destroy function for the device
     void        (*redraw)(void *RDev);                                          // Redraw function of the device
@@ -54,6 +56,7 @@ static const Tk_ConfigSpec configSpecs[] = {
     {TK_CONFIG_CUSTOM,  "-tags",    NULL,NULL,NULL,             0,                              TK_CONFIG_NULL_OK,  &tagsOption},
     {TK_CONFIG_FONT,    "-font",    NULL,NULL,"TkDefaultFont",  Tk_Offset(RDeviceItem,Font),    0,                  NULL},
     {TK_CONFIG_BOOLEAN, "-alias",   NULL,NULL,"True",           Tk_Offset(RDeviceItem,Alias),   0,                  NULL},
+    {TK_CONFIG_BOOLEAN, "-blank",   NULL,NULL,"True",           Tk_Offset(RDeviceItem,Blank),   0,                  NULL},
     {TK_CONFIG_END,     NULL,       NULL,NULL,NULL,             0,                              0,                  NULL}
 };
 
@@ -194,6 +197,8 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
     rdv->Canv   = Canv;
     rdv->RDev   = NULL;
     rdv->Font   = NULL;
+    rdv->Blank  = 2;
+    rdv->Dirty  = 0;
     if( IS_XDEV(ItemPtr) ) {
         rdv->destroy    = TclRDeviceX_Destroy;
         rdv->redraw     = TclRDeviceX_Redraw;
@@ -255,6 +260,36 @@ static int TkcCreateRDevice(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,i
 error:
     RDeviceDelete(Canv,ItemPtr,Tk_Display(win));
     return TCL_ERROR;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <RDeviceResize>
+ * Creation     : Novembre 2017 - E. Legault-Ouellet
+ *
+ * But          : Resize the device
+ *
+ * Parametres   :
+ *  <Interp>    : Interpreter for error reporting
+ *  <RDV>       : RDevice item
+ *
+ * Retour       : A standard Tcl return value.
+ *
+ * Side effects : Resizes the RDevice
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static int RDeviceResize(RDeviceItem *RDV) {
+    DBGPRINTF("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+
+    if( !RDV->Blank ) {
+        if( RDV->resize && RDV->RDev )
+            RDV->resize(RDV->RDev,RDV->Header.x2-RDV->Header.x1,RDV->Header.y2-RDV->Header.y1);
+        RDV->Dirty = 0;
+    } else {
+        RDV->Dirty = 1;
+    }
+
+    return TCL_OK;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -326,9 +361,7 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
     rdv->Header.y2 = c[3]>=c[1] ? c[3] : c[1];;
 
     // Update the device since we resized it
-    DBGPRINTF("Resize to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
-    if( rdv->resize )
-        rdv->resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    RDeviceResize(rdv);
 
     return TCL_OK;
 }
@@ -356,14 +389,25 @@ static int RDeviceCoords(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int 
 */
 static int RDeviceConfigure(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPtr,int Objc,Tcl_Obj *const Objv[],int Flags) {
     RDeviceItem *rdv = (RDeviceItem *)ItemPtr;
+    int blank = rdv->Blank;
 
     // Process the option and set the internal structure consequently
     if (TCL_OK != Tk_ConfigureWidget(Interp,Tk_CanvasTkwin(Canv),configSpecs,Objc,(const char**)Objv,(char*)rdv,Flags|TK_CONFIG_OBJS)) {
         return TCL_ERROR;
     }
 
+    // Only allow changes to "blank" if the device is not in unitialised mode
+    if( blank == 2 )
+        rdv->Blank = blank;
+
     // Sync the config with the underlying RDevice
     RDeviceSyncConfig(rdv);
+
+    // If we switched back to non-blank and we resized the device in between, force the update
+    if( rdv->Dirty && !rdv->Blank && rdv->resize && rdv->RDev ) {
+        rdv->resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+        rdv->Dirty = 0;
+    }
 
     return TCL_OK;
 }
@@ -447,8 +491,36 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
         DBGPRINTF("Drawable coords : %hd %hd\n",drawX,drawY);
         DBGPRINTF("x(%d) y(%d) w(%u) h(%u)\n",x,y,w,h);
 
-        // Copy our pixmap (filled by the RDevice) to the canvas
-        XCopyArea(Display,pixmap,Drawable,Canvas(Canv)->pixmapGC,x,y,w,h,drawX,drawY);
+        if( rdv->Blank ) {
+            GC gc;
+            XGCValues xgc;
+            XColor *col;
+
+            col = Tk_GetColor(NULL,Tk_CanvasTkwin(Canv),"#fff");
+
+            xgc.foreground  = col->pixel;
+            xgc.line_width  = 1;
+            xgc.line_style  = LineSolid;
+            xgc.cap_style   = CapRound;
+            xgc.join_style  = JoinRound;
+            xgc.fill_style  = FillSolid;
+
+            gc = Tk_GetGC(Tk_CanvasTkwin(Canv),GCForeground|GCFillStyle,&xgc);
+            XFillRectangle(Display,Drawable,gc,drawX,drawY,w,h);
+            Tk_FreeGC(Display,gc);
+            Tk_FreeColor(col);
+
+            col = Tk_GetColor(NULL,Tk_CanvasTkwin(Canv),"#000");
+            xgc.foreground  = col->pixel;
+
+            gc = Tk_GetGC(Tk_CanvasTkwin(Canv),GCForeground|GCLineWidth|GCLineStyle|GCCapStyle|GCJoinStyle|GCFillStyle,&xgc);
+            XDrawRectangle(Display,Drawable,gc,drawX,drawY,w,h);
+            Tk_FreeGC(Display,gc);
+            Tk_FreeColor(col);
+        } else {
+            // Copy our pixmap (filled by the RDevice) to the canvas
+            XCopyArea(Display,pixmap,Drawable,Canvas(Canv)->pixmapGC,x,y,w,h,drawX,drawY);
+        }
     }
 }
 
@@ -483,7 +555,7 @@ static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Dr
     DBGPRINTF("x(%d) y(%d) w(%d) h(%d)\n",x,y,w,h);
 
     // Blit (copy) the RDevice's framebuffer into the screen framebuffer
-    if( (fbuf=TclRDeviceGL_GetFramebuffer(rdv->RDev)) ) {
+    if( !rdv->Blank && (fbuf=TclRDeviceGL_GetFramebuffer(rdv->RDev)) ) {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
         glBindFramebuffer(GL_READ_FRAMEBUFFER,fbuf);
         glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -494,6 +566,29 @@ static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Dr
         glBlitFramebuffer(x,y,x+w,y+h,drawX,drawY,drawX+w,drawY+h,GL_COLOR_BUFFER_BIT,GL_NEAREST);
 
         glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+    } else {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+        glDrawBuffer(GL_BACK);
+
+        glColor4ub(255,255,255,255);
+        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+        glBegin(GL_QUADS);
+            glVertex2d(rdv->Header.x1,rdv->Header.y1);
+            glVertex2d(rdv->Header.x2,rdv->Header.y1);
+            glVertex2d(rdv->Header.x2,rdv->Header.y2);
+            glVertex2d(rdv->Header.x1,rdv->Header.y2);
+        glEnd();
+
+        glColor4ub(0,0,0,255);
+        glLineWidth(1.0f);
+        glPointSize(1.0f);
+        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+        glBegin(GL_QUADS);
+            glVertex2d(rdv->Header.x1,rdv->Header.y1);
+            glVertex2d(rdv->Header.x2,rdv->Header.y1);
+            glVertex2d(rdv->Header.x2,rdv->Header.y2);
+            glVertex2d(rdv->Header.x1,rdv->Header.y2);
+        glEnd();
     }
 }
 
@@ -581,9 +676,7 @@ static void RDeviceScale(Tk_Canvas Canv,Tk_Item *ItemPtr,double OriginX,double O
     rdv->Header.y2 = (int)round(OriginY + ScaleY*(rdv->Header.y2-OriginY));
 
     // Update the device since we resized it
-    DBGPRINTF("Scaled to %d %d\n",rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
-    if( rdv->resize )
-        rdv->resize(rdv->RDev,rdv->Header.x2-rdv->Header.x1,rdv->Header.y2-rdv->Header.y1);
+    RDeviceResize(rdv);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -661,6 +754,13 @@ static int RDeviceToPostscript(Tcl_Interp *Interp,Tk_Canvas Canv,Tk_Item *ItemPt
 */
 void RDeviceItem_SignalRedraw(void *Item) {
     RDeviceItem *rdv = (RDeviceItem*)Item;
+
+    // The device drew something, remove the default "blank" state
+    if( rdv->Blank == 2 ) {
+        rdv->Blank = 0;
+        if( rdv->Dirty )
+            RDeviceResize(rdv);
+    }
 
     if( rdv->tkredraw )
         rdv->tkredraw(rdv->Canv,rdv->Header.x1,rdv->Header.y1,rdv->Header.x2,rdv->Header.y2);
