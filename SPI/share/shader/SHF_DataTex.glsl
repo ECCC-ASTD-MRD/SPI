@@ -13,9 +13,9 @@ varying vec3 Nr,LDir;
 void main() {
 
    vec4  inter,frg=vec4(1.0,1.0,1.0,1.0);
-   vec4 ambient,diffuse;
-   vec3 halfV;
-   vec4 color = GAm;
+   vec4  ambient,diffuse;
+   vec3  halfV;
+   vec4  color = GAm;
    float NdotL,NdotHV;
    float att,dist;
 
@@ -55,15 +55,14 @@ void main() {
       ambient=frg*gl_LightSource[0].ambient;
       diffuse=frg*gl_LightSource[0].diffuse;
 
-      if (length(gl_LightSource[0].position)<1.0 || NdotL>0.0) {
-         if (length(gl_LightSource[0].position)<1.0)
-            NdotL*=0.5;
-         dist = length(LDir);
-         att=1.0/(gl_LightSource[0].constantAttenuation+gl_LightSource[0].linearAttenuation*dist+gl_LightSource[0].quadraticAttenuation*dist*dist);
-         color+=att*(diffuse*NdotL+ambient);
-         NdotHV= max(dot(Nr,halfV),0.0);
-         color +=att*gl_FrontMaterial.specular*gl_LightSource[0].specular*pow(NdotHV,gl_FrontMaterial.shininess);
-      }
+      if (length(gl_LightSource[0].position)<1.0)
+         NdotL*=0.5;
+      dist = length(LDir);
+      att=1.0/(gl_LightSource[0].constantAttenuation+gl_LightSource[0].linearAttenuation*dist+gl_LightSource[0].quadraticAttenuation*dist*dist)*.75;
+      color+=att*(diffuse*NdotL+ambient);
+      NdotHV= max(dot(Nr,halfV),0.0);
+      color +=att*gl_FrontMaterial.specular*gl_LightSource[0].specular*pow(NdotHV,gl_FrontMaterial.shininess);
+      
       frg=color;
    }
 

@@ -1047,6 +1047,11 @@ int Data_RenderParticle(TData *Field,ViewportItem *VP,Projection *Proj) {
    /*Do we need transparency*/
    if (Field->Spec->Map->Alpha || Field->Spec->Alpha<100) {
       glEnable(GL_BLEND);
+      
+      if (Field->Spec->Alpha<100) {
+         glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+         glColor4f(1.0,1.0,1.0,Field->Spec->Alpha/100.0);
+      }
    }
 
    /*Projeter les particules*/
