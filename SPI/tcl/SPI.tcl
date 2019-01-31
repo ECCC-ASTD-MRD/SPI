@@ -275,6 +275,7 @@ package require Export
 package require Animator
 package require MetData
 package require QuickLayout
+package require Calendar
 
 if { !$SPI::Param(Batch) } {
 

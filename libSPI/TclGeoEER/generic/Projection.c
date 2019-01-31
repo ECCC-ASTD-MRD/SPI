@@ -1734,8 +1734,8 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
    GLdouble p2[4]={ -1.0,  0.0, 0.0, 1.0001 };
    GLdouble p3[4]={  1.0,  0.0, 0.0, 1.0001 };
 
-   GLfloat ref[2][4]  = { { 1.0, 1.0, 1.0, 1.0 },{ 1.0, 1.0, 1.0, 1.0 } };
-   GLfloat amb[2][4]  = { { 0.5, 0.5, 0.5, 1.0 },{ 0.1, 0.1, 0.1, 1.0 } };
+   GLfloat ref[2][4]  = { { 0.75, 0.75, 0.75, 1.0 },{ 1.0, 1.0, 1.0, 1.0 } };
+   GLfloat amb[2][4]  = { { 0.75, 0.75, 0.75, 1.0 },{ 0.1, 0.1, 0.1, 1.0 } };
    GLfloat spec[2][4] = { { 0.6, 0.6, 0.6, 1.0 },{ 0.6, 0.6, 0.6, 1.0 } };
    GLfloat diff[2][4] = { { 1.0, 1.0, 1.0, 1.0 },{ 1.5, 1.5, 1.5, 1.0 } };
 
@@ -1828,7 +1828,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_FALSE);
       glLightModelfv(GL_LIGHT_MODEL_AMBIENT,amb[1]);
       glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-      glMateriali(GL_FRONT,GL_SHININESS,128);
+      glMateriali(GL_FRONT,GL_SHININESS,64);
 
       /*Get the sun*/
       if (Proj->Sun) {
