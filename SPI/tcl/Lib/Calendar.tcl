@@ -114,18 +114,21 @@ proc Calendar::Create { Frame Label Var Width { Cmd "" } } {
          label $Frame.l -relief flat -anchor w -text $Label
          pack $Frame.l -side left
       }
-      entry $Frame.e -relief sunken -bd 1 -width $Width -textvariable Calendar::Data(Date$Frame) -bg $GDefs(ColorLight)\
-         -disabledbackground $GDefs(ColorLight) -disabledforeground black
+      if { $Width } {
+         entry $Frame.e -relief sunken -bd 1 -width $Width -textvariable Calendar::Data(Date$Frame) -bg $GDefs(ColorLight)\
+            -disabledbackground $GDefs(ColorLight) -disabledforeground black
+         bind $Frame.e <Return>  "set $Var \[clock scan \$Calendar::Data(Date$Frame) -timezone :UTC]; set Data(Date$Frame) \[DateStuff::StringDateOnlyFromSeconds \$$Var $GDefs(Lang)\]; $Cmd"
+      }
       button $Frame.b -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -width 7 \
          -command "set $Var \[Calendar::Invoke $Frame \$$Var\]; $Cmd"
       pack $Frame.b -side left -fill y
-
-      bind $Frame.e <Return>  "set $Var \[clock scan \$Calendar::Data(Date$Frame) -timezone :UTC]; set Data(Date$Frame) \[DateStuff::StringDateOnlyFromSeconds \$$Var $GDefs(Lang)\]; $Cmd"
-
-   if { $Width==-1 } {
-      pack $Frame.e -side left -fill both -expand true
-   } else {
-      pack $Frame.e -side left -fill y
+ 
+   if { $Width } {
+      if { $Width==-1 } {
+         pack $Frame.e -side left -fill both -expand true
+      } else {
+         pack $Frame.e -side left -fill y
+      }
    }
 
    trace variable $Var w "Calendar::Set $Frame \$$Var"

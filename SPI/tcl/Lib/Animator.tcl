@@ -500,7 +500,7 @@ proc Animator::EmptyPlayList { } {
       return
    }
 
-   projection configure $Play(Page) -date $Viewport::Data(Seconds)
+   projection configure $Play(Page) -date [expr $Viewport::Data(Date)+$Viewport::Data(Time)]
    projection configure $Play(Page) -date 0
    set Play(Stop) 1
    $Play(Canvas) configure -cursor watch
@@ -1071,7 +1071,7 @@ proc Animator::Play { } {
          set label [clock format $info -format "%T, %a %b %d %Y" -timezone :UTC]
          CVClock::Time $Play(Page) $info [expr ($Play(Idx)-$Play(Idx0))*100.0/($Play(Idx1)-$Play(Idx0))]
       } else {
-         projection configure $Play(Page) -date $Viewport::Data(Seconds)
+         projection configure $Play(Page) -date [expr $Viewport::Data(Date)+$Viewport::Data(Time)]
          projection configure $Play(Page) -date 0
          set label $info
       }

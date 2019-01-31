@@ -74,7 +74,9 @@ namespace eval Viewport {
 
    set Data(VPNb)       0            ;#Compteur de viewport
    set Data(VP)         ""           ;#Viewport courant
-   set Data(Seconds)    0            ;#Temps en seconde de la projection
+set Viewport::Data(SecondsT) 0
+   set Data(Time)       0            ;#Heure en seconde de la projection
+   set Data(Date)       0            ;#Date en seconde de la projection
    set Data(Followers)  { Viewport } ;#Liste des packages de suivit des coordonnees
    set Data(FollowerNb) 0            ;#Nombre de suivit courant
    set Data(Link)       {}           ;#Lien source
@@ -531,8 +533,8 @@ proc Viewport::ConfigGet { Frame VP } {
       return
    }
 
-   set sec                 [projection configure $Frame -date]
-   set Data(Seconds$Frame) [expr $sec-$Data(Seconds)]
+   set sec                [projection configure $Frame -date]
+   set Data(Date)         [expr $sec-$Data(Time)]
 
    set Map(GeoRef$Frame)  [projection configure $Frame -georef]
    set Map(Type$Frame)    [projection configure $Frame -type]
@@ -691,7 +693,7 @@ proc Viewport::ConfigSet { Frame } {
       -draw $Map(Draw$Frame) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad  $Map(Road) -mapplace $Map(Place) -maprail $Map(Rail) -maptopo $Map(Topo) \
       -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
-      -sun $Map(Sun) -date [expr $Data(Seconds$Frame)+$Data(Seconds)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
+      -sun $Map(Sun) -date [expr $Data(Date)+$Data(Time)] -minsize $Map(MinSize) -perspective $Map(Perspective) \
       -axis $Map(ZAxis) -axiscoord [lindex $Map(ZAxisCoord) 0] [lindex $Map(ZAxisCoord) 1] [lindex $Map(ZAxisZ) 0]
 
    set ll       [projection configure $Frame -location]
@@ -711,7 +713,7 @@ proc Viewport::ConfigSet { Frame } {
       projection configure $mini -draw $Map(Draw$Frame) -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) \
          -mapadmin $Map(Admin) -maproad $Map(Road) -maprail $Map(Rail) \
          -maptopo $Map(Topo) -mapbath $Map(Bath) -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) \
-         -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Seconds$Frame)+$Data(Seconds)]
+         -sun $Map(Sun) -minsize $Map(MinSize) -perspective $Map(Perspective) -date [expr $Data(Date)+$Data(Time)]
 
      $Frame.page.canvas itemconfigure $mini -font $Resources(Font) -bg $Resources(Bkg) \
          -colorcoast $Resources(Coast) -colorlake $Resources(Lake)  -colorfillcoast $Resources(FillCoast) -colorfilllake $Resources(FillLake) \
@@ -1875,10 +1877,13 @@ proc Viewport::ParamFrame { Frame Apply } {
       checkbutton $Data(Frame).left.sun.on -variable Viewport::Map(Sun) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
          -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
       scale $Data(Frame).left.sun.time -orient horizontal -from 0 -to 86400 \
-         -showvalue false -variable Viewport::Data(Seconds) -relief flat \
+         -showvalue false -variable Viewport::Data(Time) -relief flat \
          -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 60
-      pack  $Data(Frame).left.sun.on -side left -padx 2 -pady 2
-      pack $Data(Frame).left.sun.time -side left -fill x -expand true -padx 2 -pady 2
+         Calendar::Create $Data(Frame).left.sun.date "" Viewport::Data(Date) 0 "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
+
+      pack $Data(Frame).left.sun.on -side left -padx 2 -pady 2
+      pack $Data(Frame).left.sun.time -side left -fill x -expand true -pady 2
+      pack $Data(Frame).left.sun.date -side left -padx 2 -pady 2 -fill y -expand true
 
    labelframe $Data(Frame).left.axis -text "Axis"
       IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/share/bitmap \
@@ -2939,7 +2944,7 @@ proc Viewport::Setup { Frame } {
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
    set Map(GeoRef$Frame)            [lindex [split $Map(Type) :] 1]     ;#Georef associee
-   set Data(Seconds$Frame)          0              ;#Frame per second counter
+   set Data(Date)          0              ;#Projection date (lightning)
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
    if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
@@ -2956,7 +2961,7 @@ proc Viewport::Setup { Frame } {
       -mapres $Map(Res) -mask $Map(Mask) -scale $Map(Elev) \
       -mapcoast $Map(Coast) -maplake $Map(Lake) -mapriver $Map(River) -mappolit $Map(Polit) -mapadmin $Map(Admin) \
       -mapcity $Map(City) -maproad $Map(Road) -maprail $Map(Rail) -maptopo $Map(Topo) -mapplace $Map(Place) -perspective $Map(Perspective) \
-      -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Seconds$Frame)
+      -maptext $Map(Text) -mapcoord [expr $Map(Coord)*$Map(CoordLoc)] $Map(CoordDef) $Map(CoordNum) -data $Data(Data$Frame) -date $Data(Date)
 }
 
 #----------------------------------------------------------------------------
@@ -2985,7 +2990,7 @@ proc Viewport::UnSetup { Frame } {
    unset Data(VP$Frame)
    unset Map(Type$Frame)
    unset Map(GeoRef$Frame)
-   unset Data(Seconds$Frame)
+   unset Data(Date)
 
    #----- Suppression des objects
 

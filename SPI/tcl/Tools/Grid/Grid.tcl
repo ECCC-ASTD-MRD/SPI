@@ -284,7 +284,7 @@ proc Grid::SettingsBuild { Params { C False } } {
    array set param $Params
    switch $param(Type) {
          "ZE"    { if { $C } {
-                      return [format "\\
+                      return [format "/
   &grdc
   Grdc_ni     = %i, Grdc_nj     = %i,
   Grdc_dx     = %.4f, Grdc_dy     = %.4f,
@@ -387,6 +387,7 @@ proc Grid::ProjectSave { Path } {
       #----- Create GenphysX job file
       set f [open $Path/$res/geophy.sh w 0755]
       puts $f "#!/bin/bash"
+#TODO      puts $f ". ssmuse-sh -x eccc/cmd/cmds/apps/SPI/beta"
       puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target HRDPS_NAT -result $Path/$res/geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
       close $f
       
