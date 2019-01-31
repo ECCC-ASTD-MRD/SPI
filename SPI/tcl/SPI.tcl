@@ -159,6 +159,7 @@ proc SPI::CommandLine { { Args {} }} {
    -default ... ...                  : Use the file specified as the default parameter definition
    -lang 0|1                         : Select language (0 Francais, 1 English)
    -nowindow                         : Does no open the main window (Use to only launch a tool)
+   -nosplash                         : Does no show the splashscreen
    -field ... ...                    : Open the specified standard files
    -traj ... ...                     : Open the specified trajectory files
    -obs ... ...                      : Open the specified observation files
@@ -201,6 +202,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
+      "nosplash"  { set SPI::Param(Splash) False }
       "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
       "default"   { set i [Args::ParseDo $argv $argc $i 1 1 "set SPI::Param(Default)"] }
@@ -2481,6 +2483,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "batch"     { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
+      "nosplash"  { set SPI::Param(Splash) False }
       "geom"      { set i [Args::ParseDo $argv $argc $i 0 1 "set SPI::Param(Geom)"] }
       "lang"      { set GDefs(Lang) [lindex $argv [incr i]] }
       "default"   { set i [Args::ParseDo $argv $argc $i 1 1 ""] }

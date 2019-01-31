@@ -38,6 +38,7 @@ namespace eval SPI {
    set Param(Exp)            False        ;#Affichage des experiences
    set Param(EER)            False        ;#Mode EER
    set Param(Window)         True         ;#Affichage de la fenetre principale
+   set Param(Splash)         True         ;#Affichage du splash screen
    set Param(Args)           ""           ;#Parametres pour le script en cours d'execution
    set Param(Default)        $env(HOME)/.spi/SPI
    set Param(Script)         ""           ;#Script en cours d'execution
