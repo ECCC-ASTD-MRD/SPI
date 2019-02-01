@@ -220,7 +220,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    TData       *field0,*field1;
    TDataSpec   *spec;
    TDataVector *uvw;
-   Tcl_Obj     *obj;
+   Tcl_Obj     *obj,*lst;
    double       nd;
 
    static CONST char *sopt[] = { "all","vector","alias","copy","copyhead","free","configure","define","stats","sort","clear","clean","wipe","is",NULL };
@@ -244,7 +244,20 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
          
       case VECTOR:
-         if (Objc!=3) {
+         if (Objc==2) {
+            lst=Tcl_NewListObj(0,NULL);
+            for(n=0;n<DataVectorTableSize;n++) {
+               if (DataVectorTable[n].UU && DataVectorTable[n].VV) {
+                  obj=Tcl_NewListObj(0,NULL);
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(DataVectorTable[n].UU,-1));
+                  Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(DataVectorTable[n].VV,-1));
+                  if (DataVectorTable[n].WW)       { Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(DataVectorTable[n].WW,-1)); }
+                  if (DataVectorTable[n].WWFactor) { Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(DataVectorTable[n].WWFactor)); }
+                  Tcl_ListObjAppendElement(Interp,lst,obj);
+               }
+            }
+            Tcl_SetObjResult(Interp,lst); 
+         } else if (Objc!=3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"{ U [V] [W] [WFactor] }");
             return(TCL_ERROR);
          } else {
@@ -318,7 +331,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
 
       case FREE:
-         if(Objc<3) {
+         if (Objc<3) {
             Tcl_WrongNumArgs(Interp,2,Objv,"fld");
             return(TCL_ERROR);
          }
@@ -766,7 +779,6 @@ int Data_Free(TData *Field) {
    }
    return(TCL_OK);
 }
-
 
 TData* Data_Copy(Tcl_Interp *Interp,TData *Field,char *Name,int Def,int Alias){
 
