@@ -27,12 +27,15 @@ package require Logger
 Log::Start [info script] 0.1
 
 fstdfield ip1mode NEW
+fstdfield vector { U V W 10.0 }
+puts "Testing vector fields:"
+puts "   vectot list: [fstdfield vector]"
 
 file delete DataOut/FSTD_Funcs.fstd
 fstdfile open OUT write DataOut/FSTD_Funcs.fstd
 
 georef create ZTEST
-georef define ZTEST -rpn 80 60 0.5 0.5 40.0 -170.0 60.0 -150.0
+georef define ZTEST -rpn 80 60 0.5 0.5 40.0 -170.0 60.0 -150.0 0.0 -180.0 4
 
 set ll [georef project ZTEST 10 10]
 puts "Testing rpn georef creation (xy=10,10)"

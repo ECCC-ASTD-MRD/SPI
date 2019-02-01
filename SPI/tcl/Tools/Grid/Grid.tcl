@@ -287,7 +287,7 @@ proc Grid::SettingsBuild { Params { C False } } {
                       return [format "/
   &grdc
   Grdc_ni     = %i, Grdc_nj     = %i,
-  Grdc_dx     = %.4f, Grdc_dy     = %.4f,
+  Grdc_dx     = %.6f, Grdc_dy     = %.6f,
   Grdc_lonr   = %9.4f, Grdc_latr  = %8.4f,
   Grdc_maxcfl = %i, Grdc_nbits  = 32, Grdc_nfe    = CASC_NESDT\n" \
          $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
@@ -295,7 +295,7 @@ proc Grid::SettingsBuild { Params { C False } } {
                       return [format "&grid
   Grd_typ_S  = 'LU',
   Grd_ni     = %i, Grd_nj     = %i,
-  Grd_dx     = %.4f, Grd_dy     = %.4f,
+  Grd_dx     = %.6f, Grd_dy     = %.6f,
   Grd_lonr   = %9.4f, Grd_latr  = %8.4f,
   Grd_xlon1  = %9.4f, Grd_xlat1 = %8.4f,
   Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
@@ -359,9 +359,10 @@ proc Grid::ProjectSave { Path } {
    
    set no    0
    set gridc {}
+   
    foreach grid $Data(GridParams) {
       array set param $grid
-      
+   
       #----- Figure out the extension in km (ex: 1p0 2p5 0p25)
       set resk [format "%.2f" [expr $param(ResMX)/1000.0]]
       if { [expr $resk-floor($resk)]==0 } {
@@ -423,8 +424,8 @@ proc Grid::ProjectLoad { Path } {
    }
    
    Grid::Del True
-   
-   foreach path [lsort -increasing [glob -nocomplain $Path/*p*]] {
+  
+   foreach path [lsort -dictionary -increasing [glob -nocomplain $Path/*p*]] {
       Log::Print INFO "Loading $path"
       if { [file exists $path/gem_settings.nml] } {
          Grid::SettingsRead $path/gem_settings.nml
@@ -443,8 +444,8 @@ proc Grid::ProjectLoad { Path } {
          set Param(XLat2)  $Settings(GRD_XLAT2)
          set Param(MaxCFL) $Settings(GRD_MAXCFL)
          
-         set Param(ResMX) [expr $Param(ResLLX)*$Param(LL2M)]
-         set Param(ResMY) [expr $Param(ResLLY)*$Param(LL2M)]
+         set Param(ResMX) [expr int(round($Param(ResLLX)*$Param(LL2M)))]
+         set Param(ResMY) [expr int(round($Param(ResLLY)*$Param(LL2M)))]
          set Param(Lat0)  [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY)*0.5)]
          set Param(Lon0)  [expr $Param(XLon1)-($Param(NI)*$Param(ResLLX)*0.5)]
          set Param(Lat1)  [expr $Param(XLat1)+($Param(NJ)*$Param(ResLLY)*0.5)]
