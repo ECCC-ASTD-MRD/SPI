@@ -365,8 +365,8 @@ proc Grid::CheckNIJ { } {
          
          
          #----- Make sure the grid encloses completely the previous grid
-         if { $si<$spi } { set Param(NI) [expr $spi/$Param(ResMX)-$Param(PI)+1] }
-         if { $sj<$spj } { set Param(NJ) [expr $spj/$Param(ResMY)-$Param(PJ)+1] }
+         if { $si<$spi } { set Param(NI) [expr int($spi/$Param(ResMX)-$Param(PI)+1)] }
+         if { $sj<$spj } { set Param(NJ) [expr int($spj/$Param(ResMY)-$Param(PJ)+1)] }
 #             if { $Data(GridNo)>$Data(GridDepend) } {
 #                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResMX)-$Param(PI))]
 #                set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResMY)-$Param(PJ))]
