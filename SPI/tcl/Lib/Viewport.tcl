@@ -1357,6 +1357,10 @@ proc Viewport::Destroy { Frame { VP {} } } {
 #
 #----------------------------------------------------------------------------
 
+proc Viewport::Apply { Frame } {
+   Viewport::Do $Frame
+}
+
 proc Viewport::Do { Frame } {
    variable Map
    variable Data

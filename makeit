@@ -83,16 +83,16 @@ if [[ $INS -eq 1 ]]; then
    printf -- "
 Add theses variables to you environment:
    sh/ksh/bash shell:
+      export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
       export SPI_LIB=${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
       export SPI_PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all
       export PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
-      export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
       
    csh shell:
+      setenv GDB_PATH \[path where you uncompress DBGeo.tgz\]/data
       setenv SPI_LIB ${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
       setenv SPI_PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all
       setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
-      setenv GDB_PATH \[path where you uncompress DBGeo.tgz\]/data
    
 and launch SPI with the command \"SPI\"\n"
 fi

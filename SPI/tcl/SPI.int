@@ -35,7 +35,7 @@ proc SPI::Splash { { Msg "" } } {
 
    Log::Print DEBUG $Msg
 
-   if { !$SPI::Param(Batch) } {
+   if { !$SPI::Param(Batch) && $SPI::Param(Splash) } {
 
       if { $Msg!="" } {
 

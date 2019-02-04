@@ -64,6 +64,9 @@ Installation:
           
        - Untar the tgz and change to the src directory.
        - Use the makeit script to build and install the package
+          - If you want to build with vgrid, define the VGRID_PATH environment variable to the path where its lib/libdescrip.a resides.
+          - Version 8.0.0 comes with a prebuilt librmn 16.3 as it's not published yet but contains needed fixes. If you want to use another version, change the libeerUtils_x.x.x/lib/librmn.so to point to it.
+          - If you need to build with libeccodes,libecbufr or liburp, you will need to specify their location in the libSPI_x.x.x/makeit script (--with-ecbufr=,--with-eccodes=,--with-urp=).
        
             ./makeit -build
             ./makeit -install [install path]
@@ -72,33 +75,22 @@ Installation:
       
 Environment:
 
-   - You will have to define the GDB_PATH variable to the location of the geographical database for SPI to use it:
-     Depending on the shell you are using, this might mean:
+   - The method of defining environment variables and the location to do so depends on your shell, the description thereafter suposes the use of sh/ksh/bash
+   
+   - Define the GDB_PATH variable to the location of the geographical database for SPI to use it:
 
-        sh/ksh/bash
-           export GDB_PATH=[your geo_path]/data
+        export GDB_PATH=[your geo_path]/data
 
-        csh
-           setenv GDB_PATH [your geo_path]/data
+   - Define the SPI_LIB variable to the location of the SPI librairies
 
-   - You will also have to define the SPI_LIB variable to the location of the SPI librairies
-
-      sh/ksh/bash
-         export SPI_LIB=[your spilib_path]
-
-      csh
-         setenv SPI_LIB [your spilib_path]
+        export SPI_LIB=[your spilib_path]
    
    - If you want to run scripts, you will have to define an environment variable pointing to the path
       where you installed SPI. Depending on the shell you are using, this might mean:
 
-      sh/ksh/bash
-         export SPI_PATH=[your spi_path]
+        export SPI_PATH=[your spi_path]
 
-      csh
-         setenv SPI_PATH [your spi_path]
-
-Executin SPI.
+Executin SPI:
 
    - You can now launch SPI by calling 
 

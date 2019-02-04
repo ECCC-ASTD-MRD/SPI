@@ -8,11 +8,13 @@ namespace eval Macro::Scenario {} {
    colormap create WIND_MAP   -file $env(HOME)/.spi/Colormap/OTH_UUonEI.rgba
    colormap create ICE_MAP    -file $env(HOME)/.spi/Colormap/OTH_ICE.rgba
    colormap create SST_MAP    -file $env(HOME)/.spi/Colormap/OTH_SST.rgba
-  
+
+   set Param(Loop)   True
    set Param(Models) { GDPS RDPS HRDPS HRDPS-BC CIOPS CAPS RMPS-GSL RIOPS }
-    set Param(Models) { RIOPS }
+#    set Param(Models) { RIOPS }
     
    set Param(LabelGDPS)    "GDPS - 25km"
+   set Param(FileGDPS)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/GDPS.fstd
    set Param(ToGDPS)       "SC_GDPS"
    set Param(VarGDPS)      { EI UU }
    set Param(LoopGDPS)     1
@@ -20,6 +22,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamGDPS)    {{ -outline black -rendertexture 1 -colormap CLOUD_MAP  -min 70 -max 320  -mapbelow True -mapabove True -showmap False } { -rendertexture 1 -colormap WIND_MAP  -min 1 -max 60 -mapbelow True -mapabove True -showmap False}}
 
    set Param(LabelRDPS)    "RDPS - 10km"
+   set Param(FileRDPS)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/RDPS.fstd
    set Param(ToRDPS)       SC_RDPS
    set Param(VarRDPS)      { EI UU }
    set Param(LoopRDPS)     1
@@ -27,6 +30,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamRDPS)    {{ -outline black -rendertexture 1 -colormap CLOUD_MAP  -min 70 -max 320  -mapbelow True -mapabove True -showmap False } { -rendertexture 1 -colormap WIND_MAP  -min 1 -max 60 -mapbelow True -mapabove True -showmap False }}
 
    set Param(LabelHRDPS)    "HRDPS - 2.5km"
+   set Param(FileHRDPS)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/HRDPS.fstd
    set Param(ToHRDPS)       SC_HRDPS
    set Param(VarHRDPS)      { EI UU }
    set Param(LoopHRDPS)     2
@@ -34,6 +38,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamHRDPS)    {{ -outline black -rendertexture 1 -colormap CLOUD_MAP  -min 120 -max 250 -mapbelow True -mapabove True -showmap False } { -rendertexture 1 -colormap WIND_MAP  -min 1 -max 60 -mapbelow True -mapabove True -showmap False }}  
 
    set Param(LabelHRDPS-BC) "HRDPS BC - 1km"
+   set Param(FileHRDPS-BC)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/HRDPS-BC.fstd
    set Param(ToHRDPS-BC)    SC_HRDPS_BC
    set Param(VarHRDPS-BC)   { EI UU }
    set Param(LoopHRDPS-BC)  2
@@ -41,6 +46,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamHRDPS-BC) {{ -outline black -rendertexture 1 -colormap CLOUD_MAP  -min 120 -max 250 -mapbelow True -mapabove True -showmap False } { -rendertexture 1 -colormap WIND_MAP  -min 1 -max 60 -mapbelow True -mapabove True -showmap False }}
 
    set Param(LabelCIOPS)    "CIOPS - 2km"
+   set Param(FileCIOPS)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/CIOPS.fstd
    set Param(ToCIOPS)       SC_CIOPS
    set Param(VarCIOPS)      { TMGR }
    set Param(LoopCIOPS)     1
@@ -48,6 +54,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamCIOPS)    {{ -colormap RIVER_MAP -rendertexture True -min 0 -max 0.2 -showmap False }}
 
    set Param(LabelCAPS)     "CAPS - 3km"
+   set Param(FileCAPS)      /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/CAPS.fstd
    set Param(ToCAPS)        SC_CAPS
    set Param(VarCAPS)       { GL PN }
    set Param(LoopCAPS)      2
@@ -55,6 +62,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamCAPS)     {{ -colormap ICE_MAP -rendertexture True -showmap False } { -outline black -width 2 -rendercontour 1 -renderlabel -1 -font LABEL -colormap RIVER_MAP -mapall True -intervalmode INTER 5 -value INTEGER 0 -showmap False }}
 
    set Param(LabelRMPS-GSL) "RMPS-GSL - 500m" 
+   set Param(FileRMPS-GSL)  /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/RMPS-GSL.fstd
    set Param(ToRMPS-GSL)    SC_RMPS-GSL
    set Param(VarRMPS-GSL)   { GL } 
    set Param(LoopRMPS-GSL)  1
@@ -62,6 +70,7 @@ namespace eval Macro::Scenario {} {
    set Param(ParamRMPS-GSL) {{ -colormap ICE_MAP -rendertexture True -showmap False }}
 
    set Param(LabelRIOPS)    "RIOPS ~ 6km"
+   set Param(FileRIOPS)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/RIOPS.fstd
    set Param(ToRIOPS)       SC_RIOPS
    set Param(VarRIOPS)      { TM }
    set Param(LoopRIOPS)     1

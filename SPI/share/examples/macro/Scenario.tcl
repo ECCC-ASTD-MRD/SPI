@@ -31,7 +31,21 @@ namespace eval Macro::Scenario {} {
    set Param(PLabel)     ""
    set Param(PParam)     ""
    set Param(PVar)       ""
-   set Param(Scenarios)  { Scenario1.tcl }
+   set Param(Loop)       False
+   set Param(Scenarios)  { Scenario2.tcl }
+
+#   set Param(Models)    List of models to include, then for each model
+#      set Param(File...)   RPN file for the model
+#      set Param(Label...)  Label for the model
+#      set Param(To...)     Camera name to use to zoom to model
+#      set Param(Fly...)    Flight path around the model                                           [Optional]
+#      set Param(Rotate...) Number of degrees by which to rotate the globe 360                     [Optional]
+#      set Param(Time...)   Time range to animate { "YYYY/MM/DD HH:MM" "YYYY/MM/DD HH:MM" }        [Optional]
+#      set Param(Var...)    FSTD variable list
+#      set Param(OGR...)    OGR data to display                                                    [Optional]
+#      set Param(Loop...)   Number of loop over time
+#      set Param(Desc...)   Long description of the model                  
+#      set Param(Param...)  FSTD configuration parameter for each var 
 
    font create LARGE  -family arial -size -20 -weight bold
    font create MEDIUM -family arial -size -20 -weight bold
@@ -45,7 +59,7 @@ proc Macro::Scenario::Execute { } {
    if { $Param(Save) } { glrender -wait True }
 
 #   Page::Size $Page::Data(Frame)  1920 1200
-#   Page::Size $Page::Data(Frame)  1920 1080
+   Page::Size $Page::Data(Frame)  1920 1080
 
    set ProjCam::Param(Function) QUADRATIC
    set Viewport::Map(Delay) 1000.0
@@ -70,12 +84,16 @@ proc Macro::Scenario::Execute { } {
    $Page::Data(Canvas) create text 8 39 -font MEDIUM -fill #ff0000 -anchor nw -tag PLABEL
    $Page::Data(Canvas) create text [expr [Page::CanvasWidth $Page::Data(Frame)]/2] [expr [Page::CanvasHeight $Page::Data(Frame)]-8] -font MEDIUM -fill #ff0000 -anchor s -justify center -tag DESC
    
-   Mapper::DepotWare::TMS::Load OpenStreetMap 3
+   Mapper::DepotWare::TMS::Load OpenStreetMap 2
    
    #----- Let's start the show
    foreach scenario $Param(Scenarios) {
       Macro::Scenario::Shoot $scenario
    }
+   
+   #----- Produce mp4
+#   file delete out.mp4
+#   exec cat *.jpg | avconv -f image2pipe -r 10 -c:v mjpeg -i - -map 0 -c:v mpeg4 -r 20 -pix_fmt yuv420p -qscale 1 out.mp4
 }
    
 proc Macro::Scenario::Shoot { Scenario } {
@@ -97,7 +115,7 @@ proc Macro::Scenario::Shoot { Scenario } {
 
       CVProgressBar::Set $Page::Data(Frame) 0
 
-      fstdfile open MODEL read /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/${model}.fstd
+      fstdfile open MODEL read $Param(File$model)
       
       #----- Extract available dates
       set dates { }
@@ -122,7 +140,15 @@ proc Macro::Scenario::Shoot { Scenario } {
       set f 0
       for { set l 0 } { $l<$Param(Loop$model) } { incr l } {
          foreach date $dates {
+            if { [llength $dates]==1 } {
+               Macro::Scenario::Disappears $lstv
+               set f 20
+            }
+            
             Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP) "" -1
+            if { [info exists Param(OGR$model)] } {
+               Viewport::Assign $Page::Data(Frame) $Page::Data(VP) $Param(OGR$model) -1 
+            }
             CVProgressBar::Incr $Page::Data(Frame) [expr 1.0/([llength $dates]*$Param(Loop$model))]
       
             foreach v $Param(Var$model) {
@@ -140,7 +166,9 @@ proc Macro::Scenario::Shoot { Scenario } {
           
                set ProjCam::Param(Proc) {
                   projection configure $Page::Data(Frame) -draw [expr [$Page::Data(VP) -distpix]>60]
+                  glrender -zbuffer [expr [$Page::Data(VP) -distpix]<7]
                   
+                  #----- New data
                   $Page::Data(Canvas) itemconfigure LABEL -transparency  [expr 100-$a]
                   $Page::Data(Canvas) itemconfigure DESC  -transparency  [expr 100-$a]
                   $Page::Data(Canvas) itemconfigure BDESC -transparency  [expr min(100-$a,75)]
@@ -150,6 +178,8 @@ proc Macro::Scenario::Shoot { Scenario } {
                      lappend lstv FLD$v
                   }
                   $Page::Data(Canvas) itemconfigure COLORBAR -data $lstv -transparency [expr min(100-$a,75)]
+                  
+                  #----- Old data
                   foreach v $Param(PVar) p $Param(PParam) {
                      if { [fstdfield is PFLD$v] } {
                         eval fstdfield configure PFLD$v $p -transparency $a
@@ -163,25 +193,38 @@ proc Macro::Scenario::Shoot { Scenario } {
                }
                ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To$model) [expr $Param(Counter)==0]
             } else {
-               $Page::Data(Canvas) itemconfigure PLABEL -transparency 0
-               $Page::Data(Canvas) itemconfigure LABEL  -transparency 100
-               $Page::Data(Canvas) itemconfigure DESC   -transparency [expr 100-($f-20)*5]
-               $Page::Data(Canvas) itemconfigure BDESC  -transparency [expr min(75,100-($f-20)*5)]
                set lstv {}
                foreach v $Param(Var$model) p $Param(Param$model) {
                   eval fstdfield configure FLD$v $p -transparency $dtran
                   lappend lstv FLD$v
                }
                $Page::Data(Canvas) itemconfigure COLORBAR -data $lstv 
-           }
-   #         #----- This rotates the globe         
-   #         if { $model=="GDPS" } {
-   #            set Viewport::Map(Lon) [expr fmod($Viewport::Map(Lon)+3,360)]
-   #            Viewport::Rotate $Page::Data(Frame) $Viewport::Map(Lat) $Viewport::Map(Lon)
-   #         }
+               if { [llength $dates]==1 } {
+                  Macro::Scenario::Appears $lstv fstdfield $Param(Label$model) $Param(Desc$model)
+               }
+               $Page::Data(Canvas) itemconfigure PLABEL -transparency 0
+               $Page::Data(Canvas) itemconfigure LABEL  -transparency 100
+               $Page::Data(Canvas) itemconfigure DESC   -transparency [expr 100-($f-20)*5]
+               $Page::Data(Canvas) itemconfigure BDESC  -transparency [expr min(75,100-($f-20)*5)]
+            }
+           
+            #----- Rotates the globe if need be        
+            if { [info exists Param(Rotate$model)] } {
+               set Viewport::Map(Lon) [expr fmod($Viewport::Map(Lon)+$Param(Rotate$model),360)]
+               Viewport::Rotate $Page::Data(Frame) $Viewport::Map(Lat) $Viewport::Map(Lon)
+            }
             Viewport::Assign $Page::Data(Frame) $Page::Data(VP) $lstv
             Macro::Scenario::Print
             incr f
+         }
+         
+         #----- Process flight plan is any
+         if { [info exists Param(Fly$model)] } {
+            projcam define $Page::Data(Frame) -path $Param(Fly$model)
+            for { set pos 0.0 } { $pos<[llength $$Param(Fly$model)] } { set pos [expr $pos+0.025] } {
+               projcam define $Page::Data(Frame) -fly $pos
+               Macro::Scenario::Print
+            }       
          }
       }
       foreach v $Param(Var$model) {
@@ -199,21 +242,18 @@ proc Macro::Scenario::Shoot { Scenario } {
    set ProjCam::Param(Proc) {
       Macro::Scenario::Print
    }
-      
-   if { [info procs PostManual]!="" } {
-      Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP)
-      Macro::Scenario::PostManual
-   }
    
    $Page::Data(Canvas) itemconfigure DESC -text ""
    $Page::Data(Canvas) itemconfigure LABEL -text ""
    CVProgressBar::Set $Page::Data(Frame) 0
       
    #----- Back to globe for looping animation   
-   ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To[lindex $Param(Models) 0])
-   Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP)
+   if { $Param(Loop) } {
+      ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To[lindex $Param(Models) 0])
+      Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP)
+      Macro::Scenario::Print
+   }
    eval fstdfield free [fstdfield all]
-   Macro::Scenario::Print
    
    Log::Print INFO "Number total of frames: $Param(Counter)"
 }
@@ -227,8 +267,6 @@ proc Macro::Scenario::Print { } {
    
    if { $Param(Save) } { 
       PrintBox::Save $Page::Data(Frame) 0 0  [Page::CanvasWidth $Page::Data(Frame)] [Page::CanvasHeight $Page::Data(Frame)] /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/img[format %05i $Param(Counter)] jpg
-   } else {
-#      after 50
    }
 }
 
@@ -244,6 +282,9 @@ proc Macro::Scenario::Pause { { Delay 0 } } {
 
 proc Macro::Scenario::Appears { Ids { Type fstdfield } { Label "" } { Desc "" } } {
 
+   foreach id $Ids {
+      eval $Type configure $id -transparency 0
+   }
    Viewport::Assign $Page::Data(Frame) $Page::Data(VP) $Ids
    set bbox [$Page::Data(Canvas) bbox DESC]
    set bbox [list [expr [lindex $bbox 0]-3] [expr [lindex $bbox 1]-3] [expr [lindex $bbox 2]+3] [expr [lindex $bbox 3]+1]]
@@ -296,7 +337,6 @@ proc Macro::Scenario::Args { } {
    global argv argc
    variable Param
 
-   if { $argc } {
-      set Param(Save)  [lindex $argv 0]
-   }
+   if { $argc>0 } { set Param(Save)       [lindex $argv 0] }
+   if { $argc>1 } { set Param(Scenarios)  [lindex $argv 1] }
 }
