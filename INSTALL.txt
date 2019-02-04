@@ -60,6 +60,7 @@ Installation:
           SPI_x.x.x         : The SPI application, the tcl part of SPI
           libSPI_x.x.x      : The SPI libraries to be compiled
           libeerUtils_x.x.x : Library of common functions and tools used by SPI
+          GenPhysX_x.x.x    : GenphysX application
           ext               : External dependencies for SPI_LIB
           
        - Untar the tgz and change to the src directory.
@@ -83,7 +84,7 @@ Environment:
 
    - Define the SPI_LIB variable to the location of the SPI librairies
 
-        export SPI_LIB=[your spilib_path]
+        export SPI_LIB=[your libspi_path]
    
    - If you want to run scripts, you will have to define an environment variable pointing to the path
       where you installed SPI. Depending on the shell you are using, this might mean:

@@ -68,12 +68,11 @@ SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_3.4.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
-EXT_LIB=/fs/ssm/eccc/cmd/cmds/extsup/shared/master/ubuntu-14.04-amd64-64
-EXT_LIB=/home/nil000/links/eccc-ppp1/storage/master/ubuntu-14.04-amd64-64
 
 #----- ECCC temporary
-EXT_LIB=/local/drive1/cmdd/afsmsam/ssm/ubuntu-14.04-amd64-64/
-#EXT_LIB=${SSM_DEV}/workspace/prev/libSPI_8.0.0_ubuntu-14.04-amd64-64
+#LIB_EXT=/home/nil000/links/eccc-ppp1/storage/master/ubuntu-14.04-amd64-64
+#LIB_EXT=/local/drive1/cmdd/afsmsam/ssm/ubuntu-14.04-amd64-64/
+#LIB_EXT=${SSM_DEV}/workspace/prev/libSPI_8.0.0_ubuntu-14.04-amd64-64
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -145,7 +144,7 @@ if [[ $EXT -eq 1 ]]; then
    echo "- Building ${TMP_PATH}/${GDB}/build.log"
    cp -r -p ${SSM_DEV}/src/ext/${GDB}/ ${TMP_PATH}/
    cd ${TMP_PATH}/${GDB}/src
-   (make; cp -d libgdb.a ${LIB_PATH}/lib) > ${TMP_PATH}/${GDB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   (make; cp -d libgdb.a ${LIB_PATH}/lib; cp -d gdb.h declare.h ${LIB_PATH}/include) > ${TMP_PATH}/${GDB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
      
    #----- Tcl
    echo "- Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
@@ -300,12 +299,12 @@ if [[ $BLD -eq 1 ]]; then
       --with-eer=${LIB_EER} \
       --with-rmn=${LIB_EER} \
       --with-gdal=`which gdal-config` \
-      --with-ecbufr=${EXT_LIB} \
+      --with-ecbufr=${LIB_EXT} \
       --with-sqlite3 \
-      --with-eccodes=${EXT_LIB} \
-      --with-flt=${EXT_LIB} \
-      --with-urp=${EXT_LIB}
-#      --with-gdal=${EXT_LIB}/bin/gdal-config 
+      --with-eccodes=${LIB_EXT} \
+      --with-flt=${LIB_EXT} \
+      --with-urp=${LIB_EXT}
+#      --with-gdal=${LIB_EXT}/bin/gdal-config 
    fi
    make install || exit 1
 

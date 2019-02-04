@@ -6,7 +6,7 @@
 #----- SSM specifics
 SPI_VERSION="8.0.0"
 EER_VERSION="3.4.0"
-GENPHYSX_VERSION="3.4.0"
+GENPHYSX_VERSION="2.5.2"
 
 if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}
@@ -55,8 +55,9 @@ fi
 
 if [[ $BLD -eq 1 ]]; then
 
-   printf -- "\n----- Building packages in : $${SSM_DEV}/build  -----\n"
    export SSM_DEV=`pwd`/..
+   
+   printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
    mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
    
    cd ${SSM_DEV}/src/eerUtils-${EER_VERSION}
@@ -69,16 +70,19 @@ if [[ $BLD -eq 1 ]]; then
    ./makeit -ssm
 
    cd ${SSM_DEV}/src/GenPhysX-${GENPHYSX_VERSION}
-   ./makeit -ssm
+   ./makeit -reconf -build -ssm
 fi
 
 if [[ $INS -eq 1 ]]; then
 
+   export SSM_DEV=`pwd`/..
+   
    printf -- "\n----- Installing into ${INSTALL_PATH}  -----\n"
    mkdir -p $INSTALL_PATH
    tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
    tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
    tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
+   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}.ssm
 
    printf -- "
 Add theses variables to you environment:
@@ -86,13 +90,13 @@ Add theses variables to you environment:
       export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
       export SPI_LIB=${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
       export SPI_PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all
-      export PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
+      export PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:${INSTALL_PATH}/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}/bin:\$PATH
       
    csh shell:
       setenv GDB_PATH \[path where you uncompress DBGeo.tgz\]/data
       setenv SPI_LIB ${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
       setenv SPI_PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all
-      setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:\$PATH
+      setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:${INSTALL_PATH}/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}/bin:\$PATH
    
 and launch SPI with the command \"SPI\"\n"
 fi

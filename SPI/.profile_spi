@@ -9,17 +9,17 @@ export SPI_DATE="2018/11/06"
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 #----- Library locations
-export SPI_PATH
-
 if [ -z $SPI_LIB ]; then
    printf -- "(ERROR) Unable to find SPI librairies. Either define SPI_LIB to the location of SPI's librairies or source the correct cmoe/base domain\n"
    exit 1
 fi
 
 #----- If not within EC environment
-[ -z $ORDENV_VERSION ] && . ${SPI_LIB}/etc/profile.d/*.sh
 [ -z $CMCPROD ] && export CMCPROD=""
 [ -z $AFSISIO ] && export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
+
+export GDAL_PAM_ENABLED=NO
+export CPL_LOG=/dev/null
 
 export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
