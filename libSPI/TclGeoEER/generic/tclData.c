@@ -2433,8 +2433,11 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&ex);
             }
 
-            if (Tcl_GetIndexFromObj(Interp,Objv[++i],sfrmt,"type",TCL_EXACT,&mode)!=TCL_OK) {
-               return(TCL_ERROR);
+            mode=LIST;
+            if (Objc>3) {
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],sfrmt,"type",TCL_EXACT,&mode)!=TCL_OK) {
+                  return(TCL_ERROR);
+               }
             }
 
             if (!Field->Stat)

@@ -29,7 +29,7 @@ Log::Start [info script] 0.1
 fstdfield ip1mode NEW
 fstdfield vector { U V W 10.0 }
 puts "Testing vector fields:"
-puts "   vectot list: [fstdfield vector]"
+puts "   vector list: [fstdfield vector]"
 
 file delete DataOut/FSTD_Funcs.fstd
 fstdfile open OUT write DataOut/FSTD_Funcs.fstd

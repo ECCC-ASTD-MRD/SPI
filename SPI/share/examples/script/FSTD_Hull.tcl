@@ -123,12 +123,12 @@ proc FSTD_Hull::Run { } {
 
          #----- Apply a distance buffer
          ogrlayer stats DISSOLVED -buffer $Param(Buffer) 5 BUFFERED
-               
+
          #----- Iterate to merge touching hull
          set n 4
          set geom    [ogrlayer define BUFFERED -geometry 0]
          set newgeom ""
-         
+
          while { [incr n -1] } {
          
             #----- Get the sub geoms
