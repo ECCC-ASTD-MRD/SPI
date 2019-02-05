@@ -71,6 +71,8 @@ if [[ $BLD -eq 1 ]]; then
 
    cd ${SSM_DEV}/src/GenPhysX-${GENPHYSX_VERSION}
    ./makeit -reconf -build -ssm
+   
+   cd ${SSM_DEV}/src/
 fi
 
 if [[ $INS -eq 1 ]]; then

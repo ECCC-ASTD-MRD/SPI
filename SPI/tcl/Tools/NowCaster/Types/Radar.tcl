@@ -129,7 +129,7 @@ proc NowCaster::Radar::Window { Frame } {
          -command { set NowCaster::Radar::Data(RangeActive) True; NowCaster::Radar::Range }
    }
 
-   catch {  set Data(Radars) [lsort -increasing [concat [glob -nocomplain $Param(Path)/X*] [glob -nocomplain $Param(Path)/W*]]] }
+   catch { set Data(Radars) [lsort -increasing [concat [glob -nocomplain $Param(Path)/X*] [glob -nocomplain $Param(Path)/W*]]] }
    menu $Frame.head.add.list -bd 1 -tearoff 0
    set i 0
    foreach radar $Data(Radars) {

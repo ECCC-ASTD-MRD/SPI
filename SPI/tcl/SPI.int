@@ -665,6 +665,16 @@ proc SPI::WindowMenu { } {
       .menu.file.menu.type add command -label "[lindex $Lbl(Icons) $GDefs(Lang)] ..." \
          -command { SPI::IcoOpen [FileBox::Create . "" Load [list $FileBox::Type(ICO)]] }  -underline 0
 
+      if { ![llength [info command gribfile]] } {
+         .menu.file.menu.type entryconfigure 1 -state disabled
+      }
+      if { ![llength [info command radarfile]] } {
+         .menu.file.menu.type entryconfigure 5 -state disabled
+      }
+      if { ![llength [info command metobs]] } {
+         .menu.file.menu.type entryconfigure 4 -state disabled
+      }
+      
    menu .menu.disp.menu -tearoff 1
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Logo) $GDefs(Lang)] -variable SPI::Data(ShowLOGO) \
          -command "SPI::DrawImage \$Page::Data(Frame) LOGO 5 5 nw 1 0 0" -onvalue 1 -offvalue 0

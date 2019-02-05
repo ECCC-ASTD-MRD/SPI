@@ -31,8 +31,8 @@ System requirements:
         Not provided with the package:
      
            Mandatory:
-              gdal-2.2            (Geospatial Data Abstraction Layer https://gdal.org)
-              rmnlib-16.2         (RPN file format support           https://github.com/armnlib/librmn)
+              gdal-dev            (Geospatial Data Abstraction Layer https://gdal.org)
+              rmnlib-16.3         (RPN file format support           https://github.com/armnlib/librmn)
               ImageMagik          (For image output                  https://www.imagemagick.org/script/index.php)
       
            Optional:
