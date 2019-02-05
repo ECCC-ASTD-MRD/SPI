@@ -505,6 +505,8 @@ proc APViz::Source { Path Widget } {
                      spinbox $path -values { -48 -42 -36 -30 -24 -18 -12 -06 00 +06 +12 +18 +24 +30 +36 +42 +48 } -width 3 -textvariable APViz::${Product}::Mod($Options,$Index) -bg $GDefs(ColorLight) \
                         -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
                      set Mod($Options,$Index) -06
+                     bind $path <ButtonPress-4> "$path invoke buttonup"
+                     bind $path <ButtonPress-5> "$path invoke buttondown"
                   } else {
                      entry $path -textvariable APViz::${Product}::Mod($Options,$Index) -width [expr $Width+1] -bg $GDefs(ColorLight) -state disabled
                   }
@@ -514,14 +516,16 @@ proc APViz::Source { Path Widget } {
             } elseif { $IsSpinBox } {
                spinbox $path -values $Range($rangeType) -width $Width -textvariable APViz::${Product}::Value($Options,$Index) -bg $GDefs(ColorLight) \
                -command "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product" 
-               
-               #----- Bind with return key
                bind $path <Return> "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product"
+               bind $path <ButtonPress-4> "$path invoke buttonup"
+               bind $path <ButtonPress-5> "$path invoke buttondown"
                
             } else {
                regsub .range\[a-z,A-Z,0-9,.,_\]* $path "" widget	; # Pour la mise a jour des spinbox
                ComboBox::Create $path APViz::${Product}::Value($Options,$Index) noedit unsorted nodouble -1 $Range($rangeType) $Width 6 \
-               "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $path $Index"
+                  "::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $path $Index"
+               bind $path.select <ButtonPress-4> "ComboBox::SelectNext $path 1; ::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $path $Index "
+               bind $path.select <ButtonPress-5> "ComboBox::SelectNext $path -1; ::APViz::${Product}::AdjustLockedValues $Options $Index $Product; APViz::Refresh $Product; ::APViz::${Product}::AdjustIDBubble $path $Index"
             }
            
             #----- Default Values

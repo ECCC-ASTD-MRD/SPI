@@ -52,7 +52,7 @@ Installation:
        Decompressing it into it's final installation directory if it has'nt been installed before.
        This will take up to 13 Gig for the global coverage     
        
-   - SPI_x.x.x.tgz
+   - SPI-x.x.x.tgz
        SPI and it's dependencies. it contains 
        
           INSTALL.txt       : This file
