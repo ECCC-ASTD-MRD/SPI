@@ -20,14 +20,14 @@ INS=0
 INSTALL_PATH=""
 
 HELP="Arguments must be:\n\n   Information parameters:
-\t-help        : This information
-\t-version     : Version
+\t-help           : This information
+\t-version        : Version
 
    Commands:
-\t-clear       : Clear packages
-\t-build       : Build packages
-\t-install     : Install packages
-\t-src         : Build source package\n"
+\t-clear          : Clear packages
+\t-build          : Build packages
+\t-install [path] : Install packages
+\t-src            : Build source package\n"
 
 #----- Get arguments.
 while [ $# -gt 0 ]; do
@@ -77,12 +77,17 @@ if [[ $INS -eq 1 ]]; then
 
    export SSM_DEV=`pwd`/..
    
-   printf -- "\n----- Installing into ${INSTALL_PATH}  -----\n"
-   mkdir -p $INSTALL_PATH
-   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
-   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
-   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
-   tar -C $INSTALL_PATH -zxvf ${SSM_DEV}/package/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   if [[ -z ${INSTALL_PATH} ]]; then   
+      printf -- "(ERROR) No installation path specified\n"
+      exit -1
+   fi
+   INSTALL_PATH=`readlink -f ${INSTALL_PATH}`
+
+   mkdir -p ${INSTALL_PATH}
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}.ssm
 
    printf -- "
 Add theses variables to you environment:
@@ -99,6 +104,7 @@ Add theses variables to you environment:
       setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:${INSTALL_PATH}/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}/bin:\$PATH
    
 and launch SPI with the command \"SPI\"\n"
+   printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
 fi
 
 #----- Only used to prepare the src distribution package
