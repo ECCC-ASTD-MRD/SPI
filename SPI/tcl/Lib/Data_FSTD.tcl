@@ -73,6 +73,10 @@ namespace eval FSTD {
    geodata vector { UUW  VVW    }
    geodata vector { U    V    W }
 
+   if { ![llength [info command gribfile]] } {
+      Log::Print WARNING "libSPI has not been build with libeccodes, grib (gribfile) will not be supported"
+   }
+   
    Viewport::FollowerAdd FSTD
 
    #----- Variable internes

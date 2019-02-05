@@ -15,6 +15,18 @@
 #
 # Remarques :
 #
+#   set Param(Models)    List of models to include, then for each model
+#      set Param(File...)   RPN file for the model
+#      set Param(Label...)  Label for the model
+#      set Param(To...)     Camera name to use to zoom to model
+#      set Param(Fly...)    Flight path around the model                                           [Optional]
+#      set Param(Rotate...) Number of degrees by which to rotate the globe 360                     [Optional]
+#      set Param(Time...)   Time range to animate { "YYYY/MM/DD HH:MM" "YYYY/MM/DD HH:MM" }        [Optional]
+#      set Param(Var...)    FSTD variable list
+#      set Param(OGR...)    OGR data to display                                                    [Optional]
+#      set Param(Loop...)   Number of loop over time
+#      set Param(Desc...)   Long description of the model                  
+#      set Param(Param...)  FSTD configuration parameter for each var 
 #===============================================================================
 
 namespace eval Macro::Scenario {} {
@@ -39,7 +51,7 @@ namespace eval Macro::Scenario {} {
 
    set Param(Loop)   False
    set Param(Models) { RAQDPS FIREWORK MLDPN-ZH MLDPN-CV HYDRO PANAM CUDM-ZH CUDM-ZH2 CUDM-CV SPILL_VC_HARBOUR }
-#   set Param(Models) { CUDM-ZH2 CUDM-CV SPILL_VC_HARBOUR }
+#   set Param(Models) { SPILL_VC_HARBOUR }
    
    set Param(LabelRAQDPS)  "RAQDPS - 10km"
    set Param(FileRAQDPS)   /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/RAQDPS.fstd
@@ -59,11 +71,19 @@ namespace eval Macro::Scenario {} {
 
    set Param(LabelSPILL_VC_HARBOUR)  "COSMoS - 5m"
    set Param(FileSPILL_VC_HARBOUR)   /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/SPILL_VC_HARBOUR.fstd
+#   set Param(FlySPILL_VC_HARBOUR)   {{{-0.3525334878582205 0.29581071963947125 1.887815385136401} { 0.0 0.0 1.0 } {0.7079653238552617 -0.536114222874593 0.4597462781253218} 12590.081485111406}
+#{{ 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 } 49.819425290903496 -98.27496009883939 }
+#{{ 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 } 760.0760681620733 49.31098208213309 -123.11603077194742}}
+
+#ProjCam::FlyTo $Page::Data(Frame) {{{-0.3525334878582205 0.29581071963947125 1.887815385136401} { 0.0 0.0 1.0 } {0.7079653238552617 -0.536114222874593 0.4597462781253218} 12590.081485111406 43.65108083377559 -79.38043021925478 }
+#                                  {{ 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 } 4.756828460010884 49.819425290903496 -98.27496009883939}
+#                                  {{ 0.0 0.0 2.0 } { 0.0 0.0 1.0 } { 0.0 1.0 0.0 } 760.0760681620733 49.31098208213309 -123.11603077194742}}
+
    set Param(ToSPILL_VC_HARBOUR)     SC_SPILL_VC_HARBOUR
    set Param(VarSPILL_VC_HARBOUR)    { ZH }
    set Param(LoopSPILL_VC_HARBOUR)   1
    set Param(DescSPILL_VC_HARBOUR)   "Simulations sur 48 heures de dispersion de nappes d'huiles à Vancouver de la suite de Modélisation de Déversement d'Huile du Canada\nOil spill dispersion simulations over 48 hours in Vancouver from the Canadian Oil Spill Modelling Suite"                  
-   set Param(ParamSPILL_VC_HARBOUR)  {{ -colormap RIVER_MAP -font LABEL -rendergrid 3 -color black -showmap False }} 
+   set Param(ParamSPILL_VC_HARBOUR)  {{ -colormap RIVER_MAP -font LABEL -rendergrid 3 -transparency 25 -color black -showmap False }} 
 
    set Param(LabelMLDPN-ZH)   "MLDPn - 25km"
    set Param(FileMLDPN-ZH)     /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/data/MLDPN-ZH.fstd

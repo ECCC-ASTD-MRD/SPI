@@ -25,14 +25,17 @@ namespace eval Macro::Scenario {} {
    set Param(In)   ""
    set Param(Info) { "Scenario" "Scenario" }
    
-   set Param(Counter)    0     ;# Frame counter
+   set Param(Counter)    5177  ;# Frame counter
    set Param(Transition) 20    ;# Number of transition frame
    set Param(Save)       False ;# Save frames
    set Param(PLabel)     ""
    set Param(PParam)     ""
    set Param(PVar)       ""
-   set Param(Loop)       False
-   set Param(Scenarios)  { Scenario2.tcl }
+   set Param(Topo)       True
+   set Param(Loop)       True
+   set Param(Width)      1920
+   set Param(Height)     1080
+   set Param(Scenarios)  { ScenarioAll.tcl }
 
 #   set Param(Models)    List of models to include, then for each model
 #      set Param(File...)   RPN file for the model
@@ -58,14 +61,13 @@ proc Macro::Scenario::Execute { } {
    #----- Setup product
    if { $Param(Save) } { glrender -wait True }
 
-#   Page::Size $Page::Data(Frame)  1920 1200
-   Page::Size $Page::Data(Frame)  1920 1080
+   Page::Size $Page::Data(Frame)  $Param(Width) $Param(Height)
 
    set ProjCam::Param(Function) QUADRATIC
    set Viewport::Map(Delay) 1000.0
    set Viewport::Resources(FillCoast) ""
    set Viewport::Resources(FillLake)  ""
-#   projection configure $Page::Data(Frame) -sun True -date [clock scan "21/06/2018 18:00" -timezone :UTC]
+#   projection configure $Page::Data(Frame)  -draw 1 -mapcoord 0 -mapriver 0 -maplake 0 -sun True -date [clock scan "21/06/2018 18:00" -timezone :UTC]
    projection configure $Page::Data(Frame) -draw 1 -mapcoord 0 -mapriver 0 -maplake 0
    
    $Page::Data(Canvas) create colorbar -x [expr [Page::CanvasWidth $Page::Data(Frame)]-100-5] -y [expr ([Page::CanvasHeight $Page::Data(Frame)]-500)/2.0] -width 100 -height 500 -tags "COLORBAR" -barsplit 0 -barside right \
@@ -84,7 +86,10 @@ proc Macro::Scenario::Execute { } {
    $Page::Data(Canvas) create text 8 39 -font MEDIUM -fill #ff0000 -anchor nw -tag PLABEL
    $Page::Data(Canvas) create text [expr [Page::CanvasWidth $Page::Data(Frame)]/2] [expr [Page::CanvasHeight $Page::Data(Frame)]-8] -font MEDIUM -fill #ff0000 -anchor s -justify center -tag DESC
    
-   Mapper::DepotWare::TMS::Load OpenStreetMap 2
+   set Param(OSM) [Mapper::DepotWare::TMS::Load OpenStreetMap 2]
+   if { $Param(Topo) } {
+      gdalband configure $Param(OSM) -topography INTERNAL -texsample 32
+   }
    
    #----- Let's start the show
    foreach scenario $Param(Scenarios) {
@@ -92,8 +97,8 @@ proc Macro::Scenario::Execute { } {
    }
    
    #----- Produce mp4
-#   file delete out.mp4
-#   exec cat *.jpg | avconv -f image2pipe -r 10 -c:v mjpeg -i - -map 0 -c:v mpeg4 -r 20 -pix_fmt yuv420p -qscale 1 out.mp4
+#   file delete Scenario.mp4
+#   exec cat *.jpg | avconv -f image2pipe -r 10 -c:v mjpeg -i - -map 0 -c:v mpeg4 -r 20 -pix_fmt yuv420p -qscale 1 Scenario.mp4
 }
    
 proc Macro::Scenario::Shoot { Scenario } {
@@ -101,8 +106,14 @@ proc Macro::Scenario::Shoot { Scenario } {
    
    uplevel #0 source $Scenario
 
-   set lstv   {}
-   set dtran  100
+   set lstv    {}
+   set dtran   100
+   set nbmodel [llength $Param(Models)]
+   
+   #----- Back to globe for looping animation   
+   if { $Param(Loop) } {
+      lappend Param(Models) [lindex $Param(Models) 0]
+   }
    
    foreach model $Param(Models) {
    
@@ -165,9 +176,18 @@ proc Macro::Scenario::Shoot { Scenario } {
                set a 100
           
                set ProjCam::Param(Proc) {
-                  projection configure $Page::Data(Frame) -draw [expr [$Page::Data(VP) -distpix]>60]
-                  glrender -zbuffer [expr [$Page::Data(VP) -distpix]<7]
-                  
+                  if { [expr [$Page::Data(VP) -distpix]<128] } {
+                     gdalband configure $Param(OSM) -topography NONE
+                     projection configure $Page::Data(Frame) -draw False
+                  } else {
+                     gdalband configure $Param(OSM) -topography INTERNAL                 
+                     projection configure $Page::Data(Frame) -draw True
+                  }
+                  if { [expr [$Page::Data(VP) -distpix]<8] } {
+                     glrender -zbuffer True
+                  } else {
+                     glrender -zbuffer False
+                  }
                   #----- New data
                   $Page::Data(Canvas) itemconfigure LABEL -transparency  [expr 100-$a]
                   $Page::Data(Canvas) itemconfigure DESC  -transparency  [expr 100-$a]
@@ -192,6 +212,7 @@ proc Macro::Scenario::Shoot { Scenario } {
                   Macro::Scenario::Print
                }
                ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To$model) [expr $Param(Counter)==0]
+               if { !$nbmodel } { break }
             } else {
                set lstv {}
                foreach v $Param(Var$model) p $Param(Param$model) {
@@ -216,13 +237,17 @@ proc Macro::Scenario::Shoot { Scenario } {
             Viewport::Assign $Page::Data(Frame) $Page::Data(VP) $lstv
             Macro::Scenario::Print
             incr f
+            if { !$nbmodel } { break }
          }
+         if { !$nbmodel } { break }
          
          #----- Process flight plan is any
          if { [info exists Param(Fly$model)] } {
             projcam define $Page::Data(Frame) -path $Param(Fly$model)
-            for { set pos 0.0 } { $pos<[llength $$Param(Fly$model)] } { set pos [expr $pos+0.025] } {
-               projcam define $Page::Data(Frame) -fly $pos
+            for { set pos 0.0 } { $pos<[expr [llength $Param(Fly$model)]-1] } { set pos [expr $pos+0.025] } {
+               set ll [projcam define $Page::Data(Frame) -fly $pos]
+               projection configure $Page::Data(Frame) -location [lindex $ll 0] [lindex $ll 1]
+
                Macro::Scenario::Print
             }       
          }
@@ -236,6 +261,7 @@ proc Macro::Scenario::Shoot { Scenario } {
       fstdfile close MODEL
 
       Macro::Scenario::Pause
+      incr nbmodel -1
    } 
 
    #----- Non standard animation
@@ -243,16 +269,14 @@ proc Macro::Scenario::Shoot { Scenario } {
       Macro::Scenario::Print
    }
    
-   $Page::Data(Canvas) itemconfigure DESC -text ""
-   $Page::Data(Canvas) itemconfigure LABEL -text ""
-   CVProgressBar::Set $Page::Data(Frame) 0
-      
-   #----- Back to globe for looping animation   
-   if { $Param(Loop) } {
-      ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To[lindex $Param(Models) 0])
-      Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP)
-      Macro::Scenario::Print
-   }
+#    $Page::Data(Canvas) itemconfigure DESC -text ""
+#    $Page::Data(Canvas) itemconfigure LABEL -text ""
+#    CVProgressBar::Set $Page::Data(Frame) 0
+#       
+#       ProjCam::Select $Page::Data(Frame) $Page::Data(Frame) $Param(To[lindex $Param(Models) 0])
+#       Viewport::UnAssign $Page::Data(Frame) $Page::Data(VP)
+#       Macro::Scenario::Print
+#    
    eval fstdfield free [fstdfield all]
    
    Log::Print INFO "Number total of frames: $Param(Counter)"
@@ -265,6 +289,7 @@ proc Macro::Scenario::Print { } {
    update idletasks
    incr Param(Counter)
    
+   puts "Frame #$Param(Counter)"
    if { $Param(Save) } { 
       PrintBox::Save $Page::Data(Frame) 0 0  [Page::CanvasWidth $Page::Data(Frame)] [Page::CanvasHeight $Page::Data(Frame)] /fs/cetus/fs2/ops/cmoe/afsr005/Scenario/img[format %05i $Param(Counter)] jpg
    }

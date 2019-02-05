@@ -496,6 +496,54 @@ proc ProjCam::FlyPath { Cam Type { List {}} } {
    return [llength $flypath]
 }
 
+#TODO: Finalize, need monotone interpolation to avoid overshoots
+
+# proc ProjCam::FlyTo { Cam { Path {}} } {
+# 
+#    set t0 [set Viewport::Map(Grabbed) [clock click -milliseconds]]
+# 
+#    if { [llength $Path] } {
+#       projcam define $Cam -path $Path
+#    }
+#    set Function QUADRATIC
+#    
+#    set Viewport::Map(Speed) [expr 20.0/$Viewport::Map(Delay)]
+#    set n  [expr ([llength $Path]-1)/$Viewport::Map(Speed)]
+#    set n2 [expr $n*0.5]
+#    set idx 0.0
+#    while { $idx<[expr [llength $Path]-1] } {
+#       set i [expr $idx]
+#        puts stderr $i...$n....$n2
+#  
+#       switch $Function {
+#          "EXPONENTIAL" { set spd [expr 1.0-(pow($i,10)*($n/pow($n,10)))/$n] }
+#          "QUADRATIC"   { set spd [expr 1.0-(($i-$n2)*($i-$n2)+($i-$n2))*($n/(($n2*$n2)+$n2))/$n] }
+#          "LINEAR"      { set spd 1.0 }
+#       }
+#       puts stderr $idx...$spd
+#             set idx [expr $idx+$spd*$Viewport::Map(Speed)]
+#       set coords [projcam define $Cam -fly $idx]
+#       set lat [lindex $coords 0]
+#       set lon [lindex $coords 1]
+# 
+#       if { $lat!=-999 } {
+#          projection configure $Page::Data(Frame) -location $lat $lon
+#       }
+#       Page::Update $Page::Data(Frame)
+# update
+#       if { ![projection is $Page::Data(Frame)] || $Viewport::Map(Grabbed)>$t0 } {
+#          break;
+#       }
+#    }
+#    set coords [projcam define $Cam -fly [expr [llength $Path]-1]]
+#    set lat [lindex $coords 0]
+#    set lon [lindex $coords 1]
+# 
+#    if { $lat!=-999 } {
+#       projection configure $Page::Data(Frame) -location $lat $lon
+#    }
+# }
+
 proc ProjCam::ToDo { Cam Frame VP X Y } {
    variable Data
 

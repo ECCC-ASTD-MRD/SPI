@@ -51,27 +51,31 @@ namespace eval Obs {
       -flat True -icon CIRCLE -color #000000 -unit "" -rendervector NONE -rendertexture 1 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -style 0 -intervalmode NONE 0
 
-   #----- Lecture des tables BUFR
-   set code [ catch {
-      if { [info exists env(AFSISIO)] } {
-         set path $env(AFSISIO)/datafiles/constants
-      } else {
-         set path $env(SPI_LIB)/share/rmn
-      }
+   if { [llength [info command metobs]] } {
+      #----- Lecture des tables BUFR
+      set code [ catch {
+         if { [info exists env(AFSISIO)] } {
+            set path $env(AFSISIO)/datafiles/constants
+         } else {
+            set path $env(SPI_LIB)/share/rmn
+         }
+            
+         if { $GDefs(Lang)==0 } {
+            metobs table -readmaster B $path/table_b_bufr_f
+            metobs table -readmaster D $path/table_d_bufr_f
+         } else {
+            metobs table -readmaster B $path/table_b_bufr_e
+            metobs table -readmaster D $path/table_d_bufr_e
+         }
+      } error ]
 
-      if { $GDefs(Lang)==0 } {
-         metobs table -readmaster B $path/table_b_bufr_f
-         metobs table -readmaster D $path/table_d_bufr_f
-      } else {
-         metobs table -readmaster B $path/table_b_bufr_e
-         metobs table -readmaster D $path/table_d_bufr_e
+      if { $code } {
+         Log::Print ERROR "Problems while loading BUFR tables\n\n$error"
       }
-   } error ]
-
-   if { $code } {
-      Log::Print ERROR "Problems while loading BUFR tables\n\n$error"
+   } else {
+      Log::Print WARNING "libSPI has not been build with libecbufr, meteorological observations (metobs) will not be supported"
    }
-
+   
    #----- Variables des structures de donnees
 
    set Data(Frame)       ""                                     ;#Frame contenant les definitions de parameters

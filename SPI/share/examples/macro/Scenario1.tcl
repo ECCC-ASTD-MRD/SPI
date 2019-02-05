@@ -1,3 +1,34 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Exemples de script.
+# Fichier  : Scenario.tcl
+# Creation : Janvier 2018 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Scenario pour produire une animation
+#
+# Arguments  :
+#
+# Remarques :
+#
+#   set Param(Models)    List of models to include, then for each model
+#      set Param(File...)   RPN file for the model
+#      set Param(Label...)  Label for the model
+#      set Param(To...)     Camera name to use to zoom to model
+#      set Param(Fly...)    Flight path around the model                                           [Optional]
+#      set Param(Rotate...) Number of degrees by which to rotate the globe 360                     [Optional]
+#      set Param(Time...)   Time range to animate { "YYYY/MM/DD HH:MM" "YYYY/MM/DD HH:MM" }        [Optional]
+#      set Param(Var...)    FSTD variable list
+#      set Param(OGR...)    OGR data to display                                                    [Optional]
+#      set Param(Loop...)   Number of loop over time
+#      set Param(Desc...)   Long description of the model                  
+#      set Param(Param...)  FSTD configuration parameter for each var 
+#===============================================================================
+
 namespace eval Macro::Scenario {} {
    global env
    variable Param
