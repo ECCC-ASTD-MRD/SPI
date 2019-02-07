@@ -61,7 +61,7 @@ namespace eval FSTD {
    colormap create FLDMAPDEFAULT -file $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
    colormap image  FLDMAPDEFAULT FLDMAPImg
 
-    dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -efont FLDFONTEXTREMA \
+   dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -efont FLDFONTEXTREMA \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 -renderboundary 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
       -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
@@ -128,6 +128,7 @@ namespace eval FSTD {
    set Param(SampleType)    PIXEL          ;#Type de sampling des points vectoriels
    set Param(Step)          0.25           ;#Step de calcul des streamlines
    set Param(Size)          10.0           ;#Facteur de dimensionnemenr
+   set Param(SizeRange)     2.0            ;#Facteur d'application de la dimension selon le range de valeur
    set Param(GridVec)       1              ;#Reference geographique des composantes de vecteurs
    set Param(Width)         1              ;#Largeur des segments
    set Param(GridNo)        0              ;#Grid to display no (grid/subgrid)
@@ -143,6 +144,9 @@ namespace eval FSTD {
    set Param(Unit)          ""             ;#Type d'unite
    set Param(Desc)          ""             ;#Description
    set Param(Intervals)     {}             ;#Niveaux de contours
+   set Param(Intervals0)    {}             ;#Niveaux de contours
+   set Param(Intervals1)    {}             ;#Niveaux de contours
+   set Param(Intervals2)    {}             ;#Niveaux de contours
    set Param(IntervalMode)  "NONE"         ;#Mode de selection des niveaux
    set Param(IntervalParam) 0              ;#Nombre de niveaux a definir
    set Param(IntervalDef)   ""             ;#Nom du produit dans les listes  ERPG/AEGL

@@ -2469,6 +2469,7 @@ if { [info exists env(SPI_TOOL)] } {
 }
 if { [file exists $SPI::Param(Default)] } {
    source $SPI::Param(Default)
+   FSTD::ParamSet FLDDEFAULT
 }
 
 #----- Parcourir la liste des parametres post-launch
