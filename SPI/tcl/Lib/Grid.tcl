@@ -789,10 +789,15 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGR
       Grid::CheckNIJ
    }
 
-   set ll [projection function $Page::Data(Frame) -circle $Param(XLat1) $Param(XLon1) [expr $ResX*1852.0*60*0.75*$Param(NI)] [expr $Angle-90.0]]
-   set Param(XLat2) [lindex $ll 0]
-   set Param(XLon2) [lindex $ll 1]
-      
+   if { $Data(GridNo)==0 } {
+      set ll [projection function $Page::Data(Frame) -circle $Param(XLat1) $Param(XLon1) [expr $ResX*1852.0*60*0.75*$Param(NI)] [expr $Angle-90.0]]
+      set Data(XLat2) [set Param(XLat2) [lindex $ll 0]]
+      set Data(XLon2) [set Param(XLon2) [lindex $ll 1]]
+   } else {
+      set Param(XLat2) $Data(XLat2)
+      set Param(XLon2) $Data(XLon2)
+   }
+   
    fstdfield free ${ID} 
    georef free ${ID}
    

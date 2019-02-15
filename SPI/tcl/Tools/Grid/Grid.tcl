@@ -386,13 +386,13 @@ proc Grid::ProjectSave { Path } {
       fstdfile close FILE
 
       #----- Create GenphysX job file
-      set f [open $Path/$res/geophy.sh w 0755]
+      set f [open $Path/$res/Gem_geophy.sh w 0755]
       puts $f "#!/bin/bash"
 #TODO      puts $f ". ssmuse-sh -x eccc/cmd/cmds/apps/SPI/beta"
-      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target HRDPS_NAT -result $Path/$res/geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
+      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target RELWS-1.0 -result $Path/$res/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
       close $f
       
-      exec $Path/$res/geophy.sh &
+      exec $Path/$res/Gem_geophy.sh &
       
       incr no
    } 
@@ -458,6 +458,7 @@ proc Grid::ProjectLoad { Path } {
    #----- Select 1st grid to start with
    set Data(GridNo) 0
    Grid::Switch
+   Grid::SettingsShow 
    
    Viewport::GoTo $Data(Frame) $Param(XLat1) $Param(XLon1)
 }
