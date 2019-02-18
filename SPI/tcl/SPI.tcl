@@ -501,7 +501,7 @@ proc Page::UpdateItems { { Frame "" } } {
       set Frame $Data(Frame)
    }
 
-   if { ![winfo exists $Frame]} {
+   if { ![winfo exists $Frame] } {
       return
    }
 
