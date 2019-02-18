@@ -72,12 +72,7 @@ fi
 if [[ $XVFB -eq 1 ]]
 then
    if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so ]]; then
-      #----- If Xorg's dummy driver is present (TODO: need a unique number for cluster with containers instead of $$)
-      Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile $TMPDIR/xorg-spi$$.log -config ${SPI_PATH}/share/xorg/xorg.conf :$$ &
-      xpid=$!
-      export DISPLAY=:$$
-      ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
-      kill -9 $xpid
+      exec ${SPI_PATH}/bin/xorg-run -n $XSVR -a -l $TMPDIR/xorg-spi$$.log -s "-config ${SPI_PATH}/share/xorg/xorg.conf" ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
    else 
       #----- Otherwise use the old Xvfb
       exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
