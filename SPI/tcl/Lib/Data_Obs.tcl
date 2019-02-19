@@ -416,9 +416,9 @@ proc Obs::ParamFrame { Frame Apply } {
 
             frame $Data(Frame).def.r.disp.vol
                label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
-               checkbutton $Data(Frame).def.r.disp.vol.sel -variable Obs::Param(Volume) -relief raised -bd 1 \
-                  -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -onvalue 1 -offvalue 0\
-                  -command { Obs::ParamSet } -selectcolor "" -relief groove -bd 1
+               IcoMenu::Create $Data(Frame).def.r.disp.vol.sel $GDefs(Dir)/share/bitmap \
+                  "zeroth.xbm sstar.xbm stipple1.xbm" "0 1 2" Obs::Param(Volume) \
+                  Obs::ParamSet 0 -relief groove -bd 2
                pack $Data(Frame).def.r.disp.vol.sel -side left
                pack $Data(Frame).def.r.disp.vol.lbl -side left
 
