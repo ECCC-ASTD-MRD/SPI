@@ -29,11 +29,11 @@ if [ `domainname -d` = "science.gc.ca" ]; then
 
    #----- On the SCIENCE side
    [[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -x main/opt/intelcomp/intelcomp-2016.1.156 -x main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-   [ -n "\${ECCODES_DEFINITION_PATH}" ]         || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
+   [ -n "\${ECCODES_DEFINITION_PATH}" ]         || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
    [ -d "\${GDB_PATH}" ]                        || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
 else 
    #----- On the EC side
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d cmds/ext/20190205
    [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
 
@@ -51,11 +51,11 @@ setenv CPL_LOG=/dev/null
 if [ `domainname -d` = "science.gc.ca" ]; then
    #----- On the SCIENCE side
    [[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x eccc/cmd/cmds/extsup/shared/master
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
    [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
 else 
    #----- On the EC side
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -x cmds/extsup/shared/master
+   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d cmds/ext/20190205
    [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 fi
 
