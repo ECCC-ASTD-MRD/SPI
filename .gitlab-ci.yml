@@ -1,42 +1,35 @@
+#The program 'gitlab-runner' must be found in the PATH to get the artifacts collecting working.
+#local tests: gitlab-ci-multi-runner-linux-amd64 exec shell [stage]
+
 variables:
     # CI_DEBUG_TRACE: "true"
-    MIDAS_ABS: /home/erv000/data_maestro/ords/midas/gitlab-ci/abs
 
 stages:
    - build
-   #- test
-   #- package
+   - test
+   - package
    #- deploy
-
-## The program 'gitlab-runner' must be found in the PATH to get the artifacts collecting working.
-#before_script:
-#    - ln -svf /home/sidr000/bin/gitlab-ci-multi-runner-linux-amd64 ${TMPDIR}/bin
-#    - ln -svf gitlab-ci-multi-runner-linux-amd64 ${TMPDIR}/bin/gitlab-runner
 
 build:
    stage: build
    script:
+      - . ssmuse-sh -x ${SSM_EXT}
       - cd libSPI
       - ./makeit -build -reconf
-   only:
-      - master
+#   only:
+#      - master
 
 test:
-   #stage: test
-   #variables:
-      #SPI_LIB=${SSM_DEV}/workspace/libSPI_8.0.0_${ORDENV_PLAT}
-      #SPI_PATH=${HOME}/SPI-BETA
-   #script:
-      #- cd SPI/share/examples/script/
-      #- suite=midas-$(echo ${CI_BUILD_REF} | cut -c-10)
-      #- ./install_suite.sh $suite run $MIDAS_ABS
-      #- ./wait4tests.sh $suite
-      #- ./extractRunTime.sh $suite
-      #- ./collect_unittest_listings
-      #- clean_suite $suite
-      #- rm ~/.suites/${suite}
-   #only:
-      #- master
+   stage: test
+   variables:
+   script:
+      - . SPI/.profile_spi
+      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}_${ORDENV_PLAT}
+      - export SPI_PATH=${HOME}/SPI-BETA
+      - cd SPI/share/examples/script/
+      - ./TCL_TestAll.tcl ${CI_BUILD_REF} > TCL_TestAll-${CI_BUILD_REF}.log
+#   only:
+#      - master
 
 package:
    stage: package
@@ -45,14 +38,16 @@ package:
       - ./makeit -ssm
       - cd ../SPI
       - ./makeit -ssm
+      - cd ..
+      - ./makeit -src
 
 deploy:
    stage: deploy
    script:
-      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_8.0.0_ubuntu-14.04-amd64-64.ssm
-      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_8.0.0_all.ssm
-      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_8.0.0_ubuntu-14.04-amd64-64
-      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_8.0.0_all
+      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
+      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
+      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
+      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
       
 #doc:
   #stage: doc

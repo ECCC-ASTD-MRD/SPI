@@ -7,7 +7,7 @@ DESCRIPTION="Meteorological GIS, Processing and Modeling tool"
 SUMMARY="4D virtual globe for scientific visualisation and analytics"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION="8.0.0"
-export BUILDINFO=`git describe --always`
+export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
 
 HELP="Arguments must be:\n\n   Information parameters:
 \t-help        : This information

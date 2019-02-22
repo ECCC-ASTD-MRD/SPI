@@ -7,7 +7,7 @@ DESCRIPTION="SPI libraries"
 SUMMARY="SPI compiled libraries and dependencies"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION="8.0.0"
-export BUILDINFO=`git describe --always`
+export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
 
 if [[ (-z $SSM_DEV) ]]; then
    echo "(ERROR) Variables SSM_DEV not defined."
@@ -68,11 +68,7 @@ SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_3.4.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
-
-#----- ECCC temporary
-#LIB_EXT=/home/nil000/links/eccc-ppp1/storage/master/ubuntu-14.04-amd64-64
-#LIB_EXT=/local/drive1/cmdd/afsmsam/ssm/ubuntu-14.04-amd64-64/
-#LIB_EXT=${SSM_DEV}/workspace/prev/libSPI_8.0.0_ubuntu-14.04-amd64-64
+export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                  #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH

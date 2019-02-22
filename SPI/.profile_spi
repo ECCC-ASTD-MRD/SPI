@@ -11,7 +11,6 @@ export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 #----- Library locations
 if [ -z $SPI_LIB ]; then
    printf -- "(ERROR) Unable to find SPI librairies. Either define SPI_LIB to the location of SPI's librairies or source the correct cmoe/base domain\n"
-   exit 1
 fi
 
 #----- If not within EC environment

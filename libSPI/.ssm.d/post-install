@@ -15,7 +15,6 @@ rm -f ${profilePath} ${loginPath}
 mkdir -p ${profileDirPath}
 
 cat > ${profilePath} << EOF
-
 export SPI_LIB="${packageHome}"
 export EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
 export EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
@@ -24,20 +23,24 @@ export EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 export GDAL_PAM_ENABLED=NO
 export CPL_LOG=/dev/null
 
+EOF
+
 #----- Dependencies
 if [ `domainname -d` = "science.gc.ca" ]; then
-
    #----- On the SCIENCE side
-   [[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -x main/opt/intelcomp/intelcomp-2016.1.156 -x main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-   [ -n "\${ECCODES_DEFINITION_PATH}" ]         || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
-   [ -d "\${GDB_PATH}" ]                        || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+   cat >> ${profilePath} << EOF
+[[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -x main/opt/intelcomp/intelcomp-2016.1.156 -x main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+[ -n "\${ECCODES_DEFINITION_PATH}" ]         || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
+[ -d "\${GDB_PATH}" ]                        || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+EOF
+
 else 
    #----- On the EC side
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d cmds/ext/20190205
-   [ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
-fi
-
+   cat >> ${profilePath} << EOF
+[ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d $SSM_EXT
+[ -d "\${GDB_PATH}" ]                || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
 EOF
+fi
 
 cat > ${loginPath} << EOF
 setenv SPI_LIB="${packageHome}"
@@ -48,15 +51,21 @@ setenv EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 setenv GDAL_PAM_ENABLED=NO
 setenv CPL_LOG=/dev/null
 
+EOF
+
 if [ `domainname -d` = "science.gc.ca" ]; then
    #----- On the SCIENCE side
-   [[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
-   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+   cat >> ${loginPath} << EOF
+[[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -d main/opt/intelcomp/intelcomp-2016.1.156 -d main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
+[ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d eccc/cmd/cmds/extsup/shared/master
+[ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+EOF
+
 else 
    #----- On the EC side
-   [ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d cmds/ext/20190205
-   [ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
+   cat >> ${loginPath} << EOF
+[ -n "\${ECCODES_DEFINITION_PATH}" ] || . ssmuse-sh -d $SSM_EXT
+[ -d "\${GDB_PATH}" ]                || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
+EOF
 fi
 
-EOF
