@@ -109,8 +109,7 @@ set tests {
    VEXPR_Stats.tcl
 }
 
-set date [clock format [clock seconds] -format "%Y%m%d"]
-catch { file delete DataOut/TCL_TestAll-$date.log }
+catch { file delete TCL_TestAll*.log }
 fconfigure stdout -buffering none
 
 set nok 0
@@ -127,7 +126,7 @@ foreach test $tests {
    puts -nonewline [format "%-35s %02i/%02i " [lindex $test 0] $n $nb]
    set s [clock seconds]
 
-   if { [catch { eval exec ./$test >>& DataOut/TCL_TestAll-$date.log }]  } {
+   if { [catch { eval exec ./$test >>& TCL_TestAll.log }]  } {
       puts -nonewline "${RED}Failed${RESET}"
       incr nok
    } else {
@@ -139,4 +138,4 @@ foreach test $tests {
 
 puts "\n$nok of $nb test failed\n"
 
-Log::End 0
+Log::End $nok
