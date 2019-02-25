@@ -17,8 +17,8 @@ build:
       - . ssmuse-sh -x ${SSM_EXT}
       - cd libSPI
       - ./makeit -build -reconf
-#   only:
-#      - master
+   only:
+      - master
 
 test:
    stage: test
@@ -28,9 +28,12 @@ test:
       - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}_${ORDENV_PLAT}
       - export SPI_PATH=${HOME}/SPI-BETA
       - cd SPI/share/examples/script/
+      - ln -s /users/dor/afsr/005/links/storage/public_html/Data/DataIn/ DataIn
+      - ln -s /users/dor/afsr/005/links/storage/public_html/Data/DataOut/ DataOut
       - ./TCL_TestAll.tcl ${CI_BUILD_REF} > TCL_TestAll-${CI_BUILD_REF}.log
    only:
       - master
+      - dev
 
 package:
    stage: package
