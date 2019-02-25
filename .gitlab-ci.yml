@@ -25,7 +25,7 @@ test:
    variables:
    script:
       - . SPI/.profile_spi
-      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}_${ORDENV_PLAT}
+      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}-${COMP_ARCH}_${ORDENV_PLAT}
       - export SPI_PATH=${HOME}/SPI-BETA
       - cd SPI/share/examples/script/
       - ln -s /home/nil000/links/eccc-ppp1/storage/SPI/DataIn DataIn
