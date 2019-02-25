@@ -16,8 +16,8 @@ build:
       - . ssmuse-sh -x ${SSM_EXT}
       - cd libSPI
       - ./makeit -build -reconf
-#   only:
-#      - master
+   only:
+      - master
 
 test:
    stage: test
@@ -28,8 +28,8 @@ test:
       - export SPI_PATH=${HOME}/SPI-BETA
       - cd SPI/share/examples/script/
       - ./TCL_TestAll.tcl ${CI_BUILD_REF} > TCL_TestAll-${CI_BUILD_REF}.log
-#   only:
-#      - master
+   only:
+      - master
 
 package:
    stage: package
@@ -40,6 +40,8 @@ package:
       - ./makeit -ssm
       - cd ..
       - ./makeit -src
+   only:
+      - master
 
 deploy:
    stage: deploy
@@ -48,6 +50,13 @@ deploy:
       - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
       - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
       - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
+      
+      - ssh eer@eccessdepot mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      - ssh eer@eccessdepot ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
+      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot:www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      
+   only:
+      - master
       
 #doc:
   #stage: doc
