@@ -390,6 +390,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    double        c0,c1,a,x;
    float        *index=NULL;
    char         **indexptr=NULL;
+   TDef         **lutdefs=NULL;
 
    TObs        *obs;
    OGR_Layer   *layer;
@@ -842,6 +843,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   Data_IndexResize(Interp,&obj,nk);
 
                } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
+                  int nblut=0;
                   if (Objc<5 || Objc>7) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom [Type] [Values] [Final]");
                      ok=TCL_ERROR; break;
@@ -852,15 +854,25 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc>5) {
                      if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                         if (!(fieldt=Data_Get(Tcl_GetString(Objv[5])))) {
-                           Tcl_ListObjLength(Interp,Objv[5],&nk);
-                           if (!table && !(table=(double*)malloc(nk*sizeof(double)))) {
-                              Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                              ok=TCL_ERROR; break;
-                           }
-                           for(k=0;k<nk;k++) {
-                              Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
-                              Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
-                           }
+                           TVector       *vec;
+                           if ((vec=Vector_Get(Tcl_GetString(Objv[5])))) {
+                              lutdefs = Vector_GetCompDefs( vec );
+                              nblut = vec->N;
+                              nk = vec->Cp[0]->V[0];
+                              if ( Vector_ValidateLUT( Interp , vec )==TCL_ERROR) {
+                                 ok=TCL_ERROR; break;
+                              }
+                           } else {
+                              Tcl_ListObjLength(Interp,Objv[5],&nk);
+                              if (!table && !(table=(double*)malloc(nk*sizeof(double)))) {
+                                 Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                                 ok=TCL_ERROR; break;
+                              }
+                              for(k=0;k<nk;k++) {
+                                 Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
+                                 Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
+                              }
+                          }
                           if (nk!=field0->Def->NK) {
                               field0->Def=Def_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk);
                               for(key=0;key<FSIZE3D(field0->Def);key++) {
@@ -875,11 +887,14 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if(Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
-                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,field1->GRef,field1->Def,table,fieldt?fieldt->Def:NULL,imode,ni)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,field1->GRef,field1->Def,table,lutdefs,nblut,fieldt?fieldt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
                   }
+
+                  if (lutdefs) free( lutdefs );
+                  lutdefs = NULL;
                } else if (imode==IR_SUBNEAREST || imode==IR_SUBLINEAR) {
                   if (Objc<6) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto fldfrom Type Sampling");
@@ -953,6 +968,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   Data_IndexResize(Interp,&obj,nk);
                   
                } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
+                  int  nblut=0;
                   if (Objc<5 || Objc>7) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom [Type] [Values] [Final]");
                      ok=TCL_ERROR; break;
@@ -962,16 +978,26 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc>5) {
                      if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                         if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
-                           Tcl_ListObjLength(Interp,Objv[5],&nk);
-                           if (!table && !(table=(double*)malloc((nk+1)*sizeof(double)))) {
-                              Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                              ok=TCL_ERROR; break;
+                           TVector       *vec;
+                           if ((vec=Vector_Get(Tcl_GetString(Objv[5])))) {
+                              lutdefs = Vector_GetCompDefs( vec );
+                              nblut = vec->N;
+                              nk = vec->Cp[0]->V[0];
+                              if ( Vector_ValidateLUT( Interp , vec )==TCL_ERROR) {
+                                 ok=TCL_ERROR; break;
+                              }
+                           } else {
+                              Tcl_ListObjLength(Interp,Objv[5],&nk);
+                              if (!table && !(table=(double*)malloc((nk+1)*sizeof(double)))) {
+                                 Tcl_AppendResult(Interp,"FSTD_FieldCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                                 ok=TCL_ERROR; break;
+                              }
+                              for(k=0;k<nk;k++) {
+                                 Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
+                                 Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
+                              }
+                              table[k]=field0->Def->NoData;
                            }
-                           for(k=0;k<nk;k++) {
-                              Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
-                              Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
-                           }
-                           table[k]=field0->Def->NoData;
                            if (nk!=field0->Def->NK) {
                               if (!(field0->Def=Def_Resize(field0->Def,field0->Def->NI,field0->Def->NJ,nk))) {
                                  Tcl_AppendResult(Interp,"Unable to rellocate buffer",(char*)NULL);
@@ -990,11 +1016,13 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   if (Objc==7) {
                      Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                   }
-                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,band->GRef,band->Def,table,bandt?bandt->Def:NULL,imode,ni)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,band->GRef,band->Def,table,lutdefs,nblut,bandt?bandt->Def:NULL,imode,ni)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;
                   }
+                  if (lutdefs) free( lutdefs );
+                  lutdefs = NULL;
                } else if (imode==IR_SUBNEAREST || imode==IR_SUBLINEAR) {
                   if (Objc<6) {
                      Tcl_WrongNumArgs(Interp,2,Objv,"fldto bandfrom Type Sampling");
@@ -1162,7 +1190,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
                if (n==IR_NOP || n==IR_ACCUM || n==IR_BUFFER) {
-                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,NULL,NULL,NULL,NULL,n,1)) {
+                  if (!Def_GridInterpAverage(field0->GRef,field0->Def,NULL,NULL,NULL,NULL,0,NULL,n,1)) {
                      Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                      ok=TCL_ERROR;
                      break;

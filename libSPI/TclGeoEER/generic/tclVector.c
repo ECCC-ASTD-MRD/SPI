@@ -1297,3 +1297,78 @@ int Vector_AppendData(Tcl_Interp *Interp,TVector *Vec,Tcl_Obj *List,double Value
    }
    return(TCL_OK);
 }
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Vector_ValidateLUT>
+ * Creation     : Fevrier 2019 V. Souvanlasy
+ *
+ * But          : Valider les donnees de table de correspondance dans un vecteur.
+ *
+ * Parametres   :
+ *   <Interp>   : Interpreteur Tcl
+ *   <Vec>      : Vecteur
+ *
+ * Retour       : Code de retour standard TCL
+ *
+ * Remarques :
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+int Vector_ValidateLUT(Tcl_Interp *Interp,TVector *Vec) {
+   int   rtrn=TCL_OK;
+   char  errmsg[256];
+   int     i;
+   double  nk;
+
+   nk = Vec->Cp[0]->V[0];
+   if (Vec->N == 2) {
+      double  cpmax;
+      cpmax = Vec->Cp[1]->V[0];
+      for (i = 0; i < Vec->Cp[1]->N ; i++)
+          if (cpmax < Vec->Cp[1]->V[i]) cpmax =  Vec->Cp[1]->V[i];
+      if (cpmax > nk) {
+         sprintf( errmsg, " : invalid lookup table, NK=%f less than column#2 max value=%f", nk, cpmax );
+         Tcl_AppendResult(Interp,errmsg,(char*)NULL);
+         rtrn=TCL_ERROR;
+      }
+   } else {
+      for(i=1;i<Vec->N;i++) {
+         if (Vec->Cp[i]->V[0] > nk) {
+            sprintf( errmsg, " : invalid lookup table, NK=%f less than column#%d id(row1) value=%f", nk, i,Vec->Cp[i]->V[0] );
+            Tcl_AppendResult(Interp,errmsg,(char*)NULL);
+            rtrn=TCL_ERROR;
+         }
+      }
+   }
+   return rtrn;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <Vector_GetCompDefs>
+ * Creation     : Fevrier 2019 V. Souvanlasy
+ *
+ * But          : Retourner la representation TDef des composantes du vecteur.
+ *
+ * Parametres   :
+ *   <Vec>      : Vecteur a copier
+ *
+ * Retour       : Representation TDef
+ *
+ * Remarques    : 
+ *
+ *---------------------------------------------------------------------------------------------------------------
+*/
+struct TDef **Vector_GetCompDefs(TVector *Vec) {
+   double val;
+   TDef   **defs = NULL;
+   int      i;
+
+   if (Vec && Vec->N > 0) {
+      defs = (TDef **)malloc( sizeof(TDef *) * (Vec->N+1) );
+      defs[Vec->N] = NULL;
+      for (i = 0; i < Vec->N ; i++)
+         defs[i] = Vector_GetDef(Vec->Cp[i]);
+
+   }
+   return defs;
+}

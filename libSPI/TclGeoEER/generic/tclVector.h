@@ -71,7 +71,8 @@ typedef struct TVector {
 int TclVector_Init(Tcl_Interp *Interp);
 
 TVector*         Vector_Get(char *Name);
-struct TDef* Vector_GetDef(TVector *Vec);
+struct TDef*     Vector_GetDef(TVector *Vec);
+struct TDef**    Vector_GetCompDefs(TVector *Vec);
 
 int      Vector_Create(Tcl_Interp *Interp,char *Name,Tcl_Obj *Comp);
 void     Vector_Clear(Tcl_Interp *Interp,TVector *Vec);
@@ -85,6 +86,7 @@ int      Vector_Length(Tcl_Interp *Interp,TVector *Vec,int Len);
 int      Vector_Mem(Tcl_Interp *Interp,TVector *Vec,int Mem);
 void     Vector_Free(TVector *Vec);
 void     Vector_Wipe();
+int      Vector_ValidateLUT(Tcl_Interp *Interp,TVector *Lut);
 
 void Vector_Swap(TVector *Vec,int IdxFrom,int IdxTo);
 void Vector_QuickSort(TVector *Vec,int Comp,int start,int end);

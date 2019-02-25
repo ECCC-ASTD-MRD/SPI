@@ -115,6 +115,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    TObs          *obs;
    GDALDataType   type;
    Vect3d         *pos;
+   TDef         **lutdefs=NULL;
 
    extern const char *TDef_InterpVString[];
    extern const char *TDef_InterpRString[];
@@ -370,6 +371,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                Data_IndexResize(Interp,&obj,nk);
                
             } else if (imode>=IR_MAXIMUM && imode<=IR_BUFFER) {
+               int nblut=0;
                if (Objc<5 || Objc>7) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"bandto bandfrom [Type] [Values] [Final]");
                   return(TCL_ERROR);
@@ -380,16 +382,26 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                if (Objc>5) {
                   if (Tcl_GetBooleanFromObj(Interp,Objv[5],&ni)==TCL_ERROR) {
                      if (!(bandt=GDAL_BandGet(Tcl_GetString(Objv[5])))) {
-                        Tcl_ListObjLength(Interp,Objv[5],&nk);
-                        if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
-                           Tcl_AppendResult(Interp,"GDAL_BandCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
-                           return(TCL_ERROR);                          
+                        TVector       *vec;
+                        if ((vec=Vector_Get(Tcl_GetString(Objv[5])))) {
+                           lutdefs = Vector_GetCompDefs( vec );
+                           nblut = vec->N;
+                           nk = vec->Cp[0]->V[0];
+                           if ( Vector_ValidateLUT( Interp , vec )==TCL_ERROR) {
+                              return(TCL_ERROR);                          
+                           }
+                        } else {
+                           Tcl_ListObjLength(Interp,Objv[5],&nk);
+                           if (!(table=(double*)malloc((nk+1)*sizeof(double)))) {
+                              Tcl_AppendResult(Interp,"GDAL_BandCmd: Unable to allocate memory for temporary buffer",(char*)NULL);
+                              return(TCL_ERROR);                          
+                           }
+                           for(k=0;k<nk;k++) {
+                              Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
+                              Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
+                           }
+                           table[k]=band->Def->NoData;
                         }
-                        for(k=0;k<nk;k++) {
-                           Tcl_ListObjIndex(Interp,Objv[5],k,&obj);
-                           Tcl_GetDoubleFromObj(Interp,obj,&table[k]);
-                        }
-                        table[k]=band->Def->NoData;
                         if (nk!=band->Def->NK) {
                            band->Def=Def_Resize(band->Def,band->Def->NI,band->Def->NJ,nk);
                            for(k=0;k<FSIZE3D(band->Def);k++) {
@@ -405,9 +417,10 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                if (Objc==7) {
                   Tcl_GetBooleanFromObj(Interp,Objv[6],&ni);
                }
-               code=Def_GridInterpAverage(band->GRef,band->Def,comb->GRef,comb->Def,table,bandt?bandt->Def:NULL,imode,ni);
+               code=Def_GridInterpAverage(band->GRef,band->Def,comb->GRef,comb->Def,table,lutdefs,nblut,bandt?bandt->Def:NULL,imode,ni);
                
                if (table) free(table);
+               if (lutdefs) free(lutdefs);
                if (!code) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   return(TCL_ERROR);
@@ -468,7 +481,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             }
          }
          if (n==IR_NOP || n==IR_ACCUM || n==IR_BUFFER) {
-            if (!Def_GridInterpAverage(band->GRef,band->Def,NULL,NULL,NULL,NULL,n,1)) {
+            if (!Def_GridInterpAverage(band->GRef,band->Def,NULL,NULL,NULL,NULL,0,NULL,n,1)) {
                Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                return(TCL_ERROR);
             }           
