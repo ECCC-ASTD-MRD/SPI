@@ -8,7 +8,8 @@ stages:
    - build
    - test
    - package
-   #- deploy
+#   - deploy
+#   - doc
 
 build:
    stage: build
@@ -16,8 +17,8 @@ build:
       - . ssmuse-sh -x ${SSM_EXT}
       - cd libSPI
       - ./makeit -build -reconf
-   only:
-      - master
+#   only:
+#      - master
 
 test:
    stage: test
@@ -43,20 +44,20 @@ package:
    only:
       - master
 
-deploy:
-   stage: deploy
-   script:
-      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
-      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
-      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
-      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
+#deploy:
+   #stage: deploy
+   #script:
+      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
+      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
+      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
+      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
       
-      - ssh eer@eccessdepot mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
-      - ssh eer@eccessdepot ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
-      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot:www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      #- ssh eer@eccessdepot mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      #- ssh eer@eccessdepot ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
+      #- scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot:www/software/SPI/${SPI_VERSION}${SPI_STATE}
       
-   only:
-      - master
+   #only:
+      #- master
       
 #doc:
   #stage: doc
@@ -64,8 +65,5 @@ deploy:
     #docname: $CI_BUILD_REF_NAME-$CI_BUILD_REF
     #midasdoc: /home/erv000/public_html/midas-doc
   #script:
-  #- scripts/create_f90doc.sh $CI_PROJECT_DIR/src $midasdoc/$docname
-  #- rm -fv $midasdoc/latest
-  #- ln -sv $midasdoc/$docname $midasdoc/latest
   #only:
     #- master
