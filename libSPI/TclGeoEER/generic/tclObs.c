@@ -1980,7 +1980,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
 
    int    i,idx=0,n;
-   float  sz,z;
+   float  sz,z,z0,z1,pz;
    float  val;
    Vect3d pix;
 
@@ -2057,6 +2057,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
    // Display icons
    sz=(Obs->Spec->Flat?VP->Ratio:1.0)*Obs->Spec->Size*0.5;
+   pz=1.0;
    for (i=0;i<Obs->Loc->Nb;i++) {
       if (Obs->Loc->Date && Proj->Date!=0 && (Obs->Loc->Date[i]<(Proj->Date-Proj->Late) || Obs->Loc->Date[i]>Proj->Date)) {
          continue;
@@ -2117,23 +2118,22 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          }
          glScalef(sz,sz,1.0);
          glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
-
          if (Obs->Spec->RenderVol && OBSVALID(val)) {
-            if (Obs->Spec->RenderVol==-1) {
-               z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;
-            } else {
-               z=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;
+            switch(Obs->Spec->RenderVol) {
+               case 1: z0=-(z-pz); z1=0; break;
+               case 2: z0=0.0; z1=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*val*10/Obs->Spec->Max;                     break;
+               case 3: z0=0.0; z1=EARTHRADIUS*Proj->ZFactor*Proj->Scale*sz*fabs(val)*10/Obs->Spec->Max;               break;
             }
             glDisable(GL_STENCIL_TEST);
             glBegin(GL_QUAD_STRIP);
             for (n=0;n<IconList[Obs->Spec->Icon].Nb*2;n+=2) {
-               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],0);
-               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],z);
+               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],z0);
+               glVertex3f(IconList[Obs->Spec->Icon].Co[n],IconList[Obs->Spec->Icon].Co[n+1],z1);
             }
-            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],0);
-            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],z);
+            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],z0);
+            glVertex3f(IconList[Obs->Spec->Icon].Co[0],IconList[Obs->Spec->Icon].Co[1],z1);
             glEnd();
-            glTranslated(0.0,0.0,z);
+            glTranslated(0.0,0.0,z1);
             glDrawArrays(IconList[Obs->Spec->Icon].Type,0,IconList[Obs->Spec->Icon].Nb);
             glEnable(GL_STENCIL_TEST);
          }
@@ -2145,6 +2145,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          glPopMatrix();
          glPopName();
       }
+      pz=z;
    }
 
    glPopName();

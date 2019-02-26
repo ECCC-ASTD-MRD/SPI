@@ -52,6 +52,7 @@ CONST char *WMOS[]    = { "NONE","AUTO","N","WW","CL","CM","CH","A","UV" };
 
 static CONST char *INTERP_OPTS[] = { "LINEAR","NEAREST","CUBIC",NULL };
 static CONST char *EXTRAP_OPTS[] = { "NEUTRAL","MAXIMUM","MINIMUM","VALUE",NULL };
+static CONST char *VOLUME_OPTS[] = { "NONE","ELEVATION","VALUE","ABSVALUE",NULL };
 
 // If you add icons here, look in GDAL_Band.c for references to this array
 TIcon IconList[]={
@@ -523,8 +524,10 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
             if (Objc==1) {
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->RenderVol));
             } else {
-               if (Tcl_GetIntFromObj(Interp,Objv[++i],&ii)==TCL_ERROR) {
-                   Tcl_GetBooleanFromObj(Interp,Objv[i],&ii);
+               if (Tcl_GetIndexFromObj(Interp,Objv[++i],VOLUME_OPTS,"type",TCL_EXACT,&ii)==TCL_ERROR) {              
+                  if (Tcl_GetIntFromObj(Interp,Objv[i],&ii)==TCL_ERROR) {
+                     Tcl_GetBooleanFromObj(Interp,Objv[i],&ii);
+                  }
                }
                if (ii!=Spec->RenderVol && ii==0) {
                   cmap=cseg=1;

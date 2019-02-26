@@ -1,0 +1,72 @@
+#The program 'gitlab-runner' must be found in the PATH to get the artifacts collecting working.
+#local tests: gitlab-ci-multi-runner-linux-amd64 exec shell [stage]
+
+variables:
+    # CI_DEBUG_TRACE: "true"
+
+stages:
+   - build
+   - test
+   - package
+#   - deploy
+#   - doc
+
+build:
+   stage: build
+   script:
+      - . ssmuse-sh -x ${SSM_EXT}
+      - cd libSPI
+      - ./makeit -build -reconf
+   only:
+      - master
+
+test:
+   stage: test
+   variables:
+   script:
+      - . SPI/.profile_spi
+      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}-${COMP_ARCH}_${ORDENV_PLAT}
+      - export SPI_PATH=${HOME}/SPI-BETA
+      - cd SPI/share/examples/script/
+      - ln -s /home/nil000/links/eccc-ppp1/storage/SPI/DataIn DataIn
+      - ln -s /home/nil000/links/eccc-ppp1/storage/SPI/DataOut DataOut
+      - ./TCL_TestAll.tcl ${CI_BUILD_REF} > TCL_TestAll-${CI_BUILD_REF}.log
+   only:
+      - master
+      - dev
+
+package:
+   stage: package
+   script:
+      - cd libSPI
+      - ./makeit -ssm
+      - cd ../SPI
+      - ./makeit -ssm
+      - cd ..
+      - ./makeit -src
+   only:
+      - master
+
+#deploy:
+   #stage: deploy
+   #script:
+      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
+      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
+      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
+      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
+      
+      #- ssh eer@eccessdepot mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      #- ssh eer@eccessdepot ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
+      #- scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot:www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      
+   #only:
+      #- master
+      
+#doc:
+  #stage: doc
+  #variables:
+    #docname: $CI_BUILD_REF_NAME-$CI_BUILD_REF
+    #midasdoc: /home/erv000/public_html/midas-doc
+  #script:
+  #only:
+    #- master
