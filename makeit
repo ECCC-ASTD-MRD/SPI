@@ -1,12 +1,8 @@
 #!/bin/bash
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
-#-----    Check for new versions of dict and burf in $CMCCONST
-
-#----- SSM specifics
-SPI_VERSION="8.0.0"
-EER_VERSION="3.4.0"
-GENPHYSX_VERSION="2.5.2"
+#-----    Check for new versions of dict and bufr in $CMCCONST
+. ./VERSION
 
 if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}

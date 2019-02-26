@@ -1,12 +1,14 @@
 #!/bin/bash
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
+#-----    Check for new versions of dict and bufr in $CMCCONST
+. ../SPI/VERSION
 
 NAME="libSPI"
 DESCRIPTION="SPI libraries"
 SUMMARY="SPI compiled libraries and dependencies"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
-export VERSION="8.0.0"
+export VERSION=$SPI_VERSION
 export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
 
 if [[ (-z $SSM_DEV) ]]; then
@@ -67,7 +69,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_3.4.0${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}         #----- Location of eer library
 export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                  #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH

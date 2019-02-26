@@ -13,6 +13,9 @@ An exhaustive API described in another document allows for very powerful scripti
 
 # Building SPI
 
+```makeit -ext```
+```makeit -reconf -build -ssm```
+
 # Building source package for distribution
 
 To build a package for external distribution, use the root makeit script.
@@ -28,6 +31,4 @@ This will build a source package including SPI, [GenPhysX](https://gitlab.scienc
 
 An automatic system of tests has been developed.  For each push in the
 `master` branch the system tests are launched to guarantee that the
-all the tests pass for the `master` branch.  The [instructions for
-automatic testing using GitLab-CI are available in a separate
-file](CI.md).
+all the tests pass for the `master` branch.

@@ -8,7 +8,7 @@ stages:
    - build
    - test
    - package
-#   - deploy
+   - deploy
 #   - doc
 
 build:
@@ -47,20 +47,20 @@ package:
    only:
       - master
 
-#deploy:
-   #stage: deploy
-   #script:
+deploy:
+   stage: deploy
+   script:
+      - . SPI/.profile_spi
       #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
       #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
       #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
       #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
       
-      #- ssh eer@eccessdepot mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
-      #- ssh eer@eccessdepot ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
-      #- scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot:www/software/SPI/${SPI_VERSION}${SPI_STATE}
-      
-   #only:
-      #- master
+      - ssh eer@eccessdepot.cmc.ec.gc.ca mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
+      - ssh eer@eccessdepot.cmc.ec.gc.ca ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
+      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot.cmc.ec.gc.ca:www/software/SPI/${SPI_VERSION}${SPI_STATE}     
+   only:
+      - master
       
 #doc:
   #stage: doc
