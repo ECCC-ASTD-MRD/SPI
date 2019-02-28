@@ -85,6 +85,9 @@ typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,T
 #define R_UNPROTECT         {if( Context->ProtectCnt>0) {UNPROTECT(1); Context->ProtectCnt--;}}
 #define R_UNPROTECT_ALL     {if( Context->ProtectCnt>0 ) UNPROTECT(Context->ProtectCnt); Context->ProtectCnt=0;}
 
+#define IsNaInt(val)        ((val)==R_NaInt)
+#define IsNaReal(val)       R_IsNA(val)
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclR_RInit>
  * Creation     : Août 2015 - E. Legault-Ouellet
@@ -302,10 +305,22 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                 int *ptr = LOGICAL(RVar);
                 len = LENGTH(RVar);
 
-                if( len-- )
-                    CHAN_PRINTF("%d",*ptr++);
-                while( len-- > 0 )
-                    CHAN_PRINTF(" %d",*ptr++);
+                if( len-- ) {
+                    if( IsNaInt(*ptr) ) {
+                        CHAN_PRINTF("NA");
+                    } else {
+                        CHAN_PRINTF("%d",*ptr);
+                    }
+                    ptr++;
+                }
+                while( len-- > 0 ) {
+                    if( IsNaInt(*ptr) ) {
+                        CHAN_PRINTF(" NA");
+                    } else {
+                        CHAN_PRINTF(" %d",*ptr);
+                    }
+                    ptr++;
+                }
                 CHAN_PRINTF("\n");
             }
             break;
@@ -315,10 +330,22 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                 int *ptr = INTEGER(RVar);
                 len = LENGTH(RVar);
 
-                if( len-- )
-                    CHAN_PRINTF("%d",*ptr++);
-                while( len-- > 0 )
-                    CHAN_PRINTF(" %d",*ptr++);
+                if( len-- ) {
+                    if( IsNaInt(*ptr) ) {
+                        CHAN_PRINTF("NA");
+                    } else {
+                        CHAN_PRINTF("%d",*ptr);
+                    }
+                    ptr++;
+                }
+                while( len-- > 0 ) {
+                    if( IsNaInt(*ptr) ) {
+                        CHAN_PRINTF(" NA");
+                    } else {
+                        CHAN_PRINTF(" %d",*ptr);
+                    }
+                    ptr++;
+                }
                 CHAN_PRINTF("\n");
             }
             break;
@@ -329,18 +356,24 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                 len = LENGTH(RVar);
 
                 if( len-- ) {
-                    if( !isnan(*ptr) ) {
-                        CHAN_PRINTF("%f",*ptr++);
-                    } else {
+                    if( IsNaReal(*ptr) ) {
+                        CHAN_PRINTF("NA");
+                    } else if( isnan(*ptr) ) {
                         CHAN_PRINTF("NaN");
+                    } else {
+                        CHAN_PRINTF("%f",*ptr);
                     }
+                    ptr++;
                 }
                 while( len-- > 0 ) {
-                    if( !isnan(*ptr) ) {
-                        CHAN_PRINTF(" %f",*ptr++);
-                    } else {
+                    if( IsNaReal(*ptr) ) {
+                        CHAN_PRINTF(" NA");
+                    } else if( isnan(*ptr) ) {
                         CHAN_PRINTF(" NaN");
+                    } else {
+                        CHAN_PRINTF(" %f",*ptr);
                     }
+                    ptr++;
                 }
                 CHAN_PRINTF("\n");
             }
@@ -431,15 +464,18 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-#define R2TCL(RVar,TclVar,InternalType,TclFct,RFct) { \
+#define R2TCL(RVar,TclVar,InternalType,TclFct,RFct,NaFct) { \
     len = LENGTH(RVar); \
     if( len == 1 ) { \
-        TclVar = TclFct(RFct(RVar)[0]); \
+        InternalType val = RFct(RVar)[0]; \
+        TclVar = NaFct(val)?Tcl_NewObj():TclFct(val); \
     } else { \
         InternalType *ptr = RFct(RVar); \
         TclVar = Tcl_NewListObj(0,NULL); \
-        while(len--) \
-            Tcl_ListObjAppendElement(Interp,TclVar,TclFct(*ptr++)); \
+        while(len--) { \
+            Tcl_ListObjAppendElement(Interp,TclVar,NaFct(*ptr)?Tcl_NewObj():TclFct(*ptr)); \
+            ptr++; \
+        } \
     } \
 }
 static Tcl_Obj* TclR_R2Tcl(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
@@ -451,7 +487,7 @@ static Tcl_Obj* TclR_R2Tcl(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
     // Convert the value to a tcl one
     switch( TYPEOF(RVar) ) {
         case NILSXP:
-            obj = Tcl_NewStringObj("",0);
+            obj = Tcl_NewObj();
             break;
         case LISTSXP:
             // lists of dotted pairs (Could be anything, let recursion sort it out)
@@ -494,15 +530,15 @@ static Tcl_Obj* TclR_R2Tcl(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             break;
         case LGLSXP:
             // logical vectors
-            R2TCL(RVar,obj,int,Tcl_NewBooleanObj,LOGICAL);
+            R2TCL(RVar,obj,int,Tcl_NewBooleanObj,LOGICAL,IsNaInt);
             break;
         case INTSXP:
             // integer vectors
-            R2TCL(RVar,obj,int,Tcl_NewIntObj,INTEGER);
+            R2TCL(RVar,obj,int,Tcl_NewIntObj,INTEGER,IsNaInt);
             break;
         case REALSXP:
             // real variables
-            R2TCL(RVar,obj,double,Tcl_NewDoubleObj,REAL);
+            R2TCL(RVar,obj,double,Tcl_NewDoubleObj,REAL,IsNaReal);
             break;
         case STRSXP:
             // string vectors
@@ -686,13 +722,11 @@ static TclR_TListType TclR_GetListObjType(Tcl_Interp *Interp,Tcl_Obj *Lst) {
 
     for(i=0; i<len; ++i) {
         switch( TclY_GetObjType(elems[i]) ) {
-            case TCLY_UNKNOWN:
-                return TCLR_LIST_STRING;
             case TCLY_LIST:
             case TCLY_DICT:
                 return TCLR_LIST_MIXED;
             default:
-                {
+                if( elems[i]->length ) {
                     // Check with the list type we have so far what are our options
                     switch( ltype ) {
                         case TCLR_LIST_UNKNOWN:
@@ -700,7 +734,7 @@ static TclR_TListType TclR_GetListObjType(Tcl_Interp *Interp,Tcl_Obj *Lst) {
                             if( TCL_IS_INT(elems[i]) )          ltype = TCLR_LIST_INT;
                             else if( TCL_IS_DOUBLE(elems[i]) )  ltype = TCLR_LIST_DOUBLE;
                             else if( TCL_IS_BOOLEAN(elems[i]) ) ltype = TCLR_LIST_BOOLEAN;
-                            else                                ltype = TCLR_LIST_STRING;
+                            else                                return TCLR_LIST_STRING;
 
                             break;
                         case TCLR_LIST_INT:
@@ -711,33 +745,29 @@ static TclR_TListType TclR_GetListObjType(Tcl_Interp *Interp,Tcl_Obj *Lst) {
                                 ltype = TCLR_LIST_DOUBLE;
                                 break;
                             }
-                            ltype = TCLR_LIST_STRING;
-                            break;
+                            return TCLR_LIST_STRING;
                         case TCLR_LIST_DOUBLE:
                             if( TCL_IS_DOUBLE(elems[i]) ) {
                                 break;
                             }
-                            ltype = TCLR_LIST_STRING;
-                            break;
+                            return TCLR_LIST_STRING;
                         case TCLR_LIST_BOOLEAN:
                             // This basically checks for true/false strings
                             if( TCL_IS_BOOLEAN(elems[i]) ) {
                                 break;
                             }
-                            ltype = TCLR_LIST_STRING;
-                            break;
+                            return TCLR_LIST_STRING;
                         case TCLR_LIST_COMPLEX:
                         default:
                             // Any other type is considered a string since it may not have an equivalent on the R side
-                            ltype = TCLR_LIST_STRING;
-                            break;
+                            return TCLR_LIST_STRING;
                     }
                 }
                 break;
         }
     }
 
-    return ltype;
+    return ltype!=TCLR_LIST_UNKNOWN ? ltype : TCLR_LIST_STRING;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -818,7 +848,10 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(INTSXP,len) );
                 iptr = INTEGER(rvar);
                 while( len-- ) {
-                    if( Tcl_GetIntFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
+                    if( !(*tclvals)->length ) {
+                        *iptr++ = R_NaInt;
+                        tclvals++;
+                    } else if( Tcl_GetIntFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
                         // A message will be in the Interp already
                         R_UNPROTECT_ALL;
                         return NULL;
@@ -829,7 +862,10 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(REALSXP,len) );
                 dptr = REAL(rvar);
                 while( len-- ) {
-                    if( Tcl_GetDoubleFromObj(Interp,*tclvals++,dptr++) != TCL_OK ) {
+                    if( !(*tclvals)->length ) {
+                        *dptr++ = R_NaReal;
+                        tclvals++;
+                    } else if( Tcl_GetDoubleFromObj(Interp,*tclvals++,dptr++) != TCL_OK ) {
                         // A message will be in the Interp already
                         R_UNPROTECT_ALL;
                         return NULL;
@@ -840,7 +876,10 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(LGLSXP,len) );
                 iptr = LOGICAL(rvar);
                 while( len-- ) {
-                    if( Tcl_GetBooleanFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
+                    if( !(*tclvals)->length ) {
+                        *iptr++ = R_NaInt;
+                        tclvals++;
+                    } else if( Tcl_GetBooleanFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
                         // A message will be in the Interp already
                         R_UNPROTECT_ALL;
                         return NULL;
@@ -1173,15 +1212,27 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
         for(j=0; j<ncols; ++j) {
             switch( ttypes[j] ) {
                 case TT_INT:
-                    CHKTCL( Tcl_GetIntFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    if( members[j]->length ) {
+                        CHKTCL( Tcl_GetIntFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    } else {
+                        *(int*)rptrs[j] = R_NaInt;
+                    }
                     rptrs[j] = (int*)rptrs[j]+1;
                     break;
                 case TT_DOUBLE:
-                    CHKTCL( Tcl_GetDoubleFromObj(Interp,members[j],(double*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    if( members[j]->length ) {
+                        CHKTCL( Tcl_GetDoubleFromObj(Interp,members[j],(double*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    } else {
+                        *(double*)rptrs[j] = R_NaReal;
+                    }
                     rptrs[j] = (double*)rptrs[j]+1;
                     break;
                 case TT_BOOLEAN:
-                    CHKTCL( Tcl_GetBooleanFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    if( members[j]->length ) {
+                        CHKTCL( Tcl_GetBooleanFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                    } else {
+                        *(int*)rptrs[j] = R_NaInt;
+                    }
                     rptrs[j] = (int*)rptrs[j]+1;
                     break;
                 case TT_STRING:
