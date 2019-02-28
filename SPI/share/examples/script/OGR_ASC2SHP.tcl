@@ -27,12 +27,12 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Path de repertoire a traiter en parametre
-set Data(Path) DataIn/10101214.ASC
+set Data(Path) $env(CI_SPI_IN)/10101214.ASC
 set Data(Nb)   0
 
 #----- Create the shapefile
-catch { file delete DataOut/OGR_ASC2SHP.shp }
-ogrfile open SHAPEFILE write DataOut/OGR_ASC2SHP.shp "ESRI Shapefile"
+catch { file delete $env(CI_SPI_OUT)/OGR_ASC2SHP.shp }
+ogrfile open SHAPEFILE write $env(CI_SPI_OUT)/OGR_ASC2SHP.shp "ESRI Shapefile"
 
 #----- Create a layer within it
 ogrlayer create SHAPEFILE LAYER "Grid"

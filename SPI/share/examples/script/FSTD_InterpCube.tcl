@@ -28,8 +28,8 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  DataIn/2005102612_012
-fstdfile open 2 write DataOut/FSTD_InterpCube.fstd
+fstdfile open 1 read $env(CI_SPI_IN)/2005102612_012
+fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_InterpCube.fstd
 
 #----- Liste des niveaux galchen dans lesquels on interpole
 set levels { 0 15 55 120 195 285 390 510 650 815 1010 1235 1500 1810 2170 2590 3085

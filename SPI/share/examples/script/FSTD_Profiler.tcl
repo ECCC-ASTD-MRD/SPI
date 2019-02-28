@@ -81,7 +81,7 @@ proc Profiler::Run { } {
       Log::Print INFO "   Saving profiles"
       foreach var $Param(Vars) {
          foreach loc $Param(Locations) {
-            set f [open DataOut/${model}_${run}_[lindex $loc 0]_$var.txt w+]
+            set f [open $env(CI_SPI_OUT)/${model}_${run}_[lindex $loc 0]_$var.txt w+]
             puts $f [join $Data(Loc$var) \n]
             close $f
          }

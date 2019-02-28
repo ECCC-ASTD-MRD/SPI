@@ -27,11 +27,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set f [open DataIn/FCST.txt]
+set f [open $env(CI_SPI_IN)/FCST.txt]
 
 #----- Creation du fichier
-catch { file delete DataOut/OGR_FCST2SHP.shp }
-ogrfile open FILE write DataOut/OGR_FCST2SHP.shp "ESRI Shapefile"
+catch { file delete $env(CI_SPI_OUT)/OGR_FCST2SHP.shp }
+ogrfile open FILE write $env(CI_SPI_OUT)/OGR_FCST2SHP.shp "ESRI Shapefile"
 
 #----- Creation du layer et des champs
 ogrlayer create FILE FCST "Forecast"

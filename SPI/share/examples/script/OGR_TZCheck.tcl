@@ -37,7 +37,7 @@ proc TimeZoneCheck { Lat Lon } {
 }
 
 #----- Open the TZ file
-set layer [ogrfile open OGRFILE read DataIn/timezone.shp]
+set layer [ogrfile open OGRFILE read $env(CI_SPI_IN)/timezone.shp]
 eval ogrlayer read TZ [lindex $layer 0]
 ogrfile close OGRFILE
 

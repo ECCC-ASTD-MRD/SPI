@@ -87,7 +87,7 @@ while { $t>=0 } {
 metobs table -readcmc
 
 #----- Create a new template and a new dataset based ont this template
-bufrtemplate create TEMPLATE DataIn/OBS_BUFREncode.template
+bufrtemplate create TEMPLATE $env(CI_SPI_IN)/OBS_BUFREncode.template
 bufrdataset create DATASET TEMPLATE
 
 #----- Fill in the mesage
@@ -128,8 +128,8 @@ bufrdataset define DATASET -BUFR_EDITION 4 -BUFR_MASTER_TABLE 0 -ORIG_CENTER 53 
    -DATA_CATEGORY 13 -INTERN_SUB_CATEGORY 255 -LOCAL_SUB_CATEGORY 255 -MASTER_TABLE_VERSION 13 -LOCAL_TABLE_VERSION 50 \
    -YEAR $Data(Year) -MONTH $Data(Month) -DAY $Data(Day) -HOUR $Data(Hour) -MINUTE 0 -SECOND 0 -DATA_FLAG 0
 
-catch { file delete -force DataOut/OBS_BUFREncode.bufr DataOut/OBS_BUFREncode.txt }
-bufrdataset write DATASET DataOut/OBS_BUFREncode.bufr BUFR
-bufrdataset write DATASET DataOut/OBS_BUFREncode.txt ASCII
+catch { file delete -force $env(CI_SPI_OUT)/OBS_BUFREncode.bufr $env(CI_SPI_OUT)/OBS_BUFREncode.txt }
+bufrdataset write DATASET $env(CI_SPI_OUT)/OBS_BUFREncode.bufr BUFR
+bufrdataset write DATASET $env(CI_SPI_OUT)/OBS_BUFREncode.txt ASCII
 
 Log::End

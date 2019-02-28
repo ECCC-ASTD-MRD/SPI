@@ -26,11 +26,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { file delete DataOut/FSTD_InterpYY.fstd }
+catch { file delete $env(CI_SPI_OUT)/FSTD_InterpYY.fstd }
 
-fstdfile open 1 read DataIn/AreaEms.YinYang.fst
-fstdfile open 2 read DataIn/AreaEms.LatLon.fst
-fstdfile open 3 write DataOut/FSTD_InterpYY.fstd
+fstdfile open 1 read $env(CI_SPI_IN)/AreaEms.YinYang.fst
+fstdfile open 2 read $env(CI_SPI_IN)/AreaEms.LatLon.fst
+fstdfile open 3 write $env(CI_SPI_OUT)/FSTD_InterpYY.fstd
 
 fstdfield read TIC 1 -1 "" -1 -1 -1 "" ^>
 fstdfield write TIC 3 0 True

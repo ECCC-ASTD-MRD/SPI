@@ -27,7 +27,7 @@ package require Logger
 Log::Start [info script] 0.1
 
 fstddict load $env(AFSISIO)/datafiles/constants/ops.variable_dictionary.xml
-fstddict load DataIn/eer.variable_dictionary.xml
+fstddict load $env(CI_SPI_IN)/eer.variable_dictionary.xml
 
 puts "Variables (All) : [fstddict var]"
 puts "Variables:(TT*) : [fstddict var TT]"

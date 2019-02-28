@@ -30,10 +30,10 @@ fstdfield ip1mode NEW
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
-file delete -force DataOut/FSTD_CalcES2HR.fstd
+file delete -force $env(CI_SPI_OUT)/FSTD_CalcES2HR.fstd
 
-fstdfile open 1 read  DataIn/2005102612_012
-fstdfile open 2 write DataOut/FSTD_CalcES2HR.fstd
+fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012
+fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_CalcES2HR.fstd
 
 foreach field [fstdfield find 1 -1 "" -1 -1 -1 "" "ES"] {
 

@@ -30,8 +30,8 @@ Log::Start [info script] 0.1
 set Delta [lindex $argv 0]
 
 #----- Open the output shape file
-catch { file delete -force DataOut/OGR_LatLon.shp }
-ogrfile open FILE write DataOut/OGR_LatLon.shp "ESRI Shapefile"
+catch { file delete -force $env(CI_SPI_OUT)/OGR_LatLon.shp }
+ogrfile open FILE write $env(CI_SPI_OUT)/OGR_LatLon.shp "ESRI Shapefile"
 
 #----- Create the ouput layer and its field
 ogrlayer create FILE LATLON "LatLon"

@@ -40,8 +40,8 @@ puts [georef project UTMREF 633756.04798 3924024.06671]
 exit
 
 #----- Open the ASCII file
-set in  [open DataIn/OBS_UTM2LL.txt r]
-set out [open DataOut/OBS_UTM2LL.obs w]
+set in  [open $env(CI_SPI_IN)/OBS_UTM2LL.txt r]
+set out [open $env(CI_SPI_OUT)/OBS_UTM2LL.obs w]
 
 #----- Output header
 

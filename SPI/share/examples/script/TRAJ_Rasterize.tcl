@@ -28,10 +28,10 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Remove previous results
-file delete DataOut/TRAJ_Rasterize.fstd DataOut/TRAJ_Rasterize.shp
+file delete $env(CI_SPI_OUT)/TRAJ_Rasterize.fstd DataOut/TRAJ_Rasterize.shp
 
 #----- We have to create an OGR object. this is done by transforming to shapefile
-ogrfile open FILE write DataOut/TRAJ_Rasterize.shp "ESRI Shapefile"
+ogrfile open FILE write $env(CI_SPI_OUT)/TRAJ_Rasterize.shp "ESRI Shapefile"
 ogrlayer create FILE LAYER "Traj"
 
 #----- Define the HEIGHT field for trajectory start level
@@ -73,12 +73,12 @@ foreach file $argv {
 ogrfile close FILE
 
 #----- Reload the shapefile
-set layer [ogrfile open FILE append DataOut/TRAJ_Rasterize.shp]
+set layer [ogrfile open FILE append $env(CI_SPI_OUT)/TRAJ_Rasterize.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Open input grid and output file
-fstdfile open GRIDFILE   read  DataIn/2005120600_012
-fstdfile open RESULTFILE write DataOut/TRAJ_Rasterize.fstd
+fstdfile open GRIDFILE   read  $env(CI_SPI_IN)/2005120600_012
+fstdfile open RESULTFILE write $env(CI_SPI_OUT)/TRAJ_Rasterize.fstd
 
 #-- Copie des tictac
 foreach tictac { >> ^^ } {

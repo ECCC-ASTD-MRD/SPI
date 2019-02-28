@@ -29,7 +29,7 @@ Log::Start [info script] 0.1
 fstdfield vector { UU VV }
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  DataIn/2005102612_012c
+fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012c
 
 #----- coordonnees de la coupe
 set coords { 17.74 -101.26 17.75 -98.59 16.95 -97.96 }

@@ -27,9 +27,9 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-#set fields [gribfile open GRIBIN read DataIn/CMC_reg_4LFTX_SFC_0_ps15km_2010122000_P000.grib2]
-#set fields [gribfile open GRIBIN read DataIn/CMC_glb_ALBDO_SFC_0_latlon.6x.6_2011012000_P018.grib2]
-set fields [gribfile open GRIBIN read DataIn/CMC_reg_ABSV_ISBL_250_ps15km_2011012100_P000.grib]
+#set fields [gribfile open GRIBIN read $env(CI_SPI_IN)/CMC_reg_4LFTX_SFC_0_ps15km_2010122000_P000.grib2]
+#set fields [gribfile open GRIBIN read $env(CI_SPI_IN)/CMC_glb_ALBDO_SFC_0_latlon.6x.6_2011012000_P018.grib2]
+set fields [gribfile open GRIBIN read $env(CI_SPI_IN)/CMC_reg_ABSV_ISBL_250_ps15km_2011012100_P000.grib]
 
 Log::Print INFO "Found [llength $fields] field(s) $fields"
 
@@ -57,7 +57,7 @@ foreach field $fields {
 
 Log::Print INFO "Testing GRIB creation"
 
-fstdfile open FSTDIN read DataIn/2005120600_012
+fstdfile open FSTDIN read $env(CI_SPI_IN)/2005120600_012
 fstdfield read FLD FSTDIN -1 "" -1 -1 -1 "" "O3"
 
 #----- Use a read grib field
@@ -79,7 +79,7 @@ gribfield define GRIBNEW -key parameterNumber 0
 #----- Or as a list of keys
 gribfield define GRIBNEW -key { discipline 0 parameterCategory 14 parameterNumber 0 }
 
-gribfile open GRIBOUT write DataOut/GRIB_Funcs.grib
+gribfile open GRIBOUT write $env(CI_SPI_OUT)/GRIB_Funcs.grib
 gribfield write GRIB GRIBOUT 16
 gribfield write GRIBNEW GRIBOUT 16
 

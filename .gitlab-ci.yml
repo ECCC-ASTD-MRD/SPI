@@ -24,16 +24,15 @@ test:
    stage: test
    variables:
    script:
-      - . SPI/.profile_spi
-      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}-${COMP_ARCH}_${ORDENV_PLAT}
+      - . SPI/VERSION
+      - export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}
       - export SPI_PATH=${HOME}/SPI-BETA
       - cd SPI/share/examples/script/
-      - ln -s /home/nil000/links/eccc-ppp1/storage/SPI/DataIn DataIn
-      - ln -s /home/nil000/links/eccc-ppp1/storage/SPI/DataOut DataOut
+      - export CI_SPI_IN=/home/nil000/links/eccc-ppp1/storage/SPI/DataIn
+      - export CI_SPI_OUT=`mktemp -d`
       - ./TCL_TestAll.tcl ${CI_BUILD_REF} > TCL_TestAll-${CI_BUILD_REF}.log
    only:
       - master
-      - dev
 
 package:
    stage: package
@@ -50,10 +49,10 @@ package:
 deploy:
    stage: deploy
    script:
-      - . SPI/.profile_spi
-      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64.ssm
+      - . SPI/VERSION
+      #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}.ssm
       #- ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
-      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}_ubuntu-14.04-amd64-64
+      #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}
       #- ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
       
       - ssh eer@eccessdepot.cmc.ec.gc.ca mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}

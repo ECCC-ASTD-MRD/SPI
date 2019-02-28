@@ -27,11 +27,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-file delete DataOut/FSTD_InterpHorizontal.fstd
+file delete $env(CI_SPI_OUT)/FSTD_InterpHorizontal.fstd
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open FILEIN read  DataIn/2005102612_012
-fstdfile open FILEOUT write DataOut/FSTD_InterpHorizontal.fstd
+fstdfile open FILEIN read  $env(CI_SPI_IN)/2005102612_012
+fstdfile open FILEOUT write $env(CI_SPI_OUT)/FSTD_InterpHorizontal.fstd
 
 #----- Creer un champs sur grille PS de 229x229 en specifiant les IG1 IG2 IG3 et IG4
 fstdfield create GRID 229 229 1
@@ -53,7 +53,7 @@ fstdfield write FROM FILEOUT -32 False
 
 #----- Test l'interpolation dans une grille M
 fstdfield read FROM FILEIN -1 "" -1 -1 -1  "" TT
-fstdfile open FILEMSH read DataIn/shop.fst
+fstdfile open FILEMSH read $env(CI_SPI_IN)/shop.fst
 fstdfield read MESHE FILEMSH -1 "" -1 -1 -1 "" WVMD
 fstdfield copydesc MESHE FILEOUT
 fstdfield gridinterp MESHE FROM

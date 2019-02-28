@@ -27,12 +27,12 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Open the shapefile to symplify
-set layer [ogrfile open SHPFILE read DataIn/ghy_000f06a_e.shp]
+set layer [ogrfile open SHPFILE read $env(CI_SPI_IN)/ghy_000f06a_e.shp]
 eval ogrlayer read SPHLAYER [lindex $layer 0]
 
 #----- Open the destination file
-catch { eval file delete -force [glob DataOut/OGR_Simplify.*]  }
-ogrfile open NEWSHPFILE write DataOut/OGR_Simplify.shp "ESRI Shapefile"
+catch { eval file delete -force [glob $env(CI_SPI_OUT)/OGR_Simplify.*]  }
+ogrfile open NEWSHPFILE write $env(CI_SPI_OUT)/OGR_Simplify.shp "ESRI Shapefile"
 
 #----- Simplify the polygons with 0.1 degrees of tolerance (file is in latlon)
 ogrlayer stats SPHLAYER -simplify 0.01

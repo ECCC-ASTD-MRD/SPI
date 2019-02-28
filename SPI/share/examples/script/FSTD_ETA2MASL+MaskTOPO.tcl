@@ -28,11 +28,11 @@ Log::Start [info script] 0.1
 
 set levels { 10 15.0 30.0 35.0 44.0 51.0 57.2 59.0 67.6 72.4 81.0 85.6 94.4 99.0 107.6 112.4 121.0 125.6 134.4 139.0 147.6 152.4 161.0 165.6 174.4 179.0 187.6 192.4 201.0 205.6 214.4 219.0 227.6 232.4 241.0 245.6 254.4 259.0 267.6 272.4 281.0 285.6 294.6 300.2 310.4 318.8 332.2 345.8 365.6 387.0 417.0 450.8 495.0 546.2 610.8 685.4 776.8 882.6 1000}
 
-catch { file delete DataOut/FSTD_ETA2MASL_MaskTOPO.fstd }
+catch { file delete $env(CI_SPI_OUT)/FSTD_ETA2MASL_MaskTOPO.fstd }
 
 #----- Open RPN in/out files
-fstdfile open IN read DataIn/m2009030112_009
-fstdfile open OUT write DataOut/FSTD_ETA2MASL_MaskTOPO.fstd
+fstdfile open IN read $env(CI_SPI_IN)/m2009030112_009
+fstdfile open OUT write $env(CI_SPI_OUT)/FSTD_ETA2MASL_MaskTOPO.fstd
 
 #----- Copy grid descriptors
 fstdfield read TIC IN -1 "" -1 -1 -1 "" >>

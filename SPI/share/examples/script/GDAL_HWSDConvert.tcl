@@ -117,7 +117,7 @@ for { set y 0 } { $y<$h } { incr y $htile } {
          Log::Print WARNING "Empty tile, not saving."
       } else {
          Log::Print INFO "Saving tile."
-         gdalfile open OUTFILE write /data/goodenough/afsr005/Projects/GenPhysX/HWSD/HWSD-$x-$y.tif "GeoTIFF"
+         gdalfile open OUTFILE write $env(CI_SPI_OUT)/HWSD-$x-$y.tif "GeoTIFF"
          gdalband write $types OUTFILE
          gdalfile close OUTFILE
       }

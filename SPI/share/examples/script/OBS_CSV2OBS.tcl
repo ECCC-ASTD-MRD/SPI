@@ -26,8 +26,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set in  [open DataIn/Flight4.csv r]
-set out [open DataOut/OBS_CSV2OBS.obs w]
+set in  [open $env(CI_SPI_IN)/Flight4.csv r]
+set out [open $env(CI_SPI_OUT)/OBS_CSV2OBS.obs w]
 
 #----- Lire la premiere ligne
 gets $in head

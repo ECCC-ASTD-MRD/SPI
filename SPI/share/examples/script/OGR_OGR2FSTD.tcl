@@ -26,12 +26,12 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { file delete -force DataOut/OGR_OGR2FSTD.fstd }
+catch { file delete -force $env(CI_SPI_OUT)/OGR_OGR2FSTD.fstd }
 
 #----- Open the files
-fstdfile open FSTDIN read DataIn/noire.fst
-fstdfile open FSTDOUT write DataOut/OGR_OGR2FSTD.fstd
-ogrfile open VECFILE read DataIn/RADAR.shp
+fstdfile open FSTDIN read $env(CI_SPI_IN)/noire.fst
+fstdfile open FSTDOUT write $env(CI_SPI_OUT)/OGR_OGR2FSTD.fstd
+ogrfile open VECFILE read $env(CI_SPI_OUT)/RADAR.shp
 
 #----- Read the layers
 ogrlayer read LAYER VECFILE 0

@@ -27,11 +27,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-file delete -force DataOut/OGR_POESFrequency2FSTD.fstd
+file delete -force $env(CI_SPI_OUT)/OGR_POESFrequency2FSTD.fstd
 
 #----- Open the files
-fstdfile open FSTDOUT write DataOut/OGR_POESFrequency2FSTD.fstd
-ogrfile open VECFILE read DataIn/POES_edm.shp
+fstdfile open FSTDOUT write $env(CI_SPI_OUT)/OGR_POESFrequency2FSTD.fstd
+ogrfile open VECFILE read $env(CI_SPI_IN)/POES_edm.shp
 
 #----- Read the layers
 ogrlayer read LAYER VECFILE 0

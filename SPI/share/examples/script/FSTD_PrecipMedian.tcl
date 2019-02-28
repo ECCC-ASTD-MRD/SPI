@@ -26,8 +26,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-fstdfile open 1 read DataIn/RT.fstd
-fstdfile open 2 write DataOut/FSTD_PrecipMedian.fstd
+fstdfile open 1 read $env(CI_SPI_IN)/RT.fstd
+fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_PrecipMedian.fstd
 
 set fldlist {}
 

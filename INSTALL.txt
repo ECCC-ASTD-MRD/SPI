@@ -28,10 +28,13 @@ System requirements:
            mesa-7.9.2          (Mesa software OpenGL implementation)
            gdb                 (ECCC vectorial basemap)
     
-        Not provided with the package:
+        Not provided with the package but available thourgh apt-get:
      
            Mandatory:
+              GLX ou mesa-dev     (OpenGL software implementation    https://www.mesa3d.org)
               gdal-dev            (Geospatial Data Abstraction Layer https://gdal.org)
+              bison               (parser generator                  https://www.gnu.org/software/bison)
+              flex                (lexical analyzer generator        https://www.gnu.org/software/flex)
               rmnlib-16.3         (RPN file format support           https://github.com/armnlib/librmn)
               ImageMagik          (For image output                  https://www.imagemagick.org/script/index.php)
       

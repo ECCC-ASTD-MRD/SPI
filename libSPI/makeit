@@ -17,12 +17,12 @@ if [[ (-z $SSM_DEV) ]]; then
 fi
 
 if [[ -n $COMP_ARCH ]]; then
-   COMP=-${COMP_ARCH}
+   SSM_COMP=-${COMP_ARCH}
 fi
 
 ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
 
-SSM_VERSION=${VERSION}${COMP}
+SSM_VERSION=${VERSION}${SSM_COMP}
 SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
 HELP="Arguments must be:\n\n   Information parameters:
@@ -69,7 +69,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}         #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}         #----- Location of eer library
 export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                  #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH

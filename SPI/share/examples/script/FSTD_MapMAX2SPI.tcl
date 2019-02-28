@@ -37,7 +37,7 @@ foreach field [fstdfield find FILE -1 "" -1 -1 -1 "" ""] {
 
    Log::Print INFO "Extracting REC_[fstdfield define MAP -ETIKET].rgba"
 
-   set f [open DataOut/REC_[fstdfield define MAP -ETIKET].rgba w]
+   set f [open $env(CI_SPI_OUT)/REC_[fstdfield define MAP -ETIKET].rgba w]
    puts $f "0 100 100 100 100 100 LINEAR 1 0"
 
    for { set j 0 } { $j < 256 } { incr j } {

@@ -28,11 +28,11 @@ Log::Start [info script] 0.1
 
 set file [lindex $argv 0]
 
-file delete DataOut/FSTD_HYBRID2PRESSURE.fstd
+file delete $env(CI_SPI_OUT)/FSTD_HYBRID2PRESSURE.fstd
 
 #----- Open input and output files
 set fields [fstdfile open IN read $file]
-fstdfile open OUT write DataOut/FSTD_HYBRID2PRESSURE.fstd
+fstdfile open OUT write $env(CI_SPI_OUT)/FSTD_HYBRID2PRESSURE.fstd
 
 set levels { 1000 850 500 250 }
 

@@ -27,7 +27,7 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Open the radar file
-set scans [radarfile open RADARSITE read DataIn/200803121320~~CONVOL:URP:XFT:RADAR:IRIS]
+set scans [radarfile open RADARSITE read $env(CI_SPI_IN)/200803121320~~CONVOL:URP:XFT:RADAR:IRIS]
 
 puts "   Available scans : $scans"
 

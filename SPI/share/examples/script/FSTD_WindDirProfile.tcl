@@ -29,7 +29,7 @@ set lat 25
 set lon -100
 
 #----- Ouvrir les fichiers d'entree
-fstdfile open FILE read  DataIn/2005102612_012
+fstdfile open FILE read $env(CI_SPI_IN)/2005102612_012
 
 #----- Lire le champs de vents
 fstdfield read UU FILE -1 "" -1 -1 -1 "" "UU"

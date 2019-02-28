@@ -28,11 +28,11 @@ Log::Start [info script] 0.1
 
 Log::Print INFO "Processing pressure for hybrid levels"
 
-file delete DataOut/2006122900_000.hyb.pres DataOut/2006122900_000.eta.pres
+file delete $env(CI_SPI_OUT)/2006122900_000.hyb.pres $env(CI_SPI_OUT)/2006122900_000.eta.pres
 
 #----- Open in and out files
-fstdfile open FILEIN read DataIn/2006122900_000.hyb
-fstdfile open FILEOUT write DataOut/2006122900_000.hyb.pres
+fstdfile open FILEIN read $env(CI_SPI_IN)/2006122900_000.hyb
+fstdfile open FILEOUT write $env(CI_SPI_OUT)/2006122900_000.hyb.pres
 
 #----- Read a cube of data
 fstdfield read TTHYB FILEIN -1 "" -1 -1 -1 "" "TT"
@@ -58,8 +58,8 @@ fstdfile close FILEIN FILEOUT
 Log::Print INFO "Processing pressure for eta levels"
 
 #----- Open in and out files
-fstdfile open FILEIN read DataIn/2006122900_000.eta
-fstdfile open FILEOUT write DataOut/2006122900_000.eta.pres
+fstdfile open FILEIN read $env(CI_SPI_IN)/2006122900_000.eta
+fstdfile open FILEOUT write $env(CI_SPI_OUT)/2006122900_000.eta.pres
 
 #----- Read a cube of data
 fstdfield read TTETA FILEIN -1 "" -1 -1 -1 "" "TT"

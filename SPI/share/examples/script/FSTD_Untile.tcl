@@ -30,8 +30,8 @@ Log::Start [info script] 0.1
 fstdfield autountile True
 
 #----- Open in/out files
-fstdfile open TILED read DataIn/2014051600_000_tiled
-fstdfile open UNTILED write DataOut/2014051600_000_untiled
+fstdfile open TILED read $env(CI_SPI_IN)/2014051600_000_tiled
+fstdfile open UNTILED write $env(CI_SPI_OUT)/2014051600_000_untiled
 
 #----- Copy grid descriptors
 fstdfield read TIC TILED -1 "" -1 -1 -1 "" >>
