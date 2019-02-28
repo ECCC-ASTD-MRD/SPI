@@ -438,6 +438,37 @@ static int TclR_RPrint(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
                 }
             }
             break;
+        case CPLXSXP:
+            {
+                // real variables
+                Rcomplex *ptr = COMPLEX(RVar);
+                len = LENGTH(RVar);
+
+                if( len-- ) {
+                    if( IsNaReal(ptr->r) || IsNaReal(ptr->i) ) {
+                        CHAN_PRINTF("NA");
+                    } else if( isnan(ptr->r) || isnan(ptr->i) ) {
+                        if( isnan(ptr->r) ) { CHAN_PRINTF("NaN"); }     else { CHAN_PRINTF("%g",ptr->r); }
+                        if( isnan(ptr->i) ) { CHAN_PRINTF("+NaNi"); }   else { CHAN_PRINTF("%+gi",ptr->i); }
+                    } else {
+                        CHAN_PRINTF("%g%+gi",ptr->r,ptr->i);
+                    }
+                    ptr++;
+                }
+                while( len-- > 0 ) {
+                    if( IsNaReal(ptr->r) || IsNaReal(ptr->i) ) {
+                        CHAN_PRINTF(" NA");
+                    } else if( isnan(ptr->r) || isnan(ptr->i) ) {
+                        if( isnan(ptr->r) ) { CHAN_PRINTF("NaN"); }     else { CHAN_PRINTF("%g",ptr->r); }
+                        if( isnan(ptr->i) ) { CHAN_PRINTF("+NaNi"); }   else { CHAN_PRINTF("%+gi",ptr->i); }
+                    } else {
+                        CHAN_PRINTF(" %g%+gi",ptr->r,ptr->i);
+                    }
+                    ptr++;
+                }
+                CHAN_PRINTF("\n");
+            }
+            break;
         default:
             // Either unimplemented, unsupported or with no possible tcl equivalent
             CHAN_PRINTF("Object of type <%s>\n",TclR_RTypeName(RVar));
@@ -634,6 +665,30 @@ static Tcl_Obj* TclR_R2Tcl(Tcl_Interp *Interp,TclR_Context *Context,SEXP RVar) {
             obj = Tcl_NewByteArrayObj(RAW(RVar),LENGTH(RVar));
             break;
         case CPLXSXP:
+            len = LENGTH(RVar);
+            Rcomplex *ptr = COMPLEX(RVar);
+            obj = Tcl_NewListObj(0,NULL);
+            if( len == 1 ) {
+                if( !IsNaReal(ptr->r) && !IsNaReal(ptr->i) ) {
+                    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ptr->r));
+                    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(ptr->i));
+                }
+            } else {
+                Tcl_Obj *cmplx;
+
+                while(len--) {
+                    if( !IsNaReal(ptr->r) && !IsNaReal(ptr->i) ) {
+                        cmplx = Tcl_NewListObj(0,NULL);
+                        Tcl_ListObjAppendElement(Interp,cmplx,Tcl_NewDoubleObj(ptr->r));
+                        Tcl_ListObjAppendElement(Interp,cmplx,Tcl_NewDoubleObj(ptr->i));
+                    } else {
+                        cmplx = Tcl_NewObj();
+                    }
+                    Tcl_ListObjAppendElement(Interp,obj,cmplx);
+                    ptr++;
+                }
+            }
+            break;
         default:
             // Either unimplemented, unsupported or with no possible tcl equivalent
             Tcl_AppendResult(Interp,"Invalid type to convert to Tcl :",TclR_RTypeName(RVar),NULL);
@@ -1046,7 +1101,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
 #define FREEMEM(x)      if( (x) ) { free(x); x=NULL; }
 #define FREETCL(x)      if( (x) ) { Tcl_DecrRefCount(x); x=NULL; }
 static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,const char *RName,Tcl_Obj *Pattern) {
-    enum e_ttype {TT_INT,TT_DOUBLE,TT_BOOLEAN,TT_STRING} *ttypes=NULL;
+    enum e_ttype {TT_INT,TT_DOUBLE,TT_BOOLEAN,TT_STRING,TT_COMPLEX} *ttypes=NULL;
     SEXP        rdf,rtmp,*rcontent=NULL;
     Tcl_Obj     **members,**content;
     int         nrows,ncols,n,i,j,status=TCL_OK;
@@ -1126,6 +1181,9 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
             } else if( !strcmp(Tcl_GetString(pat[i]),"BOOLEAN") ) {
                 rtype = LGLSXP;
                 ttype = TT_BOOLEAN;
+            } else if( !strcmp(Tcl_GetString(pat[i]),"COMPLEX") ) {
+                rtype = CPLXSXP;
+                ttype = TT_COMPLEX;
             } else {
                 ENDERR("The pattern should be of the form {?mult? ITEM ?mult? ITEM ...} where ITEM can be any of STRING, INT, DOUBLE, BOOLEAN");
             }
@@ -1154,6 +1212,9 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                         break;
                     case TT_STRING:
                         rptrs[j] = NULL;
+                        break;
+                    case TT_COMPLEX:
+                        rptrs[j] = COMPLEX(rcontent[j]);
                         break;
                 }
             }
@@ -1213,7 +1274,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
             switch( ttypes[j] ) {
                 case TT_INT:
                     if( members[j]->length ) {
-                        CHKTCL( Tcl_GetIntFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                        CHKTCL( Tcl_GetIntFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(int*)rptrs[j] = R_NaInt;
                     }
@@ -1221,7 +1282,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     break;
                 case TT_DOUBLE:
                     if( members[j]->length ) {
-                        CHKTCL( Tcl_GetDoubleFromObj(Interp,members[j],(double*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                        CHKTCL( Tcl_GetDoubleFromObj(Interp,members[j],(double*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(double*)rptrs[j] = R_NaReal;
                     }
@@ -1229,7 +1290,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     break;
                 case TT_BOOLEAN:
                     if( members[j]->length ) {
-                        CHKTCL( Tcl_GetBooleanFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern":"The pattern might have been wrongly inferred" );
+                        CHKTCL( Tcl_GetBooleanFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(int*)rptrs[j] = R_NaInt;
                     }
@@ -1237,6 +1298,20 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     break;
                 case TT_STRING:
                     SET_STRING_ELT(rcontent[j],i,Rf_mkChar(Tcl_GetString(members[j])));
+                    break;
+                case TT_COMPLEX:
+                    if( members[j]->length ) {
+                        Tcl_Obj **cmplx;
+                        int     ncmplx;
+                        CHKTCL( Tcl_ListObjGetElements(Interp,members[j],&ncmplx,&cmplx),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
+                        if( ncmplx-- ) CHKTCL( Tcl_GetDoubleFromObj(Interp,cmplx[0],&((Rcomplex*)rptrs[j])->r),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
+                        if( ncmplx-- ) CHKTCL( Tcl_GetDoubleFromObj(Interp,cmplx[1],&((Rcomplex*)rptrs[j])->i),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
+                        if( ncmplx ) ENDERR("More than two elements in complex number\n",Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n");
+                    } else {
+                        ((Rcomplex*)rptrs[j])->r = R_NaReal;
+                        ((Rcomplex*)rptrs[j])->i = R_NaReal;
+                    }
+                    rptrs[j] = (Rcomplex*)rptrs[j]+1;
                     break;
             }
         }
