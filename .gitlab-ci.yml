@@ -24,7 +24,7 @@ test:
    stage: test
    variables:
    script:
-      - CI_Run.sh ${CI_PROJECT_DIR} ${CI_BUILD_REF} ${CI_PROJECT_DIR}/test/CI.sh
+      - CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
    only:
       - master
 
