@@ -33,11 +33,11 @@ namespace eval Grid {
    set Data(VP)     ""       ;#Viewport actif
    set Data(Tab)    ""       ;#Widget
    
-   colormap create GRID0; colormap control GRID0 -add 255 000 000 000 255; colormap control GRID0 -add 0 128 128 128 255
-   colormap create GRID1; colormap control GRID1 -add 255 000 000 128 255; colormap control GRID1 -add 0 000 000 255 255
-   colormap create GRID2; colormap control GRID2 -add 255 128 000 000 255; colormap control GRID2 -add 0 255 000 000 255
-   colormap create GRID3; colormap control GRID3 -add 255 128 128 000 255; colormap control GRID3 -add 0 255 255 000 255
-   colormap create GRID4; colormap control GRID4 -add 255 000 128 000 255; colormap control GRID3 -add 0 000 255 000 255
+   colormap create GRID0; colormap control GRID0 -add 255 128 128 128 255; colormap control GRID0 -add 0 100 100 100 255
+   colormap create GRID1; colormap control GRID1 -add 255 000 000 255 255; colormap control GRID1 -add 0 000 000 200 255
+   colormap create GRID2; colormap control GRID2 -add 255 255 000 000 255; colormap control GRID2 -add 0 200 000 000 255
+   colormap create GRID3; colormap control GRID3 -add 255 255 255 000 255; colormap control GRID3 -add 0 200 200 000 255
+   colormap create GRID4; colormap control GRID4 -add 255 000 255 000 255; colormap control GRID4 -add 0 000 200 000 255
 
    set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS-5.1 RELWS-1.0 }
    set GenPhysX(Target)  RELWS-1.0

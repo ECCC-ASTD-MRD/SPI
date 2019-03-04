@@ -45,7 +45,7 @@ namespace eval Grid {
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field
    set Param(Type)       "ZE"                                                      ;# Current grid type
-   set Param(Types)      { "PS" "PS_N" "PS_S" "LL" "ZL" "ZE" "UTM" }               ;# List of grid types
+   set Param(Types)      { "PS" "PS_N" "PS_S" "PSZ" "LL" "ZL" "ZE" "UTM" }          ;# List of grid types
    set Param(ResMX)      10000                                                     ;# Grid resolution in meters
    set Param(ResMY)      10000                                                     ;# Grid resolution in meters
    set Param(ResMs)      { 1 5 10 100 250 500 1000 2000 2500 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
@@ -70,7 +70,8 @@ namespace eval Grid {
    set Param(SizeWarn)   [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
    set Param(LL2M)       [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
    set Param(LockCenter) False                                                     ;# Fixe the grid center
-   set Param(FFT)        1                                                         ;# Direction of FFT check
+   set Param(FFTNI)      1                                                         ;# Direction of FFT check in NI
+   set Param(FFTNJ)      0                                                         ;# Direction of FFT check in NJ
 
    set Param(LatR)     0.0                                                         ;
    set Param(LonR)     180.0                                                       ;
@@ -119,7 +120,7 @@ proc Grid::Reset { } {
    set Param(GridInfo)   ""                                                        ;# General grid description
    set Param(LatR)       0.0                                                       ;
    set Param(LonR)       180.0                                                     ;
-   set Param(MaxCFL)     10                                                        ;
+   set Param(MaxCFL)     4                                                        ;
    set Param(XLat1)      0                                                         ;# Center latitude
    set Param(XLon1)      0                                                         ;# Center longitude
    set Param(XLat2)      0                                                         ;# Rotation axis latitude
@@ -154,6 +155,7 @@ proc Grid::Init { } {
    variable Data
 
    switch $Param(Type) {
+      "PSZ"  { set Param(NI) 229; set Param(NJ) 229; }
       "PS"   { set Param(NI) 229; set Param(NJ) 229; }
       "PS_N" { set Param(NI) 229; set Param(NJ) 229; 
                set Param(Lon0) 0.0; set Param(Lat0)  90.0
@@ -198,6 +200,7 @@ proc Grid::Center { Lat Lon { Update True } } {
    
    switch $Param(Type) {
       "PS"   { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
+      "PSZ"  { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_N" { set Param(Lon0) 0.0;  set Param(Lat0)  90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_S" { set Param(Lon0) 0.0;  set Param(Lat0) -90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "LL"   -
@@ -362,11 +365,11 @@ proc Grid::CheckNIJ { } {
          set sj  [expr ($Param(NJ)+$Param(PJ))*$Param(ResMY)]
          set spi [expr $gridp(RNI)*$gridp(ResMX)+$dx]
          set spj [expr $gridp(RNJ)*$gridp(ResMY)+$dy]
-         
-         
+                 
          #----- Make sure the grid encloses completely the previous grid
          if { $si<$spi } { set Param(NI) [expr int($spi/$Param(ResMX)-$Param(PI)+1)] }
          if { $sj<$spj } { set Param(NJ) [expr int($spj/$Param(ResMY)-$Param(PJ)+1)] }
+#; set Param(Lat0) [set Lat0 [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY))*0.5]]; set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Param(ResLLY)]]
 #             if { $Data(GridNo)>$Data(GridDepend) } {
 #                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResMX)-$Param(PI))]
 #                set Param(NJ) [expr int(($spj+$Param(DNJ))/$Param(ResMY)-$Param(PJ))]
@@ -375,35 +378,48 @@ proc Grid::CheckNIJ { } {
 #                set Param(DNJ) [expr $sj - $spj]
 #             }
          #----- Check LatR,LonR translations
-         if { [info exists LatR] && $Data(GridNo)<2 && ($LatR!=0.0 || $LonR!=180.0) } {
-            set plat0 [expr $gridp(XLat1)+$gridp(LatR)-($spj/(1852*60)*0.5)]
-            set plon0 [expr $gridp(XLon1)+($gridp(LonR)-180)-($spi/(1852*60)*0.5)]
-            set plat1 [expr $gridp(XLat1)+$gridp(LatR)+($spj/(1852*60)*0.5)]
-            set plon1 [expr $gridp(XLon1)+($gridp(LonR)-180)+($spi/(1852*60)*0.5)]
-            
-            if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
-            if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
-            if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
-            if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
-         }
+#          if { [info exists LatR] && $Data(GridNo)<2 && ($LatR!=0.0 || $LonR!=180.0) } {
+#             set plat0 [expr $gridp(XLat1)+$gridp(LatR)-($spj/(1852*60)*0.5)]
+#             set plon0 [expr $gridp(XLon1)+($gridp(LonR)-180)-($spi/(1852*60)*0.5)]
+#             set plat1 [expr $gridp(XLat1)+$gridp(LatR)+($spj/(1852*60)*0.5)]
+#             set plon1 [expr $gridp(XLon1)+($gridp(LonR)-180)+($spi/(1852*60)*0.5)]
+#             
+#             if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
+#             if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
+#             if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
+#             if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
+#          }
       }
       
-      #----- Check for even number alogn Y axis
-      if { [expr ($Param(NJ)+$Param(PJ))%2] } {
-         incr Param(NJ)
-      }
-
-      set good False
-      while { !$good } {
-         #----- Check FFT constraint on the non pilot grid (NI)
-         if { $Param(Type)=="ZE"  } {    
-             set Param(NI) [Grid::CheckFFT $Param(NI) $Param(FFT)]
+      if { $Param(Type)=="ZE"  } {    
+         set good False
+         while { !$good } {
+            if { $Param(FFTNJ) } {
+               #----- Check FFT constraint on the non pilot grid (NI)
+               set Param(NJ) [Grid::CheckFFT $Param(NJ) $Param(FFTNJ)]
+            }
+            
+            #----- Check for even number along X axis
+            if { [expr ($Param(NJ)+$Param(PJ))%2] } {
+               incr Param(NJ)
+            } else {
+               set good True
+            }
          }
-         #----- Check for even number along X axis
-         if { [expr ($Param(NI)+$Param(PI))%2] } {
-            incr Param(NI)
-         } else {
-            set good True
+
+         set good False
+         while { !$good } {
+            if { $Param(FFTNI) } {
+               #----- Check FFT constraint on the non pilot grid (NI)
+               set Param(NI) [Grid::CheckFFT $Param(NI) $Param(FFTNI)]
+            }
+            
+            #----- Check for even number along X axis
+            if { [expr ($Param(NI)+$Param(PI))%2] } {
+               incr Param(NI)
+            } else {
+               set good True
+            }
          }
       }
       
@@ -454,6 +470,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
    if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
 
       switch $Param(Type) {
+         "PSZ"   { Grid::CreatePSZ $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
          "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
          "PS_S"  -
          "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
@@ -590,18 +607,17 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
    if { $lat<=0 } {
       set grtyp SUD
       set nhem  2
-      set xg4  [expr 90.0+$Lon]
+      set xg4  [expr 90.0+$lon]
       set xg4  [expr floor(fmod($xg4+360.0,360.0))]
    } else {
       set grtyp NORD
       set nhem  1
-      set xg4   [expr (270.0-$Lon+360.0)/360.0]
+      set xg4   [expr (270.0-$lon+360.0)/360.0]
       set xg4   [expr ($xg4-floor($xg4))*360.0]
    }
 
    set dd60 1.0
    set xy [fstdgrid xyfll $lat $lon $dd60 $xg4 $nhem]
-
    set xg1 [expr ((($NI-1.0)/2.0) * $xg3 - [lindex $xy 0]) / $xg3 + 1.0]
    set xg2 [expr ((($NJ-1.0)/2.0) * $xg3 - [lindex $xy 1]) / $xg3 + 1.0]
 
@@ -613,6 +629,77 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 
    return ${ID}
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <Grid::CreatePSZ>
+# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creation d'une grille Z sur reference de grille Polaire Stereographique (PS) 
+#
+# Parametres :
+#   <Lat>    : Latitude centrale
+#   <Lon>    : Longitude centrale
+#   <Res>    : Resolution en metres
+#   <NI>     : Nombre de point de grille en I
+#   <NJ>     : Nombre de point de grille en J
+#   <ID>     : Identificateur du champs qui sera cree
+#
+# Retour:
+#   <ID>     : Identificateur du champs cree
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::CreatePSZ { Lat Lon Res NI NJ { ID MODELGRID } } {
+   variable Param
+   variable Data
+
+   set lat [expr $Lat+$Data(LatM)]
+   set lon [expr $Lon+$Data(LonM)]
+   
+   if { $lat<=0 } {
+      set grtyp S
+      set nhem  2
+      set dgrw [expr 90.0+$lon]
+      set dgrw [expr floor(fmod($dgrw+360.0,360.0))]
+   } else {
+      set grtyp N
+      set nhem  1
+      set dgrw   [expr (270.0-$lon+360.0)/360.0]
+      set dgrw   [expr ($dgrw-floor($dgrw))*360.0]
+   }
+   
+   set dd60 1.0
+   set xy [fstdgrid xyfll $lat $lon $dd60 $dgrw $nhem]
+   set xg1 [expr ((($NI-1.0)/2.0) * $Res - [lindex $xy 0]) / $Res + 1.0]
+   set xg2 [expr ((($NJ-1.0)/2.0) * $Res - [lindex $xy 1]) / $Res + 1.0]
+
+   fstdfield free ${ID} ${ID}TIC ${ID}TAC
+   fstdfield create ${ID}TIC $NI 1 1
+   fstdfield create ${ID}TAC 1 $NJ 1
+
+   fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
+   fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
+
+   #----- Compute tic grid coordinates.
+   set ratio [expr $Res*0.001]
+   for { set i 0 } { $i < $NI } { incr i } {
+      fstdfield stats ${ID}TIC -gridvalue $i 0 [expr (1.0+$i-$xg1)*$ratio]
+   }
+
+   #----- Compute tac grid coordinates.
+   for { set j 0 } { $j < $NJ } { incr j } {
+      fstdfield stats ${ID}TAC -gridvalue 0 $j [expr (1.0+$j-$xg2)*$ratio]
+   }
+   
+   #----- Create the grid ans assign the tic/tac
+   fstdfield create ${ID} $NI $NJ 1 $Param(Data)
+   fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z$grtyp
+   fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
+}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::CreateL>
@@ -815,10 +902,10 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGR
    fstdfield create ${ID} $Param(RNI) $Param(RNJ) 1 $Param(Data)
    fstdfield define ${ID} -georef ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZE
 
-   set di  [expr $Param(PI)]
-   set dj  [expr $Param(PJ)]
-   set dni [expr $Param(RNI)-$Param(PI)]
-   set dnj [expr $Param(RNJ)-$Param(PJ)]
+   set di  [expr $Param(PI)/2]
+   set dj  [expr $Param(PJ)/2]
+   set dni [expr $Param(RNI)-$di-1]
+   set dnj [expr $Param(RNJ)-$dj-1]
    
    #----- Mark the inside grid
    catch { vexpr - ${ID}(($di,$dni),($dj,$dnj))=1 }

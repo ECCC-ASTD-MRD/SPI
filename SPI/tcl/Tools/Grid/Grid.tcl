@@ -141,7 +141,9 @@ proc Grid::ConfigSet { } {
    
    for { set no 0 } { $no<[llength $Data(GridParams)] } { incr no } {
       if { [fstdfield is MODELGRID$no] } {
-         fstdfield configure MODELGRID$no -rendergrid $grid -renderboundary $Data(GridBoundary) \
+#         fstdfield configure MODELGRID$no -rendergrid $grid -renderboundary $Data(GridBoundary) \
+#            -width 2 -color $Data(Color$no) -colormap GRID$no -mapall True -rendertexture $texture -interpdegree NEAREST
+         fstdfield configure MODELGRID$no -renderparticle $grid -renderboundary $Data(GridBoundary) \
             -width 2 -color $Data(Color$no) -colormap GRID$no -rendertexture $texture -interpdegree NEAREST
       }
    }
@@ -540,7 +542,7 @@ proc Grid::Draw     { Canvas VP { Modifier "" } } {
    set Param(Lat1) $Viewport::Map(LatCursor)
    set Param(Lon1) $Viewport::Map(LonCursor)
 
-   if { [lindex $Param(Type) 0]=="PS" } {
+   if { [lindex $Param(Type) 0]=="PS" || [lindex $Param(Type) 0]=="PSZ"} {
       set Param(Lat0) $Viewport::Map(LatCursor)
       set Param(Lon0) $Viewport::Map(LonCursor)
    }

@@ -160,10 +160,14 @@ proc Grid::Frame { Frame { Multi False } } {
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
          spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Param(GetNIJ) True }
+         checkbutton $Frame.grid.dim.nifft -variable Grid::Param(FFTNI) -onvalue 1 -offvalue 0 \
+            -text FFT -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -command { Grid::Apply }
          label $Frame.grid.dim.x -text x
-         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; Grid::Cascade; set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
          entry $Frame.grid.dim.pil -textvariable Grid::Param(PI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
-         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.pil -side left
+         checkbutton $Frame.grid.dim.njfft -variable Grid::Param(FFTNJ) -onvalue 1 -offvalue 0 \
+            -text FFT -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -command { Grid::Apply }
+         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.nifft $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.njfft $Frame.grid.dim.pil -side left
       frame $Frame.grid.maxcfl
          label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
          spinbox $Frame.grid.maxcfl.val -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(MaxCFL) -width 3 -from 0 -to 20 -increment 1 -command { Grid::Apply }
@@ -296,18 +300,19 @@ proc Grid::WindowSet { Frame } {
    variable Param
    variable Data
    
-   $Frame.ll0.lat   configure -state normal 
-   $Frame.ll0.lon   configure -state normal 
-   $Frame.ll1.lat   configure -state normal 
-   $Frame.ll1.lon   configure -state normal 
-   $Frame.dim.ni    configure -state normal 
-   $Frame.dim.nj    configure -state normal 
-   $Frame.mid.xlat1 configure -state disabled 
-   $Frame.mid.xlon1 configure -state disabled
+   $Frame.ll0.lat    configure -state normal 
+   $Frame.ll0.lon    configure -state normal 
+   $Frame.ll1.lat    configure -state normal 
+   $Frame.ll1.lon    configure -state normal 
+   $Frame.dim.ni     configure -state normal -increment 1
+   $Frame.dim.nj     configure -state normal -increment 1
+   $Frame.mid.xlat1  configure -state disabled 
+   $Frame.mid.xlon1  configure -state disabled
 #   $Frame.mid.lock  configure -state disabled
-   $Frame.rot.angle configure -state disabled
-   $Frame.ref.latr  configure -state disabled 
-   $Frame.ref.lonr  configure -state disabled 
+   $Frame.rot.angle  configure -state disabled
+   $Frame.ref.latr   configure -state disabled 
+   $Frame.ref.lonr   configure -state disabled 
+   $Frame.maxcfl.val configure -state disabled  
    
    switch $Param(Type) {
       "PS"   - 
@@ -324,7 +329,10 @@ proc Grid::WindowSet { Frame } {
                   $Frame.ref.latr  configure -state normal
                   $Frame.ref.lonr  configure -state normal
                }
-             }
+               $Frame.maxcfl.val configure -state normal
+               $Frame.dim.ni     configure  -increment 2
+               $Frame.dim.nj     configure  -increment 2
+       }
       "UTM"  { $Frame.dim.ni configure -state disabled 
                $Frame.dim.nj configure -state disabled 
              }
