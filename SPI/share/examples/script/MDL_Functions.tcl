@@ -58,7 +58,7 @@ foreach model $models  {
 }
 
 #----- Read a field into which to rasterize the model
-file copy -force $env(CI_SPI_IN)/Montreal.fstd DataOut/Montreal.fstd
+file copy -force $env(CI_DATA_IN)/Montreal.fstd  $env(CI_DATA_OUT)/Montreal.fstd
 fstdfile open FILE append DataOut/Montreal.fstd
 fstdfield read FLD FILE -1 "" -1 -1 -1 "" "IBLK"
 

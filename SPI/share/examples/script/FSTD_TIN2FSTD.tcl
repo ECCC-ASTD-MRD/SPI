@@ -28,8 +28,8 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-file delete -force $env(CI_SPI_OUT)/FSTD_TIN2FSTD.fstd
-fstdfile open 1 write $env(CI_SPI_OUT)/FSTD_TIN2FSTD.fstd
+file delete -force $env(CI_DATA_OUT)/FSTD_TIN2FSTD.fstd
+fstdfile open 1 write $env(CI_DATA_OUT)/FSTD_TIN2FSTD.fstd
 
 set fnod [open [lindex $argv 0].nod r]
 set fele [open [lindex $argv 0].ele r]

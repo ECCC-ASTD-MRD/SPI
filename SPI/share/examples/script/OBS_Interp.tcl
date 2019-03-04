@@ -27,9 +27,9 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Input files
-set obs $env(CI_SPI_IN)/aircraft_obs_expl.obs
-set fst $env(CI_SPI_IN)/2005102612_012
-set out $env(CI_SPI_OUT)/OBS_Interp.obs
+set obs $env(CI_DATA_IN)/aircraft_obs_expl.obs
+set fst $env(CI_DATA_IN)/2005102612_012
+set out $env(CI_DATA_OUT)/OBS_Interp.obs
 
 #----- Standard file field to be read
 fstdfile open 1 read $fst

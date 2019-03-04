@@ -33,11 +33,11 @@ set Species { S2 S4 NO N2 }
 set Hours   24
 set Days    2
 
-file delete $env(CI_SPI_OUT)/FSTD_Y2Z_SUM.fstd
+file delete $env(CI_DATA_OUT)/FSTD_Y2Z_SUM.fstd
 
-fstdfile open YFILE      read  $env(CI_SPI_IN)/major.fstd
-fstdfile open GRIDFILE   read  $env(CI_SPI_IN)/2005120600_012
-fstdfile open RESULTFILE write $env(CI_SPI_OUT)/FSTD_Y2Z_SUM.fstd
+fstdfile open YFILE      read  $env(CI_DATA_IN)/major.fstd
+fstdfile open GRIDFILE   read  $env(CI_DATA_IN)/2005120600_012
+fstdfile open RESULTFILE write $env(CI_DATA_OUT)/FSTD_Y2Z_SUM.fstd
 
 #-- Copie des tictac
 foreach tictac { >> ^^ } {

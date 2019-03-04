@@ -44,8 +44,8 @@ set nb 0
 foreach s $subs { incr nb [llength $s] }
 
 #----- Open GEM index file
-eval file delete [glob -nocomplain DataOut/ModelDomain*]
-ogrfile open INDEXFILE write DataOut/ModelDomain.shp "ESRI Shapefile"
+eval file delete [glob -nocomplain $env(CI_SPI_OUT)/ModelDomain*]
+ogrfile open INDEXFILE write $env(CI_DATA_OUT)/ModelDomain.shp "ESRI Shapefile"
 ogrlayer create INDEXFILE INDEX "Domain"
 
 ogrlayer define INDEX -field NAME String

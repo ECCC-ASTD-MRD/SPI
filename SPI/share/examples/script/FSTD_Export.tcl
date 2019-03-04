@@ -33,7 +33,7 @@ fstdfile open FILEIN read $file
 fstdfield read FLD FILEIN -1 "" -1 -1 -1 "" "UV"
 
 colormap create CMAP
-colormap read CMAP $env(CI_SPI_IN)/OTH_ASAR.rgba
+colormap read CMAP $env(CI_DATA_IN)/OTH_ASAR.rgba
 fstdfield configure FLD -colormap CMAP -min 0 -max 50
 
 #----- Recuperer les limites du champs
@@ -53,8 +53,8 @@ if { $dx!=0 && $dy!=0 } {
    Dimension : $width x $height ($dx x $dy)"
 
    #----- Creer le fichier de rasterization
-   catch { file delete -force $env(CI_SPI_OUT)/[file rootname [file tail $file]].map.tif }
-   gdalfile open FILEOUT write $env(CI_SPI_OUT)/[file rootname [file tail $file]].map.tif GeoTiff
+   catch { file delete -force $env(CI_DATA_OUT)/[file rootname [file tail $file]].map.tif }
+   gdalfile open FILEOUT write $env(CI_DATA_OUT)/[file rootname [file tail $file]].map.tif GeoTiff
 
    #----- Creer la bande et la configurer
 #   gdalband create RASTER $width $height 1 Float32

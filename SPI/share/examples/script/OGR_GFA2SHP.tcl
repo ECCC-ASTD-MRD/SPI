@@ -27,13 +27,13 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Path de repertoire a traiter en parametre
-set Data(Path) $env(CI_SPI_IN)/GFACN.csv
+set Data(Path) $env(CI_DATA_IN)/GFACN.csv
 set Data(Nb)   0
 set Data(Name) "" 
 
 #----- Create the shapefile
-catch { file delete $env(CI_SPI_OUT)/GFA.shp }
-ogrfile open SHAPEFILE write $env(CI_SPI_OUT)/GFA.shp "ESRI Shapefile"
+catch { file delete $env(CI_DATA_OUT)/GFA.shp }
+ogrfile open SHAPEFILE write $env(CI_DATA_OUT)/GFA.shp "ESRI Shapefile"
 
 #----- Create a layer within it
 ogrlayer create SHAPEFILE LAYER "GFA"

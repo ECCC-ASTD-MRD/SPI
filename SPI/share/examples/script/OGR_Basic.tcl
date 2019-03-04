@@ -30,7 +30,7 @@ Log::Start [info script] 0.1
 puts "   Available formats:\n\t\t[join [ogrfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier SHP
-set layers [ogrfile open OGRFILE read $env(CI_SPI_IN)/Volcano.shp]
+set layers [ogrfile open OGRFILE read $env(CI_DATA_IN)/Volcano.shp]
 eval ogrlayer read LAYER [lindex $layers 0]
 
 #----- Afficher quelques informations sur le layer

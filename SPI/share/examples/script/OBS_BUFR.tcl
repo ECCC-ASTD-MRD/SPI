@@ -34,14 +34,14 @@ metobs table -readcmc
 ##################################
 
 #----- Create a new template and a new dataset based ont this template
-bufrtemplate create TEMPLATE_TEST $env(CI_SPI_IN)/isxx01_cytr_010000_0.template
+bufrtemplate create TEMPLATE_TEST $env(CI_DATA_IN)/isxx01_cytr_010000_0.template
 bufrdataset create DATASET_TEST TEMPLATE_TEST
 
 puts "   Template edition: [bufrtemplate define TEMPLATE_TEST -BUFR_EDITION]"
 puts "   Template codes  : [bufrtemplate define TEMPLATE_TEST -DESCRIPTOR]"
 
 #----- Read in data dump that fit dataset
-bufrdataset read DATASET_TEST $env(CI_SPI_IN)/isxx01_cytr_010000_0.dump
+bufrdataset read DATASET_TEST $env(CI_DATA_IN)/isxx01_cytr_010000_0.dump
 
 #----- Add a dataset from tcl
 bufrdataset define DATASET_TEST -subsetadd [list {1204 ACYTR} {1204 BCYTR} {1204 CCYTR} {1204 DCYTR} {205023 {second basic smoke test}}]
@@ -55,8 +55,8 @@ bufrdataset define DATASET_TEST -BUFR_EDITION 4 -BUFR_MASTER_TABLE 0 -ORIG_CENTE
    -YEAR 2008 -MONTH 5 -DAY 13 -HOUR 23 -MINUTE 2 -SECOND 0 -DATA_FLAG 0
 
 #----- Write dataset to ASCII dump and BUFR
-bufrdataset write DATASET_TEST DataOut/OBS_BUFR.bufr BUFR
-bufrdataset write DATASET_TEST DataOut/OBS_BUFR.txt ASCII
+bufrdataset write DATASET_TEST $env(CI_DATA_OUT)/OBS_BUFR.bufr BUFR
+bufrdataset write DATASET_TEST $env(CI_DATA_OUT)/OBS_BUFR.txt ASCII
 
 #----- Output all dataset info
 puts "\n   File: DataIn/isxx01_cytr_010000_0.dump"
@@ -76,9 +76,9 @@ bufrtemplate free TEMPLATE_TEST
 #----- Open a BUFR file
 ##################################
 
-puts "\n   File: $env(CI_SPI_IN)/lamwest_buf12.bufr"
+puts "\n   File: $env(CI_DATA_IN)/lamwest_buf12.bufr"
 
-while { [bufrdataset create DATASET_LAM $env(CI_SPI_IN)/lamwest_buf12.bufr] } {
+while { [bufrdataset create DATASET_LAM $env(CI_DATA_IN)/lamwest_buf12.bufr] } {
 
    #----- Print header info
    puts "      BUFR_EDITION        : [bufrdataset define DATASET_LAM -BUFR_EDITION]"
@@ -100,7 +100,7 @@ while { [bufrdataset create DATASET_LAM $env(CI_SPI_IN)/lamwest_buf12.bufr] } {
    puts "      DATA_FLAG           : [bufrdataset define DATASET_LAM -DATA_FLAG]"
 
    #----- Get message template and save it to file
-   bufrtemplate write [bufrdataset define DATASET_LAM -template] $env(CI_SPI_OUT)/OBS_BUFR.template
+   bufrtemplate write [bufrdataset define DATASET_LAM -template] $env(CI_DATA_OUT)/OBS_BUFR.template
 
    #----- Print data info
    puts "\n      Found [bufrdataset define DATASET_LAM -subsetnb] subset(s)"

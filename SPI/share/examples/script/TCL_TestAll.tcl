@@ -31,9 +31,9 @@ Log::Print INFO "Using $env(SPI_PATH)\n"
 #   SIM_Traj.tcl
 
 set tests {
-   {FSTD_Head.tcl $env(CI_SPI_IN)/2005102612_012c}
-   {FSTD_Voir.tcl $env(CI_SPI_IN)/2005102612_012c}
-   {FSTD_CheckInsideness.tcl $env(CI_SPI_IN)/2005102612_012c DataIn/latlon.txt}
+   {FSTD_Head.tcl $env(CI_DATA_IN)/2005102612_012c}
+   {FSTD_Voir.tcl $env(CI_DATA_IN)/2005102612_012c}
+   {FSTD_CheckInsideness.tcl $env(CI_DATA_IN)/2005102612_012c DataIn/latlon.txt}
    FSTD_Funcs.tcl
    FSTD_GridFunc.tcl
    FSTD_GetPressure.tcl
@@ -52,13 +52,13 @@ set tests {
    FSTD_InterpYY.tcl
    FSTD_ETA2SIGMA.tcl
    FSTD_ETA2METER.tcl
-   {FSTD_HYBRID2ETA.tcl $env(CI_SPI_IN)/2006122900_000.hyb}
-   {FSTD_ETA2HYBRID.tcl $env(CI_SPI_IN)/2006122900_000.eta}
-   {FSTD_HYBRID2PRESSURE.tcl $env(CI_SPI_IN)/2012041712_024.zfst}
+   {FSTD_HYBRID2ETA.tcl $env(CI_DATA_IN)/2006122900_000.hyb}
+   {FSTD_ETA2HYBRID.tcl $env(CI_DATA_IN)/2006122900_000.eta}
+   {FSTD_HYBRID2PRESSURE.tcl $env(CI_DATA_IN)/2012041712_024.zfst}
    FSTD_Hyb-Thermo+Momentum2MAGL.tcl
    FSTD_PSGrid.tcl
    FSTD_TestTypes.tcl
-   {FSTD_TIN2FSTD.tcl $env(CI_SPI_IN)/hudson}
+   {FSTD_TIN2FSTD.tcl $env(CI_DATA_IN)/hudson}
    FSTD_Sort.tcl
    FSTD_Y2Z_SUM.tcl
    FSTD_ThreadDemo.tcl
@@ -66,16 +66,16 @@ set tests {
    FSTD_IOAPI2RPN.tcl
    FSTD_Untile.tcl
    FSTD_Dict.tcl
-   {FSTD_Hull.tcl -fstd $env(CI_SPI_IN)/2005102612_012 -var ES -min 10 -max 30 -ip1 12000 -buffer 1 -dist 4 -out $env(CI_SPI_OUT)}
-   {FSTD_RPN2GDAL.tcl -format GTiff -mode DATA -var TT -ip1 12000 -fstd $env(CI_SPI_IN)/2006122900_000.eta -out $env(CI_SPI_OUT)/FSTD_RPN2GDAL}
-   {FSTD_RPN2OGR.tcl -format "ESRI Shapefile" -mode CONTOUR -var TT -ip1 12000 -fstd $env(CI_SPI_IN)/2006122900_000.eta -inter -20 -10 0 10 20 -out $env(CI_SPI_OUT)/FSTD_RPN2OGR}
+   {FSTD_Hull.tcl -fstd $env(CI_DATA_IN)/2005102612_012 -var ES -min 10 -max 30 -ip1 12000 -buffer 1 -dist 4 -out $env(CI_DATA_OUT)}
+   {FSTD_RPN2GDAL.tcl -format GTiff -mode DATA -var TT -ip1 12000 -fstd $env(CI_DATA_IN)/2006122900_000.eta -out $env(CI_DATA_OUT)/FSTD_RPN2GDAL}
+   {FSTD_RPN2OGR.tcl -format "ESRI Shapefile" -mode CONTOUR -var TT -ip1 12000 -fstd $env(CI_DATA_IN)/2006122900_000.eta -inter -20 -10 0 10 20 -out $env(CI_DATA_OUT)/FSTD_RPN2OGR}
    GRIB_Funcs.tcl
    GRIB_Convert.tcl
    GDAL_Basic.tcl
    GDAL_Functions.tcl
    GDAL_Slope.tcl
    GDAL_CoordTest.tcl
-   {GDAL_PixelCoord.tcl $env(CI_SPI_IN)/srtm_n045w074_badmedian3x3 0 0 100 100}
+   {GDAL_PixelCoord.tcl $env(CI_DATA_IN)/srtm_n045w074_badmedian3x3 0 0 100 100}
    OBS_BUFR.tcl
    OBS_BURP.tcl
    OBS_CSV2OBS.tcl
@@ -99,15 +99,15 @@ set tests {
    OGR_Simplify.tcl
    OGR_TZCheck.tcl
    OGR_PoesFrequency2FSTD.tcl
-   {OGR_Export2txt.tcl $env(CI_SPI_IN)/land_bg_p.shp}
+   {OGR_Export2txt.tcl $env(CI_DATA_IN)/land_bg_p.shp}
    RADAR_Functions.tcl
    RADAR_EchoTop.tcl
-   {RADAR_NUMERIC2FSTD.tcl $env(CI_SPI_IN)/201306031850~NUMERIC_PRECIPET_USACDN_PS_4KM~PRECIPET,125,18,MPRATE_QPE,PRECIPET_QC_PARAMETERS_CMC:URP:USACDN_PS_4km_full:RADAR:NUMERIC}
+   {RADAR_NUMERIC2FSTD.tcl $env(CI_DATA_IN)/201306031850~NUMERIC_PRECIPET_USACDN_PS_4KM~PRECIPET,125,18,MPRATE_QPE,PRECIPET_QC_PARAMETERS_CMC:URP:USACDN_PS_4km_full:RADAR:NUMERIC}
    MDL_Functions.tcl
    TCL_ProjectionData.tcl
    TCL_Vector.tcl
    {TCL_System.tcl /tmp}
-   {BUL_FXCN3X_to_SHP.tcl $env(CI_SPI_IN)/FXCN3X/20111003175406.Ophelia.technical.txt.en}
+   {BUL_FXCN3X_to_SHP.tcl $env(CI_DATA_IN)/FXCN3X/20111003175406.Ophelia.technical.txt.en}
    VEXPR_NaN.tcl
    VEXPR_Stats.tcl
 }
@@ -129,7 +129,7 @@ foreach test $tests {
    puts -nonewline [format "%-35s %02i/%02i " [lindex $test 0] $n $nb]
    set s [clock seconds]
 
-   if { [catch { eval exec ./$test >>& TCL_TestAll.log }]  } {
+   if { [catch { eval exec ./$test >>& $env(CI_DATA_OUT)/TCL_TestAll.log }]  } {
       puts -nonewline "${RED}Failed${RESET}"
       incr nok
    } else {

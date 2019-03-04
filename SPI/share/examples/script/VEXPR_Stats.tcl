@@ -222,7 +222,7 @@ proc RunTest { Svars FldX FldY } {
 #set Log::Param(Level) DEBUG
 Log::Start [info script] 0.1
 
-set fn  DataIn/2005102612_012
+set fn  $env(CI_DATA_IN)/2005102612_012
 set fldX 131073 ;# TT at 1.000 sg (12000) for T+18
 set fldY 130049 ;# TT at 0.9930 sg (11930) for T+18
 

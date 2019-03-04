@@ -27,17 +27,17 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-catch { file delete -force $env(CI_SPI_OUT)/OBS_Krig.fstd }
+catch { file delete -force $env(CI_DATA_OUT)/OBS_Krig.fstd }
 
-fstdfile open 1 read  $env(CI_SPI_IN)/pression.fstd
-fstdfile open 2 write $env(CI_SPI_OUT)/OBS_Krig.fstd
+fstdfile open 1 read  $env(CI_DATA_IN)/pression.fstd
+fstdfile open 2 write $env(CI_DATA_OUT)/OBS_Krig.fstd
 
 #----- Recuperer le champs pour la grille d'interpolation
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" ""
 vexpr FLD FLD<<0
 
 #----- Recuperer l'observation a interpoler
-set OBS [lindex [observation load $env(CI_SPI_IN)/O3.20050302.obs] 0]
+set OBS [lindex [observation load $env(CI_DATA_IN)/O3.20050302.obs] 0]
 
 fstdfield gridinterp FLD $OBS LINEAR 0.0 1.0 10
 fstdfield write FLD 2 -32 False

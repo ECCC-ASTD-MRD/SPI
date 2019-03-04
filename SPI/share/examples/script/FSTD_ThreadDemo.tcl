@@ -89,7 +89,7 @@ set tid4 [ThreadTest]
 #thread::send -async $tid4 "read $path/2003090412_036c 4"
 
 #----- Ouvrir les fichiers d'entree (1)
-fstdfile open 1 read  DataIn/2005102612_012c
+fstdfile open 1 read  $env(CI_DATA_IN)/2005102612_012c
 
 #----- Activer les thread en leur donnant un travaile
 thread::send -async $tid1 "readvar 1 WD"

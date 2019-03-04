@@ -26,11 +26,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set f [open $env(CI_SPI_IN)/MWO.reg]
+set f [open $env(CI_DATA_IN)/MWO.reg]
 
 #----- Creation du fichier
-catch { file delete $env(CI_SPI_OUT)/OGR_Create.shp }
-ogrfile open FILE write $env(CI_SPI_OUT)/OGR_Create.shp "ESRI Shapefile"
+catch { file delete $env(CI_DATA_OUT)/OGR_Create.shp }
+ogrfile open FILE write $env(CI_DATA_OUT)/OGR_Create.shp "ESRI Shapefile"
 
 #----- Creation du layer et des champs
 ogrlayer create FILE AREA "MWO"

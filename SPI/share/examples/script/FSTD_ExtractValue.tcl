@@ -28,7 +28,7 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012
+fstdfile open 1 read  $env(CI_DATA_IN)/2005102612_012
 
 #----- List des point de grille (i,j) qui nous interessent
 set ijs  { 172 216 172 217 172 218 172 219
@@ -65,14 +65,14 @@ proc extract { Field File } {
 fstdfield vector { UU VV }
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" "UU"
 vexpr FLDUU FLD\[0\]*.5144
-extract FLDUU $env(CI_SPI_OUT)/UU.0.dat
+extract FLDUU $env(CI_DATA_OUT)/UU.0.dat
 
 #----- Composante VV du vent en metre/s
 vexpr FLDVV FLD\[1\]*.5144
-extract FLDVV $env(CI_SPI_OUT)/VV.0.dat
+extract FLDVV $env(CI_DATA_OUT)/VV.0.dat
 
 #----- Mouvement vertical en metres/s
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" "WE"
-extract FLD $env(CI_SPI_OUT)/FSTD_ExtractValue.txt
+extract FLD $env(CI_DATA_OUT)/FSTD_ExtractValue.txt
 
 Log::End

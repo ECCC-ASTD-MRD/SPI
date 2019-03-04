@@ -56,7 +56,7 @@ fstdfield define GRID -DEET 0 -NPAS 0 -IP1 0 -IP2 0 -IP3 0 -ETIKET "GRID" -DATYP
 
 #----- Sauvegrader le champs
 
-fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_PSGrid.fstd
+fstdfile open 2 write $env(CI_DATA_OUT)/FSTD_PSGrid.fstd
 fstdfield write GRID 2 -16 True
 
 fstdfile close 2

@@ -29,7 +29,7 @@ Log::Start [info script] 0.1
 gdalfile error QUIET
 
 #----- Ouverture d'un fichier GTIF
-set bands [gdalfile open FILE read $env(CI_SPI_IN)/srtm_n045w074_badmedian3x3]
+set bands [gdalfile open FILE read $env(CI_DATA_IN)/srtm_n045w074_badmedian3x3]
 gdalband read BAND $bands
 
 #----- Calcul de la pente en degree
@@ -57,8 +57,8 @@ vexpr DXX   ddxysecond(BAND)
 gdalband configure DXX -desc "Second order partial dxy derivative"
 
 #----- Sauvegrader les resultata
-catch { file delete $env(CI_SPI_OUT)/GDAL_Slope.tif }
-gdalfile open FILEOUT write $env(CI_SPI_OUT)/GDAL_Slope.tif "GeoTIFF"
+catch { file delete $env(CI_DATA_OUT)/GDAL_Slope.tif }
+gdalfile open FILEOUT write $env(CI_DATA_OUT)/GDAL_Slope.tif "GeoTIFF"
 gdalband write { SLOPE SLOPE100 PCURV TCURV ASPEC DXX } FILEOUT
 gdalfile metadata FILEOUT { Test1=yoyoy TEST2=yaya }
 gdalfile close FILEOUT

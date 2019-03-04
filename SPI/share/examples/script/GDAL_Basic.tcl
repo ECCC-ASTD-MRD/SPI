@@ -26,14 +26,14 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { eval file delete [glob -nocomplain $env(CI_SPI_OUT)/GDAL_Basic.*] }
+catch { eval file delete [glob -nocomplain $env(CI_DATA_OUT)/GDAL_Basic.*] }
 
 #----- Afficher la liste des formats reconnus
 puts "   Available formats:\n\t\t[join [gdalfile format] "\n\t\t"]"
 
 #----- Ouverture d'un fichier GTIF
 #set bands [gdalfile open GDAL read /fs/cetus/fs2/ops/cmoe/afsr002/DataIn/hrm_dsm_1m/z001003.adf]
-set bands [gdalfile open GDAL read $env(CI_SPI_IN)/srtm_n045w074_badmedian3x3]
+set bands [gdalfile open GDAL read $env(CI_DATA_IN)/srtm_n045w074_badmedian3x3]
 #set bands [gdalfile open GDAL read /tmp/T_PAGX40_C_BIRK_20111230091501.h5]
 #set bands [gdalfile open GDAL read HDF5:"/tmp/T_PAGX40_C_BIRK_20111230091501.h5"://dataset1/data1/data]
 #set bands [gdalfile open GDAL read DataIn/SAR.tif]
@@ -68,7 +68,7 @@ puts "    Creating a band "
 gdalband create NEWRASTER 900 900 1 Byte
 
 puts "    Saving direct mode"
-gdalfile open NEWFILE write $env(CI_SPI_OUT)/GDAL_Basic.envi "ENVI"
+gdalfile open NEWFILE write $env(CI_DATA_OUT)/GDAL_Basic.envi "ENVI"
 gdalband write NEWRASTER NEWFILE
 
 gdalband stats NEWRASTER -nodata 100
@@ -78,11 +78,11 @@ gdalfile close NEWFILE
 
 puts "    Saving copy mode (PNG)"
 
-gdalfile createcopy $env(CI_SPI_OUT)/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
+gdalfile createcopy $env(CI_DATA_OUT)/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"
 
 puts "    Saving copy mode in memory (PNG)"
 set bin [gdalfile createcopy /vsimem/GDAL_Basic.png [list RASTER RASTER RASTER] "PNG"]
-set f [open $env(CI_SPI_OUT)/GDAL_Basic_MEM.png w]
+set f [open $env(CI_DATA_OUT)/GDAL_Basic_MEM.png w]
 fconfigure $f -translation binary
 puts $f $bin
 close $f

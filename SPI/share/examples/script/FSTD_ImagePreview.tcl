@@ -28,10 +28,10 @@ Log::Start [info script] 0.1
 
 #----- Creer la palette de rendue
 colormap create CMAP
-colormap read CMAP $env(CI_SPI_IN)/REC_Col.std1.rgba
+colormap read CMAP $env(CI_DATA_IN)/REC_Col.std1.rgba
 
 #----- Recuperer le champs
-fstdfile open 1 read $env(CI_SPI_IN)/2005102612_012
+fstdfile open 1 read $env(CI_DATA_IN)/2005102612_012
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" TT
 fstdfield configure FLD -colormap CMAP -intervals { -80 -70 -60 -50 }
 
@@ -40,6 +40,6 @@ image create photo IMG -width 229 -height 229
 fstdfield stats FLD -image IMG
 
 #----- Sauvegarder l'image du preview
-IMG write $env(CI_SPI_OUT)/FSTD_ImagePreview.gif
+IMG write $env(CI_DATA_OUT)/FSTD_ImagePreview.gif
 
 Log::End

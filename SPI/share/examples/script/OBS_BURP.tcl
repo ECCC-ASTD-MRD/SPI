@@ -49,7 +49,7 @@ puts "5022 value  :[metobs define NEWOBS -ELEMENT "Position 1" 5022 ]"
 
 #----- Create a metobs object and read a file
 metobs create BURPDATA
-#metobs read BURPDATA $env(CI_SPI_IN)/2007021500_
+#metobs read BURPDATA $env(CI_DATA_IN)/2007021500_
 metobs read BURPDATA /space/hall1/sitestore/eccc/cmd/a/jud000/maestro_archives/DG2H17UAAI_pre/banco.derialt.2016121600_ai
 #metobs read BURPDATA /users/dor/afsr/005/Scripts/For/JeanMarc/obs/2011012000_sf
 
@@ -100,9 +100,9 @@ foreach id [metobs define BURPDATA -ID] {
 }
 
 #----- Test the krigging
-catch { file delete -force $env(CI_SPI_OUT)/OBS_BURP_Krig.fstd }
-fstdfile open 1 read  $env(CI_SPI_IN)/pression.fstd
-fstdfile open 2 write $env(CI_SPI_OUT)/OBS_BURP_Krig.fstd
+catch { file delete -force $env(CI_DATA_OUT)/OBS_BURP_Krig.fstd }
+fstdfile open 1 read  $env(CI_DATA_IN)/pression.fstd
+fstdfile open 2 write $env(CI_DATA_OUT)/OBS_BURP_Krig.fstd
 
 #----- Recuperer le champs pour la grille d'interpolation
 fstdfield read FLD 1 -1 "" -1 -1 -1 "" ""

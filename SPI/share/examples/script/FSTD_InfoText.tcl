@@ -28,8 +28,8 @@ package require Logger
 
 Log::Start [info script] 0.2
 
-file delete $env(CI_SPI_OUT)/FSTD_InfoText.fstd
-fstdfile open TEXTFILE write $env(CI_SPI_OUT)/FSTD_InfoText.fstd
+file delete $env(CI_DATA_OUT)/FSTD_InfoText.fstd
+fstdfile open TEXTFILE write $env(CI_DATA_OUT)/FSTD_InfoText.fstd
 
 foreach string { "ceci est un test" "ceci est un test\n ok la\n\tééédfg dféédààà ççç \u306F." } type { ASCII UNICODE } {
 

@@ -31,8 +31,8 @@ fstdfield vector { U V W 10.0 }
 puts "Testing vector fields:"
 puts "   vector list: [fstdfield vector]"
 
-file delete $env(CI_SPI_OUT)/FSTD_Funcs.fstd
-fstdfile open OUT write $env(CI_SPI_OUT)/FSTD_Funcs.fstd
+file delete $env(CI_DATA_OUT)/FSTD_Funcs.fstd
+fstdfile open OUT write $env(CI_DATA_OUT)/FSTD_Funcs.fstd
 
 georef create ZTEST
 georef define ZTEST -rpn 80 60 0.5 0.5 40.0 -170.0 60.0 -150.0 0.0 -180.0 4
@@ -90,8 +90,8 @@ puts "   Alias freed = [fstdfield stats FLDALIAS -gridvalue 5 5]"
 fstdfield free FLDALIAS
 
 puts "\nTesting link/unlink"
-fstdfile open ETA read DataIn/2006122900_000.eta
-fstdfile open HYB read DataIn/2006122900_000.hyb
+fstdfile open ETA read $env(CI_DATA_IN)/2006122900_000.eta
+fstdfile open HYB read $env(CI_DATA_IN)/2006122900_000.hyb
 set lnk  [fstdfile link { ETA HYB }]
 
 fstdfield ip1mode OLD
@@ -111,7 +111,7 @@ fstdfile close ETA HYB
 
 set inter { -20 0 20 }
 puts "\nTesting contour extraction ($inter):"
-fstdfile open 1 read $env(CI_SPI_IN)/2005102612_012
+fstdfile open 1 read $env(CI_DATA_IN)/2005102612_012
 fstdfield read TT 1 -1 "" 12000 -1 -1 "" "TT"
 
 puts "\nTesting levels :"
@@ -147,7 +147,7 @@ puts "      Gridpoints within polygon : [fstdfield stats TT -within $poly]"
 puts "      Minimum within polygon    : [fstdfield stats TT -min $poly]"
 puts "      Avegage within polygon    : [fstdfield stats TT -avg $poly]"
 
-fstdfile open AVGFILE read $env(CI_SPI_IN)/average_PR_2011062200_2011082400
+fstdfile open AVGFILE read $env(CI_DATA_IN)/average_PR_2011062200_2011082400
 fstdfield read PR AVGFILE -1 "" -1 -1 -1 "" "PR"
 puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 -180 10.1 180]]]"
 puts "      Gridpoints within range : [llength [fstdfield stats PR -within [list 10.0 0.0  10.1 360.0]]]"
@@ -189,7 +189,7 @@ puts "   Wind dir   profile: [fstdfield define PROFIL_WD -DATA 0]"
 
 puts "\nTesting mask grid"
 #----- Teste la creation d'un masque de grille plus petite dans un grille plus grande
-fstdfile open 2 read $env(CI_SPI_IN)/2006122900_000.eta
+fstdfile open 2 read $env(CI_DATA_IN)/2006122900_000.eta
 fstdfield read GZ 2 -1 "" 12000 -1 -1 "" "GZ"
 fstdfield stats GZ -nodata 0.0
 vexpr GZ GZ<<0
@@ -198,8 +198,8 @@ vexpr GZ GZ<<0
 fstdfield configure GZ -extrapdegree VALUE
 fstdfield gridinterp GZ TT
 
-file delete $env(CI_SPI_OUT)/2006122900_000.eta.mask
-fstdfile open 3 write $env(CI_SPI_OUT)/2006122900_000.eta.mask
+file delete $env(CI_DATA_OUT)/2006122900_000.eta.mask
+fstdfile open 3 write $env(CI_DATA_OUT)/2006122900_000.eta.mask
 fstdfield write GZ 3 -32 True
 fstdfield read TIC 2 -1 "" -1 -1 -1 "" ">>"
 fstdfield read TAC 2 -1 "" -1 -1 -1 "" "^^"
@@ -213,7 +213,7 @@ fstdfield writetiled GZ 3 256 256 1 -32 True
 fstdfile close 1 2 3
 
 puts "\nTesting Y grid coordinate interpolation"
-fstdfile open 1 read $env(CI_SPI_IN)/2013061419_024
+fstdfile open 1 read $env(CI_DATA_IN)/2013061419_024
 fstdfield read ZH 1 -1 "" -1 -1 -1 "" "ZH"
 fstdfield read CV 1 -1 "" -1 -1 -1 "" "CV"
 
@@ -235,7 +235,7 @@ set data [fstdfield define NIL2 -DATA 0]
 puts "  Values: [lrange [lindex $data 0] $ni [expr $ni+20]]"
 
 puts "\nTesting read/write TIC/TAC/TOC"
-fstdfile open GEM4 read  $env(CI_SPI_IN)/2014061900_000.gem4
+fstdfile open GEM4 read  $env(CI_DATA_IN)/2014061900_000.gem4
 
 fstdfield read TIC  GEM4 -1 "" -1 -1  -1 "" ">>"
 fstdfield read TAC  GEM4 -1 "" -1 -1  -1 "" "^^"
@@ -254,12 +254,12 @@ fstdfield write SC OUT -32 True
 
 fstdfile close GEM4 OUT
 
-#catch { fstdfile open BAD read $env(CI_SPI_OUT)/2012022412_TOT_ES.txt }
-#fstdfile open OK read $env(CI_SPI_OUT)/2006122900_000.eta.mask
+#catch { fstdfile open BAD read $env(CI_DATA_OUT)/2012022412_TOT_ES.txt }
+#fstdfile open OK read $env(CI_DATA_OUT)/2006122900_000.eta.mask
 
 #----- Test un fichier trunque
 puts "\nTesting truncated file:"
-fstdfile open TRUNC read $env(CI_SPI_IN)/truncated
+fstdfile open TRUNC read $env(CI_DATA_IN)/truncated
 if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
    puts "\n   File is truncated: $msg"
 }
@@ -270,7 +270,7 @@ fstdfile close TRUNC
 puts "\nTesting multiple file open:"
 for { set i 0 } { $i<=1001 } { incr i } {
    puts "   Opening file $i"
-   fstdfile open FILE$i read $env(CI_SPI_IN)/2005102612_012
+   fstdfile open FILE$i read $env(CI_DATA_IN)/2005102612_012
    fstdfile close FILE$i
 }
 

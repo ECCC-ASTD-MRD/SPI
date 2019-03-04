@@ -30,12 +30,12 @@ Log::Start [info script] 0.1
 
 #fstdfield ip1mode NEW
 
-file delete -force $env(CI_SPI_OUT)/FSTD_ETA2SIMGA.fstd
+file delete -force $env(CI_DATA_OUT)/FSTD_ETA2SIMGA.fstd
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
-fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012
-fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_ETA2SIMGA.fstd
+fstdfile open 1 read  $env(CI_DATA_IN)/2005102612_012
+fstdfile open 2 write $env(CI_DATA_OUT)/FSTD_ETA2SIMGA.fstd
 
 #----- Liste des niveaux sur lesquels on veut interpoler
 

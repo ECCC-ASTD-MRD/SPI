@@ -111,7 +111,7 @@ close $f
 Log::Print INFO "Defining grid projection"
 
 #----- Process to FSTD
-set fstd $env(CI_SPI_OUT)/[string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km.stnd
+set fstd $env(CI_DATA_OUT)/[string range $Data(ValidTime) 0 9]_[string range $Data(ValidTime) 10 11]ref_[expr int($Data(Scale))]km.stnd
 file delete $fstd
 fstdfile open FSTD write $fstd
 

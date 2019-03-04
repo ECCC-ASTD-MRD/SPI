@@ -26,17 +26,17 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { file delete $env(CI_SPI_OUT)/FSTD_InterpPrecip.fstd }
+catch { file delete $env(CI_DATA_OUT)/FSTD_InterpPrecip.fstd }
 
-fstdfile open YY  read $env(CI_SPI_IN)/YY.fstd
-fstdfile open LL  read $env(CI_SPI_IN)/LL.fstd
-fstdfile open OUT write $env(CI_SPI_OUT)/FSTD_InterpPrecip.fstd
+fstdfile open YY  read $env(CI_DATA_IN)/YY.fstd
+fstdfile open LL  read $env(CI_DATA_IN)/LL.fstd
+fstdfile open OUT write $env(CI_DATA_OUT)/FSTD_InterpPrecip.fstd
 
 fstdfield read TO LL -1 "" -1 -1 -1 "" "P0"
 fstdfield stats TO -nodata 0.0
 
-set f [open $env(CI_SPI_OUT)/FSTD_InterpPrecip.idx w]
-#set f [open $env(CI_SPI_OUT)/FSTD_InterpPrecip.idx r]
+set f [open $env(CI_DATA_OUT)/FSTD_InterpPrecip.idx w]
+#set f [open $env(CI_DATA_OUT)/FSTD_InterpPrecip.idx r]
 #fconfigure $f -encoding binary -translation binary
 #set index [read $f]
 #binary scan $index f* data

@@ -27,9 +27,9 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { file delete $env(CI_SPI_OUT)/FSTD_TestTypes.fstd }
+catch { file delete $env(CI_DATA_OUT)/FSTD_TestTypes.fstd }
 
-fstdfile open 1 write $env(CI_SPI_OUT)/FSTD_TestTypes.fstd
+fstdfile open 1 write $env(CI_DATA_OUT)/FSTD_TestTypes.fstd
 
 #foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 3 4 5 6 7 8 9 10 11 } {
 foreach type { UByte Byte UInt16 Int16 UInt32 Int32 UInt64 Int64 Float32 Float64 } val { 2 4 2 4 2 4 2 4 5 5 } {

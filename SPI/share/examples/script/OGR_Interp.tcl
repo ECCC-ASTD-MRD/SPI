@@ -27,13 +27,13 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Open the shapefile
-catch { eval file delete [glob $env(CI_SPI_OUT)/OGR_Interp2D.*] }
+catch { eval file delete [glob $env(CI_DATA_OUT)/OGR_Interp2D.*] }
 
-set layer [ogrfile open SHPFILE read $env(CI_SPI_IN)/land_bg_p.shp]
+set layer [ogrfile open SHPFILE read $env(CI_DATA_IN)/land_bg_p.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Read the data to be summed
-fstdfile open DATAFILE read $env(CI_SPI_IN)/2005102612_012
+fstdfile open DATAFILE read $env(CI_DATA_IN)/2005102612_012
 fstdfield read DATAFIELD DATAFILE -1 "" -1 -1 -1 "" "P0"
 
 #----- Clear the file that will be used to sum the data
@@ -41,12 +41,12 @@ ogrlayer define LAYER -field PRES Real
 ogrlayer clear LAYER PRES 0.0
 
 #----- Open a file to save the index for future reuse for faster processing
-if { [file exists $env(CI_SPI_OUT)/OGR_InterpIdx.bin] } {
-   set f [open  $env(CI_SPI_OUT)/OGR_InterpIdx.bin { RDONLY BINARY }]
+if { [file exists $env(CI_DATA_OUT)/OGR_InterpIdx.bin] } {
+   set f [open  $env(CI_DATA_OUT)/OGR_InterpIdx.bin { RDONLY BINARY }]
    set index [read $f]
    set gotindex True
 } else {
-   set f [open $env(CI_SPI_OUT)/OGR_InterpIdx.bin { WRONLY CREAT BINARY }]
+   set f [open $env(CI_DATA_OUT)/OGR_InterpIdx.bin { WRONLY CREAT BINARY }]
    set gotindex False
 }
 
@@ -72,14 +72,14 @@ if { !$gotindex } {
    close $f
 }
 
-ogrfile open SHPFILE2 write DataOut/OGR_Interp2D.shp "ESRI Shapefile"
+ogrfile open SHPFILE2 write $env(CI_DATA_OUT)/OGR_Interp2D.shp "ESRI Shapefile"
 ogrlayer write LAYER SHPFILE2
 
 #ogrlayer sync LAYER
 ogrfile close SHPFILE SHPFILE2
 
 
-ogrfile open CSVFILE write DataOut/OGR_Interp2D.csv "CSV"
+ogrfile open CSVFILE write $env(CI_DATA_OUT)/OGR_Interp2D.csv "CSV"
 ogrlayer write LAYER CSVFILE
 ogrfile close CSVFILE
 
@@ -87,9 +87,9 @@ ogrfile close CSVFILE
 
 
 #----- Open the shapefile
-catch { eval file delete [glob DataOut/OGR_Interp1D.*] }
+catch { eval file delete [glob $env(CI_DATA_OUT)/OGR_Interp1D.*] }
 
-set layer [ogrfile open SHPFILE read DataIn/TideStations.shp]
+set layer [ogrfile open SHPFILE read $env(CI_DATA_IN)/TideStations.shp]
 eval ogrlayer read LAYER [lindex $layer 0]
 
 #----- Clear the file that will be used to sum the data
@@ -100,7 +100,7 @@ ogrlayer clear LAYER PRES 0.0
 puts "   Interpolating field values into point layer"
 ogrlayer interp LAYER DATAFIELD PRES LINEAR
 
-ogrfile open SHPFILE2 write DataOut/OGR_Interp1D.shp "ESRI Shapefile"
+ogrfile open SHPFILE2 write $env(CI_DATA_OUT)/OGR_Interp1D.shp "ESRI Shapefile"
 ogrlayer write LAYER SHPFILE2
 #ogrlayer sync LAYER
 ogrfile close SHPFILE SHPFILE2

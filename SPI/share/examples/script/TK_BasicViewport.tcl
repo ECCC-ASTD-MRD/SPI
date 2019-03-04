@@ -43,8 +43,8 @@ pack .map -fill both -expand true
 
 update idletasks
 
- .map postscript -file $env(CI_SPI_OUT)/TK_BasicViewport.ps
+ .map postscript -file $env(CI_DATA_OUT)/TK_BasicViewport.ps
  
 image create photo TMPIMG 
 .map buffer TMPIMG 1 1 400 400
-TMPIMG write "$env(CI_SPI_OUT)/TK_BasicViewport.png" -format png
+TMPIMG write "$env(CI_DATA_OUT)/TK_BasicViewport.png" -format png

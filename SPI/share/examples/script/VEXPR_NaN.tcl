@@ -10,7 +10,7 @@ Log::Start [info script] 0.1
 
 #----- Setup fields
 
-set fn  DataIn/2005102612_012
+set fn  $env(CI_DATA_IN)/2005102612_012
 set fld 131073 ;# TT at 1.000 sg (12000) for T+18
 
 fstdfile open FLE read $fn

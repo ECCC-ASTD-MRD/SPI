@@ -27,7 +27,7 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Open the files
-set layers0 [ogrfile open FILE0 read $env(CI_SPI_IN)/Volcano.shp]
+set layers0 [ogrfile open FILE0 read $env(CI_DATA_IN)/Volcano.shp]
 #set layers0 [ogrfile open FILE0 read DataIn/noire_areas.shp]
 
 #----- Create latlon referential
@@ -133,13 +133,13 @@ set reqlayer Volcano
 ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN ('South America','Tau Ceti')"
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
-eval file delete [glob $env(CI_SPI_OUT)/OGR_Functions*]
+eval file delete [glob $env(CI_DATA_OUT)/OGR_Functions*]
 
-ogrfile open RESULT write $env(CI_SPI_OUT)/OGR_Functions.shp "ESRI Shapefile"
+ogrfile open RESULT write $env(CI_DATA_OUT)/OGR_Functions.shp "ESRI Shapefile"
 ogrlayer write LAYER0 RESULT
 ogrfile close RESULT
 
-ogrfile open RESULT write $env(CI_SPI_OUT)/OGR_Functions_Copy.shp "ESRI Shapefile"
+ogrfile open RESULT write $env(CI_DATA_OUT)/OGR_Functions_Copy.shp "ESRI Shapefile"
 ogrlayer copy LAYER1 LAYER0
 ogrlayer write LAYER1 RESULT
 ogrfile close RESULT

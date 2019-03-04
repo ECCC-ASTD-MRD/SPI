@@ -28,8 +28,8 @@ Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
 
-set fields [fstdfile open 1 read  $env(CI_SPI_IN)/2005120600_012]
-fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_8HourAverage.fstd
+set fields [fstdfile open 1 read  $env(CI_DATA_IN)/2005120600_012]
+fstdfile open 2 write $env(CI_DATA_OUT)/FSTD_8HourAverage.fstd
 
 Log::Print INFO "Found date: [fstdfile info 1 DATEV]"
 

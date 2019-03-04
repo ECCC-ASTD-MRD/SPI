@@ -33,16 +33,16 @@ set lon  -122.4877
 set elev 230.0
 set dt   3.0
 
-file delete -force $env(CI_SPI_OUT)/RADAR_EchoTop.fstd
+file delete -force $env(CI_DATA_OUT)/RADAR_EchoTop.fstd
 
-fstdfile open FILE write $env(CI_SPI_OUT)/RADAR_EchoTop.fstd
+fstdfile open FILE write $env(CI_DATA_OUT)/RADAR_EchoTop.fstd
 
 #----- Initialize RPN grid
-set grid [Grid::CreateL [expr $lat-$dt] [expr $lon-$dt] [expr $lat+$dt] [expr $lon+$dt] 0.01]
+set grid [Grid::CreateL [expr $lat-$dt] [expr $lon-$dt] [expr $lat+$dt] [expr $lon+$dt] 0.01 0.01]
 Grid::Write FILE $grid 1 2 3 False
 
 #----- Loop on the radar files
-foreach file [glob $env(CI_SPI_IN)/*IRIS*] {
+foreach file [glob $env(CI_DATA_IN)/*IRIS*] {
    puts "   Processing file $file"
    set scans [radarfile open RADARSITE read $file]
    set out   [open DataOut/[file tail $file] w]

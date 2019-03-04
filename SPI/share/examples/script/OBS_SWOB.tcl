@@ -29,7 +29,7 @@ Log::Start [info script] 0.1
 #----- Read standard table set
 metobs table -readcmc
 
-metobs create SWOBDATA $env(CI_SPI_IN)/71216.xml
+metobs create SWOBDATA $env(CI_DATA_IN)/71216.xml
 
 #----- Output global info on the metobs
 puts  "   Available info   : [metobs define SWOBDATA -INFO]"

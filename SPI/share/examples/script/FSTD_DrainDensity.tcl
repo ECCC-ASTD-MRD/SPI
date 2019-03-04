@@ -33,9 +33,9 @@ Log::Start [info script] 0.1
 
 #----- Ouvrir les fichiers d'entree et de sortie
 
-catch { file delete -force $env(CI_SPI_OUT)/FSTD_DrainDensity.fstd }
-fstdfile open FSTDOUT write $env(CI_SPI_OUT)/FSTD_DrainDensity.fstd
-fstdfile open FSTDIN  read  $env(CI_SPI_IN)/noire.fst
+catch { file delete -force $env(CI_DATA_OUT)/FSTD_DrainDensity.fstd }
+fstdfile open FSTDOUT write $env(CI_DATA_OUT)/FSTD_DrainDensity.fstd
+fstdfile open FSTDIN  read  $env(CI_DATA_IN)/noire.fst
 
 #----- Copier les TIC TAC
 
@@ -58,17 +58,17 @@ vexpr MASK     FLD<<0
 
 #----- Lire la donnee des rivieres
 
-set layers [ogrfile open FILE1 read $env(CI_SPI_IN)/noire_lines.shp]
+set layers [ogrfile open FILE1 read $env(CI_DATA_IN)/noire_lines.shp]
 ogrlayer read LINES FILE1 0
 
 #----- Lire la donnee des lacs
 
-set layers [ogrfile open FILE2 read $env(CI_SPI_IN)/noire_areas.shp]
+set layers [ogrfile open FILE2 read $env(CI_DATA_IN)/noire_areas.shp]
 ogrlayer read AREAS FILE2 0
 
 #----- Lire la donnee du bassin (masque)
 
-set layers [ogrfile open FILE3 read $env(CI_SPI_IN)/noire_sousbasssins.shp]
+set layers [ogrfile open FILE3 read $env(CI_DATA_IN)/noire_sousbasssins.shp]
 ogrlayer read BASSIN FILE3 0
 
 #----- Interpolation (rasterisation) selon les longueurs et couvertures

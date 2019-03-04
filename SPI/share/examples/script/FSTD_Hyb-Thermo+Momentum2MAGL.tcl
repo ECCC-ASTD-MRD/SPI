@@ -26,7 +26,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-catch { file delete $env(CI_SPI_OUT)/FSTD_Hyb-Thermo+Momentum2MAGL.fstd }
+catch { file delete $env(CI_DATA_OUT)/FSTD_Hyb-Thermo+Momentum2MAGL.fstd }
 
 set ttlevels { 2.0  80.0 500.0 1000.0 5000.0 10000.0 }
 set uvlevels { 10.0 80.0 }
@@ -34,8 +34,8 @@ set uvlevels { 10.0 80.0 }
 fstdfield ip1mode NEW
 
 #----- Open RPN in/out files
-fstdfile open IN read $env(CI_SPI_IN)/2010010103_006_2.5km
-fstdfile open OUT write $env(CI_SPI_OUT)/FSTD_Hyb-Thermo+Momentum2MAGL.fstd
+fstdfile open IN read $env(CI_DATA_IN)/2010010103_006_2.5km
+fstdfile open OUT write $env(CI_DATA_OUT)/FSTD_Hyb-Thermo+Momentum2MAGL.fstd
 
 #----- Copy grid descriptors
 fstdfield read TIC IN -1 "" -1 -1 -1 "" >>

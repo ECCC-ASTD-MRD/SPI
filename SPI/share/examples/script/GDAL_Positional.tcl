@@ -27,7 +27,7 @@ package require Logger
 Log::Start [info script] 0.1
 
 #----- Ouverture du fichier
-set bands [gdalfile open GDAL read $env(CI_SPI_IN)/SAR.tif]
+set bands [gdalfile open GDAL read $env(CI_DATA_IN)/SAR.tif]
 puts "   found: \n\t[join $bands \n\t]"
 
 #----- Lecture des bandes

@@ -27,7 +27,8 @@ package require Logger
 Log::Start [info script] 0.1
 
 proc OGRRasterize { File } {
-
+   global env
+   
    #----- Ouvrir les donnees vectorielles
    set layer [lindex [ogrfile open SHAPE read $File] 0]
    eval ogrlayer read LAYER $layer
@@ -50,8 +51,8 @@ proc OGRRasterize { File } {
 
       #----- Creer le fichier de rasterization
 
-      catch { file delete -force $env(CI_SPI_OUT)/[file rootname [file tail $File]].tif }
-      gdalfile open FILEOUT write $env(CI_SPI_OUT)/[file rootname [file tail $File]].tif GeoTiff
+      catch { file delete -force $env(CI_DATA_OUT)/[file rootname [file tail $File]].tif }
+      gdalfile open FILEOUT write $env(CI_DATA_OUT)/[file rootname [file tail $File]].tif GeoTiff
 
       gdalband create RASTER $width $height 1 Byte
       gdalband define RASTER -projection [ogrlayer define LAYER -projection]
@@ -73,7 +74,7 @@ proc OGRRasterize { File } {
 
 #----- Process tout les fichier shape du repertoire
 
-foreach file [glob -nocomplain $env(CI_SPI_IN)/noire*.shp] {
+foreach file [glob -nocomplain $env(CI_DATA_IN)/noire*.shp] {
    OGRRasterize $file
 }
 

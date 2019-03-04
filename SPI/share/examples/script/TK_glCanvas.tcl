@@ -93,10 +93,10 @@ button .canvas.test   -text "  Tk  " -highlightthickness 0 -bd 1
 #.glcanvas create viewport -x 50 -y 150 -width 150 -height 150 -anchor nw -tags VP -projection PROJ -camera CAM -command VP  -fg black  -colorcoast black  -font FONT2
 
 image create photo SVGTEST -width 150 -height 150
-SVGTEST read $env(CI_SPI_IN)/tiger.svg 
-#SVGTEST read $env(CI_SPI_IN)/yinyang.svg
-#SVGTEST read $env(CI_SPI_IN)/ubuntu.svg
-#SVGTEST read $env(CI_SPI_IN)/WeatherSymbol_WMO_CloudHigh_CH_1.svg
+SVGTEST read $env(CI_DATA_IN)/tiger.svg 
+#SVGTEST read $env(CI_DATA_IN)/yinyang.svg
+#SVGTEST read $env(CI_DATA_IN)/ubuntu.svg
+#SVGTEST read $env(CI_DATA_IN)/WeatherSymbol_WMO_CloudHigh_CH_1.svg
 #SVGTEST read /home/afsr/005/WeatherSymbol_WMO_WindArrowSH_25.svg
 
 proc draw { Canvas Act } {
@@ -138,19 +138,19 @@ draw .canvas 0
 
 update idletasks
 
-.canvas postscript -file $env(CI_SPI_OUT)/TK_glCanvas_tk.ps
-.glcanvas postscript -file $env(CI_SPI_OUT)/TK_glCanvas_gl.ps
+.canvas postscript -file $env(CI_DATA_OUT)/TK_glCanvas_tk.ps
+.glcanvas postscript -file $env(CI_DATA_OUT)/TK_glCanvas_gl.ps
 package require Img
 
 image create photo TMPIMG
 .glcanvas buffer TMPIMG 1 1 300 300
 
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.png" -format png
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.jpg" -format jpeg
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.bmp" -format bmp
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.tga" -format tga
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.tif" -format tiff
-TMPIMG write "$env(CI_SPI_OUT)/TK_glCanvas.sgi" -format sgi
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.png" -format png
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.jpg" -format jpeg
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.bmp" -format bmp
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.tga" -format tga
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.tif" -format tiff
+TMPIMG write "$env(CI_DATA_OUT)/TK_glCanvas.sgi" -format sgi
 
 
 

@@ -41,8 +41,8 @@ Log::Print INFO "Extracting everything"
 eval ogrlayer sqlselect ALL PGOSM \{ SELECT * FROM planet_osm_polygon WHERE (way && ST_MakeEnvelope($bbox)) \}
 Log::Print INFO "   Selected number of feature : [ogrlayer define ALL -nb]"
   
-catch { eval file delete [glob $env(CI_SPI_OUT)/osmall.*] }
-ogrfile open OSMALL write $env(CI_SPI_OUT)/osmall.shp "ESRI Shapefile"
+catch { eval file delete [glob $env(CI_DATA_OUT)/osmall.*] }
+ogrfile open OSMALL write $env(CI_DATA_OUT)/osmall.shp "ESRI Shapefile"
 ogrlayer write ALL OSMALL
 ogrfile close OSMALL
 ogrlayer free ALL
@@ -51,8 +51,8 @@ Log::Print INFO "Extracting coastlines"
 eval ogrlayer sqlselect COAST PGOSM \{ SELECT * FROM planet_osm_polygon WHERE \"natural\"='coastline' AND (way && ST_MakeEnvelope($bbox)) \}
 Log::Print INFO "   Selected number of feature : [ogrlayer define COAST -nb]"
  
-catch { eval file delete [glob $env(CI_SPI_OUT)/osmcoast.*] }
-ogrfile open OSMCOAST write $env(CI_SPI_OUT)/osmcoast.shp "ESRI Shapefile"
+catch { eval file delete [glob $env(CI_DATA_OUT)/osmcoast.*] }
+ogrfile open OSMCOAST write $env(CI_DATA_OUT)/osmcoast.shp "ESRI Shapefile"
 ogrlayer write COAST OSMCOAST
 ogrfile close OSMCOAST
 ogrlayer free COAST
@@ -61,8 +61,8 @@ Log::Print INFO "Extracting lakes"
 eval ogrlayer sqlselect LAKE PGOSM \{ SELECT * FROM planet_osm_polygon WHERE (\"natural\"='water' OR place='sea' OR waterway='riverbank' OR waterway='canal') AND (way && ST_MakeEnvelope($bbox)) \}
 Log::Print INFO "   Selected number of feature : [ogrlayer define LAKE -nb]"
 
-catch { eval file delete [glob $env(CI_SPI_OUT)/osmlake.*] }
-ogrfile open OSMLAKE write $env(CI_SPI_OUT)/osmlake.shp "ESRI Shapefile"
+catch { eval file delete [glob $env(CI_DATA_OUT)/osmlake.*] }
+ogrfile open OSMLAKE write $env(CI_DATA_OUT)/osmlake.shp "ESRI Shapefile"
 ogrlayer write LAKE OSMLAKE
 ogrfile close OSMLAKE
 ogrlayer free LAKE

@@ -27,7 +27,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-fstdfile open FSTDIN read $env(CI_SPI_IN)/2015040712_000.con
+fstdfile open FSTDIN read $env(CI_DATA_IN)/2015040712_000.con
 
 Log::Print INFO "Producing GRIB1"
 
@@ -35,7 +35,7 @@ Log::Print INFO "Producing GRIB1"
 #gribfield create GRIB1NEW 1 1 1 polar_stereographic_sfc_grib1
 
 #----- Use an existing file 
-puts stderr [gribfile open GRIB_FILE read $env(CI_SPI_IN)/argos.grib]
+puts stderr [gribfile open GRIB_FILE read $env(CI_DATA_IN)/argos.grib]
 gribfield read GRIB1NEW GRIB_FILE 0
 
 #----- Product keys
@@ -101,7 +101,7 @@ proc GRIB::EncodeIso { FieldId Iso Date Time NProg NAnal } {
 foreach var { CV CVI DW WI } id { 200 202 201 205 } nm { conc dose depot wetd } {
 
    Log::Print INFO "Processing $var"
-   gribfile open GRIBOUT write $env(CI_SPI_OUT)/GRIB_Convert_$nm.grib1
+   gribfile open GRIBOUT write $env(CI_DATA_OUT)/GRIB_Convert_$nm.grib1
    
    foreach fld [fstdfield find FSTDIN -1 "" -1 -1 -1 "" $var] {
 
@@ -141,7 +141,7 @@ gribfield define GRIB2NEW -key $Keys(PRODUCT)
 foreach var { CV CVI DW WI } id { 10 8 13 11 } nm { conc dose depot wetd } {
 
    Log::Print INFO "Processing $var"
-   gribfile open GRIBOUT write $env(CI_SPI_OUT)/GRIB_Convert_$nm.grib2
+   gribfile open GRIBOUT write $env(CI_DATA_OUT)/GRIB_Convert_$nm.grib2
    
    foreach fld [fstdfield find FSTDIN -1 "" -1 -1 -1 "" $var] {
 

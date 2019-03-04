@@ -37,7 +37,7 @@ set gdesc  { 1 1 1 }                            ;#Grid descriptor, must change w
 
 #----- Recuperer les observations
 Log::Print INFO "Loading dataset"
-set obs [lsearch -inline -glob [observation load $env(CI_SPI_IN)/OBS_ZKrig.obs] $var*]
+set obs [lsearch -inline -glob [observation load $env(CI_DATA_IN)/OBS_ZKrig.obs] $var*]
 
 #----- Calculer les positions de grilles
 Log::Print INFO "Calculating zgrid coordinates"
@@ -81,7 +81,7 @@ Log::Print INFO "Applying krigging over dataset"
 fstdfield gridinterp SECTION $obs LINEAR 0.0 1.0 10
 
 Log::Print INFO "Saving zgrid kriging"
-fstdfile open  FILE write $env(CI_SPI_OUT)/OBS_ZKrig.fstd
+fstdfile open  FILE write $env(CI_DATA_OUT)/OBS_ZKrig.fstd
 fstdfield write SECTION FILE -32 True
 fstdfield write TIC FILE -32 True
 fstdfield write TAC FILE -32 True

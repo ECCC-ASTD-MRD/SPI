@@ -26,11 +26,11 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-file delete $env(CI_SPI_OUT)/FSTD_InterpTime.fstd
+file delete $env(CI_DATA_OUT)/FSTD_InterpTime.fstd
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012
-fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_InterpTime.fstd
+fstdfile open 1 read  $env(CI_DATA_IN)/2005102612_012
+fstdfile open 2 write $env(CI_DATA_OUT)/FSTD_InterpTime.fstd
 
 #----- Lire les champs aux temps T(0) et T(1)
 fstdfield read T0 1 -1 "" 12000 18 -1  "" ES

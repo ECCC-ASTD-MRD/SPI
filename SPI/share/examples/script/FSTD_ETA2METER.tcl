@@ -31,8 +31,8 @@ fstdfield ip1mode NEW
 set levels { 1000 2000 3000 4000 5000 6000 7000 8000 9000 10000 }
 
 #----- Ouvrir les fichiers d'entree (1) sortie (2)
-fstdfile open 1 read  $env(CI_SPI_IN)/2005102612_012
-fstdfile open 2 write $env(CI_SPI_OUT)/FSTD_ETA2METER.fstd
+fstdfile open 1 read  $env(CI_DATA_IN)/2005102612_012
+fstdfile open 2 write $env(CI_DATA_OUT)/FSTD_ETA2METER.fstd
 
 #----- Get the grid dimensions
 fstdfield read GZ 1 -1 "" -1 -1 -1 "" "GZ"

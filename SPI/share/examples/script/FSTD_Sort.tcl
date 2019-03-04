@@ -27,7 +27,7 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-fstdfile open 1 read $env(CI_SPI_IN)/2005120600_012
+fstdfile open 1 read $env(CI_DATA_IN)/2005120600_012
 
 #----- Recuperer le champs pour la grille d'interpolation
 set fldlist {}

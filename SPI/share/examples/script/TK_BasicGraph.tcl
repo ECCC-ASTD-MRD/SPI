@@ -88,8 +88,8 @@ proc Pick { X Y } {
 }
 
 update idletasks
-.glcanvas postscript -file $env(CI_SPI_OUT)/TK_BasicGraph.ps
+.glcanvas postscript -file $env(CI_DATA_OUT)/TK_BasicGraph.ps
 image create photo TMPIMG 
 .glcanvas buffer TMPIMG 1 1 1000 600
-TMPIMG write "$env(CI_SPI_OUT)/TK_BasicGraph.png" -format png
+TMPIMG write "$env(CI_DATA_OUT)/TK_BasicGraph.png" -format png
 
