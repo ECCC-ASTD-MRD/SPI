@@ -152,8 +152,8 @@ proc OpenGL::ParamFrame { Frame Apply } {
 
       frame $frame.move.disp
          label $frame.move.disp.lbl -text [lindex $Lbl(Movement) $GDefs(Lang)] -width 15 -anchor w
-         scale $frame.move.disp.sc -orient horizontal -from 10 -to 2000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
-            -sliderlength 8  -bd 1 -resolution 10
+         scale $frame.move.disp.sc -orient horizontal -from 0 -to 5000 -showvalue False -variable Viewport::Map(Delay) -relief flat \
+            -sliderlength 8  -bd 1 -resolution 100
          pack $frame.move.disp.lbl -side left
          pack $frame.move.disp.sc -side left -fill x -expand True
       frame $frame.move.damp

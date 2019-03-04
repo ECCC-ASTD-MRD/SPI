@@ -804,10 +804,10 @@ proc ProjCam::Select { Cam Frame Name { Now False } } {
    }
 
    #----- Repositionner la camera
-   if { $Now } {
-      Viewport::Rotate $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
-   } else {
-      Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2]
+   switch $Now { 
+      "True"  { Viewport::Rotate $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2] }
+      "False" { Viewport::GoTo $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2] }
+      "Full"  { Viewport::GoToBatch $Frame [lindex $params 10] [lindex $params 11] [lindex $params 3] [lindex $params 1] [lindex $params 0] [lindex $params 2] }
    }
 
    set cam(CFX)  [lindex $params 4]
