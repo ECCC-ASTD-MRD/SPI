@@ -51,7 +51,7 @@ deploy:
       
 #      - ssh eer@eccessdepot.cmc.ec.gc.ca mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
 #      - ssh eer@eccessdepot.cmc.ec.gc.ca ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
-#      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@eccessdepot.cmc.ec.gc.ca:www/software/SPI/${SPI_VERSION}${SPI_STATE}     
+#      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@accessdepot.cmc.ec.gc.ca:www/software/SPI/${SPI_VERSION}${SPI_STATE}     
    only:
       - master
       

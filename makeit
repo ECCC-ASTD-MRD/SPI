@@ -2,7 +2,7 @@
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
 #-----    Check for new versions of dict and bufr in $CMCCONST
-. ./VERSION
+. SPI/VERSION
 
 if [[ -n $COMP_ARCH ]]; then
    COMP=-${COMP_ARCH}
@@ -128,10 +128,10 @@ if [[ $SRC -eq 1 ]]; then
    find ${SSM_DEV}/src/libSPI-${SPI_VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    
    #-----Copy constant files
-   cd $AFSISIO/datafiles/constants/
    mkdir ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   cd $AFSISIO/datafiles/constants/
    cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
    
-   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI-${SPI_VERSION}-src.tgz src
+   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
 fi
 
