@@ -453,7 +453,7 @@ uninstall-binaries:
 # Lexer parts
 GRAMMAR = generic/Data_Calc
 LEXFLAGS   = -P vexpr_
-YACCFLAGS  = -p vexpr_
+YACCFLAGS  = -p vexpr_ -d
 
 # Kill built-in rules
 %.c: %.l
