@@ -51,7 +51,7 @@ while [ $# -gt 0 ]; do
         -build)   BLD=1;;
         -ext)     EXT=1;;
         -ssm)     SSM=1;;
-        -all)     EXT=1;BLD=1;SSM=1;REC=1; printf -- "\n\nYou can go for a coffee, ... make it 2 coffee\n\n";;
+        -all)     EXT=1;BLD=1;SSM=1;REC=1;;
 
         -h|-help)     printf -- "$HELP\n"; exit 0;;
         -v|-version)  printf -- "$VERSION\n"; exit 0;;
@@ -67,19 +67,13 @@ PROC=`uname -m | tr _ -`
 #----- Dependencies paths
 
 SRC_PATH=`pwd`
-TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                  #----- Temporary directory where the external libraries will be compiled
-LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                 #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}         #----- Location of eer library
-export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                  #----- External libraries
+TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                         #----- Temporary directory where the external libraries will be compiled
+LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                        #----- Where to install libraries
+LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
+export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                         #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
-
-if [[ $PROC == "x86_64" ]]; then
-   x64=yes
-else
-   x64=no
-fi
 
 if [[ -n $INTEL_LICENSE_FILE ]]; then
    export CC=icc
@@ -148,14 +142,14 @@ if [[ $EXT -eq 1 ]]; then
    echo "- Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tcl${TCL_VERSION}
    cd ${TMP_PATH}/tcl${TCL_VERSION}
-   (${SSM_DEV}/src/ext/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit=${x64}
+   (${SSM_DEV}/src/ext/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit
    make install) > ${TMP_PATH}/tcl${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tk
    echo "- Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
    mkdir ${TMP_PATH}/tk${TCL_VERSION}
    cd ${TMP_PATH}/tk${TCL_VERSION}
-   (${SSM_DEV}/src/ext/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
+   (${SSM_DEV}/src/ext/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
 
    #----- Remove visibility-hidden flag from makefile for glCanvas to work
    mv Makefile Makefile.hidden
@@ -182,7 +176,7 @@ if [[ $EXT -eq 1 ]]; then
 #       cd ${TMP_PATH}/${TKIMG}
 #       
 #       #----- Because some setup enable jbig without the big stuff
-#       (${SSM_DEV}/src/ext/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
+#       (${SSM_DEV}/src/ext/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
 #       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
 #       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
 #       make install) > ${TMP_PATH}/${TKIMG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
@@ -192,14 +186,14 @@ if [[ $EXT -eq 1 ]]; then
    echo "- Building ${TMP_PATH}/${TKTABLE}/build.log"
    mkdir ${TMP_PATH}/${TKTABLE}
    cd ${TMP_PATH}/${TKTABLE}
-   (${SSM_DEV}/src/ext/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${SSM_DEV}/src/ext/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKTABLE}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- Tkdnd
    echo "- Building ${TMP_PATH}/${TKDND}/build.log"
    mkdir ${TMP_PATH}/${TKDND}
    cd ${TMP_PATH}/${TKDND}
-   (${SSM_DEV}/src/ext/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tcl=${LIB_PATH}/TCL/lib
+   (${SSM_DEV}/src/ext/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib
    make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
 
    #----- tDOM
@@ -207,7 +201,7 @@ if [[ $EXT -eq 1 ]]; then
       echo "- Building ${TMP_PATH}/${TDOM}/build.log"
       mkdir ${TMP_PATH}/${TDOM}
       cd ${TMP_PATH}/${TDOM}
-      (${SSM_DEV}/src/ext/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit=${x64} --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
+      (${SSM_DEV}/src/ext/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
       make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
    fi
 
@@ -246,7 +240,6 @@ if [[ $BLD -eq 1 ]]; then
    
    #----- System with no OpenGL
    ldconfig -p | grep -q 'libGL\.so ' || export LDFLAGS="-L$LIB_PATH/GL/lib"
-
 
    printf -- "\n----- Making TclSystem Library  -----\n"
 
