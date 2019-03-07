@@ -2,7 +2,7 @@
 #----- On version change:
 #-----    Change version in TclGeoEER/configure.in
 #-----    Check for new versions of dict and bufr in $CMCCONST
-. ../SPI/VERSION
+. ../SPI*/VERSION
 
 NAME="libSPI"
 DESCRIPTION="SPI libraries"

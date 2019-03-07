@@ -133,7 +133,7 @@ set reqlayer Volcano
 ogrlayer sqlselect LAYERRESULT FILE0 "SELECT * FROM $reqlayer WHERE ENGLISH NOT IN ('South America','Tau Ceti')"
 puts  "   Selected number of feature : [ogrlayer define LAYERRESULT -nb]"
 
-eval file delete [glob $env(CI_DATA_OUT)/OGR_Functions*]
+catch { eval file delete [glob -nocomplain $env(CI_DATA_OUT)/OGR_Functions*] }
 
 ogrfile open RESULT write $env(CI_DATA_OUT)/OGR_Functions.shp "ESRI Shapefile"
 ogrlayer write LAYER0 RESULT

@@ -26,14 +26,14 @@ Log::Start [info script] 0.2
 Log::Print INFO "Using $env(SPI_PATH)\n"
 
 #----- Pending tests
-#   {FSTD_Voir.tcl pollux:/home/afsr/005/public_html/SPI/Script/DataIn/2005102612_012c}
+#   {FSTD_Voir.tcl pollux:/home/afsr/005/public_html/SPI/Script/$env(CI_DATA_IN)/2005102612_012c}
 #   FSTD_ImagePreview.tcl
 #   SIM_Traj.tcl
 
 set tests {
    {FSTD_Head.tcl $env(CI_DATA_IN)/2005102612_012c}
    {FSTD_Voir.tcl $env(CI_DATA_IN)/2005102612_012c}
-   {FSTD_CheckInsideness.tcl $env(CI_DATA_IN)/2005102612_012c DataIn/latlon.txt}
+   {FSTD_CheckInsideness.tcl $env(CI_DATA_IN)/2005102612_012c $env(CI_DATA_IN)/latlon.txt}
    FSTD_Funcs.tcl
    FSTD_GridFunc.tcl
    FSTD_GetPressure.tcl
