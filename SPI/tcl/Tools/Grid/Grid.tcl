@@ -354,9 +354,11 @@ proc Grid::SettingsShow { } {
 proc Grid::ProjectSave { Path } {
    variable Data
    variable GenPhysX
+   variable Msg
 
    if { $Path=="" } {
-      return
+      Dialog::Error .gridmaker $Msg(SavePath)
+      return False
    }
    
    set no    0
@@ -398,6 +400,7 @@ proc Grid::ProjectSave { Path } {
       
       incr no
    } 
+   return True
 }
 
 #----------------------------------------------------------------------------
