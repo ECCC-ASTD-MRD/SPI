@@ -75,8 +75,8 @@ proc Grid::Window { } {
                "zeroth.xbm size1.xbm size2.xbm size3.xbm size4.xbm size5.xbm bound.xbm fill.xbm" "0 1 2 3 4 5 6 7" \
                Grid::Data(GridSize) "Grid::ConfigSet" 0 -relief groove -bd 2
          IcoMenu::Set $Data(Tab).head.size $Data(GridSize)
-         pack $Data(Tab).head.mode $Data(Tab).head.add $Data(Tab).head.del $Data(Tab).head.size -side left -padx 2
-         pack $Data(Tab).head.save $Data(Tab).head.load -side right
+         pack $Data(Tab).head.mode $Data(Tab).head.load $Data(Tab).head.add $Data(Tab).head.del $Data(Tab).head.size -side left -padx 2
+         pack $Data(Tab).head.save -side right
       pack $Data(Tab).head -side top -fill x -padx 2 -pady 2
  
       Grid::Frame $Data(Tab) True
@@ -167,7 +167,7 @@ proc Grid::Frame { Frame { Multi False } } {
          entry $Frame.grid.dim.pil -textvariable Grid::Param(PI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
          checkbutton $Frame.grid.dim.njfft -variable Grid::Param(FFTNJ) -onvalue 1 -offvalue 0 \
             -text FFT -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -command { Grid::Apply }
-         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.nifft $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.njfft $Frame.grid.dim.pil -side left
+         pack $Frame.grid.dim.lbl $Frame.grid.dim.ni $Frame.grid.dim.x $Frame.grid.dim.nj $Frame.grid.dim.pil -side left
       frame $Frame.grid.maxcfl
          label $Frame.grid.maxcfl.lbl -text [lindex $Lbl(MaxCFL) $GDefs(Lang)]
          spinbox $Frame.grid.maxcfl.val -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(MaxCFL) -width 3 -from 0 -to 20 -increment 1 -command { Grid::Apply }
@@ -273,7 +273,7 @@ proc Grid::WindowSave { } {
       pack .gridmakersave.physx.target -side top -fill x -expand True
 
    frame .gridmakersave.cmd -relief sunken -bd 1
-      button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { Grid::ProjectSave $Grid::Data(SavePath); destroy .gridmakersave }
+      button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { if { [Grid::ProjectSave $Grid::Data(SavePath)] } { destroy .gridmakersave } }
       button .gridmakersave.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { destroy .gridmakersave }
       pack .gridmakersave.cmd.go .gridmakersave.cmd.cancel -side left -fill x -expand True
       
