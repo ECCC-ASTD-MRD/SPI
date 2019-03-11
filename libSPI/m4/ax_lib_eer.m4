@@ -125,7 +125,7 @@ AC_DEFUN([AX_LIB_EER],
                 [[]]
             )],
             [
-            EER_CFLAGS="-I$eer_include_dir -DHAVE_GPC"
+            EER_CFLAGS="-I$eer_include_dir -DHAVE_GPC -DHAVE_TCL"
             eer_header_found="yes"
             AC_MSG_RESULT([found])
             ],
