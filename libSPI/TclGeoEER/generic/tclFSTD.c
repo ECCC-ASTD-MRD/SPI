@@ -414,6 +414,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
    static CONST char *types[]   = { "Unknown","Binary","UByte","Byte","UInt16","Int16","UInt32","Int32","UInt64","Int64","Float32","Float64",NULL };
    static CONST char *sopt[]   = { "version","ip1mode","autountile","hide","read","readcube","head","find","write","writegeo","writetiled","copydesc","export","create","vertical","gridinterp","verticalinterp",
                                    "timeinterp", "fromband", NULL };
+   static CONST char *cbs[]   = { "REPLACE","MIN","MAX","SUM","AVERAGE",NULL };
+   
    enum                opt { VERSION,IP1MODE,AUTOUNTILE,HIDE,READ,READCUBE,HEAD,FIND,WRITE,WRITEGEO,WRITETILED,COPYDESC,EXPORT,CREATE,VERTICAL,GRIDINTERP,VERTICALINTERP,TIMEINTERP,FROMBAND };
 
    Tcl_ResetResult(Interp);
@@ -1051,8 +1053,8 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             } else if ((layer=OGR_LayerGet(Tcl_GetString(Objv[3])))) {
 
                /*Interpolate a layer*/
-               if (Objc!=5 && Objc!=6 && Objc!=7) {
-                  Tcl_WrongNumArgs(Interp,2,Objv,"field layer mode [field] [index]");
+               if (Objc!=5 && Objc!=6 && Objc!=7 && Objc!=8) {
+                  Tcl_WrongNumArgs(Interp,2,Objv,"field layer mode [field] [index] [REPLACE|MIN|MAX|SUM|AVERAGE]");
                   ok=TCL_ERROR; break;
                }
                if (Tcl_GetIndexFromObj(Interp,Objv[4],TDef_InterpVString,"mode",TCL_EXACT,&imode)!=TCL_OK) {
@@ -1070,10 +1072,16 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
 
-               if (Objc==7) {
+               if (Objc==7 && strlen(Tcl_GetString(Objv[6]))) {
                   obj=Objv[6];
                }
 
+               if (Objc==8) {
+                  if (Tcl_GetIndexFromObj(Interp,Objv[7],cbs,"combine",TCL_EXACT,(int*)&m)!=TCL_OK) {
+                     return(TCL_ERROR);
+                  }
+               }
+               
                // Check for index array
                index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
