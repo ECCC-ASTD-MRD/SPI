@@ -961,7 +961,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 {
                     Tcl_DictSearch  search;
                     Tcl_Obj         *tkey,*tval;
-                    int             done,nattr=0;
+                    int             done,nattr=0,needRowNames=0;
                     const char      **attrnames=NULL;
                     SEXP            rtmp,rnames,*attr=NULL;
 
@@ -1009,6 +1009,11 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                             }
                             attr[nattr-1] = rtmp;
                             attrnames[nattr-1] = str+5;
+                            // Adjust for dataframe row names
+                            if( !strcmp(str,"attr.class") && !strcmp(Tcl_GetString(tval),"data.frame") )
+                                ++needRowNames;
+                            if( !strcmp(str,"attr.row.names") )
+                                --needRowNames;
                             // We have an attribute : add it to the list of attributes
                             //setAttrib(rvar,Rf_install(str+5),rtmp);
                         } else {
@@ -1030,9 +1035,24 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                     for(i=0; i<nattr; ++i) {
                         setAttrib(rvar,Rf_install(attrnames[i]),attr[i]);
                     }
+
+                    // Free attributes' resources
                     UNPROTECT(nattr);
                     free(attr);
                     free(attrnames);
+
+                    // Add the row.names if needed
+                    if( needRowNames > 0 ) {
+                        char buf[64];
+                        len = LENGTH(VECTOR_ELT(rvar,0));
+                        R_PROTECT( rtmp=allocVector(STRSXP,len) );
+                        for(i=0; i<len; ++i) {
+                            snprintf(buf,64,"%d",i+1);
+                            SET_STRING_ELT(rtmp,i,Rf_mkChar(buf));
+                        }
+                        setAttrib(rvar,R_RowNamesSymbol,rtmp);
+                        UNPROTECT(1); // rtmp
+                    }
 
                     // Add the names to the main vector
                     setAttrib(rvar,R_NamesSymbol,rnames);
