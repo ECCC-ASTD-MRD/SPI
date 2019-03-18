@@ -88,6 +88,7 @@ typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,T
 #define IsNaInt(val)        ((val)==R_NaInt)
 #define IsNaReal(val)       R_IsNA(val)
 
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclR_RInit>
  * Creation     : Août 2015 - E. Legault-Ouellet
@@ -897,7 +898,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
             break;
     }
 
-    if( len && strcmp(Tcl_GetString(TclVar),"") ) {
+    if( len && Tcl_GetString(TclVar)[0]!='\0' ) {
         switch( type ) {
             case TCLY_INT:
                 R_PROTECT( rvar=allocVector(INTSXP,len) );
@@ -1690,9 +1691,34 @@ static int TclR_RExec(Tcl_Interp *Interp,TclR_Context *Context,const char* RCmd,
         if( i ) R_UNPROTECT;
 
         // Execute the statement and protect the new "res"
-        R_PROTECT( res=R_tryEval(VECTOR_ELT(rexpr,i),R_GlobalEnv,&err) );
+        R_PROTECT( res=R_tryEvalSilent(VECTOR_ELT(rexpr,i),R_GlobalEnv,&err) );
         if( err ) {
-            Tcl_AppendResult(Interp,"Error while executing expression\nExpression was : ",RCmd,NULL);
+            R_len_t len;
+            SEXP *str,trace;
+            char buf[8];
+
+            // Get the R stack trace
+            R_PROTECT( trace=Rf_findVar(Rf_install(".Traceback"),R_BaseEnv) );
+
+            // Count the number of items in the linked-list
+            // Trace is a linked list. CAR gets the element out of the current node, CDR gets the next node and the last element is NULL
+            for(i=0,res=trace; res!=R_NilValue; i++,res=CDR(res))
+                ;
+
+            // Build the error message
+            Tcl_AppendResult(Interp,"Error while executing R expression\n\n**** R Error ****\n",R_curErrorBuf(),"\n**** R stack trace ****\n",NULL);
+            for(res=trace; res!=R_NilValue; res=CDR(res)) {
+                snprintf(buf,8,"%5d: ",i--);
+                len = LENGTH(CAR(res));
+                str = STRING_PTR(CAR(res));
+
+                if( len-- )
+                    Tcl_AppendResult(Interp,buf,CHAR(*str++),"\n",NULL);
+                while(len--)
+                    Tcl_AppendResult(Interp,"        ",CHAR(*str++),"\n",NULL);
+            }
+            Tcl_AppendResult(Interp,"\n**** Original R Expression ****\n",RCmd,"\n",NULL);
+
             R_UNPROTECT_ALL;
             return TCL_ERROR;
         }
