@@ -129,7 +129,7 @@ namespace eval FileBox {
    set Msg(Right)        { "Vous n'avez pas la permission d'accéder a ce répertoire:"
                            "You do not have the right to access this path:" }
    set Msg(Del)          { "Voulez-vous vraiment supprimer ces fichiers ?" "Do you really want to suppress these files ?" }
-   set Msg(Overwrite)    { "Un fichier avec ne nom existe déja, voulez-vous écraser ce fichier ?" "A file by this name already exists, Do you want to overwrite this file ?" }
+   set Msg(Overwrite)    { "Un fichier avec ce nom existe déjà, voulez-vous écraser ce fichier ?" "A file by this name already exists, Do you want to overwrite this file ?" }
 
    #----- Definitions des Erreurs
 
