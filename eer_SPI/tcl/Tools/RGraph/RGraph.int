@@ -1,0 +1,515 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2121 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : RGraph.ctes
+# Creation : Décembre 2018
+#
+# Description:
+#    Outil pour faire des graphiques en utilisant le langage R
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Description des interfaces
+#===============================================================================
+proc RGraph::TextHL { W Tag Pat Range } {
+    if { [llength [set idxs [$W search -regexp -all -count lens -- $Pat {*}$Range]]] } {
+        foreach idx $idxs len $lens {
+            $W tag add $Tag $idx "$idx + $len chars"
+        }
+    }
+}
+
+proc RGraph::TextHLInTag { W Tag Pat Range InTag } {
+    lassign $Range start end
+
+    #----- Loop on the ranges tagged $InTag and try to match our pattern there
+    while { [set range [$W tag nextrange $InTag $start $end]] != "" } {
+        TextHL $W $Tag $Pat $range
+        set start [lindex $range 1]
+    }
+}
+
+proc RGraph::EditRHLClear { W {Range ""} } {
+    if { $Range == "" } {
+        set Range {0.0 end}
+    }
+
+    foreach tag {RKeyword ROperator RNumber RConstant RString RType RDelimiter RSpecial RComment} {
+        $W tag remove $tag {*}$Range
+    }
+}
+
+proc RGraph::EditRHLSet { W {Range ""} } {
+    variable Syntax
+
+    if { $Range == "" } {
+        set Range {0.0 end}
+    }
+
+    #----- Set normal tags
+    foreach tag {RKeyword ROperator RNumber RConstant RString RType RDelimiter RSpecial} {
+        TextHL $W $tag $Syntax($tag) $Range
+    }
+
+    #----- Set the tags that must be contained within other tags
+    TextHLInTag $W RSpecial $Syntax(RSpecialInString) $Range RString
+
+    #----- Special case for comments, we need to make sure the '#' is not inside a string
+    lassign $Range start end
+    while { [set idx [$W search -exact "#" $start $end]] != "" } {
+        if { "RString" ni [$W tag names $idx] } {
+            #----- Tag the rest of the line
+            lassign [split $idx .] l c
+            $W tag add RComment $idx $l.end
+            set start [incr l].0
+        } else {
+            set start "$idx + 1 chars"
+        }
+    }
+}
+
+proc RGraph::EditRModified { Id W } {
+    variable Data
+
+    if { [$W edit modified] } {
+        #----- Syntax highlighting
+        if { $Data(EditRHL$Id) } {
+            EditRHLClear $W
+            EditRHLSet $W
+        }
+
+        #----- Mark text as modified
+        set Data(EditRMod$Id) 1
+
+        #----- Reset the modified flag
+        $W edit modified 0
+    }
+}
+
+proc RGraph::EditRSave { Id W } {
+    variable Param
+    variable Data
+
+    if { [set file [FileBox::Create [winfo toplevel $W] "" Save $Param(RFileExt)]] != "" } {
+        #----- Write the file
+        set fd [open $file w]
+        puts -nonewline $fd [$W get 0.0 end]
+        close $fd
+
+        #----- Mark the text as saved if it's different from the default
+        if { $Data(EditRMod$Id) } {
+            set Data(EditRMod$Id) 2
+        }
+    }
+}
+
+proc RGraph::EditROpen { Id W } {
+    variable Param
+    variable Data
+    variable Lbl
+    variable Msg
+
+    #----- If we have unsaved modifications, make sure it's ok to overwrite them
+    if { $Data(EditRMod$Id)==1 && [Dialog::Default $W 400 WARNING $Msg(EditROpen) "" 1 $Lbl(Ok) $Lbl(Cancel)]!=0 } {
+        return
+    }
+
+    if { [set file [FileBox::Create [winfo toplevel $W] "" Load $Param(RFileExt)]] != "" } {
+        #----- Read the file
+        set fd [open $file r]
+        set txt [read $fd]
+        close $fd
+
+        #----- Insert the text into our editor
+        $W delete 0.0 end
+        $W insert 0.0 $txt
+        update
+
+        #----- Mark the text as saved
+        set Data(EditRMod$Id) 2
+
+        UpdateGraph $Id 1
+    }
+}
+
+proc RGraph::EditRSet { Id W {Reset 0} } {
+    variable Data
+    variable Lbl
+    variable Msg
+
+    #----- No need to set anything if nothing is modified
+    if { !$Data(EditRMod$Id) } {
+        return
+    }
+
+    if { $Reset } {
+        #----- If there are unsaved modifications, make sure it's ok to overwrite them
+        if { $Data(EditRMod$Id)==1 && [Dialog::Default $W 400 WARNING $Msg(EditRReset) "" 1 $Lbl(Ok) $Lbl(Cancel)]!=0 } {
+            return
+        }
+
+        #----- Delete the override
+        unset -nocomplain Data(RCode$Id)
+
+        #----- Insert the default text
+        $W delete 0.0 end
+        $W insert 0.0 [RCode $Id]
+        update
+
+        #----- Set the text as unmodified
+        set Data(EditRMod$Id) 0
+    } else {
+        #----- Update the text in the override
+        set Data(RCode$Id) [$W get 0.0 end]
+    }
+
+    UpdateGraph $Id 1
+}
+
+proc RGraph::EditRStatus { Id args } {
+    global GDefs
+    variable Lbl
+    variable Data
+
+    switch $Data(EditRMod$Id) {
+        0 {set mod Unmodified}
+        1 {set mod Modified}
+        2 {set mod Saved}
+    }
+
+    if { $Data(EditRMod$Id) } {
+        set st [lindex $Lbl(Modified) $GDefs(Lang)]
+    } else {
+        set st [lindex $Lbl(Unmodified) $GDefs(Lang)]
+    }
+
+    if { $Data(EditRMod$Id) == 1 } {
+        append st "*"
+    }
+
+    set Data(EditRStatus$Id) $st
+}
+
+proc RGraph::EditRDestroy { Id W } {
+    variable Data
+
+    RGraph::EditRSet $Id $W
+
+    #----- Re-enable the interface if the code is unmodified
+    if { !$Data(EditRMod$Id) } {
+        pack $Data(Tab$Id).gparams -side top -before $Data(Tab$Id).foot -fill x -padx 2 -pady 2
+    }
+
+    destroy [winfo toplevel $W]
+}
+
+proc RGraph::EditRWindow { Id } {
+    global GDefs
+    variable Bubble
+    variable Param
+    variable Data
+
+    if { ![info exists Data(Type$Id)] } {
+        return
+    }
+
+    set w .editR$Id
+
+    if { ![winfo exists $w] } {
+        #----- Disable the parameters for the graph
+        pack forget $Data(Tab$Id).gparams
+
+        toplevel            $w
+        wm title            $w "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) (EditR $Id)"
+        eval wm geometry    $w $Param(EditRGeom)
+        wm resizable        $w 1 1
+        wm protocol         $w WM_DELETE_WINDOW [list RGraph::EditRDestroy $Id $w.body.text]
+
+        #----- Header
+        frame $w.head
+            frame $w.head.file -bd 1
+                button $w.head.file.open -image OPEN -relief flat -bd 1 -overrelief raised -command [list RGraph::EditROpen $Id $w.body.text]
+                button $w.head.file.save -image SAVE -relief flat -bd 1 -overrelief raised -command [list RGraph::EditRSave $Id $w.body.text]
+                pack $w.head.file.open $w.head.file.save -side left
+            pack $w.head.file -side left
+            frame $w.head.code -bd 1
+                button $w.head.code.reset -image DOCNEW -relief flat -bd 1 -overrelief raised -command "RGraph::EditRSet $Id $w.body.text 1"
+                button $w.head.code.run -image DOCRUN -relief flat -bd 1 -overrelief raised -command "RGraph::EditRSet $Id $w.body.text"
+                pack $w.head.code.reset $w.head.code.run -side left
+            pack $w.head.code -side left
+            checkbutton $w.head.hl -image PALETTEDEL -selectimage PALETTE -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron 0 -variable RGraph::Data(EditRHL$Id) \
+                -command "if { \$RGraph::Data(EditRHL$Id) } { RGraph::EditRHLSet $w.body.text } else { RGraph::EditRHLClear $w.body.text }"
+            pack $w.head.hl -side right -anchor e
+        pack $w.head -padx 2 -side top -fill x
+
+        Bubble::Create $w.head.file.open $Bubble(EditROpen)
+        Bubble::Create $w.head.file.save $Bubble(EditRSave)
+        Bubble::Create $w.head.code.reset $Bubble(EditRReset)
+        Bubble::Create $w.head.code.run $Bubble(EditRRun)
+        Bubble::Create $w.head.hl $Bubble(EditRHL)
+
+        #----- Body (text editor)
+        frame $w.body
+            text [set txt $w.body.text] -relief sunken -bd 1 -yscrollcommand "$w.body.sb set" -background white -height 1 -foreground black -font "Courier 12 normal roman"
+            pack $txt -side left -fill both -expand 1
+            scrollbar $w.body.sb -command "$txt yview"
+            pack $w.body.sb -side left -anchor e -fill y
+        pack $w.body -padx 2 -side top -expand 1 -fill both
+
+        #----- Footer
+        frame $w.foot
+            label $w.foot.status -textvariable RGraph::Data(EditRStatus$Id) -width 20 -anchor w -justify left
+            trace add variable RGraph::Data(EditRMod$Id) write [list RGraph::EditRStatus $Id]
+            EditRStatus $Id
+            pack $w.foot.status -side left
+        pack $w.foot -side top -fill x -padx 2
+
+        #----- Bindings
+        bind $txt <MouseWheel>  {%W yview scroll [expr {-%D/120}] units}
+        bind $txt <Button-4>    {%W yview scroll -1 units}
+        bind $txt <Button-5>    {%W yview scroll 1 units}
+        bind $txt <<Modified>>  [list RGraph::EditRModified $Id %W]
+
+        #----- Define the tags for syntax highlighting
+        $txt tag configure RKeyword     -foreground #b26818
+        $txt tag configure ROperator    -foreground #b26818
+        $txt tag configure RNumber      -foreground #b21818
+        $txt tag configure RConstant    -foreground #b21818
+        $txt tag configure RString      -foreground #b21818
+        $txt tag configure RType        -foreground #18b218
+        $txt tag configure RDelimiter   -foreground #b218b2
+        $txt tag configure RSpecial     -foreground #b218b2
+        $txt tag configure RComment     -foreground #1818b2
+
+        #----- Insert the text
+        set st $Data(EditRMod$Id)
+        $txt insert 0.0 [RCode $Id]
+        update
+        set Data(EditRMod$Id) $st
+    }
+
+    raise $w
+}
+
+proc RGraph::DataTable { Id } {
+    global GDefs
+    variable Param
+    variable Data
+
+    set w .rgraphdata$Id
+
+    if { ![winfo exists $w] } {
+        toplevel            $w
+        wm title            $w "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) (RData $Id)"
+        eval wm geometry    $w $Param(RDataGeom)
+        wm resizable        $w 1 1
+        wm transient        [winfo toplevel $Data(Graph$Id)]
+        wm protocol         $w WM_DELETE_WINDOW "destroy $w; unset -nocomplain RGraph::Data(RData$Id)"
+
+        frame [set f $w.data] -relief sunken -bd 1
+            scrollbar $f.sy -relief sunken -bd 1 -width 10 -command "$f.table yview"
+            scrollbar $f.sx -relief sunken -bd 1 -width 10 -orient horizontal -command "$f.table xview"
+            table [set tbl $f.table] -relief sunken -bd 1 -bg $GDefs(ColorLight) -variable ::RGraph::RData$Id \
+                -anchor w -yscrollcommand "$f.sy set" -xscrollcommand "$f.sx set" -selectmode extended -sparsearray 0 \
+                -bordercursor sb_h_double_arrow -resizeborders col -colstretchmode unset -width 1 -height 1 -multiline False -drawmode fast \
+                -rows 1 -cols 1 -titlecols 1 -titlerows 1 -state disable -highlightbackground $GDefs(ColorHighLight) -invertselected True
+            pack $f.sx -side bottom -fill x
+            pack $f.sy -side left -fill y
+            pack $f.table -side left -fill both -expand true -before $f.sy
+        pack $f -side top -fill both -expand true -padx 5 -pady 5
+
+        #----- Some table formatting
+        $tbl tag configure title -anchor center -relief raised
+
+        set Data(RData$Id) $tbl
+    } else {
+        wm deiconify $w
+        raise        $w [winfo toplevel $Data(Param$Id)]
+    }
+
+    DataTableUpdate $Id
+}
+
+proc RGraph::DockToggle { Id } {
+    variable Data
+
+    set Data(Dock$Id) [expr {!$Data(Dock$Id)}]
+    destroy .rgraph$Id
+    Window $Id
+    if { [info exists Data(Type$Id)] } {
+        ParamsWindow $Id $Data(Type$Id) $Data(Tab$Id)
+    }
+}
+
+proc RGraph::ParamsWindow { Id Type W } {
+    global GDefs
+    variable Lbl
+
+    #----- Clear any pre-existing specific params
+    set w $W.gparams
+    destroy $w
+
+    #----- Create the window specific to that graph
+    labelframe $w -text [lindex $Lbl(RParams) $GDefs(Lang)]
+        Call ::RGraph::${Type}::ParamsWindow $Id $w ::RGraph::Data$Id
+    pack $w -side top -fill x -padx 2 -pady 2 -before $W.foot
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <RGraph::Window>
+# Creation : Décembre 2018 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Initialise le package de l'outil et son interface
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc RGraph::Window { {Id ""} } {
+    global GDefs
+    variable Data
+    variable Lbl
+    variable Bubble
+    variable Param
+
+    #----- Load the different graph types if it's not already done
+    Init
+
+    #----- In case of new graph (otherwise, it's a docking action)
+    if { $Id == "" } {
+        #----- Get a unique ID for the new graph
+        set id  [NewId]
+
+        #----- Set/update some values
+        set Data(Dock$id)       $Param(Dock)
+        set Data(EditRHL$id)    $Param(EditRHL)
+        set Data(EditRMod$id)   0
+        set Data(MarkerCol$id)  #ff0000
+        set Data(MarkerFont$id) [font create -family courier -size -12  -weight bold]
+    } else {
+        set id $Id
+    }
+
+    set Data(Id)            $id
+    set Data(Active)        1
+    set Data(Param$id)      [set w .rgraph$id]
+
+    #----- Create the window
+    if { $Data(Dock$id) } {
+        frame $w
+        SPI::Dock $w
+    } else {
+        toplevel            $w
+        wm title            $w "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+        eval wm geometry    $w $Param(Geom)
+        wm resizable        $w 1 1
+        wm protocol         $w WM_DELETE_WINDOW [list RGraph::Close $id]
+
+        if { $SPI::Param(Window) } { wm transient $w . }
+    }
+
+    TabFrame::Create $w.tab 1 ""
+    set tab [TabFrame::Add $w.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+    set Data(Tab$id) $tab
+    pack $w.tab -side top -fill both -expand true
+
+    #----- Header
+    frame $tab.head
+        #----- Tool mode
+        checkbutton $tab.head.mode -variable Page::Data(ToolMode) -onvalue RGraph -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command "set RGraph::Data(Id) $id; SPI::ToolMode \$Page::Data(ToolMode) Data True"
+        pack $tab.head.mode -side left -padx 2
+        #----- Graph type
+        menubutton $tab.head.gtype -relief flat -bd 0 -menu $tab.head.gtype.menu -indicatoron 0 \
+            -text [lindex [expr {[info exists Data(Type$id)]?[set ::RGraph::$Data(Type$id)::Param(Title)]:$Lbl(TypeChoose)}] $GDefs(Lang)]
+        menu $tab.head.gtype.menu
+        foreach type $Data(GraphTypes) {
+            set lbl [lindex [set ::RGraph::${type}::Param(Title)] $GDefs(Lang)]
+            $tab.head.gtype.menu add command -label $lbl -command "$tab.head.gtype configure -text {$lbl}; RGraph::SetType $id $type; RGraph::UpdateItems {} $id; RGraph::UpdateGraph $id"
+        }
+        pack $tab.head.gtype -side left -padx 2 -fill x -expand 1
+        #----- Data table
+        button $tab.head.datatbl -image GRID -relief flat -bd 1 -overrelief raised -command [list RGraph::DataTable $id]
+        pack $tab.head.datatbl -side left -padx {2 0}
+        if { $Id == "" } {
+            trace add variable Data(DataValid$id) write "$tab.head.datatbl configure -state \[expr {\$::RGraph::Data(DataValid$id)?\"normal\":\"disabled\"}\] ;#Ignore args#"
+        }
+        #----- Data export
+        button $tab.head.dataexp -image GRIDSAVE -relief flat -bd 1 -overrelief raised -command [list RGraph::DataExport $id "" $tab.head.dataexp]
+        pack $tab.head.dataexp -side left -padx {0 2}
+        if { $Id == "" } {
+            trace add variable Data(DataValid$id) write "$tab.head.dataexp configure -state \[expr {\$::RGraph::Data(DataValid$id)?\"normal\":\"disabled\"}\] ;#Ignore args#"
+        }
+    pack $tab.head -side top -fill x
+
+    #----- Position
+    frame [set f $tab.posttl]
+        label $f.txt -text [lindex $Lbl(Position) $GDefs(Lang)]
+        checkbutton $f.loc -indicatoron 0 -variable RGraph::Data(Locator$id) -image LOCATION -command [list RGraph::Locator $id]
+        pack $f.txt -side left
+        pack $f.loc -side left -padx {2 0}
+    labelframe $tab.pos -labelwidget $f
+        #----- Lat
+        frame [set f $tab.pos.lat]
+            label $f.l -text "Latitude "
+            entry $f.e -textvariable RGraph::Data(Lat$id) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 1 -validate key -validatecommand {expr {"%P"=="-" || [string is double %P]}}
+            pack $f.l -side left
+            pack $f.e -side left -fill x -expand 1
+        pack $f -side top -fill x -pady {2 0}
+        bind $f.e <Key-Return> "RGraph::UpdateItems {} $id; RGraph::UpdateGraph $id"
+        #---- Lon
+        frame [set f $tab.pos.lon]
+            label $f.l -text "Longitude"
+            entry $f.e -textvariable RGraph::Data(Lon$id) -relief sunken -bd 1 -bg $GDefs(ColorLight) -width 1 -validate key -validatecommand {expr {"%P"=="-" || [string is double %P]}}
+            pack $f.l -side left
+            pack $f.e -side left -fill x -expand 1
+        pack $f -side top -fill x
+        bind $f.e <Key-Return> "RGraph::UpdateItems {} $id; RGraph::UpdateGraph $id"
+        #----- Marker font+color
+        frame [set f $tab.pos.font]
+            label $f.l -text [lindex $Lbl(Marker) $GDefs(Lang)] -width 9 -anchor w
+            ColorBox::CreateSel $f.col RGraph::Data(MarkerCol$id) [list RGraph::UpdateItems "" $id]
+            button $f.b -bitmap @$GDefs(Dir)/share/bitmap/font.ico -relief groove -command [list FontBox::Create $f.b "" $Data(MarkerFont$id)]
+            pack $f.l $f.col $f.b -side left
+        pack $f -side top -anchor w
+    pack $tab.pos -side top -fill x -padx 2 -pady 2
+
+    #----- Footer
+    frame $tab.foot
+        button $tab.foot.edit -text [lindex $Lbl(Edit) $GDefs(Lang)] -command [list RGraph::EditRWindow $id]
+        pack $tab.foot.edit -side left -anchor w
+        button $tab.foot.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -command [list RGraph::UpdateGraph $id]
+        pack $tab.foot.apply -side left -anchor e
+    pack $tab.foot -side top -fill x -padx 2 -pady 2
+
+    #----- Docking actions buttons
+    set Data(Coo$id) $id
+    frame $w.dock -relief raised -bd 1
+        button $w.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command [list RGraph::DockToggle $id]
+        button $w.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command [list RGraph::Close $id]
+        entry $w.dock.coo -textvariable RGraph::Data(Coo$id) -bg $GDefs(ColorLight) -width 20 -bd 1 -state disable
+        pack $w.dock.sel $w.dock.del -side left
+        pack $w.dock.coo -side left -fill both -expand true
+    pack $w.dock -side bottom -fill x
+
+    Bubble::Create $tab.head.mode $Bubble(Mode)
+
+    raise $w
+
+    if { $Id == "" } {
+        #----- Create the corresponding viewport
+        if { ![SPI::ObjectAdd RGraph] } {
+            Close $id
+        }
+    }
+
+    catch {wm transient $w [winfo toplevel $Data(Graph$id)]}
+}
