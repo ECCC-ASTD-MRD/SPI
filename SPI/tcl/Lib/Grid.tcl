@@ -4,16 +4,31 @@
 # 2100 Trans-Canadienne
 # Dorval, Quebec
 #
-# Projet   : Package d'interface pour SPI
-# Fichier  : Grid.ctes
+# Projet   : Librairie de gestions des grilles
+# Fichier  : Grid.tcl
 # Creation : Juin 2003
 #
 # Description:
-#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
-#    a l'interface SPI
+#    Fonctions relatives a la creation et manipulations de grilles RPN
 #
-#    Descriptions des variables internes du module
-#
+# Fonctions:
+#   Grid::Init               { }
+#   Grid::Reset              { }
+#   Grid::Center             { Lat Lon { Update True } }
+#   Grid::CheckBBoxOrder     { }
+#   Grid::CheckFFT           { N { Incr 1 } { Min 8 } { Factors { 2 3 5 } } }
+#   Grid::CheckNIJ           { }
+#   Grid::Decode             { Scale { Lat 0.0 } { Lon 0.0 } }
+#   Grid::Create             { { ID MODELGRID } { GridInfo {} } }
+#   Grid::CreatePS           { Lat Lon Res NI NJ { ID MODELGRID } }
+#   Grid::CreateZPS          { Lat Lon Res NI NJ { ID MODELGRID } }
+#   Grid::CreateL            { Lat0 Lon0 Lat1 Lon1 ResX ResY  { ID MODELGRID } }
+#   Grid::CreateZL           { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } }
+#   Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY { ID MODELGRID } }
+#   Grid::CreateZE           { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGRID } { Check True } }
+#   Grid::CreateUTM          { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } }
+#   Grid::Write              { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { ETIKET GRID } { Grid True }}
+#   
 #===============================================================================
 
 package provide Grid 2.0
@@ -45,7 +60,7 @@ namespace eval Grid {
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field
    set Param(Type)       "ZE"                                                      ;# Current grid type
-   set Param(Types)      { "PS" "PS_N" "PS_S" "PSZ" "LL" "ZL" "ZE" "UTM" }          ;# List of grid types
+   set Param(Types)      { "PS" "PS_N" "PS_S" "ZPS" "LL" "ZL" "ZE" "UTM" }         ;# List of grid types
    set Param(ResMX)      10000                                                     ;# Grid resolution in meters
    set Param(ResMY)      10000                                                     ;# Grid resolution in meters
    set Param(ResMs)      { 1 5 10 100 250 500 1000 2000 2500 5000 10000 25000 50000 150000 }    ;# List of predefined resolution in meters
@@ -155,7 +170,6 @@ proc Grid::Init { } {
    variable Data
 
    switch $Param(Type) {
-      "PSZ"  { set Param(NI) 229; set Param(NJ) 229; }
       "PS"   { set Param(NI) 229; set Param(NJ) 229; }
       "PS_N" { set Param(NI) 229; set Param(NJ) 229; 
                set Param(Lon0) 0.0; set Param(Lat0)  90.0
@@ -166,6 +180,7 @@ proc Grid::Init { } {
                set Param(ResMX)  150000; set Param(ResLLX) [expr $Param(ResMX)/$Param(LL2M)]; 
                set Param(ResMY)  $Param(ResMX); set Param(ResLLY) $Param(ResLLX) }
       "LL"   { }
+      "ZPS"  { set Param(NI) 229; set Param(NJ) 229; }
       "ZL"   { }
       "ZE"   { }
       "UTM"  { }
@@ -200,10 +215,10 @@ proc Grid::Center { Lat Lon { Update True } } {
    
    switch $Param(Type) {
       "PS"   { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
-      "PSZ"  { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_N" { set Param(Lon0) 0.0;  set Param(Lat0)  90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "PS_S" { set Param(Lon0) 0.0;  set Param(Lat0) -90.0; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "LL"   -
+      "ZPS"  { set Param(Lon0) $Lon; set Param(Lat0) $Lat ; set Param(Lon1) 0.0; set Param(Lat1) 0.0 }
       "ZL"   -
       "ZE"   -
       "UTM"  { set dlat [expr ($Param(Lat1)-$Param(Lat0))*0.5]
@@ -369,6 +384,7 @@ proc Grid::CheckNIJ { } {
          #----- Make sure the grid encloses completely the previous grid
          if { $si<$spi } { set Param(NI) [expr int($spi/$Param(ResMX)-$Param(PI)+1)] }
          if { $sj<$spj } { set Param(NJ) [expr int($spj/$Param(ResMY)-$Param(PJ)+1)] }
+         
 #; set Param(Lat0) [set Lat0 [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY))*0.5]]; set Param(Lat1) [set Lat1 [expr $Lat0+$Param(NJ)*$Param(ResLLY)]]
 #             if { $Data(GridNo)>$Data(GridDepend) } {
 #                set Param(NI) [expr int(($spi+$Param(DNI))/$Param(ResMX)-$Param(PI))]
@@ -377,18 +393,23 @@ proc Grid::CheckNIJ { } {
 #                set Param(DNI) [expr $si - $spi]
 #                set Param(DNJ) [expr $sj - $spj]
 #             }
+
          #----- Check LatR,LonR translations
-#          if { [info exists LatR] && $Data(GridNo)<2 && ($LatR!=0.0 || $LonR!=180.0) } {
-#             set plat0 [expr $gridp(XLat1)+$gridp(LatR)-($spj/(1852*60)*0.5)]
-#             set plon0 [expr $gridp(XLon1)+($gridp(LonR)-180)-($spi/(1852*60)*0.5)]
-#             set plat1 [expr $gridp(XLat1)+$gridp(LatR)+($spj/(1852*60)*0.5)]
-#             set plon1 [expr $gridp(XLon1)+($gridp(LonR)-180)+($spi/(1852*60)*0.5)]
-#             
-#             if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
-#             if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
-#             if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
-#             if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
-#          }
+         if { [info exists LatR] && $Data(GridNo)>0 && ($LatR!=0.0 || $LonR!=180.0) } {
+            
+            set spi [expr $spi/(1852*60)*0.5]
+            set spj [expr $spj/(1852*60)*0.5]
+            
+            set plat0 [expr $gridp(XLat1)+$gridp(LatR)-$spj]
+            set plon0 [expr $gridp(XLon1)+($gridp(LonR)-180)-$spi]
+            set plat1 [expr $gridp(XLat1)+$gridp(LatR)+$spj]
+            set plon1 [expr $gridp(XLon1)+($gridp(LonR)-180)+$spi]
+             
+            if { [expr $Lat0+$LatR]>$plat0 }       { set LatR [expr $plat0-$Lat0] }
+            if { [expr $Lon0+($LonR-180)]>$plon0 } { set LonR [expr $plon0-$Lon0+180] }
+            if { [expr $Lat1+$LatR]<$plat1 }       { set LatR [expr $plat1-$Lat1] }
+            if { [expr $Lon1+($LonR-180)]<$plon1 } { set LonR [expr $plon1-$Lon1+180] }
+         }
       }
       
       if { $Param(Type)=="ZE"  } {    
@@ -436,60 +457,6 @@ proc Grid::CheckNIJ { } {
       
       set Param(XLat1) [expr ($Lat0+$Lat1)*0.5]
       set Param(XLon1) [expr ($Lon0+$Lon1)*0.5]
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Grid::Create>
-# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Fonction de creation de grille appelee par l'interface
-#
-# Parametres :
-#    <GridInfo> : Grid description string
-#    <ID>       : Identificateur du champs qui sera cree
-#
-# Retour:
-#
-# Remarques :
-#    Aucune.
-#
-#----------------------------------------------------------------------------
-
-proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
-   variable Param
-   variable Data
-
-   if { [llength $GridInfo] } {
-      scan $GridInfo "%s %i %i %f %f %f %f %f %f" Param(Type) Param(NI) Param(NJ) Param(Lat0) Param(Lon0) Param(Lat1) Param(Lon1) Param(ResMX) Param(ResLLX)
-   }
-
-   if { $Param(LockCenter) } {
-      Grid::Center $Param(XLat1) $Param(XLon1) False
-   }
-   if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
-
-      switch $Param(Type) {
-         "PSZ"   { Grid::CreatePSZ $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
-         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
-         "PS_S"  -
-         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
-         "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
-         "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
-         "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(LatR) $Param(LonR) $Param(ResLLX) $Param(ResLLY) $Param(Angle) $ID }
-         "UTM"   { Grid::CreateUTM $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
-      }
-      set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResMX) $Param(ResLLX)]
-
-      if { [info exists ::tk_version] } {         
-         set Data(Frame)  $Page::Data(Frame)
-         set Data(Canvas) $Page::Data(Canvas)
-         set Data(VP)     $Viewport::Data(VP)
-         
-         Grid::ConfigSet
-         Viewport::Assign $Data(Frame) $Data(VP) $ID False 0
-         Grid::UpdateItems $Page::Data(Frame)       
-      }
    }
 }
 
@@ -574,6 +541,60 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Grid::Create>
+# Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Fonction de creation de grille appelee par l'interface
+#
+# Parametres :
+#    <GridInfo> : Grid description string
+#    <ID>       : Identificateur du champs qui sera cree
+#
+# Retour:
+#
+# Remarques :
+#    Aucune.
+#
+#----------------------------------------------------------------------------
+
+proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
+   variable Param
+   variable Data
+
+   if { [llength $GridInfo] } {
+      scan $GridInfo "%s %i %i %f %f %f %f %f %f" Param(Type) Param(NI) Param(NJ) Param(Lat0) Param(Lon0) Param(Lat1) Param(Lon1) Param(ResMX) Param(ResLLX)
+   }
+
+   if { $Param(LockCenter) } {
+      Grid::Center $Param(XLat1) $Param(XLon1) False
+   }
+   if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
+
+      switch $Param(Type) {
+         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
+         "PS_S"  -
+         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
+         "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
+         "ZPS"   { Grid::CreateZPS $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
+         "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
+         "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(LatR) $Param(LonR) $Param(ResLLX) $Param(ResLLY) $Param(Angle) $ID }
+         "UTM"   { Grid::CreateUTM $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
+      }
+      set Param(GridInfo) [format "$Param(Type) $Param(NI) $Param(NJ) %.7f %.7f %.7f %.7f %.2f %.7f" $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResMX) $Param(ResLLX)]
+
+      if { [info exists ::tk_version] } {         
+         set Data(Frame)  $Page::Data(Frame)
+         set Data(Canvas) $Page::Data(Canvas)
+         set Data(VP)     $Viewport::Data(VP)
+         
+         Grid::ConfigSet
+         Viewport::Assign $Data(Frame) $Data(VP) $ID False 0
+         Grid::UpdateItems $Page::Data(Frame)       
+      }
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Grid::CreatePS>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
@@ -631,7 +652,7 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Grid::CreatePSZ>
+# Nom      : <Grid::CreateZPS>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Creation d'une grille Z sur reference de grille Polaire Stereographique (PS) 
@@ -652,7 +673,7 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CreatePSZ { Lat Lon Res NI NJ { ID MODELGRID } } {
+proc Grid::CreateZPS { Lat Lon Res NI NJ { ID MODELGRID } } {
    variable Param
    variable Data
 
@@ -698,8 +719,11 @@ proc Grid::CreatePSZ { Lat Lon Res NI NJ { ID MODELGRID } } {
    fstdfield create ${ID} $NI $NJ 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z$grtyp
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
-}
 
+   set Param(PGSM) ""
+
+   return ${ID}
+}
 
 #----------------------------------------------------------------------------
 # Nom      : <Grid::CreateL>

@@ -545,7 +545,7 @@ proc Grid::Draw     { Canvas VP { Modifier "" } } {
    set Param(Lat1) $Viewport::Map(LatCursor)
    set Param(Lon1) $Viewport::Map(LonCursor)
 
-   if { [lindex $Param(Type) 0]=="PS" || [lindex $Param(Type) 0]=="PSZ"} {
+   if { [lindex $Param(Type) 0]=="PS" || [lindex $Param(Type) 0]=="ZPS"} {
       set Param(Lat0) $Viewport::Map(LatCursor)
       set Param(Lon0) $Viewport::Map(LonCursor)
    }
