@@ -3067,6 +3067,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          Tcl_ListObjIndex(Interp,Objv[0],3,&sub);
          Tcl_GetDoubleFromObj(Interp,sub,&dlon1);
 
+         if (dlon0==dlon1 || dlat0==dlat1) {
+            Tcl_AppendResult(Interp,"Data_GetAreaValue: Bad range coordinates",(char*)NULL);
+            return(TCL_ERROR);            
+         }
+         
          // Order values in latitude only since longitude order gives the selection orientation
          if (dlat0>dlat1) { v=dlat0; dlat0=dlat1; dlat1=v; };
 
@@ -3078,6 +3083,11 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
             i0=Field->GRef->X0;
             i1=Field->GRef->X1;
          }
+         // TODO:Test without bbox pre-selection
+         i0=Field->GRef->X0;
+         i1=Field->GRef->X1;
+         j0=Field->GRef->Y0;
+         j1=Field->GRef->Y1;
       } else {
          vnb=nc>>1;
          if (!vnb || nc%2) {
