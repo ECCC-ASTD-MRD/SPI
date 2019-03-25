@@ -562,10 +562,12 @@ proc Page::ActiveFull { Type Frame Id Full } {
 proc Page::ActiveResize { Type Frame Id X0 Y0 X1 Y1 Limit } {
    #----- Make sure the buttons follow the item
    set c $Frame.page.canvas
-   $c coords BSPAGE$Id $X1 $Y1
-   $c coords BMPAGE$Id [expr $X1-11] $Y1
-   $c coords BFPAGE$Id [expr $X1-22] $Y1
-   $c coords BDPAGE$Id $X1 [expr {$Y0==-999 ? [set ${Type}::Data(Y$Id)] : $Y0}]
+   catch {
+       $c coords BSPAGE$Id $X1 $Y1
+       $c coords BMPAGE$Id [expr $X1-11] $Y1
+       $c coords BFPAGE$Id [expr $X1-22] $Y1
+       $c coords BDPAGE$Id $X1 [expr {$Y0==-999 ? [set ${Type}::Data(Y$Id)] : $Y0}]
+   }
 
    #----- Make the callback for the type
    ${Type}::Resize $Frame $Id $X0 $Y0 $X1 $Y1 $Limit
