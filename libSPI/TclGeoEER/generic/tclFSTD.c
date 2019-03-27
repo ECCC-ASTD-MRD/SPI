@@ -1064,7 +1064,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                field=NULL;
                obj=NULL;
                x=1.0;
-               m=CB_REPLACE;
+               m=CB_SUM;
 
                if (Objc>=6) {
                   if (Tcl_GetDoubleFromObj(Interp,Objv[5],&x)==TCL_ERROR) {
