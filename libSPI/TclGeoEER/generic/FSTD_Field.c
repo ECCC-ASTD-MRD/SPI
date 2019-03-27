@@ -149,7 +149,7 @@ int FSTD_FieldSubBuild(TData *Field) {
 
    if (Field->Def) {
 
-      // Allocate subgrid array ans set index 0 to supergrid
+      // Allocate subgrid array and set index 0 to supergrid
       if (!Field->SDef) {
          Field->SDef=(TDef**)calloc((Field->GRef->NbId+1),sizeof(TDef*));
       }
@@ -177,7 +177,7 @@ int FSTD_FieldSubBuild(TData *Field) {
                if (Field->Def->Mask)
                   Field->SDef[i]->Mask=&Field->Def->Mask[dij];
                
-              // Increment after global grid
+               // Increment after global grid
                dij+=ni*nj;
             }
          }
@@ -205,10 +205,9 @@ int FSTD_FieldSubSelect(TData *Field,int N) {
       Field->Def=Field->SDef[N];
 
       // Define grid limits
-      c_ezgprm(Field->GRef->Ids[N],grtyp,&ni,&nj,&ig,&ig,&ig,&ig);
+      c_ezgprm(Field->GRef->Ids[N],grtyp,&Field->GRef->NX,&Field->GRef->NY,&ig,&ig,&ig,&ig);
       Field->GRef->X0=0;    Field->GRef->Y0=0;
-      Field->GRef->X1=ni-1; Field->GRef->Y1=nj-1;
-
+      Field->GRef->X1=Field->GRef->NX-1; Field->GRef->Y1=Field->GRef->NY-1;
       return(1);
    }
    return(0);
