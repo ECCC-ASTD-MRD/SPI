@@ -77,7 +77,7 @@ set y 2
 set z 3
 set t 4
 
-for { set i 0 } { $i < 10000 } { incr i } {
+for { set i 0 } { $i < 1000 } { incr i } {
    vector append SPACETIME [list [incr x] [incr y] [incr z] [incr t]]
 }
 
@@ -92,6 +92,11 @@ puts "Vector length: [vector length SPACETIME.X]"
 
 #----- Afficher l'espace memoire requise par le vecteur
 puts "Vector mem   : [vector mem SPACETIME]"
+
+#----- Tester les calculs
+puts "Pre calc  :[vector get SPACETIME]"
+vexpr WARP SPACETIME*1000
+puts "Post calc :[vector get WARP]"
 
 #----- Liberer le vecteur
 vector free SPACETIME
