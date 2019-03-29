@@ -70,7 +70,7 @@ SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                         #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                        #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
-export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                         #----- External libraries
+LIB_EXT=${CMD_EXT_PATH}/${ORDENV_PLAT}                                           #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -292,10 +292,9 @@ if [[ $BLD -eq 1 ]]; then
       --with-gdal=`which gdal-config` \
       --with-ecbufr=${LIB_EXT} \
       --with-sqlite3 \
-      --with-eccodes=${LIB_EXT} \
-      --with-flt=${LIB_EXT} \
-      --with-urp=${LIB_EXT}
-#      --with-gdal=${LIB_EXT}/bin/gdal-config 
+      --with-eccodes \
+      --with-flt \
+      --with-urp
    fi
    make install || exit 1
 
