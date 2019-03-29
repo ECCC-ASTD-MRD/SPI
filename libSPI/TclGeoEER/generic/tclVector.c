@@ -684,29 +684,18 @@ struct TDef* Vector_GetDef(TVector *Vec) {
    int i;
 
    if (!Vec->Def) {
-      Vec->Def=(struct TDef*)malloc(sizeof(struct TDef));
+      Vec->Def=Def_New(Vec->N,Vec->Cp?Vec->Cp[0]->N:1,1,1,TD_Float64);
    }
 
    if (Vec->Def) {
-      Vec->Def->NI=Vec->N;
-      Vec->Def->NJ=1;
-      Vec->Def->NK=1;
-      Vec->Def->Data[0]=NULL;
-      Vec->Def->Data[1]=NULL;
-      Vec->Def->Data[2]=NULL;
-      Vec->Def->Data[3]=NULL;
-      Vec->Def->Type=TD_Float64;
       Vec->Def->NoData=Vec->NoData;
       Vec->Def->Idx=0;
 
       if (Vec->Cp) {
-         Vec->Def->NJ=Vec->Cp[0]->N;
-         Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*Vec->Def->NJ*sizeof(double));
          for(i=0;i<Vec->N;i++) {
             memcpy(&Vec->Def->Data[0][sizeof(double)*Vec->Def->NJ*i],Vec->Cp[i]->V,sizeof(double)*Vec->Def->NJ);
          }
       } else {
-         Vec->Def->Data[0]=(char*)malloc(Vec->Def->NI*sizeof(double));
          memcpy(Vec->Def->Data[0],Vec->V,sizeof(double)*Vec->Def->NI);
       }
    }

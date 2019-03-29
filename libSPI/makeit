@@ -42,11 +42,13 @@ EXT=0
 SSM=0
 REC=0
 CLR=0
+AUT=0
 
 #----- Get arguments
 while [ $# -gt 0 ]; do
     case "$1" in
         -clear)   CLR=1;;
+        -auto)    AUT=1;;
         -reconf)  REC=1;;
         -build)   BLD=1;;
         -ext)     EXT=1;;
@@ -246,7 +248,7 @@ if [[ $BLD -eq 1 ]]; then
    cd TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean
-      $autoconf
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
       ./configure \
       --prefix=${LIB_PATH}/TCL \
       --exec-prefix=${LIB_PATH}/TCL \
@@ -262,7 +264,7 @@ if [[ $BLD -eq 1 ]]; then
    cd ../TkglCanvas
    if [[ $REC -eq 1 ]]; then
       make distclean
-      $autoconf
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
       ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL/ \
@@ -278,7 +280,7 @@ if [[ $BLD -eq 1 ]]; then
    cd ../TclGeoEER
    if [[ $REC -eq 1 ]]; then
       make distclean
-      $autoconf
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
       ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL \
@@ -303,7 +305,7 @@ if [[ $BLD -eq 1 ]]; then
    cd ../TclR
    if [[ $REC -eq 1 ]]; then
       make distclean
-      $autoconf
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
       ./configure \
       --prefix=${LIB_PATH}/TCL/ \
       --exec-prefix=${LIB_PATH}/TCL \

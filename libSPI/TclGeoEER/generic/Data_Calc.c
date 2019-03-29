@@ -151,8 +151,14 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
 
          case T_VEC:
             GVec=Vector_Copy(Interp,GVec,Name);
-            memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
-            /*For vectors, we copy back the data so we don't need the Def anymore*/
+            if (GVec->Cp) {
+               for(n=0;n<GVec->N;n++) {
+                  memcpy(GVec->Cp[n]->V,&Data->Data[0][TDef_Size[GVec->Def->Type]*Data->NJ*n],GVec->Cp[n]->N*TDef_Size[GVec->Def->Type]);
+               }
+            } else {
+               memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
+            }
+            // For vectors, we copy back the data so we don't need the Def anymore
             Def_Free(Data);
             break;
       }
