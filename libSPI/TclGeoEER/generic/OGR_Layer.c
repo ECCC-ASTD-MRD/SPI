@@ -146,8 +146,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
 
          case FIELD:
-            if (Objc<1 || Objc>4) {
-               Tcl_WrongNumArgs(Interp,2,Objv,"?Field? ?Type? ?Width?");
+            if (Objc<1 || Objc>5) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"?Field? ?Type? ?Width? ?Precision?");
                return TCL_ERROR;
             }
             if (Objc==1) {
@@ -170,11 +170,14 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(OGR_Fld_GetWidth(field)));
                }
                if (OGR_Fld_GetType(field)==OFTReal) {
+                  Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(OGR_Fld_GetWidth(field)));
                   Tcl_ListObjAppendElement(Interp,lst,Tcl_NewIntObj(OGR_Fld_GetPrecision(field)));
                }
                Tcl_SetObjResult(Interp,lst);
                i++;
             } else {
+               int  prec,width;
+
                if (strlen(Tcl_GetString(Objv[1]))>10) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field name too long (max 10 char)",(char*)NULL);
                   return(TCL_ERROR);
@@ -187,9 +190,14 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                }
 
                i++;
-               t=0;
-               if (Objc==4) {
-                  Tcl_GetIntFromObj(Interp,Objv[3],&t);
+               prec=0;
+               width=0;
+               if (Objc>=4) {
+                  Tcl_GetIntFromObj(Interp,Objv[3],&width);
+                  i++;
+               }
+               if (Objc==5) {
+                  Tcl_GetIntFromObj(Interp,Objv[4],&prec);
                   i++;
                }
                
@@ -200,7 +208,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   if (layer->Feature[f]) OGR_F_Destroy(layer->Feature[f]);
                }
 
-               if (!OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),t)) {
+               if (!OGR_FieldCreate(layer,Tcl_GetString(Objv[1]),Tcl_GetString(Objv[2]),width,prec)) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: Unable to create field ",Tcl_GetString(Objv[1]),(char*)NULL);
                   return(TCL_ERROR);
                }
@@ -1893,6 +1901,7 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
  *  <Field>   : Nouveau champs
  *  <Type>    : Type du champs
  *  <Width>   : Largeur du champs
+ *  <Prec>    : Precision du champs
  *
  * Retour     :
  * <OGRFieldDefnH> : Field def
@@ -1901,7 +1910,7 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
  *
  *----------------------------------------------------------------------------
 */
-OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width) {
+OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,int Prec) {
 
    OGRFieldDefnH  field=NULL;
    char           name[11];
@@ -1913,7 +1922,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width)
          field=OGR_Fld_Create(name,OFTInteger);
       } else if (strcmp(Type,"Real")==0) {
          field=OGR_Fld_Create(name,OFTReal);
-         if (Width) OGR_Fld_SetPrecision(field,Width);
+         if (Prec) OGR_Fld_SetPrecision(field,Prec);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"String")==0) {
          field=OGR_Fld_Create(name,OFTString);
@@ -2406,10 +2415,10 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       }
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
 
-      OGR_FieldCreate(Layer,"Desc","String",32);
-      OGR_FieldCreate(Layer,"Interval","Real",32);
-      OGR_FieldCreate(Layer,"Height","Real",16);
-      OGR_FieldCreate(Layer,"HeightUnit","String",32);
+      OGR_FieldCreate(Layer,"Desc","String",32,0);
+      OGR_FieldCreate(Layer,"Interval","Real",32,32);
+      OGR_FieldCreate(Layer,"Height","Real",16,16);
+      OGR_FieldCreate(Layer,"HeightUnit","String",32,0);
 //TODO:Time does not work with current GDAL      OGR_FieldCreate(Layer,"ValidDate","DateTime",0);
 
       for(f=0;f<nf;f++) {
@@ -2461,11 +2470,11 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          strtrim(field[f]->Spec->Desc,' ');
          if (field[f]->Spec->RenderVector) {
             sprintf(buf,"%s (spd)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",16);
+            OGR_FieldCreate(Layer,buf,"Real",16,16);
             sprintf(buf,"%s (dir)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",16);
+            OGR_FieldCreate(Layer,buf,"Real",16,16);
          } else {
-            OGR_FieldCreate(Layer,field[f]->Spec->Desc,"Real",32);
+            OGR_FieldCreate(Layer,field[f]->Spec->Desc,"Real",32,32);
          }
       }
 

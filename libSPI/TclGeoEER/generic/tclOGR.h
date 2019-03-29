@@ -52,7 +52,7 @@ int                OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Ge
 Tcl_Obj*           OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 int                OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index);
 
-OGRFieldDefnH      OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width);
+OGRFieldDefnH      OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,int Prec);
 
 OGR_Layer*         OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type,char **Options);
 OGRLayerH          OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef,char **Options);
