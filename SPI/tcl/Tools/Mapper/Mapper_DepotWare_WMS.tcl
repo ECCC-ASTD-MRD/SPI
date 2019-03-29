@@ -735,7 +735,7 @@ proc Mapper::DepotWare::WMS::BuildXMLDef { Layer { Style "" } { Time "" } } {
    }
    append xml "   <AdviseRead>true</AdviseRead>\n   <OfflineMode>false</OfflineMode>\n   <ZeroBlockHttpCodes>204,404</ZeroBlockHttpCodes>\n   <ZeroBlockOnServerException>true</ZeroBlockOnServerException>\n</GDAL_WMS>"
 
-   set f [open $file w 600]
+   set f [open $file w 0600]
    puts $f $xml
    close $f
 
