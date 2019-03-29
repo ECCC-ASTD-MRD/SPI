@@ -88,9 +88,9 @@ AC_DEFUN([AX_LIB_FLT],
         fi
         run_flt_test="yes"
     elif test "$flt_requested" = "yes"; then
-        if test -n "$flt_include_dir" -a -n "$flt_lib_flags"; then
-            run_flt_test="yes"
-        fi
+        flt_lib_flags="-lflt"
+        flt_include_dir="/"
+        run_flt_test="yes"
     else
         run_flt_test="no"
     fi

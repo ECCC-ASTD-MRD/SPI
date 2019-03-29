@@ -29,7 +29,7 @@ AC_DEFUN([AX_LIB_ECCODES],
         if test "$withval" = "yes"; then
             if test -d /usr/local/include/eccodes.h ; then 
                 eccodes_prefix=/usr/local
-            elif test -d /usr/include/eccodes. ; then
+            elif test -d /usr/include/eccodes.h ; then
                 eccodes_prefix=/usr
             else
                 eccodes_prefix=""
@@ -88,9 +88,9 @@ AC_DEFUN([AX_LIB_ECCODES],
         fi
         run_eccodes_test="yes"
     elif test "$eccodes_requested" = "yes"; then
-        if test -n "$eccodes_include_dir" -a -n "$eccodes_lib_flags"; then
-            run_eccodes_test="yes"
-        fi
+        eccodes_lib_flags="-leccodes"
+        eccodes_include_dir="/"
+        run_eccodes_test="yes"
     else
         run_eccodes_test="no"
     fi

@@ -29,7 +29,7 @@ AC_DEFUN([AX_LIB_URP],
         if test "$withval" = "yes"; then
             if test -d /usr/local/include/urp.h ; then 
                 urp_prefix=/usr/local
-            elif test -d /usr/include/urp. ; then
+            elif test -d /usr/include/urp.h ; then
                 urp_prefix=/usr
             else
                 urp_prefix=""
@@ -88,9 +88,9 @@ AC_DEFUN([AX_LIB_URP],
         fi
         run_urp_test="yes"
     elif test "$urp_requested" = "yes"; then
-        if test -n "$urp_include_dir" -a -n "$urp_lib_flags"; then
-            run_urp_test="yes"
-        fi
+        urp_lib_flags="-lmut -ldrp -lurp -ldsp -lm -lxml2 -lz -lbz2"
+        urp_include_dir="/"
+        run_urp_test="yes"
     else
         run_urp_test="no"
     fi

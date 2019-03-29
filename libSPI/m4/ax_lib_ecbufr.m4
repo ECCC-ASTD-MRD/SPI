@@ -88,9 +88,9 @@ AC_DEFUN([AX_LIB_ECBUFR],
         fi
         run_ecbufr_test="yes"
     elif test "$ecbufr_requested" = "yes"; then
-        if test -n "$ecbufr_include_dir" -a -n "$ecbufr_lib_flags"; then
-            run_ecbufr_test="yes"
-        fi
+        ecbufr_lib_flags="-lecbufr"
+        ecbufr_include_dir="/"
+        run_ecbufr_test="yes"
     else
         run_ecbufr_test="no"
     fi
