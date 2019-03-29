@@ -92,6 +92,7 @@ namespace eval FSTD {
 
    #----- Parametres du champs
 
+   set Param(AutoREC)        False
    set Param(Interpolator)   { NEAREST LINEAR }
    set Param(Extrapolator)   { NEUTRAL MAXIMUM MINIMUM }
    set Param(Orders)         { AUTO INTEGER FLOAT EXPONENTIAL }
@@ -1173,11 +1174,20 @@ proc FSTD::ParamInit { Field { Spec "" } } {
 
       if { [fstdfield configure $Field -set]==0 } {
          #----- Copy default configuration but keep unit and description
-         set unit [fstdfield configure $Field -unit]
-         set desc [fstdfield configure $Field -desc]
+         set unit  [fstdfield configure $Field -unit]
+         set desc  [fstdfield configure $Field -desc]
+         set inter [fstdfield configure $Field -intervals]
          dataspec copy $Spec FLDDEFAULT
          dataspec configure $Spec -unit $unit
          dataspec configure $Spec -desc $desc
+
+          if  { $Param(AutoREC) && ![llength $inter] } {
+             if { [info exist ::MetStat::Rec(Inter$Spec)] && [llength $MetStat::Rec(Inter$Spec)] } {
+                dataspec configure $Spec -intervalmode INTERVAL [lindex $MetStat::Rec(Inter$Spec) 0]
+             } elseif { [info exist ::MetStat::Rec(Level$Spec)] && [llength $MetStat::Rec(Level$Spec)] } {
+                dataspec configure $Spec -intervals [lindex $MetStat::Rec(Level$Spec) 0]
+             }
+          }
       }
       
       #----- Set a colormap    

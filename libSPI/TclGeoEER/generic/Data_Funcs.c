@@ -707,6 +707,7 @@ double dtangcurve(TDef *Res,TDef *Def) {
 double darea(TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
+   unsigned int  nid;
    float        *a=NULL;
    TGeoRef      *gref=NULL;
 
@@ -723,20 +724,22 @@ double darea(TDef *Res,TDef *Def,int Mode) {
       return(0.0);
 
    if ((a=(float*)malloc(FSIZE2D(Def)*sizeof(float)))) {
+      // Force master grid for U grids as vexpr process the whole grid
+      nid=gref->NId;
+      gref->NId=0;
       GeoRef_CellDims(gref,FALSE,NULL,NULL,a);
-
+      gref->NId=nid;
+      
 #pragma omp parallel for \
-      private( j,i,idx ) \
+      private( idx ) \
       shared( Def,Res,a ) \
       schedule(static)
-      for(j=0;j<Def->NJ;j++) {
-         idx=j*Def->NI;
-         for(i=0;i<Def->NI;i++) {
-            Def_Set(Res,0,idx+i,a[idx+i]);
-         }
+      for(idx=0;idx<FSIZE2D(Def);idx++) {
+         Def_Set(Res,0,idx,a[idx]);
       }
-   }
-   
+   } else {
+      return(0.0);
+   }  
    return(1.0);
 }
 
