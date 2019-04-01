@@ -305,6 +305,7 @@ proc Grid::SettingsBuild { Params { C False } } {
          $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
                    }
                  }
+         default { return $param(PGSM) }
    }
 }
 
