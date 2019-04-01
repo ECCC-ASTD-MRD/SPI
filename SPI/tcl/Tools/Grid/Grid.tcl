@@ -305,6 +305,7 @@ proc Grid::SettingsBuild { Params { C False } } {
          $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
                    }
                  }
+         default { return $param(PGSM) }
    }
 }
 
@@ -362,6 +363,7 @@ proc Grid::ProjectSave { Path } {
    }
    
    set no    0
+   set grdn  [expr [llength $Data(GridParams)]-1]
    set gridc {}
    
    foreach grid $Data(GridParams) {
@@ -374,31 +376,34 @@ proc Grid::ProjectSave { Path } {
       } else {
          set res [string trimright [string map { . p } $resk] 0]
       }
-      file mkdir $Path/$res/
+      set path ${Path}/Casc_${grdn}_${res}
+      file mkdir ${path}
       
       #----- Write namelist grid and gridc
-      exec echo [Grid::SettingsBuild $grid] > $Path/$res/gem_settings.nml
+      exec echo [Grid::SettingsBuild $grid] > ${path}/gem_settings.nml
       if { [llength $gridc] } {
-         exec echo [Grid::SettingsBuild $gridc True] >> $Path/$res/gem_settings.nml     
+         exec echo [Grid::SettingsBuild $gridc True] >> ${path}/gem_settings.nml     
       }
       set gridc $grid
       
       #----- Write RPN grid file
-      file delete -force $Path/$res/grid.fstd 
-      fstdfile open FILE write $Path/$res/grid.fstd 
+      file delete -force ${path}/grid.fstd 
+      fstdfile open FILE write ${path}/grid.fstd 
       Grid::Write FILE MODELGRID$no
       fstdfile close FILE
 
       #----- Create GenphysX job file
-      set f [open $Path/$res/Gem_geophy.sh w 0755]
-      puts $f "#!/bin/bash"
-#TODO      puts $f ". ssmuse-sh -x eccc/cmd/cmds/apps/SPI/beta"
-      puts $f "GenPhysX -gridfile $Path/$res/grid.fstd -target RELWS-1.0 -result $Path/$res/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
-      close $f
+      if { $GenPhysX(On) } {
+         set f [open ${path}/Gem_geophy.sh w 0755]
+         puts $f "#!/bin/bash"
+   #TODO      puts $f ". ssmuse-sh -x eccc/cmd/cmds/apps/SPI/beta"
+         puts $f "GenPhysX -gridfile ${path}/grid.fstd -target RELWS-1.0 -result ${path}/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
+         close $f
       
-      exec $Path/$res/Gem_geophy.sh &
-      
+         exec ${path}/Gem_geophy.sh &
+      }
       incr no
+      incr grdn -1
    } 
    return True
 }
@@ -430,7 +435,7 @@ proc Grid::ProjectLoad { Path } {
    
    Grid::Del True
   
-   foreach path [lsort -dictionary -increasing [glob -nocomplain $Path/*p*]] {
+   foreach path [lsort -dictionary -decreasing [glob -nocomplain $Path/Casc_*_*p*]] {
       Log::Print INFO "Loading $path"
       if { [file exists $path/gem_settings.nml] } {
          Grid::SettingsRead $path/gem_settings.nml

@@ -1182,7 +1182,7 @@ int System_Daemonize(Tcl_Interp *Interp,int ForkOff,int Respawn,const char *Lock
                      if (Respawn) {
                         // Keep master process to check for respawn
                         child = wait(&status);
-                        if (child==pid);
+                        if (child==pid)
                            // If child's exit status is error, respawn process
                            Respawn=(status!=0);
                      } else {
