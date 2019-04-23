@@ -70,10 +70,13 @@ proc Grid::Close { } {
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
 
-proc Grid::Switch { } {
+proc Grid::Switch { { No -1 } } {
    variable Param
    variable Data
   
+   if { $No>=0 } {
+      set Data(GridNo) $No
+   }
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
    set Data(GridId) MODELGRID$Data(GridNo)
    set Data(GridDepend) $Data(GridNo)
@@ -82,12 +85,12 @@ proc Grid::Switch { } {
    Grid::WindowSet $Data(Tab).grid
 }
 
-proc Grid::Add { } {
+proc Grid::Add { { Force False } } {
    variable Param
    variable Data
    variable Msg
    
-   if  { $Data(GridNo)==0 && !$Param(NI) } {
+   if  { !$Force && $Data(GridNo)==0 && !$Param(NI) } {
       Dialog::Error . $Grid::Msg(GridAdd)
       return
    }
@@ -202,6 +205,33 @@ proc Grid::Cascade { } {
    array set Grid::Param [lindex $Data(GridParams) $Data(GridNo)]
 }
 
+proc Grid::CascadeInit { Casc } {
+   variable Param
+   variable Data
+
+   set params $Data(GridParams)
+   Grid::Del True
+ 
+   set Data(GetNIJ) False
+   set no 0
+   foreach res $Data(Casc$Casc) {
+      array set Param [lindex $params $no]
+      
+      set Param(NI) [expr $Param(NI)==0?$Data(GridNMin):$Param(NI)]
+      set Param(NJ) [expr $Param(NJ)==0?$Data(GridNMin):$Param(NJ)]
+      set Param(ResMX) $res 
+      set Param(ResMY) $res 
+      set Param(ResLLX) [expr double($Param(ResMX)/$Param(LL2M))]
+      set Param(ResLLY) [expr double($Param(ResMY)/$Param(LL2M))]
+      
+      Grid::GetBBox
+      Grid::Add True
+      incr no
+   }
+   set Data(GetNIJ) True
+  
+   Grid::Switch 0
+}
 #----------------------------------------------------------------------------
 # Nom      : <Grid::SettingsRead>
 # Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
@@ -356,6 +386,7 @@ proc Grid::ProjectSave { Path } {
    variable Data
    variable GenPhysX
    variable Msg
+   variable Lbl
 
    if { $Path=="" } {
       Dialog::Error .gridmaker $Msg(SavePath)
@@ -377,7 +408,17 @@ proc Grid::ProjectSave { Path } {
          set res [string trimright [string map { . p } $resk] 0]
       }
       set path ${Path}/Casc_${grdn}_${res}
-      file mkdir ${path}
+      if { [file exists $path] } {
+         if { [Dialog::Default . 300 WARNING $Msg(PathExist) "\n\n\t$path" 0 $Lbl(Yes) $Lbl(No)] } {
+            incr no
+            incr grdn -1
+            continue
+         } else {
+            file delete -force $path
+         }
+      }
+      
+      file mkdir $path
       
       #----- Write namelist grid and gridc
       exec echo [Grid::SettingsBuild $grid] > ${path}/gem_settings.nml
@@ -453,14 +494,10 @@ proc Grid::ProjectLoad { Path } {
          set Param(XLon2)  $Settings(GRD_XLON2)
          set Param(XLat2)  $Settings(GRD_XLAT2)
          set Param(MaxCFL) $Settings(GRD_MAXCFL)
-         
          set Param(ResMX) [expr int(round($Param(ResLLX)*$Param(LL2M)))]
          set Param(ResMY) [expr int(round($Param(ResLLY)*$Param(LL2M)))]
-         set Param(Lat0)  [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY)*0.5)]
-         set Param(Lon0)  [expr $Param(XLon1)-($Param(NI)*$Param(ResLLX)*0.5)]
-         set Param(Lat1)  [expr $Param(XLat1)+($Param(NJ)*$Param(ResLLY)*0.5)]
-         set Param(Lon1)  [expr $Param(XLon1)+($Param(NI)*$Param(ResLLX)*0.5)]
-
+         
+         Grid::GetBBox
          Grid::Add
       }
    }
