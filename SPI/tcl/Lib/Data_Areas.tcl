@@ -288,6 +288,11 @@ proc Areas::DisplayToggle { Type No } {
 
    set Data(All$Type) 0
 
+   #----- If feature id is passed
+   if { ![string is integer $No] } {
+      set No [ogrlayer define $Type -featureselect [list [list $Data(Field$Type) == $No]]]
+   }
+      
    set f [ogrlayer define $Type -featurehighlight]
    set idx [lsearch -exact $f $No]
 

@@ -35,8 +35,8 @@ namespace eval Grid {
    set Data(Tab)    ""       ;#Widget
    
    set Data(SavePath) ""
-   if { [file exists $env(HOME)/run_hrdps_relw/hub] } {
-      set Data(SavePath)  $env(HOME)/run_hrdps_relw/hub
+   if { [info exists env(RELW_GENPATH)] } {
+      set Data(SavePath) $env(RELW_GENPATH)
    }
    
    set Data(Cascs)     { HRDPS RDPS GDPS }

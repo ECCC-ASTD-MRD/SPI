@@ -209,6 +209,9 @@ proc Grid::CascadeInit { Casc } {
    variable Param
    variable Data
 
+   Areas::Clear
+   Areas::DisplayToggle ModelDomain $Casc
+   
    set params $Data(GridParams)
    Grid::Del True
  
