@@ -74,7 +74,6 @@ namespace eval Viewport {
 
    set Data(VPNb)       0            ;#Compteur de viewport
    set Data(VP)         ""           ;#Viewport courant
-set Viewport::Data(SecondsT) 0
    set Data(Time)       0            ;#Heure en seconde de la projection
    set Data(Date)       0            ;#Date en seconde de la projection
    set Data(Followers)  { Viewport } ;#Liste des packages de suivit des coordonnees
@@ -3108,7 +3107,7 @@ proc Viewport::Setup { Frame } {
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
    set Map(GeoRef$Frame)            [lindex [split $Map(Type) :] 1]     ;#Georef associee
-   set Data(Date)          0              ;#Projection date (lightning)
+   set Data(Date)                   0              ;#Projection date (lightning)
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
    if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
@@ -3154,7 +3153,6 @@ proc Viewport::UnSetup { Frame } {
    unset Data(VP$Frame)
    unset Map(Type$Frame)
    unset Map(GeoRef$Frame)
-   unset Data(Date)
 
    #----- Suppression des objects
 
