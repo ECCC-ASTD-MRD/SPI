@@ -55,6 +55,7 @@ AC_DEFUN([AX_LIB_ECCODES],
         ]
     )
 
+    eccodes_include_dir="/"
     AC_ARG_WITH([eccodes-inc],
         AC_HELP_STRING([--with-eccodes-inc=@<:@DIR@:>@],
             [path to ECCODES headers]
@@ -62,6 +63,7 @@ AC_DEFUN([AX_LIB_ECCODES],
         [eccodes_include_dir="$withval"],
         [eccodes_include_dir=""]
     )
+    eccodes_lib_flags="-leccodes"
     AC_ARG_WITH([eccodes-lib],
         AC_HELP_STRING([--with-eccodes-lib=@<:@ARG@:>@],
             [link options for ECCODES libraries]
@@ -88,9 +90,7 @@ AC_DEFUN([AX_LIB_ECCODES],
         fi
         run_eccodes_test="yes"
     elif test "$eccodes_requested" = "yes"; then
-        eccodes_lib_flags="-leccodes"
-        eccodes_include_dir="/"
-        run_eccodes_test="yes"
+         run_eccodes_test="yes"
     else
         run_eccodes_test="no"
     fi

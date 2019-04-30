@@ -55,6 +55,7 @@ AC_DEFUN([AX_LIB_URP],
         ]
     )
 
+    urp_include_dir="/"
     AC_ARG_WITH([urp-inc],
         AC_HELP_STRING([--with-urp-inc=@<:@DIR@:>@],
             [path to URP headers]
@@ -62,6 +63,7 @@ AC_DEFUN([AX_LIB_URP],
         [urp_include_dir="$withval"],
         [urp_include_dir=""]
     )
+    urp_lib_flags="-lmut -ldrp -lurp -ldsp -lm -lxml2 -lz -lbz2"
     AC_ARG_WITH([urp-lib],
         AC_HELP_STRING([--with-urp-lib=@<:@ARG@:>@],
             [link options for URP libraries]
@@ -88,8 +90,6 @@ AC_DEFUN([AX_LIB_URP],
         fi
         run_urp_test="yes"
     elif test "$urp_requested" = "yes"; then
-        urp_lib_flags="-lmut -ldrp -lurp -ldsp -lm -lxml2 -lz -lbz2"
-        urp_include_dir="/"
         run_urp_test="yes"
     else
         run_urp_test="no"

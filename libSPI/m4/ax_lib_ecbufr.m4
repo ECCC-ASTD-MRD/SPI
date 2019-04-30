@@ -55,6 +55,7 @@ AC_DEFUN([AX_LIB_ECBUFR],
         ]
     )
 
+    ecbufr_include_dir="/"
     AC_ARG_WITH([ecbufr-inc],
         AC_HELP_STRING([--with-ecbufr-inc=@<:@DIR@:>@],
             [path to ECBUFR headers]
@@ -62,6 +63,7 @@ AC_DEFUN([AX_LIB_ECBUFR],
         [ecbufr_include_dir="$withval"],
         [ecbufr_include_dir=""]
     )
+    ecbufr_lib_flags="-lecbufr"
     AC_ARG_WITH([ecbufr-lib],
         AC_HELP_STRING([--with-ecbufr-lib=@<:@ARG@:>@],
             [link options for ECBUFR libraries]
@@ -88,8 +90,6 @@ AC_DEFUN([AX_LIB_ECBUFR],
         fi
         run_ecbufr_test="yes"
     elif test "$ecbufr_requested" = "yes"; then
-        ecbufr_lib_flags="-lecbufr"
-        ecbufr_include_dir="/"
         run_ecbufr_test="yes"
     else
         run_ecbufr_test="no"

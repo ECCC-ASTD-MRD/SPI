@@ -55,6 +55,7 @@ AC_DEFUN([AX_LIB_FLT],
         ]
     )
 
+    flt_include_dir="/"
     AC_ARG_WITH([flt-inc],
         AC_HELP_STRING([--with-flt-inc=@<:@DIR@:>@],
             [path to FLT headers]
@@ -62,6 +63,7 @@ AC_DEFUN([AX_LIB_FLT],
         [flt_include_dir="$withval"],
         [flt_include_dir=""]
     )
+    flt_lib_flags="-lflt"
     AC_ARG_WITH([flt-lib],
         AC_HELP_STRING([--with-flt-lib=@<:@ARG@:>@],
             [link options for FLT libraries]
@@ -88,8 +90,6 @@ AC_DEFUN([AX_LIB_FLT],
         fi
         run_flt_test="yes"
     elif test "$flt_requested" = "yes"; then
-        flt_lib_flags="-lflt"
-        flt_include_dir="/"
         run_flt_test="yes"
     else
         run_flt_test="no"

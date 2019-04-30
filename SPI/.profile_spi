@@ -10,9 +10,6 @@ fi
 [ -z $CMCPROD ] && export CMCPROD=""
 [ -z $AFSISIO ] && export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
 
-export GDAL_PAM_ENABLED=NO
-export CPL_LOG=/dev/null
-
 export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
 export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"

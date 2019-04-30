@@ -80,6 +80,7 @@ export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
 if [[ -n $INTEL_LICENSE_FILE ]]; then
    export CC=icc
    export CXX=icpc
+   export LDFLAGS="-lintlc -lifcore -lifport -limf"
 fi
 
 if [[ $ARCH == "AIX" ]]; then
@@ -294,9 +295,9 @@ if [[ $BLD -eq 1 ]]; then
       --with-gdal=`which gdal-config` \
       --with-ecbufr=${LIB_EXT} \
       --with-sqlite3 \
-      --with-eccodes \
-      --with-flt \
-      --with-urp
+      --with-eccodes=${LIB_EXT} \
+      --with-flt=${LIB_EXT} \
+      --with-urp=${LIB_EXT}
    fi
    make install || exit 1
 
