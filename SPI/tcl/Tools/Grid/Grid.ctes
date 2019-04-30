@@ -17,6 +17,7 @@
 #===============================================================================
 
 namespace eval Grid {
+   global env
    variable Data
    variable Param
    variable GenPhysX
@@ -32,6 +33,16 @@ namespace eval Grid {
    set Data(Frame)  ""       ;#Frame actif
    set Data(VP)     ""       ;#Viewport actif
    set Data(Tab)    ""       ;#Widget
+   
+   set Data(SavePath) ""
+   if { [info exists env(RELW_GENPATH)] } {
+      set Data(SavePath) $env(RELW_GENPATH)
+   }
+   
+   set Data(Cascs)     { HRDPS RDPS GDPS }
+   set Data(CascGDPS)  { 250 1000 2500 10000 }
+   set Data(CascRDPS)  { 250 1000 2500 }
+   set Data(CascHRDPS) { 250 1000 }
    
    colormap create GRID0; colormap control GRID0 -add 255 128 128 128 255; colormap control GRID0 -add 0 100 100 100 255
    colormap create GRID1; colormap control GRID1 -add 255 000 000 255 255; colormap control GRID1 -add 0 000 000 200 255

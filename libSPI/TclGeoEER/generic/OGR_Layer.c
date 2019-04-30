@@ -3299,6 +3299,11 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
             glTranslated(0.0,0.0,ZM(Proj,Layer->Loc[f].Elev));
             glScalef(sz,sz,1.0);
 
+            if (spec->Width<0) {
+               glPushAttrib(GL_STENCIL_BUFFER_BIT);
+               glStencilFunc(GL_ALWAYS,0x1,0x1);
+               glStencilOp(GL_REPLACE,GL_REPLACE,GL_REPLACE);
+            }
             if (spec->Outline && spec->Width) {
                glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
                if (idx>=0 && !spec->Fill) {
@@ -3307,6 +3312,9 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
                   glColor4us(spec->Outline->red,spec->Outline->green,spec->Outline->blue,alpha*655.35);
                }
                glDrawArrays(IconList[spec->Icon].Type,0,IconList[spec->Icon].Nb);
+            }
+            if (spec->Width<0) {
+               glPopAttrib();
             }
 
             if (spec->Fill) {

@@ -15,7 +15,7 @@
 #   Grid::Init               { }
 #   Grid::Reset              { }
 #   Grid::Center             { Lat Lon { Update True } }
-#   Grid::CheckBBoxOrder     { }
+#   Grid::BBoxCheckOrder     { }
 #   Grid::CheckFFT           { N { Incr 1 } { Min 8 } { Factors { 2 3 5 } } }
 #   Grid::CheckNIJ           { }
 #   Grid::Decode             { Scale { Lat 0.0 } { Lon 0.0 } }
@@ -48,6 +48,8 @@ namespace eval Grid {
    set Data(GridSize)     2
    set Data(GridColor)    black
    set Data(GridBoundary) 0
+   set Data(GridNMin)     80
+   set Data(GridNMax)     1500
    set Data(Color0)       black                          
    set Data(Color1)       blue                        
    set Data(Color2)       red                        
@@ -56,6 +58,9 @@ namespace eval Grid {
    set Data(SavePath)     ""
    set Data(LatM)         0                                                        ;# Delta on latitute translating grid
    set Data(LonM)         0                                                        ;# Delta on longitude when translating grid
+   set Data(GetNIJ)       True                                                     ;# Calculate NI NJ from corner coordinates
+   set Data(NIJWarn)      [expr $Data(GridNMax)*$Data(GridNMax)]                   ;# Warning grid size 1500x1500
+   set Data(SizeWarn)     [expr [info exists ::tk_version]?True:False]             ;# Warn for large grid (Only in interactive mode)
       
    set Param(Id)         "User"                                                    ;# Grid identification (name)
    set Param(Data)       Float32                                                   ;# Data format of GRID field
@@ -67,7 +72,6 @@ namespace eval Grid {
    set Param(ResLLX)     0.1                                                       ;# Grid resolution in degree
    set Param(ResLLY)     0.1                                                       ;# Grid resolution in degree
    set Param(ResLLs)     { 0.01 0.1 0.25 0.5 1 2 }                                 ;# List of predefined resolution in degrees
-   set Param(GetNIJ)     True                                                      ;# Calculate NI NJ from corner coordinates
    set Param(NI)         0                                                         ;# Number of gridpoint in I
    set Param(NJ)         0                                                         ;# Number of gridpoint in J
    set Param(Lat0)       0                                                         ;# Latitude of first bbox corner
@@ -81,8 +85,6 @@ namespace eval Grid {
    set Param(PGSM)       ""                                                        ;# Grid description for PGSM
    set Param(GridInfo)   ""                                                        ;# General grid description
    set Param(ND)         40                                                        ;# Number of gridpoint for buffer between resolutions
-   set Param(NIJWarn)    4000000                                                   ;# Warning grid size 2000x2000
-   set Param(SizeWarn)   [expr [info exists ::tk_version]?True:False]              ;# Warn for large grid (Only in interactive mode)
    set Param(LL2M)       [expr 1852.0*60]                                          ;# Conversion factor from degrees to meters
    set Param(LockCenter) False                                                     ;# Fixe the grid center
    set Param(FFTNI)      1                                                         ;# Direction of FFT check in NI
@@ -91,8 +93,8 @@ namespace eval Grid {
    set Param(LatR)     0.0                                                         ;
    set Param(LonR)     180.0                                                       ;
    set Param(MaxCFL)   4                                                           ;
-   set Param(XLat1)    0                                                           ;# Center latitude
-   set Param(XLon1)    0                                                           ;# Center longitude
+   set Param(XLat1)    45.54                                                       ;# Center latitude
+   set Param(XLon1)    -73.70                                                      ;# Center longitude
    set Param(XLat2)    0                                                           ;# Rotation axis latitude
    set Param(XLon2)    90                                                          ;# Rotation axis longitude
    set Param(Angle)    0                                                           ;# Rotation angle
@@ -236,7 +238,7 @@ proc Grid::Center { Lat Lon { Update True } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Grid::CheckBBoxOrder>
+# Nom      : <Grid::BBoxCheckOrder>
 # Creation : Avril 2015 - J.P. Gauthier - CMC/CMOE
 #
 # But      : Ordonne les coordonnees de la bounding box
@@ -250,7 +252,7 @@ proc Grid::Center { Lat Lon { Update True } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CheckBBoxOrder { } {
+proc Grid::BBoxCheckOrder { } {
 
    uplevel {
       if { $Data(GridNo)>0 } {
@@ -290,6 +292,15 @@ proc Grid::CheckBBoxOrder { } {
          set Param(LonD1) [expr $Lon1-$grid(Lon1)]
       }
    }
+}
+
+proc Grid::GetBBox { } {
+   variable Param
+   
+   set Param(Lat0)  [expr $Param(XLat1)-($Param(NJ)*$Param(ResLLY)*0.5)]
+   set Param(Lon0)  [expr $Param(XLon1)-($Param(NI)*$Param(ResLLX)*0.5)]
+   set Param(Lat1)  [expr $Param(XLat1)+($Param(NJ)*$Param(ResLLY)*0.5)]
+   set Param(Lon1)  [expr $Param(XLon1)+($Param(NI)*$Param(ResLLX)*0.5)]
 }
 
 #----------------------------------------------------------------------------
@@ -353,15 +364,15 @@ proc Grid::CheckNIJ { } {
    variable Lbl
 
    uplevel {
-      if { $Param(GetNIJ) } {
+      if { $Data(GetNIJ) } {
          set ni [expr int(ceil(($Lon1-$Lon0)/$ResX))+1]
          set nj [expr int(ceil(($Lat1-$Lat0)/$ResY))+1]
 
-         if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
+         if { $Data(SizeWarn) && [expr $ni*$nj]>$Data(NIJWarn) } {
             if { [info exists ::tk_version] && ![Dialog::Default . 400 WARNING $Grid::Msg(Size) "\n\n\t$ni x $nj" 0 $Grid::Lbl(No) $Grid::Lbl(Yes)] } {
                return ""
             }
-            set Param(SizeWarn) False
+            set Data(SizeWarn) False
          }
 
          set Param(NI) $ni
@@ -444,7 +455,7 @@ proc Grid::CheckNIJ { } {
          }
       }
       
-      if { $Param(GetNIJ) } {
+      if { $Data(GetNIJ) } {
       } else {
          #----- If not first grid, we have to keep the same center
          if { $Data(GridNo)>0 } {
@@ -752,7 +763,7 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 ResX ResY  { ID MODELGRID } } {
    variable Param
    variable Data
 
-   Grid::CheckBBoxOrder
+   Grid::BBoxCheckOrder
    Grid::CheckNIJ
 
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
@@ -792,7 +803,7 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    variable Param
    variable Data
 
-   Grid::CheckBBoxOrder
+   Grid::BBoxCheckOrder
    Grid::CheckNIJ
 
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
@@ -830,7 +841,7 @@ proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY { ID MODELGRID } } {
    variable Param
    variable Data
 
-#   Grid::CheckBBoxOrder
+#   Grid::BBoxCheckOrder
 #   Grid::CheckNIJ
 
    set Param(NI) $NI
@@ -896,7 +907,7 @@ proc Grid::CreateZE { Lat0 Lon0 Lat1 Lon1 LatR LonR ResX ResY Angle { ID MODELGR
    variable Data
 
    if { $Check } {
-      Grid::CheckBBoxOrder
+      Grid::BBoxCheckOrder
       Grid::CheckNIJ
    }
 
@@ -968,7 +979,7 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    variable Msg
    variable Lbl
 
-   Grid::CheckBBoxOrder
+   Grid::BBoxCheckOrder
 
    set zone     [expr int(ceil((180+(($Lon1+$Lon0)/2))/6))]
    set meridian [expr -((180-($zone*6))+3)]
@@ -997,11 +1008,11 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    set ni [expr int(ceil(([lindex $xy1 0] - [lindex $xy0 0])/$ResX))+1]
    set nj [expr int(ceil(([lindex $xy1 1] - [lindex $xy0 1])/$ResY))+1]
 
-   if { $Param(SizeWarn) && [expr $ni*$nj]>$Param(NIJWarn) } {
+   if { $Data(SizeWarn) && [expr $ni*$nj]>$Data(NIJWarn) } {
       if { [info exists ::tk_version] && ![Dialog::Default . 400 WARNING $Msg(Size) "\n\n\t$ni x $nj" 0 $Lbl(No) $Lbl(Yes)] } {
          return ""
       }
-      set Param(SizeWarn) False
+      set Data(SizeWarn) False
    }
 
    set Param(NI) $ni
