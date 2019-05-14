@@ -94,6 +94,14 @@
    }\
 }
 
+typedef struct GLLightingParams{
+    GLfloat GLLightAmbiant;
+    GLfloat GLLightDiffuse;
+    GLfloat GLLightSpecular;
+    GLfloat GLMaterialSpecular;
+    int GLMaterialShininess;
+} GLLightingParams;
+
 enum GLExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum GLVendor   { NVIDIA=0, ATI=1, VIRTUALGL=2, MESA=3 };
 
@@ -162,7 +170,8 @@ typedef struct GLParams  {
    int            ShaderNb;             // Number of shaders
    int            Vendor;               // Graphic driver vendor
 
-   double MagScale,MagX,MagY,MagD;      // Magnifying paameters
+   double MagScale,MagX,MagY,MagD;      // Magnifying parameters
+   GLLightingParams     *GLLighting;     //Parametre pour l'illumination
 } GLParams;
 
 typedef struct T_glBitmap {
