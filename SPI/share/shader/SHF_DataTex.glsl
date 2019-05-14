@@ -45,9 +45,12 @@ void main() {
    if (length(Nr)==0.0) {
 
    } else {
+
       color*=frg;
       /* compute the dot product between normal and normalized lightdir */
-      NdotL=max(0.0,dot(Nr,vec3(gl_LightSource[0].position)));
+      NdotL=(length(gl_LightSource[0].position)<1.0)?
+                max(0.0,dot(Nr,vec3(gl_LightSource[0].position))):
+                max(0.0,dot(Nr,vec3(gl_LightSource[0].position)))*0.5;
       halfV=normalize(gl_LightSource[0].halfVector.xyz);
 
       /* The ambient terms have been separated since one of them */
@@ -55,8 +58,6 @@ void main() {
       ambient=frg*gl_LightSource[0].ambient;
       diffuse=frg*gl_LightSource[0].diffuse;
 
-      if (length(gl_LightSource[0].position)<1.0)
-         NdotL*=0.5;
       dist = length(LDir);
       att=1.0/(gl_LightSource[0].constantAttenuation+gl_LightSource[0].linearAttenuation*dist+gl_LightSource[0].quadraticAttenuation*dist*dist)*.75;
       color+=att*(diffuse*NdotL+ambient);

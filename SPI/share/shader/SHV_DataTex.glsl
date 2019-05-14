@@ -25,7 +25,6 @@ vec4 CylinCheck(vec4 Vr) {
 
 void main() {
 
-   vec4 color;
    vec4 vr;
 
    Nr=(gl_NormalMatrix*gl_Normal);
