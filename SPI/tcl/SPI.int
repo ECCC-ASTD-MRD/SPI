@@ -337,10 +337,6 @@ proc SPI::Init { } {
    set env(__GL_FSAA_MODE) 2 ;#2x Quincunx Multisampling
    set env(__GL_FSAA_MODE) 4 ;#2x2 SuperSampling (Best for Quadro2 Pro)
    set env(__GL_FSAA_MODE) 5 ;#4x Gaussian Multisampling (Best for QuadroFX)
-
-   if { ![info exists env(GDB_PATH)] } {
-      set env(GDB_PATH) /cnfs/ops/production/DBGeo/data
-   }
 }
 
 #-------------------------------------------------------------------------------
