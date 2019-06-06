@@ -91,7 +91,7 @@
 #    Page::Scale           { Frame { Incr 0 } }
 #    Page::ScaleSet        { Frame }
 #    Page::Size            { Frame Width Height { Intrusion -1 } }
-#    Page::Update          { Frame { VP True } }
+#    Page::Update          { Frame { VP True } { Items True } }
 #    Page::UpdateCommand   { Frame }
 #    Page::UpdateItems     { Frame }
 #    Page::SnapGrid        { Frame }
@@ -1630,7 +1630,8 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur de Viewport
+#  <VP>      : Update Viewports 
+#  <Items>   : Update Items
 #
 # Retour:
 #
@@ -1638,7 +1639,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
 #
 #----------------------------------------------------------------------------
 
-proc Page::Update { { Frame "" } { VP True } } {
+proc Page::Update { { Frame "" } { VP True } { Items True } } {
    variable Data
 
    #----- Est-ce que la page est valide
@@ -1677,13 +1678,14 @@ proc Page::Update { { Frame "" } { VP True } } {
          }
          $Frame.page.canvas raise PAGEMINI$Frame
       }
+      update idletasks
    }
-   
-   update idletasks
 
    #----- Refresh de l'usager
 
-   Page::UpdateItems $Frame
+   if { $Items } {
+      Page::UpdateItems $Frame
+   }
    OpenGL::Update
 }
 

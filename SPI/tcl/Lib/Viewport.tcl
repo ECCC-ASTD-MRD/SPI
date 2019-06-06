@@ -2750,7 +2750,6 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } {
             projection configure $Frame -location $Map(Lat) $Map(Lon)
             Page::Update $Frame
 
-
             #----- Get the time
             set t [clock click -milliseconds]
             if { [set dt [expr double($t-$pdt)]]>0 } {
@@ -2848,7 +2847,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                set path [linsert $path 1 [list $From $To $Up $z]]
             }
          }
-         
+
          projcam define $Frame -path $path
          set dprr  1e32
          set dir   [expr [projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
@@ -2869,9 +2868,9 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                "QUADRATIC"   { set spd [expr 1.0-(($i-$n2)*($i-$n2)+($i-$n2))*($n/(($n2*$n2)+$n2))/$n] }
                "LINEAR"      { set spd 1.0 }
             }
-            if { [set dt [expr ([clock click -milliseconds]-$t0)/2.0]]>$Map(Delay) } {
-               break
-            }
+#            if { [set dt [expr ([clock click -milliseconds]-$t0)/2.0]]>$Map(Delay) } {
+#             break
+#            }
             
             set idx [expr $idx+$spd*$Map(Speed)]
 
@@ -2885,7 +2884,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                break
             }
             set dprr $dpr
-            
+
             #----- Move to new incremental position
             projcam define $Frame -fly [expr $idx*$l]
             projection configure $Frame -location $Map(Lat) $Map(Lon)
