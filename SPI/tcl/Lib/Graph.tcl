@@ -517,13 +517,6 @@ proc Graph::Resize { Frame Graph X0 Y0 X1 Y1 Limit } {
    catch { $cv coords $Graph $X0 $Y0 $X1 $Y1 }
    catch { $cv itemconfigure $Graph -x $X0 -y $Y0 -width $Data(Width$Graph) -height $Data(Height$Graph) }
 
-   if { $Data(Active$Graph) } {
-      $Frame.page.canvas coords BSPAGE$Graph $X1 $Y1
-      $Frame.page.canvas coords BMPAGE$Graph [expr $X1-11] $Y1
-      $Frame.page.canvas coords BFPAGE$Graph [expr $X1-22] $Y1
-      $Frame.page.canvas coords BDPAGE$Graph $X1 $Y0
-   }
-
    if { !$Limit } {
       $cv config -cursor watch
       update idletasks

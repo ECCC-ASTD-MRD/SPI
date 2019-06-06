@@ -199,7 +199,7 @@ namespace eval SPI {
    set Msg(Mail)           { "Liste de distribution: spi-users@cmc.ec.gc.ca\n" "Mailing list: spi-users@cmc.ec.gc.ca" }
    set Msg(ProjectRead)    { "Toutes les pages existantes seront détruite et le travail courant sera perdu.\n\nVoulez-vous continuer ?"
                              "Every existing pages will be destroyed and you will loos you current work.\n\nDo you wish to continue ?" }
-   set Msg(Page)           { "Ajouter cet item dans une nouvelle fênetre, nouvelle page ou dans la page courante" "Add item within a new window, new page or the into the current page" }
+   set Msg(Page)           { "Ajouter cet item dans une nouvelle fenêtre, dans une nouvelle page ou dans la page courante" "Add item in a new window, in a new page or into the current page" }
    set Msg(Locked)         { "La mise-en-page de la page courante ne peut être changée, que voulez-vous faire ?"
                              "Current page layout cannot be changed, what do you want to do ?" }
 

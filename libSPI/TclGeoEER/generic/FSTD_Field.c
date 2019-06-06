@@ -281,6 +281,7 @@ int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force
          return(0);
       } else {
          if (!*Ptr) {
+            //TODO: 64 bit descriptorspi++
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
                App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);

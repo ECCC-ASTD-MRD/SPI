@@ -2793,7 +2793,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
    upvar #0 ProjCam::Data${Frame}::Cam  cam
 
    set ProjCam::Data(Name)   ""
-   
+
    #----- Stop Flybys
    set Animator::Fly(Length) 0
    set Animator::Fly(Path)   ""

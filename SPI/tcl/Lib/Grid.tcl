@@ -93,8 +93,8 @@ namespace eval Grid {
    set Param(LatR)     0.0                                                         ;
    set Param(LonR)     180.0                                                       ;
    set Param(MaxCFL)   4                                                           ;
-   set Param(XLat1)    45.54                                                       ;# Center latitude
-   set Param(XLon1)    -73.70                                                      ;# Center longitude
+   set Param(XLat1)    45.54                                                       ;# Center latitude (Défaut Montréal)
+   set Param(XLon1)    -73.70                                                      ;# Center longitude (Défaut Montréal)
    set Param(XLat2)    0                                                           ;# Rotation axis latitude
    set Param(XLon2)    90                                                          ;# Rotation axis longitude
    set Param(Angle)    0                                                           ;# Rotation angle

@@ -362,10 +362,12 @@ proc Grid::SettingsShow { } {
    variable Param
    variable Data
    
-   $Data(Tab).settings.text delete 0.0 end
+   if { [winfo exists $Data(Tab).settings.text] } {
+      $Data(Tab).settings.text delete 0.0 end
 
-   foreach grid $Data(GridParams) {
-      catch { $Data(Tab).settings.text insert end [Grid::SettingsBuild $grid]\n }
+      foreach grid $Data(GridParams) {
+         catch { $Data(Tab).settings.text insert end [Grid::SettingsBuild $grid]\n }
+      }
    }
 }
 

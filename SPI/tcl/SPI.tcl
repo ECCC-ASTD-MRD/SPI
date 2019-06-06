@@ -2069,6 +2069,8 @@ proc SPI::Password { User } {
 # Parametres :
 #    <Type>  : Type d'objects
 #    <Sub>   : Sous type d'objects
+#    <New>   : Si donnée, cette valeur détermine dans quel type de médium l'objet
+#              est ajouté sans demander à l'utilisateur
 #
 # Retour:
 #
@@ -2076,19 +2078,22 @@ proc SPI::Password { User } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::ObjectAdd { Type { Sub "" } } {
+proc SPI::ObjectAdd { Type { Sub "" } {New -1} } {
    global GDefs
    variable Lbl
    variable Msg
    variable Error
 
-   set new [Dialog::Default . 300 QUESTION $Msg(Page) "\n\n\t$Type$Sub" 2 $Lbl(Current) $Lbl(Page) $Lbl(Window) $Lbl(Cancel)]
+   if { $New == -1 } {
+       set New [Dialog::Default . 300 QUESTION $Msg(Page) "\n\n\t$Type$Sub" 2 $Lbl(Current) $Lbl(Page) $Lbl(Window) $Lbl(Cancel)]
+   }
 
-   switch $new {
+   switch $New {
       0 { if { ![winfo exists $Page::Data(Canvas)] } { Dialog::Error . $Error(Page); return False } }
       1 { SPI::PageNew False $Type${Sub} }
       2 { SPI::PageNew True $Type${Sub} }
       3 { return True }
+      default {return False}
    }
 
    #----- Check if there's already an object of this type in the current page

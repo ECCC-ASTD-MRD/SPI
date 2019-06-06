@@ -301,21 +301,41 @@ if [[ $BLD -eq 1 ]]; then
    fi
    make install || exit 1
 
-   printf -- "\n----- Making TclR Library -----\n"
+   if [[ "$ORDENV_DIST" != "sles" ]]; then
+       printf -- "\n----- Making TclR Library -----\n"
 
-   cd ../TclR
-   if [[ $REC -eq 1 ]]; then
-      make distclean
-      if [[ $AUT -eq 1 ]]; then $autoconf; fi
-      ./configure \
-      --prefix=${LIB_PATH}/TCL/ \
-      --exec-prefix=${LIB_PATH}/TCL \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-R=$(R RHOME)
+       cd ../TclR
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
+
+       printf -- "\n----- Making TclRDevice Library -----\n"
+
+       cd ../TclRDevice
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
    fi
-   make install || if [ ! "$ORDENV_DIST" = "sles" ]; then exit 1; fi
 
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
@@ -327,8 +347,11 @@ if [[ $BLD -eq 1 ]]; then
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
 
-   ln -fs ../TCL/lib/TclR0.3/libTclR0.3.so
-   ln -fs libTclR0.3.so libTclR.so
+   ln -fs ../TCL/lib/TclR1.0/libTclR1.0.so
+   ln -fs libTclR1.0.so libTclR.so
+
+   ln -fs ../TCL/lib/TclRDevice1.0/libTclRDevice1.0.so
+   ln -fs libTclRDevice1.0.so libTclRDevice.so
 
    cd ${SRC_PATH}
 
