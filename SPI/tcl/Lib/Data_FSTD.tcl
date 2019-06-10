@@ -437,9 +437,9 @@ proc FSTD::ParamFrame { Frame Apply } {
 
          frame $Data(Frame).def.r.disp.vol
             label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
-            checkbutton $Data(Frame).def.r.disp.vol.sel -variable FSTD::Param(Volume) -relief raised -bd 1 \
-               -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false \
-               -command "FSTD::ParamSet" -selectcolor "" -relief groove -bd 1
+            IcoMenu::Create $Data(Frame).def.r.disp.vol.sel $GDefs(Dir)/share/bitmap \
+               "zeroth.xbm spline.xbm bound.xbm" "0 1 2" \
+               FSTD::Param(Volume) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
 

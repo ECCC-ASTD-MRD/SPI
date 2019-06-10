@@ -39,6 +39,7 @@ int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderStream(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
+int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj);
 
 extern int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 
@@ -539,5 +540,304 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
 
+   return(1);
+}
+
+/*----------------------------------------------------------------------------
+ * Nom      : <Data_RenderShaderRayCasting>
+ * Creation : Juin 2019 - A. Germain - CMC
+ *
+ * But      : Effectue l'affichage du chmaps en trois dimension sur le GPU.
+ *
+ * Parametres  :
+ *  <Field>    : Champs
+ *  <VP>       : Parametres du viewport
+ *  <Proj>     : Parametres de la projection
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
+   GLuint tx[2];
+   GLhandleARB prog;
+
+   prog=GLRender->Prog[PROG_RAYCASTING];
+   glUseProgramObjectARB(prog);
+   glGenTextures(2,tx);
+
+   /*Setup 1D Colormap Texture*/
+   glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_1D,tx[0]);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+   glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
+   glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
+
+   glActiveTexture(GL_TEXTURE1);
+   glBindTexture(GL_TEXTURE_3D,tx[1]);
+   glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_BORDER
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_EDGE
+
+   int widthD=Field->Def->NI;
+   int heightD=Field->Def->NJ;
+   int depthD=Field->Def->NK;
+
+   int widthT=widthD/2;
+   int heightT=heightD/2;
+   int depthT=depthD/2;
+
+   int test;
+   glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE,&test);
+
+   float data[depthT][heightT][widthT][1];
+
+   float temp = 0.0;
+   float max = 0.0;
+
+   for(int k=0; k<depthT; k++){
+      for(int j=0; j<heightT; j++){
+         for(int i=0; i<widthT; i++){
+            Def_GetMod(Field->Def,(2*k*heightD*widthD+2*j*widthD+2*i),temp);
+            if(temp>max)max=temp;
+            data[k][j][i][0]=temp/(float)Field->Spec->Max;
+            //if(k%10==0&&i%150==0&&j%150==0)printf("%f\t",temp);
+         }
+      }
+   }
+   //printf("\n\n");
+   glTexImage3D(GL_TEXTURE_3D,0,GL_RED,widthT,heightT,depthT,0,GL_RED, GL_FLOAT,&data);
+   glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
+
+   float camDir[3]= {-(float)VP->Cam->From[0]+(float)VP->Cam->To[0],
+                     -(float)VP->Cam->From[1]+(float)VP->Cam->To[1],
+                     -(float)VP->Cam->From[2]+(float)VP->Cam->To[2]};
+   glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
+
+   glUniform1fARB(GLShader_UniformGet(prog,"MaxData"),max);
+   glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
+   glUniform1fARB(GLShader_UniformGet(prog,"MaxDataDisplay"),(float)Field->Spec->Max);
+
+   glDisable(GL_LIGHTING);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glPointSize(2.0);
+   glEnable(GL_CULL_FACE);
+   glCullFace(GL_FRONT);
+   glFrontFace(GL_CCW);
+
+   float step = 0.005;
+   float offset = step/2.0;
+   float v[3] = {0.0,0.0,0.0};
+   float quad[4][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
+
+   int MinX = Field->Def->Limits[0][0];// = 300;
+   int MaxX = Field->Def->Limits[0][1];// = 600;
+   int MinY = Field->Def->Limits[1][0];// = 100;
+   int MaxY = Field->Def->Limits[1][1];// = 800;
+   int MinZ = Field->Def->Limits[2][0];// = 5;
+   int MaxZ = Field->Def->Limits[2][1];// = 50;
+
+   float limitDisplayMinX = ((float)MinX/widthD)*2.0-1.0;  //[-1,1]
+   float limitDisplayMaxX = ((float)MaxX/widthD)*2.0-1.0;  //[-1,1]
+   float limitDisplayMinY = ((float)MinY/heightD)*2.0-1.0;  //[-1,1]
+   float limitDisplayMaxY = ((float)MaxY/heightD)*2.0-1.0;  //[-1,1]
+   float limitDisplayMinZ = ((float)MinZ/depthD)+1.0;  //[1,2]
+   float limitDisplayMaxZ = ((float)MaxZ/depthD)+1.0;  //[1,2]
+
+//    printf("x: [%f, %f], y: [%f, %f], z: [%f, %f]\n",
+//           limitDisplayMinX,
+//           limitDisplayMaxX,
+//           limitDisplayMinY,
+//           limitDisplayMaxY,
+//           limitDisplayMinZ,
+//           limitDisplayMaxZ) ;
+
+   //face dessus
+   float fixPos = limitDisplayMaxZ;
+   float upLimit = limitDisplayMaxY;
+   float downLimit = limitDisplayMinY;
+   float leftLimit = limitDisplayMinX;
+   float rightLimit = limitDisplayMaxX;
+   glBegin(GL_QUADS);
+      for(int i=0; (downLimit+(float)i*step)<upLimit; i++){
+         for(int j=0; (leftLimit+(float)j*step)<rightLimit; j++){
+            v[0] = leftLimit+(float)j*step;
+            v[1] = downLimit+(float)i*step;
+            v[2] = fixPos;
+
+            quad[0][0] = v[0] + offset;
+            quad[0][1] = v[1] + offset;
+            quad[0][2] = v[2];
+
+            quad[1][0] = v[0] + offset;
+            quad[1][1] = v[1] - offset;
+            quad[1][2] = v[2];
+
+            quad[2][0] = v[0] - offset;
+            quad[2][1] = v[1] - offset;
+            quad[2][2] = v[2];
+
+            quad[3][0] = v[0] - offset;
+            quad[3][1] = v[1] + offset;
+            quad[3][2] = v[2];
+
+            glVertex3fv(quad[0]);
+            glVertex3fv(quad[1]);
+            glVertex3fv(quad[2]);
+            glVertex3fv(quad[3]);
+         }
+      }
+   glEnd();
+
+   //face Sud
+   fixPos = limitDisplayMinY;
+   upLimit = limitDisplayMaxZ;
+   downLimit = limitDisplayMinZ;
+   leftLimit = limitDisplayMinX;
+   rightLimit = limitDisplayMaxX;
+   glBegin(GL_QUADS);
+      for(int i=0; (downLimit+(float)i*step)<upLimit; i++){
+         for(int j=0; (leftLimit+(float)j*step)<rightLimit; j++){
+            v[0] = leftLimit+(float)j*step;
+            v[1] = fixPos;
+            v[2] = downLimit+(float)i*step;
+
+            quad[0][0] = v[0] + offset;
+            quad[0][1] = v[1];
+            quad[0][2] = v[2] + offset;
+
+            quad[1][0] = v[0] + offset;
+            quad[1][1] = v[1];
+            quad[1][2] = v[2] - offset;
+
+            quad[2][0] = v[0] - offset;
+            quad[2][1] = v[1];
+            quad[2][2] = v[2] - offset;
+
+            quad[3][0] = v[0] - offset;
+            quad[3][1] = v[1];
+            quad[3][2] = v[2] + offset;
+
+            glVertex3fv(quad[0]);
+            glVertex3fv(quad[1]);
+            glVertex3fv(quad[2]);
+            glVertex3fv(quad[3]);
+         }
+      }
+   glEnd();
+
+   //face Nord
+   fixPos = limitDisplayMaxY;
+   glBegin(GL_QUADS);
+      for(int i=0; (downLimit+(float)i*step)<upLimit; i++){
+         for(int j=0; (leftLimit+(float)j*step)<rightLimit; j++){
+            v[0] = leftLimit+(float)j*step;
+            v[1] = fixPos;
+            v[2] = downLimit+(float)i*step;
+
+            quad[0][0] = v[0] + offset;
+            quad[0][1] = v[1];
+            quad[0][2] = v[2] + offset;
+
+            quad[1][0] = v[0] - offset;
+            quad[1][1] = v[1];
+            quad[1][2] = v[2] + offset;
+
+            quad[2][0] = v[0] - offset;
+            quad[2][1] = v[1];
+            quad[2][2] = v[2] - offset;
+
+            quad[3][0] = v[0] + offset;
+            quad[3][1] = v[1];
+            quad[3][2] = v[2] - offset;
+
+            glVertex3fv(quad[0]);
+            glVertex3fv(quad[1]);
+            glVertex3fv(quad[2]);
+            glVertex3fv(quad[3]);
+         }
+      }
+   glEnd();
+
+   //face est
+   fixPos = limitDisplayMaxX;
+   leftLimit = limitDisplayMinY;
+   rightLimit = limitDisplayMaxY;
+   glBegin(GL_QUADS);
+      for(int i=0; (downLimit+(float)i*step)<upLimit; i++){
+         for(int j=0; (leftLimit+(float)j*step)<rightLimit; j++){
+            v[0] = fixPos;
+            v[1] = leftLimit+(float)j*step;
+            v[2] = downLimit+(float)i*step;
+
+            quad[0][0] = v[0];
+            quad[0][1] = v[1] + offset;
+            quad[0][2] = v[2] + offset;
+
+            quad[1][0] = v[0];
+            quad[1][1] = v[1] + offset;
+            quad[1][2] = v[2] - offset;
+
+            quad[2][0] = v[0];
+            quad[2][1] = v[1] - offset;
+            quad[2][2] = v[2] - offset;
+
+            quad[3][0] = v[0];
+            quad[3][1] = v[1] - offset;
+            quad[3][2] = v[2] + offset;
+
+            glVertex3fv(quad[0]);
+            glVertex3fv(quad[1]);
+            glVertex3fv(quad[2]);
+            glVertex3fv(quad[3]);
+         }
+      }
+   glEnd();
+
+   //face ouest
+   fixPos = limitDisplayMinX;
+   glBegin(GL_QUADS);
+      for(int i=0; (downLimit+(float)i*step)<upLimit; i++){
+         for(int j=0; (leftLimit+(float)j*step)<rightLimit; j++){
+            v[0] = fixPos;
+            v[1] = leftLimit+(float)j*step;
+            v[2] = downLimit+(float)i*step;
+
+            quad[0][0] = v[0];
+            quad[0][1] = v[1] + offset;
+            quad[0][2] = v[2] + offset;
+
+            quad[1][0] = v[0];
+            quad[1][1] = v[1] - offset;
+            quad[1][2] = v[2] + offset;
+
+            quad[2][0] = v[0];
+            quad[2][1] = v[1] - offset;
+            quad[2][2] = v[2] - offset;
+
+            quad[3][0] = v[0];
+            quad[3][1] = v[1] + offset;
+            quad[3][2] = v[2] - offset;
+
+            glVertex3fv(quad[0]);
+            glVertex3fv(quad[1]);
+            glVertex3fv(quad[2]);
+            glVertex3fv(quad[3]);
+         }
+      }
+   glEnd();
+
+   glDeleteTextures(2,tx);
+   glUseProgramObjectARB(0);
+   glActiveTexture(GL_TEXTURE0);
+   glDisable(GL_BLEND);
+   glEnable(GL_LIGHTING);
    return(1);
 }

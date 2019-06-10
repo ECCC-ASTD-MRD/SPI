@@ -40,7 +40,7 @@ namespace eval OpenGL {
    set Param(FSAA)        4
    set Param(ZBuf)        0
    set Param(Info)        ""
-   set Param(Shaders)     { Field FieldTex DataTex TopoTex }
+   set Param(Shaders)     { Field FieldTex DataTex TopoTex RayCasting}
    set Param(ShaderPath)  $GDefs(Dir)/share/shader
    set Param(Infos)       "GLX_VERSION GLX_VENDOR GLX_EXTENSIONS
                            GL_VERSION GL_VENDOR GL_EXTENSIONS GL_RENDERER

@@ -164,7 +164,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
    int nras=0,u,u0,u1,udef;
-     
+
    // Verifier l'existence du champs
    if (!Field || !Field->GRef || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
@@ -249,11 +249,18 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
                }
             }
 
-            if (Field->Spec->RenderVol) {
+            if (Field->Spec->RenderVol==1) {
                if (Field->GRef->Grid[0]!='V') {
                   /*Recuperer les niveaux disponibles*/
                   if (Data_Grid3D(Field,Proj)) {
                      nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
+                  }
+               }
+            }else if (Field->Spec->RenderVol==2) {
+               if (Field->GRef->Grid[0]!='V') {
+                  /*Recuperer les niveaux disponibles*/
+                  if (Data_Grid3D(Field,Proj)) {
+                      nras+=Data_RenderShaderRayCasting(Field,VP,(Projection*)Proj);
                   }
                }
             }
