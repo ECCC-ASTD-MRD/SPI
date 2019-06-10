@@ -242,8 +242,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-wait","-usethreads","-setlightambiant","-setlightdiffuse","-setlightspecular","-setmaterialspecular","-setmaterialshininess",NULL };
-   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,WAIT,USETHREADS,SETLIGHTAMBIANT,SETLIGHTDIFFUSE, SETLIGHTSPECULAR,SETMATERIALSPECULAR,SETMATERAILSHININESS };
+   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-wait","-usethreads","-lightambiant","-lightdiffuse","-lightspecular","-materialspecular","-materialshininess",NULL };
+   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,WAIT,USETHREADS,LIGHTAMBIANT,LIGHTDIFFUSE,LIGHTSPECULAR,MATERIALSPECULAR,MATERAILSHININESS };
 
    Tcl_ResetResult(Interp);
 
@@ -439,54 +439,74 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->GLDebug);
             }
             break;
-         case SETLIGHTAMBIANT:
+         case LIGHTAMBIANT:
          {
             if(GLRender->GLLighting == NULL) {
                 initialisationGLLightingParams();
             }
-            double x=0;
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
-            GLRender->GLLighting->GLLightAmbiant = (float)x;
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightAmbiant));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightAmbiant = (float)x;
+            }
             break;
          }
-         case SETLIGHTDIFFUSE:
+         case LIGHTDIFFUSE:
          {
             if(GLRender->GLLighting == NULL) {
                 initialisationGLLightingParams();
             }
-            double x=0;
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
-            GLRender->GLLighting->GLLightDiffuse = (float)x;
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightDiffuse));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightDiffuse = (float)x;
+            }
             break;
          }
-         case SETLIGHTSPECULAR:
+         case LIGHTSPECULAR:
          {
             if(GLRender->GLLighting == NULL) {
                 initialisationGLLightingParams();
             }
-            double x=0;
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
-            GLRender->GLLighting->GLLightSpecular = (float)x;
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightSpecular));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightSpecular = (float)x;
+            }
             break;
          }
-         case SETMATERIALSPECULAR:
+         case MATERIALSPECULAR:
          {
             if(GLRender->GLLighting == NULL) {
                 initialisationGLLightingParams();
             }
-            double x=0;
-            Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
-            GLRender->GLLighting->GLMaterialSpecular = (float)x;
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLMaterialSpecular));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLMaterialSpecular = (float)x;
+            }
             break;
          }
-         case SETMATERAILSHININESS:
+         case MATERAILSHININESS:
          {
             if(GLRender->GLLighting == NULL) {
                 initialisationGLLightingParams();
             }
-            int x=0;
-            Tcl_GetIntFromObj(Interp,Objv[++i],&x);
-            GLRender->GLLighting->GLMaterialShininess = x;
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->GLLighting->GLMaterialShininess));
+            } else {
+               int x=0;
+               Tcl_GetIntFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLMaterialShininess = x;
+            }
             break;
          }
       }

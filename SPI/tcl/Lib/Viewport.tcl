@@ -2080,34 +2080,34 @@ proc Viewport::ParamFrame { Frame Apply } {
    labelframe $Data(Frame2).ambiant -text "Light Ambiant"
       scale $Data(Frame2).ambiant.scale -orient horizontal -from 0 -to 1 \
           -showvalue true -variable Viewport::Map(LightAmbiant) -relief flat \
-          -command "$Apply configure -state normal; glrender -setlightambiant \$Viewport::Map(LightAmbiant); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
+          -command "$Apply configure -state normal; glrender -lightambiant \$Viewport::Map(LightAmbiant); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
       pack $Data(Frame2).ambiant.scale -side left -fill x -expand true -padx 2 -pady 2
 
     labelframe $Data(Frame2).diffuse -text "Light Diffuse"
       scale $Data(Frame2).diffuse.scale -orient horizontal -from 0 -to 1.5 \
           -showvalue true -variable Viewport::Map(LightDiffuse) -relief flat \
-          -command "$Apply configure -state normal; glrender -setlightdiffuse \$Viewport::Map(LightDiffuse); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
+          -command "$Apply configure -state normal; glrender -lightdiffuse \$Viewport::Map(LightDiffuse); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
       pack $Data(Frame2).diffuse.scale -side left -fill x -expand true -padx 2 -pady 2
 
     labelframe $Data(Frame2).lspecular -text "Light Specular"
       scale $Data(Frame2).lspecular.scale -orient horizontal -from 0 -to 1 \
           -showvalue true -variable Viewport::Map(LightSpecular) -relief flat \
-          -command "$Apply configure -state normal; glrender -setlightspecular \$Viewport::Map(LightSpecular); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
+          -command "$Apply configure -state normal; glrender -lightspecular \$Viewport::Map(LightSpecular); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
       pack $Data(Frame2).lspecular.scale -side left -fill x -expand true -padx 2 -pady 2
 
     labelframe $Data(Frame2).mspecular -text "Material Specular"
       scale $Data(Frame2).mspecular.scale -orient horizontal -from 0 -to 1 \
           -showvalue true -variable Viewport::Map(MaterialSpecular) -relief flat \
-          -command "$Apply configure -state normal; glrender -setmaterialspecular \$Viewport::Map(MaterialSpecular); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
+          -command "$Apply configure -state normal; glrender -materialspecular \$Viewport::Map(MaterialSpecular); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
       pack $Data(Frame2).mspecular.scale -side left -fill x -expand true -padx 2 -pady 2
 
     labelframe $Data(Frame2).shininess -text "Material Shininess"
       scale $Data(Frame2).shininess.scale -orient horizontal -from 0 -to 200 \
           -showvalue true -variable Viewport::Map(MaterialShininess) -relief flat \
-          -command "$Apply configure -state normal; glrender -setmaterialshininess \$Viewport::Map(MaterialShininess); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 1
+          -command "$Apply configure -state normal; glrender -materialshininess \$Viewport::Map(MaterialShininess); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $Data(Frame2).shininess.scale -side left -fill x -expand true -padx 2 -pady 2
 
-      button $Data(Frame2).button -text "default" -bd 1 -command "glrender -setlightambiant 0.1 -setlightdiffuse 1.5 -setlightspecular 0.6 -setmaterialspecular 1.0 -setmaterialshininess 64;"
+      button $Data(Frame2).button -text "default" -bd 1 -command "glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64;"
 
    pack $Data(Frame2).ambiant -side top -fill x -pady 5
    pack $Data(Frame2).diffuse -side top -fill x
