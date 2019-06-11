@@ -582,8 +582,8 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_BORDER
-   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);// GL_CLAMP_TO_EDGE
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
    int widthD=Field->Def->NI;
    int heightD=Field->Def->NJ;
@@ -593,25 +593,18 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int heightT=heightD/2;
    int depthT=depthD/2;
 
-   int test;
-   glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE,&test);
-
    float data[depthT][heightT][widthT][1];
 
    float temp = 0.0;
-   float max = 0.0;
 
    for(int k=0; k<depthT; k++){
       for(int j=0; j<heightT; j++){
          for(int i=0; i<widthT; i++){
             Def_GetMod(Field->Def,(2*k*heightD*widthD+2*j*widthD+2*i),temp);
-            if(temp>max)max=temp;
             data[k][j][i][0]=temp/(float)Field->Spec->Max;
-            //if(k%10==0&&i%150==0&&j%150==0)printf("%f\t",temp);
          }
       }
    }
-   //printf("\n\n");
    glTexImage3D(GL_TEXTURE_3D,0,GL_RED,widthT,heightT,depthT,0,GL_RED, GL_FLOAT,&data);
    glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
 
@@ -620,7 +613,7 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
                      -(float)VP->Cam->From[2]+(float)VP->Cam->To[2]};
    glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
 
-   glUniform1fARB(GLShader_UniformGet(prog,"MaxData"),max);
+   glUniform1fARB(GLShader_UniformGet(prog,"Elev"),(float)Proj->Scale);
    glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
    glUniform1fARB(GLShader_UniformGet(prog,"MaxDataDisplay"),(float)Field->Spec->Max);
 
@@ -648,16 +641,8 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    float limitDisplayMaxX = ((float)MaxX/widthD)*2.0-1.0;  //[-1,1]
    float limitDisplayMinY = ((float)MinY/heightD)*2.0-1.0;  //[-1,1]
    float limitDisplayMaxY = ((float)MaxY/heightD)*2.0-1.0;  //[-1,1]
-   float limitDisplayMinZ = ((float)MinZ/depthD)+1.0;  //[1,2]
-   float limitDisplayMaxZ = ((float)MaxZ/depthD)+1.0;  //[1,2]
-
-//    printf("x: [%f, %f], y: [%f, %f], z: [%f, %f]\n",
-//           limitDisplayMinX,
-//           limitDisplayMaxX,
-//           limitDisplayMinY,
-//           limitDisplayMaxY,
-//           limitDisplayMinZ,
-//           limitDisplayMaxZ) ;
+   float limitDisplayMinZ = ((float)MinZ/depthD)*Proj->Scale/200+1.0;  //[1,2]
+   float limitDisplayMaxZ = ((float)MaxZ/depthD)*Proj->Scale/200+1.0;  //[1,2]
 
    //face dessus
    float fixPos = limitDisplayMaxZ;
