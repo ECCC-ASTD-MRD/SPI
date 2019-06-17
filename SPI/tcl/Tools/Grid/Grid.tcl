@@ -222,6 +222,8 @@ proc Grid::CascadeInit { Casc } {
       
       set Param(NI) [expr $Param(NI)==0?$Data(GridNMin):$Param(NI)]
       set Param(NJ) [expr $Param(NJ)==0?$Data(GridNMin):$Param(NJ)]
+      set Param(NI) $Data(GridNMin)
+      set Param(NJ) $Data(GridNMin)
       set Param(ResMX) $res 
       set Param(ResMY) $res 
       set Param(ResLLX) [expr double($Param(ResMX)/$Param(LL2M))]
@@ -234,7 +236,9 @@ proc Grid::CascadeInit { Casc } {
    set Data(GetNIJ) True
   
    Grid::Switch 0
+   Grid::SettingsShow 
 }
+
 #----------------------------------------------------------------------------
 # Nom      : <Grid::SettingsRead>
 # Creation : Novembre 2018 - J.P. Gauthier - CMC/CMOE
