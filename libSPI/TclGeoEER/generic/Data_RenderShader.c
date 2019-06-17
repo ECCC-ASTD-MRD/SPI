@@ -373,7 +373,12 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glDisable(GL_CULL_FACE);
    }
    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
-
+   if (Proj->Sun) {
+      glEnable(GL_LIGHTING);
+      glEnable(GL_LIGHT0);
+      glEnable(GL_COLOR_MATERIAL);
+   }
+   
    // Do we need transparency
    if (Field->Spec->Map->Alpha || (Field->Spec->Alpha<100 && !(Field->Spec->RenderVector>ARROW))) {
       glEnable(GL_BLEND);
@@ -478,14 +483,19 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       ox=1;
    }
 
-   // Resolution selon la dimension des cellules (mid-grid) et la vue
-   dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
-   dp=(dp<1 || Field->GRef->Grid[0]=='V'|| (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+   if (Field->Spec->TexRes) {
+      // Résolution spécifié
+      dp=Field->Spec->TexRes;
+   } else {
+      // Resolution selon la dimension des cellules (mid-grid) et la vue
+      dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;
+      dp=(dp<1 || Field->GRef->Grid[0]=='V'|| (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
    
-   if (Proj->Type->Def==PROJCYLIN || Field->GRef->Grid[0]=='X') {
-      dp=CLAMP(dp,1,2);
-   } else {      
-      dp=CLAMP(dp,1,20);
+      if (Proj->Type->Def==PROJCYLIN || Field->GRef->Grid[0]=='X') {
+         dp=CLAMP(dp,1,2);
+      } else {      
+         dp=CLAMP(dp,1,20);
+      }
    }
    dn=dp*Field->Def->NI;
    
@@ -519,10 +529,10 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          fj=(float)j+0.5f;
             
          glTexCoord2f(fi,fj+dp);
-//         glNormal3dv(pos[idx1]);
+         glNormal3dv(pos[idx1]);
          glVertex3dv(pos[idx1]);
          glTexCoord2f(fi,fj);
-//         glNormal3dv(pos[idx0]);
+         glNormal3dv(pos[idx0]);
          glVertex3dv(pos[idx0]);
 
          idx0+=dp;
@@ -538,6 +548,11 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glDisable(GL_POLYGON_STIPPLE);
    glEnable(GL_CULL_FACE);
    glDisable(GL_BLEND);
+   if (Proj->Sun) {
+      glDisable(GL_LIGHTING);
+      glDisable(GL_LIGHT0);
+      glDisable(GL_COLOR_MATERIAL);
+   }
 
    return(1);
 }

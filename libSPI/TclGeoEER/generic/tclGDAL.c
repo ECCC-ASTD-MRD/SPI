@@ -844,6 +844,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
       return(NULL);
    }
    band->Spec->RenderTexture=1;
+   band->Spec->TexRes=1;
 
    return(band);
 }

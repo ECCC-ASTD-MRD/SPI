@@ -1600,18 +1600,27 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
 
-   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
-   dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
-   
-   if (Field->Spec->InterNb) 
-      dp>>=2;
-   
-   dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
-
-   /*Grille avec loop sur la longitude*/
+   // Grille avec loop sur la longitude
    if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
-      dp=dp>10?10:dp;
+   }
+   
+   if (Field->Spec->TexRes) {
+      // Résolution spécifié
+      dp=Field->Spec->TexRes;
+   } else {
+      // Resolution selon la dimension des cellules (mid-grid) et la vue
+      dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
+   
+      if (Field->Spec->InterNb) 
+         dp>>=2;
+   
+      dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+
+      // Grille avec loop sur la longitude
+      if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
+         dp=dp>10?10:dp;
+      }
    }
    
    idx0=idx1=idx2=idx3=0;
