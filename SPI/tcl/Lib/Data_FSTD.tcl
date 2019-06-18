@@ -1079,6 +1079,7 @@ proc FSTD::ParamPut { { Update False } } {
    IcoMenu::Set $Data(Frame).def.r.disp.grid.sel   $Param(Grid)
    IcoMenu::Set $Data(Frame).def.r.disp.vect.sel   $Param(Vector)
    IcoMenu::Set $Data(Frame).def.r.disp.part.sel   $Param(Particle)
+   IcoMenu::Set $Data(Frame).def.r.disp.vol.sel    $Param(Volume)
 
    IcoMenu::Set $Data(Frame).def.r.disp.p.st      $Param(Dash)
    IcoMenu::Set $Data(Frame).def.r.disp.p.width   $Param(Width)
