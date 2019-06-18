@@ -4,6 +4,9 @@ uniform sampler1D Colormap;
 uniform float MinDataDisplay;
 uniform float MaxDataDisplay;
 uniform vec3 CameraDir;
+uniform int InterNb;
+uniform float Inter;
+uniform float MaxData;
 varying vec3 rayDirection, rayOrigin;
 
 
