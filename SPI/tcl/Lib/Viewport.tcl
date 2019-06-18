@@ -2110,7 +2110,7 @@ proc Viewport::ParamFrame { Frame Apply } {
       pack $Data(Frame2).mspecular.scale -side left -fill x -expand true -padx 2 -pady 2
 
     labelframe $Data(Frame2).shininess -text "[lindex $Lbl(MaterialShininess) $GDefs(Lang)]"
-      scale $Data(Frame2).shininess.scale -orient horizontal -from 0 -to 200 \
+      scale $Data(Frame2).shininess.scale -orient horizontal -from 0 -to 128 \
           -showvalue true -variable Viewport::Map(MaterialShininess) -relief flat \
           -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $Data(Frame2).shininess.scale -side left -fill x -expand true -padx 2 -pady 2

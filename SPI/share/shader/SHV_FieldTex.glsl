@@ -8,6 +8,7 @@ uniform   int       Bi;
 uniform   int       Bellow;
 uniform   int       Above;
 uniform   int       IsMask;
+uniform   int       Sun;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;

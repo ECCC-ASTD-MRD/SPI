@@ -472,6 +472,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1iARB(GLShader_UniformGet(prog,"Bi"),(Field->Spec->InterpDegree[0]=='N'?0:1));
    glUniform1iARB(GLShader_UniformGet(prog,"Above"),Field->Spec->MapAbove);
    glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
+   glUniform1iARB(GLShader_UniformGet(prog,"Sun"),Proj->Sun);
 
    // Grille avec loop sur la longitude
    if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
