@@ -13,8 +13,8 @@ uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
 uniform   sampler2DRect Mask;
 
-//varying   vec3          LightDir;
-//varying   vec3          Normal;
+varying   vec3          LightDir;
+varying   vec3          Normal;
 
 vec4 CylinCheck(vec4 Vr) {
 
@@ -38,6 +38,8 @@ void main() {
    gl_TexCoord[0] = gl_MultiTexCoord0;
    gl_FrontColor  = gl_Color;
 
-//   LightDir      = normalize(vec3(gl_LightSource[0].position));
+LightDir      = normalize(vec3(gl_LightSource[0].position));
 //  Normal        = gl_Position.xyz;
+
+Normal = normalize(gl_NormalMatrix * gl_Normal);
 }
