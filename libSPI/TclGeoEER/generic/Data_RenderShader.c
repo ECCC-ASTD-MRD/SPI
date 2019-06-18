@@ -42,7 +42,6 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);
 int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj);
 
 extern int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
-
 /*----------------------------------------------------------------------------
  * Nom      : <Data_RenderShaderParticle>
  * Creation : Octobre 1999 - J.P. Gauthier - CMC/CMOE
@@ -343,7 +342,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    int     n,i,j,idxk,idx0,idx1,ox=0,dp,dn,mask=0;
    float   min,rng,inter[DATASPEC_MAX],fi,fj;
-   Vect3d *pos;
+   Vect3d *pos,normal,v[2];
    float  *buf=NULL;
    char   *ptr;
 
@@ -520,17 +519,27 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          fj=(float)j+0.5f;
             
          glTexCoord2f(fi,fj+dp);
-//         glNormal3dv(pos[idx1]);
+         for(int i=0;i<3;i++){
+            v[0][i]=pos[((idx1+1)%Field->Def->NI==0)?idx1:idx1+1][i] - pos[(idx1%Field->Def->NI==0)?idx1:idx1-1][i];
+            v[1][i]=pos[(idx1%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx1:idx1+Field->Def->NI][i] - pos[(idx1%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx1:idx1-Field->Def->NI][i];
+         }
+         Vect_CrossProduct(normal,v[0],v[1]);
+         glNormal3dv(normal);
          glVertex3dv(pos[idx1]);
+
          glTexCoord2f(fi,fj);
-//         glNormal3dv(pos[idx0]);
+         for(int i=0;i<3;i++){
+            v[0][i]=pos[((idx0+1)%Field->Def->NI==0)?idx0:idx0+1][i]-pos[(idx0%Field->Def->NI==0)?idx0:idx0-1][i];
+            v[1][i]=pos[(idx0%(Field->Def->NI*(Field->Def->NJ-1))<Field->Def->NI)?idx0:idx0+Field->Def->NI][i] - pos[(idx0%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx0:idx0-Field->Def->NI][i];
+         }
+         Vect_CrossProduct(normal,v[0],v[1]);
+         glNormal3dv(normal);
          glVertex3dv(pos[idx0]);
 
          idx0+=dp;
       }
       glEnd();
    }
-
    glDeleteTextures(4,tx);
    glUseProgramObjectARB(0);
 //   GLShader_UnInstall(prog);
@@ -585,28 +594,35 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
-   int widthD=Field->Def->NI;
-   int heightD=Field->Def->NJ;
-   int depthD=Field->Def->NK;
+   int width=Field->Def->NI;
+   int height=Field->Def->NJ;
+   int depth=Field->Def->NK;
 
-   int widthT=widthD/2;
-   int heightT=heightD/2;
-   int depthT=depthD/2;
-
-   float data[depthT][heightT][widthT][1];
-
+   float* data = malloc(depth*height*width*sizeof(float));
    float temp = 0.0;
+   float max = 0.0;
 
-   for(int k=0; k<depthT; k++){
-      for(int j=0; j<heightT; j++){
-         for(int i=0; i<widthT; i++){
-            Def_GetMod(Field->Def,(2*k*heightD*widthD+2*j*widthD+2*i),temp);
-            data[k][j][i][0]=temp/(float)Field->Spec->Max;
+   for(int k=0; k<depth; k++){
+      for(int j=0; j<height; j++){
+         for(int i=0; i<width; i++){
+            Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
+            if(temp>max)max = temp;
          }
       }
    }
-   glTexImage3D(GL_TEXTURE_3D,0,GL_RED,widthT,heightT,depthT,0,GL_RED, GL_FLOAT,&data);
+
+   for(int k=0; k<depth; k++){
+      for(int j=0; j<height; j++){
+         for(int i=0; i<width; i++){
+            Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
+            data[k*height*width+j*width+i]=temp/max;
+         }
+      }
+   }
+
+   glTexImage3D(GL_TEXTURE_3D,0,GL_RED,width,height,depth,0,GL_RED, GL_FLOAT,data);
    glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
+   free(data);
 
    float camDir[3]= {-(float)VP->Cam->From[0]+(float)VP->Cam->To[0],
                      -(float)VP->Cam->From[1]+(float)VP->Cam->To[1],
@@ -614,8 +630,12 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
 
    glUniform1fARB(GLShader_UniformGet(prog,"Elev"),(float)Proj->Scale);
+   glUniform1fARB(GLShader_UniformGet(prog,"MaxData"),max);
    glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
    glUniform1fARB(GLShader_UniformGet(prog,"MaxDataDisplay"),(float)Field->Spec->Max);
+
+   glUniform1iARB(GLShader_UniformGet(prog,"InterNb"),Field->Spec->InterNb);
+   glUniform1fARB(GLShader_UniformGet(prog,"Inter"),(float)Field->Spec->Inter[1]);
 
    glDisable(GL_LIGHTING);
    glEnable(GL_BLEND);
@@ -637,12 +657,12 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int MinZ = Field->Def->Limits[2][0];// = 5;
    int MaxZ = Field->Def->Limits[2][1];// = 50;
 
-   float limitDisplayMinX = ((float)MinX/widthD)*2.0-1.0;  //[-1,1]
-   float limitDisplayMaxX = ((float)MaxX/widthD)*2.0-1.0;  //[-1,1]
-   float limitDisplayMinY = ((float)MinY/heightD)*2.0-1.0;  //[-1,1]
-   float limitDisplayMaxY = ((float)MaxY/heightD)*2.0-1.0;  //[-1,1]
-   float limitDisplayMinZ = ((float)MinZ/depthD)*Proj->Scale/200+1.0;  //[1,2]
-   float limitDisplayMaxZ = ((float)MaxZ/depthD)*Proj->Scale/200+1.0;  //[1,2]
+   float limitDisplayMinX = ((float)MinX/width)*2.0-1.0;  //[-1,1]
+   float limitDisplayMaxX = ((float)MaxX/width)*2.0-1.0;  //[-1,1]
+   float limitDisplayMinY = ((float)MinY/height)*2.0-1.0;  //[-1,1]
+   float limitDisplayMaxY = ((float)MaxY/height)*2.0-1.0;  //[-1,1]
+   float limitDisplayMinZ = ((float)MinZ/depth)*Proj->Scale/200+1.0;  //[1,2]
+   float limitDisplayMaxZ = ((float)MaxZ/depth)*Proj->Scale/200+1.0;  //[1,2]
 
    //face dessus
    float fixPos = limitDisplayMaxZ;
