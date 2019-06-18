@@ -531,10 +531,10 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
 */
 void initialisationGLLightingParams(){
     GLRender->GLLighting = malloc(sizeof(GLLightingParams));
-    GLRender->GLLighting->GLLightAmbiant = 0.75;
-    GLRender->GLLighting->GLLightDiffuse = 1.0;
+    GLRender->GLLighting->GLLightAmbiant = 0.1;
+    GLRender->GLLighting->GLLightDiffuse = 1.5;
     GLRender->GLLighting->GLLightSpecular = 0.6;
-    GLRender->GLLighting->GLMaterialSpecular = 0.75;
+    GLRender->GLLighting->GLMaterialSpecular = 1.0;
     GLRender->GLLighting->GLMaterialShininess = 64;
 }
 

@@ -2115,7 +2115,7 @@ proc Viewport::ParamFrame { Frame Apply } {
           -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $Data(Frame2).shininess.scale -side left -fill x -expand true -padx 2 -pady 2
 
-      button $Data(Frame2).button -text "[lindex $Lbl(Default) $GDefs(Lang)]" -bd 1 -command "glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"
+      button $Data(Frame2).button -text "[lindex $Lbl(Default) $GDefs(Lang)]" -bd 1 -command "glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
 
    pack $Data(Frame2).ambiant -side top -fill x -pady 5
    pack $Data(Frame2).diffuse -side top -fill x
