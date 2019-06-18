@@ -83,7 +83,7 @@ void main() {
    // If we have intervals, figure out which we fit in
    if (Nb>0) {
 
-//      sz=float(textureSize(Colormap,0)); 
+//TODO: #version 130     sz=float(textureSize(Colormap,0)); 
       sz=256.0; 
       factor=sz/float(Nb+1);
       
