@@ -658,12 +658,21 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int MinZ = Field->Def->Limits[2][0];// = 5;
    int MaxZ = Field->Def->Limits[2][1];// = 50;
 
-   float limitDisplayMinX = ((float)MinX/width)*2.0-1.0;  //[-1,1]
-   float limitDisplayMaxX = ((float)MaxX/width)*2.0-1.0;  //[-1,1]
-   float limitDisplayMinY = ((float)MinY/height)*2.0-1.0;  //[-1,1]
-   float limitDisplayMaxY = ((float)MaxY/height)*2.0-1.0;  //[-1,1]
-   float limitDisplayMinZ = ((float)MinZ/depth)*Proj->Scale/200+1.0;  //[1,2]
-   float limitDisplayMaxZ = ((float)MaxZ/depth)*Proj->Scale/200+1.0;  //[1,2]
+   //all in [0,1]
+   float limitDisplayMinX = ((float)MinX/width);
+   float limitDisplayMaxX = ((float)MaxX/width);
+   float limitDisplayMinY = ((float)MinY/height);
+   float limitDisplayMaxY = ((float)MaxY/height);
+
+   //in the limits of LI and LJ
+   limitDisplayMinX = limitDisplayMinX*2*Proj->LI-Proj->LI;
+   limitDisplayMaxX = limitDisplayMaxX*2*Proj->LI-Proj->LI;
+   limitDisplayMinY = limitDisplayMinY*2*Proj->LJ-Proj->LJ;
+   limitDisplayMaxY = limitDisplayMaxY*2*Proj->LJ-Proj->LJ;
+
+   //in [1,2]
+   float limitDisplayMinZ = ((float)MinZ/depth)*Proj->Scale/200+1.0;
+   float limitDisplayMaxZ = ((float)MaxZ/depth)*Proj->Scale/200+1.0;
 
    //face dessus
    float fixPos = limitDisplayMaxZ;
