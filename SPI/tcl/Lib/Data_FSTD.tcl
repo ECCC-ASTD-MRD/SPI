@@ -438,7 +438,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          frame $Data(Frame).def.r.disp.vol
             label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.vol.sel $GDefs(Dir)/share/bitmap \
-               "zeroth.xbm spline.xbm bound.xbm" "0 1 2" \
+               "zeroth.xbm isoSurface.xbm rayCasting.xbm" "0 1 2" \
                FSTD::Param(Volume) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
