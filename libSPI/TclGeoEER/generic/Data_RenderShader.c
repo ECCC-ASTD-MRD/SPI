@@ -531,7 +531,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          glTexCoord2f(fi,fj);
          for(int i=0;i<3;i++){
             v[0][i]=pos[((idx0+1)%Field->Def->NI==0)?idx0:idx0+1][i]-pos[(idx0%Field->Def->NI==0)?idx0:idx0-1][i];
-            v[1][i]=pos[(idx0%(Field->Def->NI*(Field->Def->NJ-1))<Field->Def->NI)?idx0:idx0+Field->Def->NI][i] - pos[(idx0%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx0:idx0-Field->Def->NI][i];
+            v[1][i]=pos[(idx0%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx0:idx0+Field->Def->NI][i] - pos[(idx0%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx0:idx0-Field->Def->NI][i];
          }
          Vect_CrossProduct(normal,v[0],v[1]);
          glNormal3dv(normal);
