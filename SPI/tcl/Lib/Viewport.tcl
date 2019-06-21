@@ -230,12 +230,12 @@ namespace eval Viewport {
    set Lbl(Viewport)       { "Vue" "Viewport" }
 
    set Lbl(Light)             { "Illumination" "Lighting" }
-   set Lbl(LightAmbiant)      { "Lumière ambiante" "Ambient Light" }
-   set Lbl(LightDiffuse)      { "Lumière diffuse" "Diffuse Light" }
-   set Lbl(LightSpecular)     { "Lumière spéculaire" "Specular Light" }
-   set Lbl(MaterialSpecular)  { "Réflexion spéculaire du matériau" "Material Specular Reflexion" }
-   set Lbl(MaterialShininess) { "Brillance du matériau" "Material Shininess" }
-   set Lbl(Default)          { "défaut" "default" }
+   set Lbl(LightAmbiant)      { "Ambiante" "Ambient" }
+   set Lbl(LightDiffuse)      { "Diffuse" "Diffuse" }
+   set Lbl(LightSpecular)     { "Spéculaire" "Specular" }
+   set Lbl(MaterialSpecular)  { "Réflexion" "Reflexion" }
+   set Lbl(MaterialShininess) { "Brillance" "Shininess" }
+   set Lbl(Default)           { "Défaut" "Default" }
 
    #----- Definitions des bulles d'aides
 
@@ -249,6 +249,11 @@ namespace eval Viewport {
    set Bubble(Elev)    { "Facteur multiplicatif appliqué aux élévations" "Mutlipicative factor applied to the elevations" }
    set Bubble(Vector)  { "Paramètres d'affichage des données\nvectorielles (couleur et largeur)" "Vectorial data parameters (Color and line width)" }
    set Bubble(Sun)     { "Illumination selon la position du soleil" "Light based on sun position" }
+   set Bubble(LightAmbiant)      { "Lumière ambiante" "Ambient Light" }
+   set Bubble(LightDiffuse)      { "Lumière diffuse" "Diffuse Light" }
+   set Bubble(LightSpecular)     { "Lumière spéculaire" "Specular Light" }
+   set Bubble(MaterialSpecular)  { "Réflexion spéculaire du matériau" "Material Specular Reflexion" }
+   set Bubble(MaterialShininess) { "Brillance du matériau" "Material Shininess" }
 }
 
 #----------------------------------------------------------------------------
@@ -626,35 +631,35 @@ proc Viewport::ConfigPut { Frame VP } {
    variable Map
    variable Resources
 
-   $Data(Frame).layer.vp.col configure -fg $Resources(Bkg)
+   $Data(Frame).right.layer.vp.col configure -fg $Resources(Bkg)
 
    IcoMenu::Set $Data(Frame).left.ras.mask.sel $Map(Mask)
 
    set lst "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm width6.xbm"
-   $Data(Frame).layer.vp.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Resources(BD)]
-   $Data(Frame).layer.coast.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coast)]
-   $Data(Frame).layer.lake.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Lake)]
-   $Data(Frame).layer.river.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(River)]
-   $Data(Frame).layer.poli.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Polit)]
-   $Data(Frame).layer.admin.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Admin)]
-   $Data(Frame).layer.road.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Road)]
-   $Data(Frame).layer.rail.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Rail)]
-   $Data(Frame).layer.ll.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coord)]
+   $Data(Frame).right.layer.vp.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Resources(BD)]
+   $Data(Frame).right.layer.coast.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coast)]
+   $Data(Frame).right.layer.lake.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Lake)]
+   $Data(Frame).right.layer.river.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(River)]
+   $Data(Frame).right.layer.poli.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Polit)]
+   $Data(Frame).right.layer.admin.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Admin)]
+   $Data(Frame).right.layer.road.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Road)]
+   $Data(Frame).right.layer.rail.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Rail)]
+   $Data(Frame).right.layer.ll.sz  configure -bitmap @$GDefs(Dir)/share/bitmap/[lindex $lst $Map(Coord)]
 
-   ColorBox::ConfigNoColor $Data(Frame).layer.coast.col $Resources(Coast)
-   ColorBox::ConfigNoColor $Data(Frame).layer.lake.col $Resources(Lake)
-   ColorBox::ConfigNoColor $Data(Frame).layer.coast.fcol $Resources(FillCoast)
-   ColorBox::ConfigNoColor $Data(Frame).layer.lake.fcol $Resources(FillLake)
-   ColorBox::ConfigNoColor $Data(Frame).layer.river.col $Resources(River)
-   ColorBox::ConfigNoColor $Data(Frame).layer.poli.col $Resources(Polit)
-   ColorBox::ConfigNoColor $Data(Frame).layer.place.col $Resources(Place)
-   ColorBox::ConfigNoColor $Data(Frame).layer.admin.col $Resources(Admin)
-   ColorBox::ConfigNoColor $Data(Frame).layer.city.col $Resources(City)
-   ColorBox::ConfigNoColor $Data(Frame).layer.road.col $Resources(Road)
-   ColorBox::ConfigNoColor $Data(Frame).layer.rail.col $Resources(Rail)
-   ColorBox::ConfigNoColor $Data(Frame).layer.ll.col $Resources(Coord)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.coast.col $Resources(Coast)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.lake.col $Resources(Lake)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.coast.fcol $Resources(FillCoast)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.lake.fcol $Resources(FillLake)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.river.col $Resources(River)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.poli.col $Resources(Polit)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.place.col $Resources(Place)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.admin.col $Resources(Admin)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.city.col $Resources(City)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.road.col $Resources(Road)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.rail.col $Resources(Rail)
+   ColorBox::ConfigNoColor $Data(Frame).right.layer.ll.col $Resources(Coord)
 
-   IcoMenu::Set $Data(Frame).layer.ll.ds      $Resources(DashCoord)
+   IcoMenu::Set $Data(Frame).right.layer.ll.ds      $Resources(DashCoord)
 }
 
 #----------------------------------------------------------------------------
@@ -1885,17 +1890,59 @@ proc Viewport::ParamFrame { Frame Apply } {
          pack $Data(Frame).left.ras.mask.lbl -side left -fill y
       pack $Data(Frame).left.ras.topo $Data(Frame).left.ras.bath $Data(Frame).left.ras.text $Data(Frame).left.ras.mask -side top -fill x -padx 2
 
-   labelframe $Data(Frame).left.sun -text [lindex $Lbl(Sun) $GDefs(Lang)]
-      checkbutton $Data(Frame).left.sun.on -variable Viewport::Map(Sun) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
-         -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
-      scale $Data(Frame).left.sun.time -orient horizontal -from 0 -to 86400 \
-         -showvalue false -variable Viewport::Data(Time) -relief flat \
-         -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -sliderlength 8  -bd 1 -resolution 60
-         Calendar::Create $Data(Frame).left.sun.date "" Viewport::Data(Date) 0 "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
+   labelframe $Data(Frame).left.light -text [lindex $Lbl(Light) $GDefs(Lang)]
 
-      pack $Data(Frame).left.sun.on -side left -padx 2 -pady 2
-      pack $Data(Frame).left.sun.time -side left -fill x -expand true -pady 2
-      pack $Data(Frame).left.sun.date -side left -padx 2 -pady 2 -fill y -expand true
+      frame $Data(Frame).left.light.sun
+         checkbutton $Data(Frame).left.light.sun.on -variable Viewport::Map(Sun) -relief raised -bd 1 -onvalue 1 -offvalue 0  -selectcolor "" -relief groove -bd 1\
+         -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
+         scale $Data(Frame).left.light.sun.time -orient horizontal -from 0 -to 86400 \
+         -showvalue false -variable Viewport::Data(Time) -relief flat \
+         -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 10 -length 70 -sliderlength 6  -bd 1 -resolution 60
+         label $Data(Frame).left.light.sun.lbl -text [format " %-10s" [lindex $Lbl(Sun) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.sun.on $Data(Frame).left.light.sun.time $Data(Frame).left.light.sun.lbl -side left
+
+      frame $Data(Frame).left.light.date
+         Calendar::Create $Data(Frame).left.light.date.cal "" Viewport::Data(Date) 21 "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
+         pack $Data(Frame).left.light.date.cal -side left
+
+      frame $Data(Frame).left.light.ambiant
+         scale $Data(Frame).left.light.ambiant.sc -orient horizontal -from 0 -to 1 \
+          -showvalue false -variable Viewport::Map(LightAmbiant) -relief flat \
+          -command "glrender -lightambiant \$Viewport::Map(LightAmbiant); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.ambiant.lbl -text [format " %-10s" [lindex $Lbl(LightAmbiant) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.ambiant.sc $Data(Frame).left.light.ambiant.lbl -side left
+
+      frame $Data(Frame).left.light.diffuse
+         scale $Data(Frame).left.light.diffuse.sc -orient horizontal -from 0 -to 1.5 \
+          -showvalue false -variable Viewport::Map(LightDiffuse) -relief flat \
+          -command "glrender -lightdiffuse \$Viewport::Map(LightDiffuse); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.diffuse.lbl -text [format " %-10s" [lindex $Lbl(LightDiffuse) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.diffuse.sc $Data(Frame).left.light.diffuse.lbl -side left
+
+      frame $Data(Frame).left.light.lspecular
+         scale $Data(Frame).left.light.lspecular.sc -orient horizontal -from 0 -to 1 \
+          -showvalue false -variable Viewport::Map(LightSpecular) -relief flat \
+          -command "glrender -lightspecular \$Viewport::Map(LightSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.lspecular.lbl -text [format " %-10s" [lindex $Lbl(LightSpecular) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.lspecular.sc $Data(Frame).left.light.lspecular.lbl -side left
+
+      frame $Data(Frame).left.light.mspecular
+         scale $Data(Frame).left.light.mspecular.sc -orient horizontal -from 0 -to 1 \
+          -showvalue false -variable Viewport::Map(MaterialSpecular) -relief flat \
+          -command "glrender -materialspecular \$Viewport::Map(MaterialSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.mspecular.lbl -text [format " %-10s" [lindex $Lbl(MaterialSpecular) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.mspecular.sc $Data(Frame).left.light.mspecular.lbl -side left
+
+      frame $Data(Frame).left.light.shininess
+         scale $Data(Frame).left.light.shininess.sc -orient horizontal -from 0 -to 128 \
+          -showvalue false -variable Viewport::Map(MaterialShininess) -relief flat \
+          -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 1
+         label $Data(Frame).left.light.shininess.lbl -text [format " %-10s" [lindex $Lbl(MaterialShininess) $GDefs(Lang)]] -width 10
+         pack $Data(Frame).left.light.shininess.sc $Data(Frame).left.light.shininess.lbl -side left
+
+      button $Data(Frame).left.light.button -text "[lindex $Lbl(Default) $GDefs(Lang)]" -bd 1 -command "set Viewport::Map(LightAmbiant) 0.1; set Viewport::Map(LightDiffuse) 1.5; set Viewport::Map(LightSpecular) 0.6; set Viewport::Map(MaterialSpecular) 1.0; set Viewport::Map(MaterialShininess) 64; glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)" -width 10
+
+      pack $Data(Frame).left.light.sun $Data(Frame).left.light.date $Data(Frame).left.light.ambiant $Data(Frame).left.light.diffuse $Data(Frame).left.light.lspecular $Data(Frame).left.light.mspecular $Data(Frame).left.light.shininess $Data(Frame).left.light.button -side top -anchor sw -fill x
 
    labelframe $Data(Frame).left.axis -text "Axis"
       IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/share/bitmap \
@@ -1909,170 +1956,174 @@ proc Viewport::ParamFrame { Frame Apply } {
       pack $Data(Frame).left.axis.pick -side left -padx 2 -pady 2
       bind $Data(Frame).left.axis.z <Any-KeyRelease> "$Apply configure -state normal"
 
-   labelframe $Data(Frame).left.scale -text "Elevation"
-      scale $Data(Frame).left.scale.height -orient horizontal -from 1 -to 200 \
-         -showvalue true -variable Viewport::Map(Elev) -relief flat \
-         -command "if { \[projection is  \$Page::Data(Frame)\] && \[projection configure \$Page::Data(Frame) -scale\]!=\$Viewport::Map(Elev) } { Viewport::ParamSet }; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
-      pack $Data(Frame).left.scale.height -side left -fill x -expand true -padx 2 -pady 2
-
    pack $Data(Frame).left.ras -side top -fill x
-   pack $Data(Frame).left.sun -side top -fill x -pady 5
-   pack $Data(Frame).left.axis -side top -fill x
-   pack $Data(Frame).left.scale -side top -fill x -pady 5
+#    pack $Data(Frame).left.sun -side top -fill x -pady 4
+   pack $Data(Frame).left.light -side top -fill x
+   pack $Data(Frame).left.axis -side top -fill x -pady 4
 
-   labelframe $Data(Frame).layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
+   frame $Data(Frame).right
+   labelframe $Data(Frame).right.layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
 
-      frame $Data(Frame).layer.vp
-         IcoMenu::Create $Data(Frame).layer.vp.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.vp
+         IcoMenu::Create $Data(Frame).right.layer.vp.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Resources(BD) "$Apply configure -state normal" $Viewport::Resources(BD) -relief groove -bd 2
-         button $Data(Frame).layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
-            -command "FontBox::Create $Data(Frame).layer.vp.font \"$Apply configure -state normal; $Apply invoke\"  \$Viewport::Resources(Font)"
-         ColorBox::CreateSel $Data(Frame).layer.vp.col Viewport::Resources(Bkg) $Apply configure -state normal
-         label $Data(Frame).layer.vp.lbl -text [format "%-10s" [lindex $Lbl(Viewport) $GDefs(Lang)]]
-         pack $Data(Frame).layer.vp.col $Data(Frame).layer.vp.sz $Data(Frame).layer.vp.font -side left
-         pack $Data(Frame).layer.vp.lbl -side right
+         button $Data(Frame).right.layer.vp.font -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/font.ico\
+            -command "FontBox::Create $Data(Frame).right.layer.vp.font \"$Apply configure -state normal; $Apply invoke\"  \$Viewport::Resources(Font)"
+         ColorBox::CreateSel $Data(Frame).right.layer.vp.col Viewport::Resources(Bkg) $Apply configure -state normal
+         label $Data(Frame).right.layer.vp.lbl -text [format "%-10s" [lindex $Lbl(Viewport) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.vp.col $Data(Frame).right.layer.vp.sz $Data(Frame).right.layer.vp.font -side left
+         pack $Data(Frame).right.layer.vp.lbl -side right
 
-      frame $Data(Frame).layer.coast
-         IcoMenu::Create $Data(Frame).layer.coast.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.coast
+         IcoMenu::Create $Data(Frame).right.layer.coast.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Coast) "$Apply configure -state normal" $Viewport::Map(Coast) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.coast.col Viewport::Resources(Coast) $Apply configure -state normal
-         ColorBox::CreateSel $Data(Frame).layer.coast.fcol Viewport::Resources(FillCoast) $Apply configure -state normal
-         label $Data(Frame).layer.coast.lbl -text [format "%-10s" [lindex $Lbl(Coast) $GDefs(Lang)]]
-         pack $Data(Frame).layer.coast.col $Data(Frame).layer.coast.sz $Data(Frame).layer.coast.fcol -side left
-         pack $Data(Frame).layer.coast.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.coast.col Viewport::Resources(Coast) $Apply configure -state normal
+         ColorBox::CreateSel $Data(Frame).right.layer.coast.fcol Viewport::Resources(FillCoast) $Apply configure -state normal
+         label $Data(Frame).right.layer.coast.lbl -text [format "%-10s" [lindex $Lbl(Coast) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.coast.col $Data(Frame).right.layer.coast.sz $Data(Frame).right.layer.coast.fcol -side left
+         pack $Data(Frame).right.layer.coast.lbl -side right
 
-      frame $Data(Frame).layer.lake
-         IcoMenu::Create $Data(Frame).layer.lake.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.lake
+         IcoMenu::Create $Data(Frame).right.layer.lake.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Lake) "$Apply configure -state normal" $Viewport::Map(Lake) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.lake.col Viewport::Resources(Lake) $Apply configure -state normal
-         ColorBox::CreateSel $Data(Frame).layer.lake.fcol Viewport::Resources(FillLake) $Apply configure -state normal
-         label $Data(Frame).layer.lake.lbl -text [format "%-10s" [lindex $Lbl(Lake) $GDefs(Lang)]]
-         pack $Data(Frame).layer.lake.col $Data(Frame).layer.lake.sz $Data(Frame).layer.lake.fcol -side left
-         pack $Data(Frame).layer.lake.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.lake.col Viewport::Resources(Lake) $Apply configure -state normal
+         ColorBox::CreateSel $Data(Frame).right.layer.lake.fcol Viewport::Resources(FillLake) $Apply configure -state normal
+         label $Data(Frame).right.layer.lake.lbl -text [format "%-10s" [lindex $Lbl(Lake) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.lake.col $Data(Frame).right.layer.lake.sz $Data(Frame).right.layer.lake.fcol -side left
+         pack $Data(Frame).right.layer.lake.lbl -side right
 
-      frame $Data(Frame).layer.river
-         IcoMenu::Create $Data(Frame).layer.river.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.river
+         IcoMenu::Create $Data(Frame).right.layer.river.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(River) "$Apply configure -state normal" $Viewport::Map(River) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.river.col Viewport::Resources(River) $Apply configure -state normal
-         label $Data(Frame).layer.river.lbl -text [format "%-10s" [lindex $Lbl(River) $GDefs(Lang)]]
-         pack $Data(Frame).layer.river.col $Data(Frame).layer.river.sz -side left
-         pack $Data(Frame).layer.river.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.river.col Viewport::Resources(River) $Apply configure -state normal
+         label $Data(Frame).right.layer.river.lbl -text [format "%-10s" [lindex $Lbl(River) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.river.col $Data(Frame).right.layer.river.sz -side left
+         pack $Data(Frame).right.layer.river.lbl -side right
 
-      frame $Data(Frame).layer.poli
-         IcoMenu::Create $Data(Frame).layer.poli.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.poli
+         IcoMenu::Create $Data(Frame).right.layer.poli.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Polit) "$Apply configure -state normal" $Viewport::Map(Polit) -relief groove -bd 2
-         $Data(Frame).layer.poli.sz.menu add separator
-         ColorBox::CreateSel $Data(Frame).layer.poli.col Viewport::Resources(Polit) $Apply configure -state normal
-         label $Data(Frame).layer.poli.lbl -text [format "%-10s" [lindex $Lbl(Polit) $GDefs(Lang)]]
-         pack $Data(Frame).layer.poli.col $Data(Frame).layer.poli.sz -side left
-         pack $Data(Frame).layer.poli.lbl -side right
+         $Data(Frame).right.layer.poli.sz.menu add separator
+         ColorBox::CreateSel $Data(Frame).right.layer.poli.col Viewport::Resources(Polit) $Apply configure -state normal
+         label $Data(Frame).right.layer.poli.lbl -text [format "%-10s" [lindex $Lbl(Polit) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.poli.col $Data(Frame).right.layer.poli.sz -side left
+         pack $Data(Frame).right.layer.poli.lbl -side right
 
-      frame $Data(Frame).layer.admin
-         IcoMenu::Create $Data(Frame).layer.admin.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.admin
+         IcoMenu::Create $Data(Frame).right.layer.admin.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Admin) "$Apply configure -state normal" $Viewport::Map(Admin) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.admin.col Viewport::Resources(Admin) $Apply configure -state normal
-         label $Data(Frame).layer.admin.lbl -text [format "%-10s" [lindex $Lbl(Admin) $GDefs(Lang)]]
-         pack $Data(Frame).layer.admin.col $Data(Frame).layer.admin.sz -side left
-         pack $Data(Frame).layer.admin.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.admin.col Viewport::Resources(Admin) $Apply configure -state normal
+         label $Data(Frame).right.layer.admin.lbl -text [format "%-10s" [lindex $Lbl(Admin) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.admin.col $Data(Frame).right.layer.admin.sz -side left
+         pack $Data(Frame).right.layer.admin.lbl -side right
 
-      frame $Data(Frame).layer.city
-         checkbutton $Data(Frame).layer.city.sz -variable Viewport::Map(City) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+      frame $Data(Frame).right.layer.city
+         checkbutton $Data(Frame).right.layer.city.sz -variable Viewport::Map(City) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
             -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
-         ColorBox::CreateSel $Data(Frame).layer.city.col Viewport::Resources(City) $Apply configure -state normal
-         label $Data(Frame).layer.city.lbl -text [format "%-10s" [lindex $Lbl(City) $GDefs(Lang)]]
-         pack $Data(Frame).layer.city.col -side left
-         pack $Data(Frame).layer.city.sz -side left -padx 1 -ipadx 1
-         pack $Data(Frame).layer.city.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.city.col Viewport::Resources(City) $Apply configure -state normal
+         label $Data(Frame).right.layer.city.lbl -text [format "%-10s" [lindex $Lbl(City) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.city.col -side left
+         pack $Data(Frame).right.layer.city.sz -side left -padx 1 -ipadx 1
+         pack $Data(Frame).right.layer.city.lbl -side right
 
-      frame $Data(Frame).layer.place
-         checkbutton $Data(Frame).layer.place.sz -variable Viewport::Map(Place) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
+      frame $Data(Frame).right.layer.place
+         checkbutton $Data(Frame).right.layer.place.sz -variable Viewport::Map(Place) -relief raised -bd 1 -onvalue 1 -offvalue 0 -selectcolor "" -relief groove -bd 1 \
             -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
-         ColorBox::CreateSel $Data(Frame).layer.place.col Viewport::Resources(Place) $Apply configure -state normal
-         label $Data(Frame).layer.place.lbl -text [format "%-10s" [lindex $Lbl(Place) $GDefs(Lang)]]
-         pack $Data(Frame).layer.place.col -side left
-         pack $Data(Frame).layer.place.sz -side left -padx 1 -ipadx 1
-         pack $Data(Frame).layer.place.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.place.col Viewport::Resources(Place) $Apply configure -state normal
+         label $Data(Frame).right.layer.place.lbl -text [format "%-10s" [lindex $Lbl(Place) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.place.col -side left
+         pack $Data(Frame).right.layer.place.sz -side left -padx 1 -ipadx 1
+         pack $Data(Frame).right.layer.place.lbl -side right
 
-      frame $Data(Frame).layer.road
-         IcoMenu::Create $Data(Frame).layer.road.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.road
+         IcoMenu::Create $Data(Frame).right.layer.road.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Road) "$Apply configure -state normal" $Viewport::Map(Road) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.road.col Viewport::Resources(Road) $Apply configure -state normal
-         label $Data(Frame).layer.road.lbl -text [format "%-10s" [lindex $Lbl(Road) $GDefs(Lang)]]
-         pack $Data(Frame).layer.road.col $Data(Frame).layer.road.sz -side left
-         pack $Data(Frame).layer.road.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.road.col Viewport::Resources(Road) $Apply configure -state normal
+         label $Data(Frame).right.layer.road.lbl -text [format "%-10s" [lindex $Lbl(Road) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.road.col $Data(Frame).right.layer.road.sz -side left
+         pack $Data(Frame).right.layer.road.lbl -side right
 
-      frame $Data(Frame).layer.rail
-         IcoMenu::Create $Data(Frame).layer.rail.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.rail
+         IcoMenu::Create $Data(Frame).right.layer.rail.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Rail) "$Apply configure -state normal" $Viewport::Map(Rail) -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.rail.col Viewport::Resources(Rail) $Apply configure -state normal
-         label $Data(Frame).layer.rail.lbl -text [format "%-10s" [lindex $Lbl(Rail) $GDefs(Lang)]]
-         pack $Data(Frame).layer.rail.col $Data(Frame).layer.rail.sz -side left
-         pack $Data(Frame).layer.rail.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.rail.col Viewport::Resources(Rail) $Apply configure -state normal
+         label $Data(Frame).right.layer.rail.lbl -text [format "%-10s" [lindex $Lbl(Rail) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.rail.col $Data(Frame).right.layer.rail.sz -side left
+         pack $Data(Frame).right.layer.rail.lbl -side right
 
-      frame $Data(Frame).layer.ll
-         IcoMenu::Create $Data(Frame).layer.ll.sz $GDefs(Dir)/share/bitmap \
+      frame $Data(Frame).right.layer.ll
+         IcoMenu::Create $Data(Frame).right.layer.ll.sz $GDefs(Dir)/share/bitmap \
             "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
             Viewport::Map(Coord) "$Apply configure -state normal" $Viewport::Map(Coord) -relief groove -bd 2
-         IcoMenu::CreateDef $Data(Frame).layer.ll.ds $GDefs(Dir)/share/bitmap \
+         IcoMenu::CreateDef $Data(Frame).right.layer.ll.ds $GDefs(Dir)/share/bitmap \
             { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
             Viewport::Resources(DashCoord) "$Apply configure -state normal" 0 -relief groove -bd 2
-         ColorBox::CreateSel $Data(Frame).layer.ll.col Viewport::Resources(Coord) $Apply configure -state normal
-         label $Data(Frame).layer.ll.lbl -text [format "%-10s" [lindex $Lbl(Coord) $GDefs(Lang)]]
-         menubutton $Data(Frame).layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/share/bitmap/more.xbm \
-            -menu $Data(Frame).layer.ll.opt.menu
-         pack $Data(Frame).layer.ll.col $Data(Frame).layer.ll.sz $Data(Frame).layer.ll.ds $Data(Frame).layer.ll.opt -side left
-         pack $Data(Frame).layer.ll.lbl -side right
+         ColorBox::CreateSel $Data(Frame).right.layer.ll.col Viewport::Resources(Coord) $Apply configure -state normal
+         label $Data(Frame).right.layer.ll.lbl -text [format "%-10s" [lindex $Lbl(Coord) $GDefs(Lang)]]
+         menubutton $Data(Frame).right.layer.ll.opt -bd 2 -relief groove -bitmap @$GDefs(Dir)/share/bitmap/more.xbm \
+            -menu $Data(Frame).right.layer.ll.opt.menu
+         pack $Data(Frame).right.layer.ll.col $Data(Frame).right.layer.ll.sz $Data(Frame).right.layer.ll.ds $Data(Frame).right.layer.ll.opt -side left
+         pack $Data(Frame).right.layer.ll.lbl -side right
 
-      frame $Data(Frame).layer.min
-         scale $Data(Frame).layer.min.sc -orient horizontal -from 0 -to 100 \
+      frame $Data(Frame).right.layer.min
+         scale $Data(Frame).right.layer.min.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(MinSize) -relief flat \
             -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 107 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.min.lbl -text [format " %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
-         pack $Data(Frame).layer.min.sc $Data(Frame).layer.min.lbl -side left
+         label $Data(Frame).right.layer.min.lbl -text [format " %-10s" [lindex $Lbl(MinSize) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.min.sc $Data(Frame).right.layer.min.lbl -side left
 
-      frame $Data(Frame).layer.crowd
-         scale $Data(Frame).layer.crowd.sc -orient horizontal -from 0 -to 100 \
+      frame $Data(Frame).right.layer.crowd
+         scale $Data(Frame).right.layer.crowd.sc -orient horizontal -from 0 -to 100 \
             -showvalue false -variable Viewport::Map(Crowd) -relief flat \
             -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 107 -sliderlength 8  -bd 1 -resolution 1
-         label $Data(Frame).layer.crowd.lbl -text [format " %-10s" [lindex $Lbl(Crowd) $GDefs(Lang)]]
-         pack $Data(Frame).layer.crowd.sc $Data(Frame).layer.crowd.lbl -side left
+         label $Data(Frame).right.layer.crowd.lbl -text [format " %-10s" [lindex $Lbl(Crowd) $GDefs(Lang)]]
+         pack $Data(Frame).right.layer.crowd.sc $Data(Frame).right.layer.crowd.lbl -side left
 
-         pack $Data(Frame).layer.vp $Data(Frame).layer.coast $Data(Frame).layer.lake $Data(Frame).layer.river $Data(Frame).layer.poli \
-         $Data(Frame).layer.admin $Data(Frame).layer.city $Data(Frame).layer.place $Data(Frame).layer.road $Data(Frame).layer.rail \
-         $Data(Frame).layer.ll $Data(Frame).layer.min $Data(Frame).layer.crowd -side top -anchor sw -padx 2 -fill x
+         pack $Data(Frame).right.layer.vp $Data(Frame).right.layer.coast $Data(Frame).right.layer.lake $Data(Frame).right.layer.river $Data(Frame).right.layer.poli \
+         $Data(Frame).right.layer.admin $Data(Frame).right.layer.city $Data(Frame).right.layer.place $Data(Frame).right.layer.road $Data(Frame).right.layer.rail \
+         $Data(Frame).right.layer.ll $Data(Frame).right.layer.min $Data(Frame).right.layer.crowd -side top -anchor sw -padx 2 -fill x
 
    #----- LatLon
 
-   menu $Data(Frame).layer.ll.opt.menu -title [lindex $Lbl(Coord) $GDefs(Lang)]
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Sea) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value -1 -underline 0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Land) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value 1 -underline 0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add separator
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "  20 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 20.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "  10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 10.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   5 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  5.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   2 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  2.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "   1 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  1.0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.50 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.50 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.25 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.25 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.15 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.15 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.10 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.05 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.05 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "0.01 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.01 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add separator
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 0/1" -variable Viewport::Map(CoordNum) -value 0 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/1" -variable Viewport::Map(CoordNum) -value 1 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/2" -variable Viewport::Map(CoordNum) -value 2 -command "$Apply configure -state normal"
-      $Data(Frame).layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/3" -variable Viewport::Map(CoordNum) -value 3 -command "$Apply configure -state normal"
+   menu $Data(Frame).right.layer.ll.opt.menu -title [lindex $Lbl(Coord) $GDefs(Lang)]
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Sea) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value -1 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label [lindex $Lbl(Land) $GDefs(Lang)] -variable Viewport::Map(CoordLoc) -value 1 -underline 0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add separator
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "  20 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 20.0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "  10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 10.0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "   5 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  5.0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "   2 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  2.0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "   1 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value  1.0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.50 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.50 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.25 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.25 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.15 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.15 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.10 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.10 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.05 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.05 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "0.01 [lindex $Lbl(Degrees) $GDefs(Lang)]" -variable Viewport::Map(CoordDef) -value 0.01 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add separator
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 0/1" -variable Viewport::Map(CoordNum) -value 0 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/1" -variable Viewport::Map(CoordNum) -value 1 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/2" -variable Viewport::Map(CoordNum) -value 2 -command "$Apply configure -state normal"
+      $Data(Frame).right.layer.ll.opt.menu add radiobutton -label "[lindex $Lbl(Numbered) $GDefs(Lang)] 1/3" -variable Viewport::Map(CoordNum) -value 3 -command "$Apply configure -state normal"
 
-      pack $Data(Frame).left $Data(Frame).layer -side left -fill x -padx 5 -pady 5 -anchor n
+      pack $Data(Frame).right.layer -side top -fill x -pady 2
+
+      labelframe $Data(Frame).right.scale -text "Elevation"
+      scale $Data(Frame).right.scale.height -orient horizontal -from 1 -to 200 \
+         -showvalue true -variable Viewport::Map(Elev) -relief flat \
+         -command "if { \[projection is  \$Page::Data(Frame)\] && \[projection configure \$Page::Data(Frame) -scale\]!=\$Viewport::Map(Elev) } { Viewport::ParamSet }; $Apply configure -state normal; catch " -width 14 -sliderlength 8 -bd 1 -resolution 0.1
+         pack $Data(Frame).right.scale.height -side left -fill x -expand true -padx 2 -pady 2
+      pack $Data(Frame).right.scale -side bottom -fill x -pady 2
+
+      pack $Data(Frame).left $Data(Frame).right -side left -fill x -padx 5 -pady 5 -anchor n
 
    Bubble::Create $Data(Frame).proj.type.list.select $Bubble(Proj)
    Bubble::Create $Data(Frame).left.ras.topo         $Bubble(Topo)
@@ -2080,49 +2131,14 @@ proc Viewport::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).left.ras.bath         $Bubble(Bath)
    Bubble::Create $Data(Frame).left.ras.text         $Bubble(Texture)
    Bubble::Create $Data(Frame).left.scale            $Bubble(Elev)
-   Bubble::Create $Data(Frame).layer                 $Bubble(Vector)
+   Bubble::Create $Data(Frame).right.layer           $Bubble(Vector)
    Bubble::Create $Data(Frame).left.sun              $Bubble(Sun)
+   Bubble::Create $Data(Frame).left.light.ambiant    $Bubble(LightAmbiant)
+   Bubble::Create $Data(Frame).left.light.diffuse    $Bubble(LightDiffuse)
+   Bubble::Create $Data(Frame).left.light.lspecular  $Bubble(LightSpecular)
+   Bubble::Create $Data(Frame).left.light.mspecular  $Bubble(MaterialSpecular)
+   Bubble::Create $Data(Frame).left.light.shininess  $Bubble(MaterialShininess)
 
-   set Data(Frame2) [TabFrame::Add $Frame 1 "[lindex $Lbl(Light) $GDefs(Lang)]" False ""]
-
-   labelframe $Data(Frame2).ambiant -text "[lindex $Lbl(LightAmbiant) $GDefs(Lang)]"
-      scale $Data(Frame2).ambiant.scale -orient horizontal -from 0 -to 1 \
-          -showvalue true -variable Viewport::Map(LightAmbiant) -relief flat \
-          -command "glrender -lightambiant \$Viewport::Map(LightAmbiant); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
-      pack $Data(Frame2).ambiant.scale -side left -fill x -expand true -padx 2 -pady 2
-
-    labelframe $Data(Frame2).diffuse -text "[lindex $Lbl(LightDiffuse) $GDefs(Lang)]"
-      scale $Data(Frame2).diffuse.scale -orient horizontal -from 0 -to 1.5 \
-          -showvalue true -variable Viewport::Map(LightDiffuse) -relief flat \
-          -command "glrender -lightdiffuse \$Viewport::Map(LightDiffuse); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
-      pack $Data(Frame2).diffuse.scale -side left -fill x -expand true -padx 2 -pady 2
-
-    labelframe $Data(Frame2).lspecular -text "[lindex $Lbl(LightSpecular) $GDefs(Lang)]"
-      scale $Data(Frame2).lspecular.scale -orient horizontal -from 0 -to 1 \
-          -showvalue true -variable Viewport::Map(LightSpecular) -relief flat \
-          -command "glrender -lightspecular \$Viewport::Map(LightSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
-      pack $Data(Frame2).lspecular.scale -side left -fill x -expand true -padx 2 -pady 2
-
-    labelframe $Data(Frame2).mspecular -text "[lindex $Lbl(MaterialSpecular) $GDefs(Lang)]"
-      scale $Data(Frame2).mspecular.scale -orient horizontal -from 0 -to 1 \
-          -showvalue true -variable Viewport::Map(MaterialSpecular) -relief flat \
-          -command "glrender -materialspecular \$Viewport::Map(MaterialSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 0.01
-      pack $Data(Frame2).mspecular.scale -side left -fill x -expand true -padx 2 -pady 2
-
-    labelframe $Data(Frame2).shininess -text "[lindex $Lbl(MaterialShininess) $GDefs(Lang)]"
-      scale $Data(Frame2).shininess.scale -orient horizontal -from 0 -to 128 \
-          -showvalue true -variable Viewport::Map(MaterialShininess) -relief flat \
-          -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $Data(Frame2).shininess.scale -side left -fill x -expand true -padx 2 -pady 2
-
-      button $Data(Frame2).button -text "[lindex $Lbl(Default) $GDefs(Lang)]" -bd 1 -command "glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
-
-   pack $Data(Frame2).ambiant -side top -fill x -pady 5
-   pack $Data(Frame2).diffuse -side top -fill x
-   pack $Data(Frame2).lspecular -side top -fill x -pady 5
-   pack $Data(Frame2).mspecular -side top -fill x
-   pack $Data(Frame2).shininess -side top -fill x -pady 5
-   pack $Data(Frame2).button -side top -fill x
 }
 
 #-------------------------------------------------------------------------------
