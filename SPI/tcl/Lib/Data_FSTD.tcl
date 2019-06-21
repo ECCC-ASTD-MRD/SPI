@@ -41,6 +41,7 @@ catch { SPI::Splash "Loading Data Package FSTD 3.5" }
 package require Bubble
 package require MapBox
 package require VectorBox
+package require VolumeBox
 package require MetStat
 package require FieldFunc
 
@@ -442,6 +443,9 @@ proc FSTD::ParamFrame { Frame Apply } {
                FSTD::Param(Volume) "FSTD::ParamSet" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
+            $Data(Frame).def.r.disp.vol.sel.menu add separator
+            $Data(Frame).def.r.disp.vol.sel.menu add command -label [lindex $Lbl(Params) $GDefs(Lang)] \
+               -command "VolumeBox::Create $Data(Frame).def.r.disp.vol \"FSTD::ParamSet ; FSTD::ParamUpdate; Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame)\""
 
          frame $Data(Frame).def.r.disp.grid
             label $Data(Frame).def.r.disp.grid.lbl -text " [lindex $Lbl(Grid) $GDefs(Lang)]"
