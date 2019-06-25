@@ -640,6 +640,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                Tcl_WrongNumArgs(Interp,2,Objv,"lat lon elev [Anywhere]");
                return(TCL_ERROR);
             }
+            loc0.Elev=0.0;
             Tcl_GetDoubleFromObj(Interp,Objv[2],&loc0.Lat);
             Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
             Tcl_GetDoubleFromObj(Interp,Objv[4],&loc0.Elev);
