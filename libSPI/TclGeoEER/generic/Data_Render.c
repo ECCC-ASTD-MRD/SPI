@@ -1564,7 +1564,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    int          ox=0,base=0,dp;
    int          depth,mask;
    double       v0,v1,v2,v3;
-   Vect3d       g0,g1,g2,g3,dim,*pos;
+   Vect3d       g0,g1,g2,g3,dim,*pos,normal,v[2];
    unsigned int dx,dy;
 
    if (GLRender->Resolution>2) {
@@ -1677,6 +1677,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                Vect_Assign(g2,pos[idx2]);
                Vect_Assign(g3,pos[idx3]);
 
+               for(int i=0;i<3;i++){
+                  v[0][i]=pos[((idx1+1)%Field->Def->NI==0)?idx1:idx1+1][i] - pos[(idx1%Field->Def->NI==0)?idx1:idx1-1][i];
+                  v[1][i]=pos[(idx1%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx1:idx1+Field->Def->NI][i] - pos[(idx1%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx1:idx1-Field->Def->NI][i];
+               }
+               Vect_CrossProduct(normal,v[0],v[1]);
+               glNormal3dv(normal);
+
                /* Is the cell visible ??? */
                if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                   if (Field->Spec->InterpDegree[0]=='N') {
@@ -1765,6 +1772,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             Vect_Assign(g1,pos[idx1]);
             Vect_Assign(g2,pos[idx2]);
             Vect_Assign(g3,pos[idx3]);
+
+            for(int i=0;i<3;i++){
+               v[0][i]=pos[((idx1+1)%Field->Def->NI==0)?idx1:idx1+1][i] - pos[(idx1%Field->Def->NI==0)?idx1:idx1-1][i];
+               v[1][i]=pos[(idx1%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx1:idx1+Field->Def->NI][i] - pos[(idx1%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx1:idx1-Field->Def->NI][i];
+            }
+            Vect_CrossProduct(normal,v[0],v[1]);
+            glNormal3dv(normal);
 
             /* Is the cell visible ??? */
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
