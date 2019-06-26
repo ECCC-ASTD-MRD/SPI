@@ -635,9 +635,6 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
    glUniform1fARB(GLShader_UniformGet(prog,"MaxDataDisplay"),(float)Field->Spec->Max);
 
-   glUniform1iARB(GLShader_UniformGet(prog,"InterNb"),Field->Spec->InterNb);
-   glUniform1fARB(GLShader_UniformGet(prog,"Inter"),(float)Field->Spec->Inter[1]);
-
    glDisable(GL_LIGHTING);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
