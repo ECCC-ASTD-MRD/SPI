@@ -83,6 +83,9 @@ proc VolumeBox::Create { Parent Apply } {
    variable Data
    
    VolumeBox::GetDimensions;
+   set Data(Top)      [expr $Data(NK) - 1]
+   set Data(North)    [expr $Data(NJ) - 1]
+   set Data(East)     [expr $Data(NI) - 1]
 
    if { [winfo exist .volbox] } {
       raise .volbox
