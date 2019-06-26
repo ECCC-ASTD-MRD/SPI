@@ -306,6 +306,7 @@ proc FSTD::Data { Field } {
 #----------------------------------------------------------------------------
 
 proc FSTD::ParamFrame { Frame Apply } {
+
    global GDefs
    variable Lbl
    variable Bubble
@@ -440,7 +441,7 @@ proc FSTD::ParamFrame { Frame Apply } {
             label $Data(Frame).def.r.disp.vol.lbl -text " [lindex $Lbl(Volume) $GDefs(Lang)]"
             IcoMenu::Create $Data(Frame).def.r.disp.vol.sel $GDefs(Dir)/share/bitmap \
                "zeroth.xbm isoSurface.xbm rayCasting.xbm" "0 1 2" \
-               FSTD::Param(Volume) "FSTD::ParamSet" 0 -relief groove -bd 2
+               FSTD::Param(Volume) "FSTD::ParamSet; FSTD::Scale" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
             $Data(Frame).def.r.disp.vol.sel.menu add separator
@@ -622,7 +623,14 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.r.disp.val     $Bubble(Value)  
    Bubble::Create $Data(Frame).def.r.disp.mask    $Bubble(Mask)
 }
-            
+
+proc FSTD::Scale { } {
+   if { $FSTD::Param(Volume) == 2 && $Viewport::Map(Elev) <= 1} {
+      set Viewport::Map(Elev) 100
+      Viewport::Do $Page::Data(Frame)
+   }
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <FSTD::IntervalSetMode>
 # Creation : Avril 2008 - J.P. Gauthier - CMC/CMOE
