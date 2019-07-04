@@ -6,7 +6,7 @@
 
 NAME="libSPI"
 DESCRIPTION="SPI libraries"
-SUMMARY="SPI compiled libraries and dependencies\nhttps://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerspi"
+SUMMARY="SPI compiled libraries and dependencies (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION=$SPI_VERSION
 export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
@@ -242,10 +242,9 @@ if [[ $BLD -eq 1 ]]; then
    export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
    
    #----- System with no OpenGL
-   ldconfig -p | grep -q 'libGL\.so ' || export LDFLAGS="-L$LIB_PATH/GL/lib"
+   ldconfig -p | grep -q 'libGL\.so' || (export LDFLAGS="-L$LIB_PATH/GL/lib export"; export CFLAGS="$CFLAGS -I$LIB_PATH/GL/include")
 
    printf -- "\n----- Making TclSystem Library  -----\n"
-
    cd TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean

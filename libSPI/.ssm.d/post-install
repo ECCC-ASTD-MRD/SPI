@@ -26,7 +26,7 @@ export CPL_LOG=/dev/null
 EOF
 
 #----- Dependencies
-CMDS_EXT_VERSION=20190205
+CMDS_EXT_VERSION=20190702
 
 if [ `domainname -d` = "science.gc.ca" ]; then
    #----- On the SCIENCE side

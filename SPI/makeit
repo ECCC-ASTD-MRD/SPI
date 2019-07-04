@@ -6,7 +6,7 @@
 
 NAME="SPI"
 DESCRIPTION="Meteorological GIS, Processing and Modeling tool"
-SUMMARY="4D virtual globe for scientific visualisation and analytics\nhttps://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerspi"
+SUMMARY="4D virtual globe for scientific visualisation and analytics (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION=$SPI_VERSION
 export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`

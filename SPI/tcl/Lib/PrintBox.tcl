@@ -710,7 +710,8 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
    #----- Remove control widgets
    $Frame.page.canvas itemconfigure NOPRINT -state hidden
-
+   update idletasks
+   
    #----- Generer le postscript en verifiant l'aspect du canvas par rapport au format et
    #      a l'orientation de la page selectionnee pour agrandir au maximum
 
@@ -764,6 +765,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
    #----- Remettre la bordure a sa valeur d'origine
    Shape::Widget $Frame.page.canvas {} 0 0 True
+   update idletasks
 
    InfoFrame::Incr .printbox.job 1
    
