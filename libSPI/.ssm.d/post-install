@@ -25,26 +25,6 @@ export CPL_LOG=/dev/null
 
 EOF
 
-#----- Dependencies
-CMDS_EXT_VERSION=20190702
-
-if [ `domainname -d` = "science.gc.ca" ]; then
-   #----- On the SCIENCE side
-   cat >> ${profilePath} << EOF
-[[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -x main/opt/intelcomp/intelcomp-2016.1.156 -x main/opt/openmpi/openmpi-1.6.5/intelcomp-2016.1.156
-[[ "\${CMDS_EXT_VERSION}" = ${CMDS_EXT_VERSION} ]]     || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
-[[ -d "\${GDB_PATH}" ]]                     || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-EOF
-
-else 
-   #----- On the EC side
-   cat >> ${profilePath} << EOF
-[[ "\${LD_LIBRARY_PATH}" =~ .*intelcomp.* ]] || . ssmuse-sh -x hpco/exp/intelcomp-2019.0.045 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.2.0--ofed-4.4.2--intel-2019.0.045
-[[ "\${CMDS_EXT_VERSION}" = ${CMDS_EXT_VERSION} ]]      || . ssmuse-sh -d cmds/ext/${CMDS_EXT_VERSION}
-[[ -d "\${GDB_PATH}" ]]                      || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
-EOF
-fi
-
 cat > ${loginPath} << EOF
 setenv SPI_LIB="${packageHome}"
 setenv EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
@@ -55,19 +35,4 @@ setenv GDAL_PAM_ENABLED=NO
 setenv CPL_LOG=/dev/null
 
 EOF
-
-if [ `domainname -d` = "science.gc.ca" ]; then
-   #----- On the SCIENCE side
-   cat >> ${loginPath} << EOF
-[ "\${CMDS_EXT_VERSION}" = ${CMDS_EXT_VERSION} ] || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
-[ -d "\${GDB_PATH}" ]                   || setenv GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
-EOF
-
-else 
-   #----- On the EC side
-   cat >> ${loginPath} << EOF
-[ "\${CMDS_EXT_VERSION}" = ${CMDS_EXT_VERSION} ] || . ssmuse-sh -d cmds/ext/${CMDS_EXT_VERSION}
-[ -d "\${GDB_PATH}" ]                   || setenv GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
-EOF
-fi
 
