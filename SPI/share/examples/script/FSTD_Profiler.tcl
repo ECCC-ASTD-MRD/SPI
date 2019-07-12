@@ -48,7 +48,7 @@ proc Profiler::Run { } {
 
    foreach model $Param(Models) {
 
-      set run   [string range [exec r.date g100] 0 9] ;# Model run
+      set run [string range [exec r.date g100] 0 9] ;# Model run
       Log::Print INFO "Processing model $model"
 
       #----- Clear location data

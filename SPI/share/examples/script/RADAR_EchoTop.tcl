@@ -45,7 +45,7 @@ Grid::Write FILE $grid 1 2 3 False
 foreach file [glob $env(CI_DATA_IN)/*IRIS*] {
    puts "   Processing file $file"
    set scans [radarfile open RADARSITE read $file]
-   set out   [open DataOut/[file tail $file] w]
+   set out   [open $env(CI_DATA_OUT)/[file tail $file] w]
 
    #----- Read the first volume scan
    radarscan read SCAN1 RADARSITE 0

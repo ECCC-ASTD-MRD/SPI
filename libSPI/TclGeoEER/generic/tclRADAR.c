@@ -265,8 +265,8 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
 
    Tcl_HashEntry *entry;
    Tcl_Obj       *obj;
-   Radar_File    *file;
-   int            new,v,sz;
+   Radar_File    *file=NULL;
+   int            new,v,sz=0;
    char          *buf=NULL;
    float         th[256];
 
@@ -289,7 +289,8 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    file->Mode=Mode;
    file->Name=strdup(Name);
    file->CId=strdup(Id);
-
+   initRadarData(&file->Data);
+   
    Tcl_SetHashValue(entry,file);
 
    // Read in the data
