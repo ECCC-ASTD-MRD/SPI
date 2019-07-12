@@ -1897,52 +1897,52 @@ proc Viewport::ParamFrame { Frame Apply } {
          -bitmap @$GDefs(Dir)/share/bitmap/zeroth.xbm -indicatoron false -command "$Apply configure -state normal"
          scale $Data(Frame).left.light.sun.time -orient horizontal -from 0 -to 86400 \
          -showvalue false -variable Viewport::Data(Time) -relief flat \
-         -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 10 -length 70 -sliderlength 6  -bd 1 -resolution 60
-         label $Data(Frame).left.light.sun.lbl -text [format " %-10s" [lindex $Lbl(Sun) $GDefs(Lang)]] -width 10
+         -command "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame);  catch " -width 14 -length 70 -sliderlength 8  -bd 1 -resolution 60
+         label $Data(Frame).left.light.sun.lbl -text [format " %-10s" [lindex $Lbl(Sun) $GDefs(Lang)]] -width 8
          pack $Data(Frame).left.light.sun.on $Data(Frame).left.light.sun.time $Data(Frame).left.light.sun.lbl -side left
 
       frame $Data(Frame).left.light.date
-         Calendar::Create $Data(Frame).left.light.date.cal "" Viewport::Data(Date) 21 "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
+         Calendar::Create $Data(Frame).left.light.date.cal "" Viewport::Data(Date) 19 "$Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
          pack $Data(Frame).left.light.date.cal -side left
 
       frame $Data(Frame).left.light.ambiant
          scale $Data(Frame).left.light.ambiant.sc -orient horizontal -from 0 -to 1 \
           -showvalue false -variable Viewport::Map(LightAmbiant) -relief flat \
-          -command "glrender -lightambiant \$Viewport::Map(LightAmbiant); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
-         label $Data(Frame).left.light.ambiant.lbl -text [format " %-10s" [lindex $Lbl(LightAmbiant) $GDefs(Lang)]] -width 10
+          -command "glrender -lightambiant \$Viewport::Map(LightAmbiant); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -length 70 -sliderlength 8 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.ambiant.lbl -text [format " %-10s" [lindex $Lbl(LightAmbiant) $GDefs(Lang)]]
          pack $Data(Frame).left.light.ambiant.sc $Data(Frame).left.light.ambiant.lbl -side left
 
       frame $Data(Frame).left.light.diffuse
          scale $Data(Frame).left.light.diffuse.sc -orient horizontal -from 0 -to 1.5 \
           -showvalue false -variable Viewport::Map(LightDiffuse) -relief flat \
-          -command "glrender -lightdiffuse \$Viewport::Map(LightDiffuse); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
-         label $Data(Frame).left.light.diffuse.lbl -text [format " %-10s" [lindex $Lbl(LightDiffuse) $GDefs(Lang)]] -width 10
+          -command "glrender -lightdiffuse \$Viewport::Map(LightDiffuse); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -length 70 -sliderlength 8 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.diffuse.lbl -text [format " %-10s" [lindex $Lbl(LightDiffuse) $GDefs(Lang)]]
          pack $Data(Frame).left.light.diffuse.sc $Data(Frame).left.light.diffuse.lbl -side left
 
       frame $Data(Frame).left.light.lspecular
          scale $Data(Frame).left.light.lspecular.sc -orient horizontal -from 0 -to 1 \
           -showvalue false -variable Viewport::Map(LightSpecular) -relief flat \
-          -command "glrender -lightspecular \$Viewport::Map(LightSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
-         label $Data(Frame).left.light.lspecular.lbl -text [format " %-10s" [lindex $Lbl(LightSpecular) $GDefs(Lang)]] -width 10
+          -command "glrender -lightspecular \$Viewport::Map(LightSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -length 70 -sliderlength 8 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.lspecular.lbl -text [format " %-10s" [lindex $Lbl(LightSpecular) $GDefs(Lang)]]
          pack $Data(Frame).left.light.lspecular.sc $Data(Frame).left.light.lspecular.lbl -side left
 
       frame $Data(Frame).left.light.mspecular
          scale $Data(Frame).left.light.mspecular.sc -orient horizontal -from 0 -to 1 \
           -showvalue false -variable Viewport::Map(MaterialSpecular) -relief flat \
-          -command "glrender -materialspecular \$Viewport::Map(MaterialSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 0.01
-         label $Data(Frame).left.light.mspecular.lbl -text [format " %-10s" [lindex $Lbl(MaterialSpecular) $GDefs(Lang)]] -width 10
+          -command "glrender -materialspecular \$Viewport::Map(MaterialSpecular); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -length 70 -sliderlength 8 -bd 1 -resolution 0.01
+         label $Data(Frame).left.light.mspecular.lbl -text [format " %-10s" [lindex $Lbl(MaterialSpecular) $GDefs(Lang)]]
          pack $Data(Frame).left.light.mspecular.sc $Data(Frame).left.light.mspecular.lbl -side left
 
       frame $Data(Frame).left.light.shininess
          scale $Data(Frame).left.light.shininess.sc -orient horizontal -from 0 -to 128 \
           -showvalue false -variable Viewport::Map(MaterialShininess) -relief flat \
-          -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 10 -length 70 -sliderlength 6 -bd 1 -resolution 1
-         label $Data(Frame).left.light.shininess.lbl -text [format " %-10s" [lindex $Lbl(MaterialShininess) $GDefs(Lang)]] -width 10
+          -command "glrender -materialshininess \$Viewport::Map(MaterialShininess); $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame); catch"  -width 14 -length 70 -sliderlength 8 -bd 1 -resolution 1
+         label $Data(Frame).left.light.shininess.lbl -text [format " %-10s" [lindex $Lbl(MaterialShininess) $GDefs(Lang)]]
          pack $Data(Frame).left.light.shininess.sc $Data(Frame).left.light.shininess.lbl -side left
 
-      button $Data(Frame).left.light.button -text "[lindex $Lbl(Default) $GDefs(Lang)]" -bd 1 -command "set Viewport::Map(LightAmbiant) 0.1; set Viewport::Map(LightDiffuse) 1.5; set Viewport::Map(LightSpecular) 0.6; set Viewport::Map(MaterialSpecular) 1.0; set Viewport::Map(MaterialShininess) 64; glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)" -width 10
+      button $Data(Frame).left.light.button -text [lindex $Lbl(Default) $GDefs(Lang)] -bd 1 -height 1 -command "set Viewport::Map(LightAmbiant) 0.1; set Viewport::Map(LightDiffuse) 1.5; set Viewport::Map(LightSpecular) 0.6; set Viewport::Map(MaterialSpecular) 1.0; set Viewport::Map(MaterialShininess) 64; glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
 
-      pack $Data(Frame).left.light.sun $Data(Frame).left.light.date $Data(Frame).left.light.ambiant $Data(Frame).left.light.diffuse $Data(Frame).left.light.lspecular $Data(Frame).left.light.mspecular $Data(Frame).left.light.shininess $Data(Frame).left.light.button -side top -anchor sw -fill x
+      pack $Data(Frame).left.light.sun $Data(Frame).left.light.date $Data(Frame).left.light.ambiant $Data(Frame).left.light.diffuse $Data(Frame).left.light.lspecular $Data(Frame).left.light.mspecular $Data(Frame).left.light.shininess $Data(Frame).left.light.button -side top -anchor sw
 
    labelframe $Data(Frame).left.axis -text "Axis"
       IcoMenu::Create $Data(Frame).left.axis.on $GDefs(Dir)/share/bitmap \
@@ -1957,9 +1957,8 @@ proc Viewport::ParamFrame { Frame Apply } {
       bind $Data(Frame).left.axis.z <Any-KeyRelease> "$Apply configure -state normal"
 
    pack $Data(Frame).left.ras -side top -fill x
-#    pack $Data(Frame).left.sun -side top -fill x -pady 4
    pack $Data(Frame).left.light -side top -fill x
-   pack $Data(Frame).left.axis -side top -fill x -pady 4
+   pack $Data(Frame).left.axis -side top -fill x
 
    frame $Data(Frame).right
    labelframe $Data(Frame).right.layer -text [lindex $Lbl(Vector) $GDefs(Lang)]
