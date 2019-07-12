@@ -2,9 +2,12 @@ uniform sampler3D TextureData3D;
 uniform float Elev;
 uniform sampler1D Colormap;
 uniform float MinDataDisplay;
-uniform float MaxDataDisplay;
 uniform vec3 CameraDir;
-uniform float MaxData;
+uniform   sampler2DRect Interval;
+uniform int Nb;
+uniform float Range;
+uniform int Bellow;
+uniform int Above;
 varying vec3 rayDirection, rayOrigin;
 
 

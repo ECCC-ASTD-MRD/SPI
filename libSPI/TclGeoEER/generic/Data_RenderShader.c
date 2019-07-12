@@ -571,12 +571,12 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
  *----------------------------------------------------------------------------
 */
 int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
-   GLuint tx[2];
+   GLuint tx[3];
    GLhandleARB prog;
 
    prog=GLRender->Prog[PROG_RAYCASTING];
    glUseProgramObjectARB(prog);
-   glGenTextures(2,tx);
+   glGenTextures(3,tx);
 
    /*Setup 1D Colormap Texture*/
    glActiveTexture(GL_TEXTURE0);
@@ -607,33 +607,36 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
       for(int j=0; j<height; j++){
          for(int i=0; i<width; i++){
             Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
-            if(temp>max)max = temp;
+            data[k*height*width+j*width+i]=temp;
          }
       }
    }
-
-   for(int k=0; k<depth; k++){
-      for(int j=0; j<height; j++){
-         for(int i=0; i<width; i++){
-            Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
-            data[k*height*width+j*width+i]=temp/max;
-         }
-      }
-   }
-
-   glTexImage3D(GL_TEXTURE_3D,0,GL_RED,width,height,depth,0,GL_RED, GL_FLOAT,data);
+   glTexImage3D(GL_TEXTURE_3D,0,GL_R32F,width,height,depth,0,GL_RED, GL_FLOAT,data);
    glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
    free(data);
 
-   float camDir[3]= {-(float)VP->Cam->From[0]+(float)VP->Cam->To[0],
-                     -(float)VP->Cam->From[1]+(float)VP->Cam->To[1],
-                     -(float)VP->Cam->From[2]+(float)VP->Cam->To[2]};
-   glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
+   // Setup 1D Interval Texture
+   float   inter[DATASPEC_MAX];
+   glActiveTexture(GL_TEXTURE2);
+   glBindTexture(GL_TEXTURE_RECTANGLE_ARB,tx[2]);
+   if (Field->Spec->InterNb) {
+      glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+      glTexParameteri(GL_TEXTURE_RECTANGLE_ARB,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
 
+      for(int n=0;n<Field->Spec->InterNb;n++) inter[n]=Field->Spec->Inter[n];
+      glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_FLOAT_R32_NV,Field->Spec->InterNb,1,0,GL_LUMINANCE,GL_FLOAT,inter);
+   }
+   glUniform1iARB(GLShader_UniformGet(prog,"Interval"),2);
+
+   float camDir[3]= {(float)VP->Cam->Basis[0],(float)VP->Cam->Basis[1],(float)VP->Cam->Basis[2]};
+
+   glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
    glUniform1fARB(GLShader_UniformGet(prog,"Elev"),(float)Proj->Scale);
-   glUniform1fARB(GLShader_UniformGet(prog,"MaxData"),max);
    glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
-   glUniform1fARB(GLShader_UniformGet(prog,"MaxDataDisplay"),(float)Field->Spec->Max);
+   glUniform1fARB(GLShader_UniformGet(prog,"Range"),fabsf(Field->Spec->Max-Field->Spec->Min));
+   glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);
+   glUniform1iARB(GLShader_UniformGet(prog,"Above"),Field->Spec->MapAbove);
+   glUniform1iARB(GLShader_UniformGet(prog,"Bellow"),Field->Spec->MapBellow);
 
    glDisable(GL_LIGHTING);
    glEnable(GL_BLEND);
@@ -851,5 +854,36 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glActiveTexture(GL_TEXTURE0);
    glDisable(GL_BLEND);
    glEnable(GL_LIGHTING);
+
+   //frame
+   glColor4f(0.75,0.75,0.75,1.0);
+   glBegin(GL_LINE_STRIP);
+
+   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
+
+   glEnd();
+
+   glBegin(GL_LINES);
+
+   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
+
+   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
+
+   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
+   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
+
+   glEnd();
+
    return(1);
 }
