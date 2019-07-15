@@ -431,12 +431,14 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
    if (J0>J1) { n=J0;J0=J1;J1=n; }
    if (K0>K1) { n=K0;K0=K1;K1=n; }
 
-   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1)
+   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1) {
+      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
-
+   }
+   
    if (FSIZE3D(A)==1) {
       if (!Calc_Compat(GInterp,A,B,2,1))
-         return NULL;
+         return(NULL);
       Def_Get(B,0,0,v);
       Def_Set(A,0,0,v);
    } else {
@@ -456,6 +458,7 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
       n=0;
       while(A->Data[n]) {
          if (!B->Data[n] && FSIZE3D(B)!=1) {
+            App_Log(ERROR,"%s: Grid B does not have a component %d\n",__func__,n);
             return(NULL);
          }
          for(k=K0,bidx=0;k<=K1;k++) {
