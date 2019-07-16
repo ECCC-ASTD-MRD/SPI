@@ -100,69 +100,73 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
              break;
          }
       }
+      
+      // If we don't want the result as a return value
+      if (!Name || !strlen(Name) || (Name[0]=='-' && Name[1]=='\0')) { 
+      } else {
 
-      switch(GMode) {
-         case T_FLD:
-           if (!(field=Data_Get(Name)) || field->Def!=Data) {
-               GField=Data_Copy(Interp,GField,Name,0,0);
+         switch(GMode) {
+            case T_FLD:
+               if (!(field=Data_Get(Name)) || field->Def!=Data) {
+                  GField=Data_Copy(Interp,GField,Name,0,0);
 
-               if (GField->Stat) {
-                  Data_StatFree(GField->Stat);
-                  GField->Stat=NULL;
+                  if (GField->Stat) {
+                     Data_StatFree(GField->Stat);
+                     GField->Stat=NULL;
+                  }
+                  GField->Def= needcopy ? Def_Copy(Data) : Data;
+   #ifdef HAVE_RMN
+                  if (GField->GRef && GField->GRef->Grid[0]=='U') {
+                     FSTD_FieldSubBuild(GField);
+                  }
+   #endif
+                  // Force RPN DATYP update at write time
+                  if (GField->Type==TD_RPN) {
+                     ((TRPNHeader*)GField->Head)->DATYP=-1;
+                  }
                }
-               GField->Def= needcopy ? Def_Copy(Data) : Data;
-#ifdef HAVE_RMN
-               if (GField->GRef && GField->GRef->Grid[0]=='U') {
-                  FSTD_FieldSubBuild(GField);
-               }
-#endif
-               // Force RPN DATYP update at write time
-               if (GField->Type==TD_RPN) {
-                  ((TRPNHeader*)GField->Head)->DATYP=-1;
-               }
-            }
-            break;
+               break;
 
-         case T_BAND:
-            if (!(band=GDAL_BandGet(Name)) || band->Def!=Data) {
-               GBand=GDAL_BandCopy(Interp,GBand,Name,0);
-               if (GBand->Stat) {
-                  Data_StatFree(GBand->Stat);
-                  GBand->Stat=NULL;
+            case T_BAND:
+               if (!(band=GDAL_BandGet(Name)) || band->Def!=Data) {
+                  GBand=GDAL_BandCopy(Interp,GBand,Name,0);
+                  if (GBand->Stat) {
+                     Data_StatFree(GBand->Stat);
+                     GBand->Stat=NULL;
+                  }
+                  GBand->Def= needcopy ? Def_Copy(Data) : Data;
                }
-               GBand->Def= needcopy ? Def_Copy(Data) : Data;
-            }
-            break;
+               break;
 
-         case T_LAYER:
-            if ((GLayer=OGR_LayerGet(Name))) {
-               GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
-            }
-            /*For layers, we copy back the data so we don't need the Def anymore*/
-            Def_Free(Data);
-            break;
-
-         case T_OBS:
-            if (!(obs=Obs_Get(Name)) || obs->Def!=Data) {
-               GObs=Obs_Copy(Interp,GObs,Name,0);
-               GObs->Def= needcopy ? Def_Copy(Data) : Data;
-            }
-            break;
-
-         case T_VEC:
-            GVec=Vector_Copy(Interp,GVec,Name);
-            if (GVec->Cp) {
-               for(n=0;n<GVec->N;n++) {
-                  memcpy(GVec->Cp[n]->V,&Data->Data[0][TDef_Size[GVec->Def->Type]*Data->NJ*n],GVec->Cp[n]->N*TDef_Size[GVec->Def->Type]);
+            case T_LAYER:
+               if ((GLayer=OGR_LayerGet(Name))) {
+                  GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
                }
-            } else {
-               memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
-            }
-            // For vectors, we copy back the data so we don't need the Def anymore
-            Def_Free(Data);
-            break;
+               /*For layers, we copy back the data so we don't need the Def anymore*/
+               Def_Free(Data);
+               break;
+
+            case T_OBS:
+               if (!(obs=Obs_Get(Name)) || obs->Def!=Data) {
+                  GObs=Obs_Copy(Interp,GObs,Name,0);
+                  GObs->Def= needcopy ? Def_Copy(Data) : Data;
+               }
+               break;
+
+            case T_VEC:
+               GVec=Vector_Copy(Interp,GVec,Name);
+               if (GVec->Cp) {
+                  for(n=0;n<GVec->N;n++) {
+                     memcpy(GVec->Cp[n]->V,&Data->Data[0][TDef_Size[GVec->Def->Type]*Data->NJ*n],GVec->Cp[n]->N*TDef_Size[GVec->Def->Type]);
+                  }
+               } else {
+                  memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
+               }
+               // For vectors, we copy back the data so we don't need the Def anymore
+               Def_Free(Data);
+               break;
+         }
       }
-
       if (Calc_Validate(Interp)) {
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(Name,-1));
       }
