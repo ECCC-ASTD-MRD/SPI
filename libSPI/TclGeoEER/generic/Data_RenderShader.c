@@ -486,6 +486,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    if (Field->Spec->TexRes) {
       // Résolution spécifié
       dp=Field->Spec->TexRes;
+   } else if (Field->Spec->Topo) {
+      dp=1;
    } else {
       // Resolution selon la dimension des cellules (mid-grid) et la vue
       dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1)*20;

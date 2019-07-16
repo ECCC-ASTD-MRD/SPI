@@ -939,7 +939,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->TexRes));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->TexRes);
-               Spec->TexRes=Spec->TexRes<1?1:Spec->TexRes;
             }
             break;
 
