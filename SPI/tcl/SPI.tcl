@@ -2078,7 +2078,7 @@ proc SPI::Password { User } {
 #
 #-------------------------------------------------------------------------------
 
-proc SPI::ObjectAdd { Type { Sub "" } {New -1} } {
+proc SPI::ObjectAdd { Type { Sub "" } { New -1 } } {
    global GDefs
    variable Lbl
    variable Msg
