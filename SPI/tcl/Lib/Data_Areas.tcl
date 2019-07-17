@@ -127,7 +127,7 @@ proc Areas::Init { } {
    Areas::Read $GDefs(Dir)/data/land_PubMesoZone.shp                                                                         #CCCCCC #BDBDBD False False NAME
    Areas::Read $GDefs(Dir)/data/land_PubStdZone.shp                                                                          #CCCCCC #BDBDBD False False NAME
    Areas::Read $GDefs(Dir)/data/water_MarStdZone.shp                                                                         #C5DAFF #B3CFCF False False NAME
-}
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Areas::Read>
