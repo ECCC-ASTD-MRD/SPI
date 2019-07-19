@@ -12,7 +12,7 @@ extern Tcl_Interp *GInterp;
 
 extern TData      *GField,*GFieldP;
 extern TDef   *GResult;
-extern TDef   *GData[256];
+extern TDef   *GData[1024];
 extern int         GDataN;
 extern int         GError;
 extern int         GMode;
