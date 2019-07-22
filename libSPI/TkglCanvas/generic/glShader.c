@@ -80,7 +80,8 @@ GLint GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name) {
 
 GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
 
-   GLcharARB *vert=NULL,*frag=NULL,prog=0,file[256];
+   GLcharARB *vert=NULL,*frag=NULL,*geom=NULL,prog=0,file[256];
+   int geomShaderExist = 0;
    FILE *f;
    struct stat st;
 
@@ -119,7 +120,30 @@ GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
       fclose(f);
    }
 
-   if (vert && frag) {
+   strcpy(file,Path);
+   strcat(file,"/SHG_");
+   strcat(file,Name);
+   strcat(file,".glsl");
+   stat(file,&st);
+   f=fopen(file,"r");
+   if (!f) {
+      fprintf(stderr,"(INFO) GLShader_Load: geometry shader may not exist %s\n",file);
+   } else {
+      geomShaderExist = 1;
+      geom=(GLcharARB*)malloc(st.st_size+1);
+      if (!fread(geom,1,st.st_size,f)) {
+         fprintf(stderr,"(ERROR) GLShader_Load: Problem while reading geometry shader %s\n",file);
+      }
+      geom[st.st_size]='\0';
+      fclose(f);
+   }
+
+   if(geomShaderExist && vert && frag && geom){
+      prog=GLShader_InstallGeom(vert,frag,geom);
+      free(vert);
+      free(frag);
+      free(geom);
+   }else if (vert && frag) {
       prog=GLShader_Install(vert,frag);
       free(vert);
       free(frag);
@@ -187,4 +211,71 @@ GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc) 
 void GLShader_UnInstall(GLhandleARB Prog) {
 
    glDeleteObjectARB(Prog);
+}
+
+GLhandleARB GLShader_InstallGeom(const GLcharARB *VertSrc,const GLcharARB *FragSrc,const GLcharARB *GeomSrc) {
+
+   GLhandleARB vert,frag,prog,geom;
+   GLint       status;
+
+   /* Source the code */
+   vert=glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+   frag=glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+   geom=glCreateShaderObjectARB(GL_GEOMETRY_SHADER_ARB);
+
+   glShaderSourceARB(vert,1,&VertSrc,NULL);
+   glShaderSourceARB(frag,1,&FragSrc,NULL);
+   glShaderSourceARB(geom,1,&GeomSrc,NULL);
+
+   /* Compile the vertex shader */
+   glCompileShaderARB(vert);
+   glErrorCheck("GLShader_InstallGeom",0);
+   glGetObjectParameterivARB(vert,GL_OBJECT_COMPILE_STATUS_ARB,&status);
+   GLShader_InfoLog(vert);
+
+   if (!status)
+      return(0);
+
+   /* Compile the fragment shader */
+   glCompileShaderARB(frag);
+   glErrorCheck("GLShader_InstallGeom",0);
+   glGetObjectParameterivARB(frag,GL_OBJECT_COMPILE_STATUS_ARB,&status);
+   GLShader_InfoLog(frag);
+
+   if (!status)
+      return(0);
+
+   /* Compile the fragment shader */
+   glCompileShaderARB(geom);
+   glErrorCheck("GLShader_InstallGeom",0);
+   glGetObjectParameterivARB(geom,GL_OBJECT_COMPILE_STATUS_ARB,&status);
+   GLShader_InfoLog(geom);
+
+   if (!status)
+      return(0);
+
+   /* Link both into a program */
+   prog=glCreateProgramObjectARB();
+   glAttachObjectARB(prog,vert);
+   glAttachObjectARB(prog,frag);
+   glAttachObjectARB(prog,geom);
+
+   glBindAttribLocationARB(prog,1,"Vd");
+
+   glLinkProgramARB(prog);
+
+   glErrorCheck("GLShader_InstallGeom",0);
+   glGetObjectParameterivARB(prog,GL_OBJECT_LINK_STATUS_ARB,&status);
+   GLShader_InfoLog(prog);
+
+   if (!status)
+      return(0);
+
+   /* Start usign the program*/
+   glDeleteObjectARB(vert);
+   glDeleteObjectARB(frag);
+   glDeleteObjectARB(geom);
+
+   glErrorCheck("GLShader_InstallGeom",0);
+   return(prog);
 }

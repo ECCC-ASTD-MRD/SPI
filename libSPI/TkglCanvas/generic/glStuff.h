@@ -243,6 +243,7 @@ GLint       GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name);
 GLint       GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name);
 GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name);
 GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc);
+GLhandleARB GLShader_InstallGeom(const GLcharARB *VertSrc,const GLcharARB *FragSrc,const GLcharARB *GeomSrc);
 void        GLShader_UnInstall(GLhandleARB Prog);
 
 void        trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height,TRcontext *TR);
