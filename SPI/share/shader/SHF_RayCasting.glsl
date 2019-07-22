@@ -34,7 +34,7 @@ vec4 rayMarching() {
 
         // If we have intervals, figure out which we fit in
         if (Nb>0) {
-
+            idx = -1.0;
             for(int n=0;n<Nb;n++) {
                 inter=texture2DRect(Interval,vec2(n,0.0));
                 if (data<inter.r) {
