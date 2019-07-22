@@ -599,21 +599,25 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int height=Field->Def->NJ;
    int depth=Field->Def->NK;
 
-   float* data = malloc(depth*height*width*sizeof(float));
-   float temp = 0.0;
-   float max = 0.0;
+   if (Field->Def->Type!=TD_Float32){
+      float* data = malloc(depth*height*width*sizeof(float));
+      float temp = 0.0;
 
-   for(int k=0; k<depth; k++){
-      for(int j=0; j<height; j++){
-         for(int i=0; i<width; i++){
-            Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
-            data[k*height*width+j*width+i]=temp;
+      for(int k=0; k<depth; k++){
+         for(int j=0; j<height; j++){
+            for(int i=0; i<width; i++){
+               Def_GetMod(Field->Def,(k*height*width+j*width+i),temp);
+               data[k*height*width+j*width+i]=temp;
+            }
          }
       }
+      glTexImage3D(GL_TEXTURE_3D,0,GL_R32F,width,height,depth,0,GL_RED, GL_FLOAT,data);
+      glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
+      free(data);
+   } else {
+      glTexImage3D(GL_TEXTURE_3D,0,GL_R32F,width,height,depth,0,GL_RED, GL_FLOAT,Field->Def->Mode);
+      glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
    }
-   glTexImage3D(GL_TEXTURE_3D,0,GL_R32F,width,height,depth,0,GL_RED, GL_FLOAT,data);
-   glUniform1iARB(GLShader_UniformGet(prog,"TextureData3D"),1);
-   free(data);
 
    // Setup 1D Interval Texture
    float   inter[DATASPEC_MAX];
