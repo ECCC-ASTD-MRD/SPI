@@ -10,6 +10,9 @@ uniform int Nb;
 uniform float Range;
 uniform int Bellow;
 uniform int Above;
+uniform vec2 LimitX;
+uniform vec2 LimitY;
+uniform vec2 LimitZ;
 varying vec3 rayDirection, rayOrigin;
 
 vec4 rayMarching() {
@@ -25,7 +28,8 @@ vec4 rayMarching() {
     vec4 inter = vec4(0.0);
     for(int i=0; i<maxLoop; i++){
         texCoord += stepLength*rayDirection;
-        if(any(lessThan(vec3(1.0),texCoord)))continue;
+        if(any(lessThan(texCoord,vec3(LimitX.x,LimitY.x,LimitZ.x))))continue;
+        if(any(greaterThan(texCoord,vec3(LimitX.y,LimitY.y,LimitZ.y))))continue;
         data = texture3D(TextureData3D,texCoord).r;
 
         // If we have intervals, figure out which we fit in

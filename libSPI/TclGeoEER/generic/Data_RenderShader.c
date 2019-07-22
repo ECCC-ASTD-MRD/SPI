@@ -660,6 +660,10 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int MinZ = Field->Def->Limits[2][0];// = 5;
    int MaxZ = Field->Def->Limits[2][1];// = 50;
 
+   glUniform2fARB(GLShader_UniformGet(prog,"LimitX"),(float)MinX/(float)width,(float)MaxX/(float)width);
+   glUniform2fARB(GLShader_UniformGet(prog,"LimitY"),(float)MinY/(float)height,(float)MaxY/(float)height);
+   glUniform2fARB(GLShader_UniformGet(prog,"LimitZ"),(float)MinZ/(float)depth,(float)MaxZ/(float)depth);
+
    //all in [0,1]
    float limitDisplayMinX = ((float)MinX/width);
    float limitDisplayMaxX = ((float)MaxX/width);

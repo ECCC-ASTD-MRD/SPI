@@ -10,6 +10,9 @@ uniform int Nb;
 uniform float Range;
 uniform int Bellow;
 uniform int Above;
+uniform vec2 LimitX;
+uniform vec2 LimitY;
+uniform vec2 LimitZ;
 varying vec3 rayDirection, rayOrigin;
 
 
