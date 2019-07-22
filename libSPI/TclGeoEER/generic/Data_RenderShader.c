@@ -633,6 +633,8 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glUniform3fvARB(GLShader_UniformGet(prog,"CameraDir"),1,camDir);
    glUniform1fARB(GLShader_UniformGet(prog,"Elev"),(float)Proj->Scale);
    glUniform1fARB(GLShader_UniformGet(prog,"MinDataDisplay"),(float)Field->Spec->Min);
+   glUniform1fARB(GLShader_UniformGet(prog,"LI"),Proj->LI);
+   glUniform1fARB(GLShader_UniformGet(prog,"LJ"),Proj->LJ);
    glUniform1fARB(GLShader_UniformGet(prog,"Range"),fabsf(Field->Spec->Max-Field->Spec->Min));
    glUniform1iARB(GLShader_UniformGet(prog,"Nb"),Field->Spec->InterNb);
    glUniform1iARB(GLShader_UniformGet(prog,"Above"),Field->Spec->MapAbove);
@@ -671,8 +673,8 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    limitDisplayMaxY = limitDisplayMaxY*2*Proj->LJ-Proj->LJ;
 
    //in [1,2]
-   float limitDisplayMinZ = ((float)MinZ/depth)*Proj->Scale/200+1.0;
-   float limitDisplayMaxZ = ((float)MaxZ/depth)*Proj->Scale/200+1.0;
+   float limitDisplayMinZ = ((float)MinZ/depth)*2*Proj->Scale/200+1.0;
+   float limitDisplayMaxZ = ((float)MaxZ/depth)*2*Proj->Scale/200+1.0;
 
    //face dessus
    float fixPos = limitDisplayMaxZ;

@@ -1,5 +1,7 @@
 uniform sampler3D TextureData3D;
 uniform float Elev;
+uniform float LI;
+uniform float LJ;
 uniform sampler1D Colormap;
 uniform float MinDataDisplay;
 uniform vec3 CameraDir;

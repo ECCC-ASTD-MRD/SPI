@@ -626,7 +626,7 @@ proc FSTD::ParamFrame { Frame Apply } {
 
 proc FSTD::Scale { } {
    if { $FSTD::Param(Volume) == 2 && $Viewport::Map(Elev) <= 1} {
-      set Viewport::Map(Elev) 100
+      set Viewport::Map(Elev) 50
       Viewport::Do $Page::Data(Frame)
    }
 }
