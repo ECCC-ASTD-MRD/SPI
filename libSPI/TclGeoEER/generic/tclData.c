@@ -31,6 +31,7 @@
  *=========================================================
  */
 
+#include <stdlib.h>
 #include "App.h"
 #include "tclData.h"
 #include "tclOGR.h"
@@ -182,6 +183,11 @@ int Tcldata_Init(Tcl_Interp *Interp) {
 
    // Check the log parameters in the environment 
    App_LogLevel(getenv("APP_VERBOSE"));
+
+   // if OMP_NUM_THREADS not defined, set it as 0 or single thread
+   if (getenv("OMP_NUM_THREADS")==NULL) {
+      omp_set_num_threads(0);
+   } 
 
    return(TCL_OK);
 }
