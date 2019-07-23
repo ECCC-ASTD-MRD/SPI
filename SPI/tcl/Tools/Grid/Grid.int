@@ -68,7 +68,7 @@ proc Grid::Window { } {
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
          button $Data(Tab).head.add -image GRIDADD -relief flat -bd 1 -overrelief raised -command { Grid::Add }
-         button $Data(Tab).head.del -image GRIDDEL -relief flat -bd 1 -overrelief raised -command { Grid::Del }
+         button $Data(Tab).head.del -image GRIDDEL -relief flat -bd 1 -overrelief raised -command { Grid::Del; set Grid::Data(Casc) "" }
          button $Data(Tab).head.load -image GRIDSAVE -relief flat -bd 1 -overrelief raised -command { Grid::ProjectLoad [FileBox::Create . "" Path {}] }
          button $Data(Tab).head.save -image GRIDRUN -relief flat -bd 1 -overrelief raised -command { Grid::WindowSave }
          IcoMenu::Create $Data(Tab).head.size $GDefs(Dir)/share/bitmap \
@@ -79,6 +79,14 @@ proc Grid::Window { } {
          pack $Data(Tab).head.save -side right
       pack $Data(Tab).head -side top -fill x -padx 2 -pady 2
  
+      frame $Data(Tab).head.casc -relief sunken -bd 1
+      pack  $Data(Tab).head.casc -after $Data(Tab).head.size -side left -fill x -expand True
+      foreach casc $Data(Cascs) {
+         radiobutton $Data(Tab).head.casc.c$casc -variable Grid::Data(Casc) -value $casc -text $casc -indicatoron 0  -relief raised -bd 1 -selectcolor $GDefs(ColorHighLight) \
+            -command { Grid::CascadeInit $Grid::Data(Casc) }
+         pack  $Data(Tab).head.casc.c$casc -side left -fill x -expand True
+      }
+      
       Grid::Frame $Data(Tab) True
       
       labelframe $Data(Tab).settings -text "Namelist"
@@ -159,11 +167,11 @@ proc Grid::Frame { Frame { Multi False } } {
       Option::Create $Frame.grid.resll [lindex $Lbl(ResLL) $GDefs(Lang)] Grid::Param(ResLLX) 1 7 $Grid::Param(ResLLs) "set Grid::Param(ResMY) \[set Grid::Param(ResMX) \[expr \[set Grid::Param(ResLLY) \$Grid::Param(ResLLX)\]*$Param(LL2M)\]\]; Grid::Apply"
       frame  $Frame.grid.dim
          label $Frame.grid.dim.lbl -text [lindex $Lbl(Size) $GDefs(Lang)]
-         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.ni -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NI) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(FFT) [expr $Grid::Data(PNI)>$Grid::Param(NI)?-1:1]; set Grid::Data(GetNIJ) False; Grid::Apply; set Grid::Param(FFT) 1; set Grid::Data(PNI) $Grid::Param(NI); set Grid::Data(GetNIJ) True }
          checkbutton $Frame.grid.dim.nifft -variable Grid::Param(FFTNI) -onvalue 1 -offvalue 0 \
             -text FFT -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -command { Grid::Apply }
          label $Frame.grid.dim.x -text x
-         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True }
+         spinbox $Frame.grid.dim.nj -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(NJ) -width 5 -from 0 -to 100000 -increment 1 -command { set Grid::Data(GetNIJ) False; Grid::Apply; set Grid::Data(GetNIJ) True }
          entry $Frame.grid.dim.pil -textvariable Grid::Param(PI) -relief sunken -bd 1 -bg $GDefs(ColorLight) -state disabled -width 2
          checkbutton $Frame.grid.dim.njfft -variable Grid::Param(FFTNJ) -onvalue 1 -offvalue 0 \
             -text FFT -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) -command { Grid::Apply }
@@ -215,8 +223,8 @@ proc Grid::Frame { Frame { Multi False } } {
 
    bind $Frame.grid.reskm.e    <Return> "catch { set Grid::Param(ResLLX) \[expr \$Grid::Param(ResMX)/$Param(LL2M)\]; Grid::Apply }"
    bind $Frame.grid.resll.e    <Return> "catch { set Grid::Param(ResMX) \[expr \$Grid::Param(ResLLX)*$Param(LL2M)\]; Grid::Apply }"
-   bind $Frame.grid.dim.ni     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
-   bind $Frame.grid.dim.nj     <Return> "catch { set Grid::Param(GetNIJ) False; Grid::Apply; set Grid::Param(GetNIJ) True}"
+   bind $Frame.grid.dim.ni     <Return> "catch { set Grid::Data(GetNIJ) False; Grid::Apply; set Grid::Data(GetNIJ) True}"
+   bind $Frame.grid.dim.nj     <Return> "catch { set Grid::Data(GetNIJ) False; Grid::Apply; set Grid::Data(GetNIJ) True}"
    bind $Frame.grid.ll0.lat    <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ll0.lon    <Return> "catch { Grid::Apply }"
    bind $Frame.grid.ll1.lat    <Return> "catch { Grid::Apply }"
@@ -254,7 +262,7 @@ proc Grid::WindowSave { } {
    labelframe .gridmakersave.path -text [lindex $Lbl(SaveTo) $GDefs(Lang)]
       label .gridmakersave.path.lbl -text [lindex $Lbl(Path) $GDefs(Lang)] -width 12 -anchor w
       entry .gridmakersave.path.ent -textvariable Grid::Data(SavePath) -bg $GDefs(ColorLight)
-      button .gridmakersave.path.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised -command { set Grid::Data(SavePath) [FileBox::Create . "" Path {}] }
+      button .gridmakersave.path.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised -command { set Grid::Data(SavePath) [FileBox::Create . $Grid::Data(SavePath) Path {}] }
       pack .gridmakersave.path.lbl -side left 
       pack .gridmakersave.path.ent -side left -fill x -expand True
       pack .gridmakersave.path.sel -side left 

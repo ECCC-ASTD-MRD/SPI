@@ -28,7 +28,7 @@ System requirements:
            mesa-7.9.2          (Mesa software OpenGL implementation)
            gdb                 (ECCC vectorial basemap)
     
-        Not provided with the package but available thourgh apt-get:
+        Not provided with the package but available through packaging tools (apt-get):
      
            Mandatory:
               GLX ou mesa-dev     (OpenGL software implementation    https://www.mesa3d.org)

@@ -23,9 +23,9 @@ dnl	to configure the system for the local environment.
 #define([AC_CACHE_LOAD], )
 #define([AC_CACHE_SAVE], )
 
-AC_INIT([TclR], [0.3])
+AC_INIT([TclR], [1.0])
 
-PKG_CFLAGS="-D_GNU_SOURCE"
+PKG_CFLAGS="-D_GNU_SOURCE -std=c99"
 
 #--------------------------------------------------------------------
 # Check for R library
@@ -57,8 +57,8 @@ TEA_LOAD_TCLCONFIG
 # Load the tkConfig.sh file if necessary (Tk extension)
 #--------------------------------------------------------------------
 
-#TEA_PATH_TKCONFIG
-#TEA_LOAD_TKCONFIG
+TEA_PATH_TKCONFIG
+TEA_LOAD_TKCONFIG
 
 #-----------------------------------------------------------------------
 # Handle the --prefix=... option by defaulting to what Tcl gave.
@@ -131,9 +131,9 @@ fi
 TEA_PUBLIC_TCL_HEADERS
 #TEA_PRIVATE_TCL_HEADERS
 
-#TEA_PUBLIC_TK_HEADERS
-#TEA_PRIVATE_TK_HEADERS
-#TEA_PATH_X
+TEA_PUBLIC_TK_HEADERS
+TEA_PRIVATE_TK_HEADERS
+TEA_PATH_X
 
 #--------------------------------------------------------------------
 # Check whether --enable-threads or --disable-threads was given.

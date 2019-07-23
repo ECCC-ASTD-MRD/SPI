@@ -229,7 +229,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
 
    proj=Projection_Get(Name);
    if (!proj) {
-      Tcl_AppendResult(Interp,"\n   Projection_Config: Projection name unknown: \"",Name,"\"",(char *)NULL);
+      Tcl_AppendResult(Interp,"\n   Projection_Function: Projection name unknown: \"",Name,"\"",(char *)NULL);
       return TCL_ERROR;
    }
 

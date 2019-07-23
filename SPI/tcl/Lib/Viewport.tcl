@@ -74,7 +74,6 @@ namespace eval Viewport {
 
    set Data(VPNb)       0            ;#Compteur de viewport
    set Data(VP)         ""           ;#Viewport courant
-set Viewport::Data(SecondsT) 0
    set Data(Time)       0            ;#Heure en seconde de la projection
    set Data(Date)       0            ;#Date en seconde de la projection
    set Data(Followers)  { Viewport } ;#Liste des packages de suivit des coordonnees
@@ -2751,7 +2750,6 @@ proc Viewport::GoTo { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {} } {
             projection configure $Frame -location $Map(Lat) $Map(Lon)
             Page::Update $Frame
 
-
             #----- Get the time
             set t [clock click -milliseconds]
             if { [set dt [expr double($t-$pdt)]]>0 } {
@@ -2795,7 +2793,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
    upvar #0 ProjCam::Data${Frame}::Cam  cam
 
    set ProjCam::Data(Name)   ""
-   
+
    #----- Stop Flybys
    set Animator::Fly(Length) 0
    set Animator::Fly(Path)   ""
@@ -2849,7 +2847,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                set path [linsert $path 1 [list $From $To $Up $z]]
             }
          }
-         
+
          projcam define $Frame -path $path
          set dprr  1e32
          set dir   [expr [projection function $Frame -bearing $Map(Lat) $Map(Lon) $Lat $Lon]]
@@ -2870,9 +2868,9 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                "QUADRATIC"   { set spd [expr 1.0-(($i-$n2)*($i-$n2)+($i-$n2))*($n/(($n2*$n2)+$n2))/$n] }
                "LINEAR"      { set spd 1.0 }
             }
-            if { [set dt [expr ([clock click -milliseconds]-$t0)/2.0]]>$Map(Delay) } {
-               break
-            }
+#            if { [set dt [expr ([clock click -milliseconds]-$t0)/2.0]]>$Map(Delay) } {
+#             break
+#            }
             
             set idx [expr $idx+$spd*$Map(Speed)]
 
@@ -2886,7 +2884,7 @@ proc Viewport::GoToBatch { Frame Lat Lon { Zoom 0 } { From {} } { To {} } { Up {
                break
             }
             set dprr $dpr
-            
+
             #----- Move to new incremental position
             projcam define $Frame -fly [expr $idx*$l]
             projection configure $Frame -location $Map(Lat) $Map(Lon)
@@ -3108,7 +3106,7 @@ proc Viewport::Setup { Frame } {
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
    set Map(GeoRef$Frame)            [lindex [split $Map(Type) :] 1]     ;#Georef associee
-   set Data(Date)          0              ;#Projection date (lightning)
+   set Data(Date)                   0              ;#Projection date (lightning)
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
    if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
@@ -3154,7 +3152,6 @@ proc Viewport::UnSetup { Frame } {
    unset Data(VP$Frame)
    unset Map(Type$Frame)
    unset Map(GeoRef$Frame)
-   unset Data(Date)
 
    #----- Suppression des objects
 

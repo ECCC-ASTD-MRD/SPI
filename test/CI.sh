@@ -2,6 +2,7 @@
 
 CI_PROJECT_DIR=$1
 CI_BUILD_REF=$2
+#CI_DATA=/home/nil000/links/eccc-ppp4/storage/CI/SPI
 
 #----- Got to project 
 cd ${CI_PROJECT_DIR}

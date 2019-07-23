@@ -12,7 +12,7 @@ extern Tcl_Interp *GInterp;
 
 extern TData      *GField,*GFieldP;
 extern TDef   *GResult;
-extern TDef   *GData[256];
+extern TDef   *GData[1024];
 extern int         GDataN;
 extern int         GError;
 extern int         GMode;
@@ -199,7 +199,7 @@ exp:
          $$=Calc_Set($1,$10,(int)$3,(int)$3,0,$1->NJ-1,0,$1->NK-1);
 
          if (!$$) {
-            vexpr_error("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Set setting failed: Critical!");
             YYERROR;
          }
       }
@@ -233,7 +233,7 @@ exp:
          $$=Calc_Set($1,$10,0,$1->NI-1,(int)$5,(int)$5,0,$1->NK-1);
 
          if (!$$) {
-            vexpr_error("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Set setting failed: Critical!");
             YYERROR;
          }
       }
@@ -267,7 +267,7 @@ exp:
          $$=Calc_Set($1,$10,0,$1->NI-1,0,$1->NJ-1,(int)$7,(int)$7);
 
          if (!$$) {
-            vexpr_error("Calc_Slice setting failed: Critical!");
+            vexpr_error("Calc_Set setting failed: Critical!");
             YYERROR;
          }
       }

@@ -64,7 +64,7 @@ namespace eval FSTD {
    dataspec create FLDDEFAULT -set 2 -factor 1.0 -delta 0.0 -value AUTO -1 -size 10 -sizerange 2 -width 1 -font FLDFONTDEFAULT -efont FLDFONTEXTREMA \
       -color #000000 -unit "" -dash "" -rendercontour 0 -rendervector NONE -rendertexture 1 -renderparticle 0 -rendergrid 0 -renderboundary 0 \
       -rendervolume 0 -rendercoord 0 -rendervalue 0 -renderlabel 0 -intervalmode NONE 0 -interpdegree LINEAR  -sample 2 -sampletype PIXEL \
-      -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True
+      -intervals {} -mapbelow False -mapabove True -transparency 100 -mask True -texres 0
       
    geodata vector { UU   VV     }
    geodata vector { UP   VP     }
@@ -397,7 +397,7 @@ proc FSTD::ParamFrame { Frame Apply } {
          labelframe $Data(Frame).def.l.pal -text [lindex $Lbl(Map) $GDefs(Lang)]
             button $Data(Frame).def.l.pal.cmap -bd 1 -relief flat -image FLDMAPImg \
                -command { MapBox::Create $FSTD::Data(Frame).def.l.pal.cmap \
-                   "colormap image \"\$FSTD::Param(Map)\" FLDMAPImg; Page::Update $Page::Data(Frame)" $FSTD::Param(Map) }
+                   "colormap image \"\$FSTD::Param(Map)\" FLDMAPImg; Page::Update $Page::Data(Frame) True False" $FSTD::Param(Map) }
             pack $Data(Frame).def.l.pal.cmap -side top -fill x -padx 2 -pady 2
 
          pack $Data(Frame).def.l.val $Data(Frame).def.l.pal -side top -fill x

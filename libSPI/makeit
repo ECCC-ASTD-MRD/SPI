@@ -6,7 +6,7 @@
 
 NAME="libSPI"
 DESCRIPTION="SPI libraries"
-SUMMARY="SPI compiled libraries and dependencies"
+SUMMARY="SPI compiled libraries and dependencies (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION=$SPI_VERSION
 export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
@@ -72,7 +72,7 @@ SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                         #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                        #----- Where to install libraries
 LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
-export LIB_EXT=${SSM_EXT}/${ORDENV_PLAT}                                         #----- External libraries
+LIB_EXT=${CMD_EXT_PATH}/${ORDENV_PLAT}                                           #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
@@ -80,6 +80,7 @@ export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
 if [[ -n $INTEL_LICENSE_FILE ]]; then
    export CC=icc
    export CXX=icpc
+   export LDFLAGS="-lintlc -lifcore -lifport -limf"
 fi
 
 if [[ $ARCH == "AIX" ]]; then
@@ -241,10 +242,9 @@ if [[ $BLD -eq 1 ]]; then
    export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
    
    #----- System with no OpenGL
-   ldconfig -p | grep -q 'libGL\.so ' || export LDFLAGS="-L$LIB_PATH/GL/lib"
+   ldconfig -p | grep -q 'libGL\.so' || { export LDFLAGS="-L$LIB_PATH/GL/lib export"; export CFLAGS="$CFLAGS -I$LIB_PATH/GL/include"; }
 
    printf -- "\n----- Making TclSystem Library  -----\n"
-
    cd TclSystem
    if [[ $REC -eq 1 ]]; then
       make distclean
@@ -297,25 +297,44 @@ if [[ $BLD -eq 1 ]]; then
       --with-eccodes=${LIB_EXT} \
       --with-flt=${LIB_EXT} \
       --with-urp=${LIB_EXT}
-#      --with-gdal=${LIB_EXT}/bin/gdal-config 
    fi
    make install || exit 1
 
-   printf -- "\n----- Making TclR Library -----\n"
+   if [[ "$ORDENV_DIST" != "sles" ]]; then
+       printf -- "\n----- Making TclR Library -----\n"
 
-   cd ../TclR
-   if [[ $REC -eq 1 ]]; then
-      make distclean
-      if [[ $AUT -eq 1 ]]; then $autoconf; fi
-      ./configure \
-      --prefix=${LIB_PATH}/TCL/ \
-      --exec-prefix=${LIB_PATH}/TCL \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-R=$(R RHOME)
+       cd ../TclR
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
+
+       printf -- "\n----- Making TclRDevice Library -----\n"
+
+       cd ../TclRDevice
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
    fi
-   make install || if [ ! "$ORDENV_DIST" = "sles" ]; then exit 1; fi
 
    cd ${LIB_PATH}/lib
    ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
@@ -327,8 +346,11 @@ if [[ $BLD -eq 1 ]]; then
    ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
    ln -fs libTclSystem1.2.so libTclSystem.so
 
-   ln -fs ../TCL/lib/TclR0.3/libTclR0.3.so
-   ln -fs libTclR0.3.so libTclR.so
+   ln -fs ../TCL/lib/TclR1.0/libTclR1.0.so
+   ln -fs libTclR1.0.so libTclR.so
+
+   ln -fs ../TCL/lib/TclRDevice1.0/libTclRDevice1.0.so
+   ln -fs libTclRDevice1.0.so libTclRDevice.so
 
    cd ${SRC_PATH}
 

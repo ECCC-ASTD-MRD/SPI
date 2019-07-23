@@ -939,7 +939,6 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                Tcl_SetObjResult(Interp,Tcl_NewIntObj(Spec->TexRes));
             } else {
                Tcl_GetIntFromObj(Interp,Objv[++i],&Spec->TexRes);
-               Spec->TexRes=Spec->TexRes<1?1:Spec->TexRes;
             }
             break;
 
@@ -1916,7 +1915,7 @@ TDataSpec *DataSpec_New(){
       spec->InterO=0;
       spec->InterM=-1;
       spec->Interp=GL_NEAREST;
-      spec->TexRes=1;
+      spec->TexRes=0;
       spec->TexStep=0.0;
       spec->TexSample=16;
       spec->TexSize=256;

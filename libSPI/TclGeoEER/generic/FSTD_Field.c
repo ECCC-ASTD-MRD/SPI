@@ -281,6 +281,7 @@ int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force
          return(0);
       } else {
          if (!*Ptr) {
+            //TODO: 64 bit descriptorspi++
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
                App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);
@@ -1641,7 +1642,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      }
                   } else if (grtyp[0]=='V') {
                      if (!Field->GRef) {
-                         Field->GRef=GeoRef_Reference(GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,"A ",0,0,0,0,-1)));
+                         Field->GRef=GeoRef_Reference(GeoRef_Find(GeoRef_RPNSetup(Field->Def->NI,Field->Def->NJ,"V ",0,0,0,0,-1)));
                          //TODO:EER   GeoRef_Put(Interp,NULL,Field->GRef);
 
                      }
@@ -2920,11 +2921,11 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
    file=FSTD_FileGet(Interp,Id);
    if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
-   
+  
    e=Eticket?Eticket:etiket;
    if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z') {
-      if (!Field->GRef->AX || !Field->GRef->AX) {
-         Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptior not defined",(char*)NULL);
+      if (!Field->GRef->AX || !Field->GRef->AY) {
+         Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
          return(TCL_ERROR);       
       }
       // If they're not already written
@@ -2946,6 +2947,21 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
                head->IG1,head->IG2,head->IG3,"X ","^^",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
          }
       }
+   } else if (Field->GRef->Grid[0]=='V') {
+      fprintf(stderr,"sdlkhfjksdhjfsd %p %p %p\n",Field->GRef->AX,Field->GRef->AY,Field->ZRef->Levels);
+      if (!Field->GRef->AX || !Field->GRef->AY || !Field->ZRef->Levels) {
+         Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
+         return(TCL_ERROR); 
+      }
+      // If they're not already written
+      if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
+         ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
+            head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
+            head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+         ok=c_fstecr(Field->ZRef->Levels,NULL,-32,file->Id,head->DATEO,0,0,Field->ZRef->LevelNb,1,1,
+            head->IG1,head->IG2,head->IG3,"X ","^>",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+     }
    } else if (Field->GRef->Grid[0]=='W') { 
       if (!Field->GRef->Transform || !Field->GRef->String) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid transform and/or WKT definition not defined",(char*)NULL);

@@ -293,6 +293,11 @@ TDef* Calc_Index(TDef* A,int Index) {
    fprintf(stdout,"(DEBUG) Calc_Index(A:%p,%i)\n",(void*)A,Index);
 #endif
 
+   if (Index<0 || Index>A->NC-1) {
+      App_Log(ERROR,"%s: Component out of bound of grid A (%d)\n",__func__,A->NC);
+      return(NULL);
+   }
+   
    GDataN++;
    GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
 
@@ -316,6 +321,11 @@ TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
    fprintf(stdout,"(DEBUG) Calc_IndexValue(A:%p,I=%i,J=%i,K=%i)\n",(void*)A,I,J,K);
 #endif
 
+   if (I<0 || I>A->NI-1 || J<0 || J>A->NJ-1 || K<0 || K>A->NK-1) {
+      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
+      return(NULL);
+   }
+   
    GDataN++;
 
    GData[GDataN]=Def_New(1,1,1,A->NC,(GType?GType:A->Type));
@@ -341,9 +351,11 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
    if (J0>J1) { n=J0;J0=J1;J1=n; }
    if (K0>K1) { n=K0;K0=K1;K1=n; }
 
-   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1)
+   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1) {
+      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
-
+   }
+   
    GDataN++;
    GData[GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,A->NC,A->Type);
 
@@ -364,7 +376,7 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
 
 TDef* Calc_Slice(TDef* A,int N,int D) {
 
-   unsigned int  n,i,j,k;
+   unsigned int  n,i,j,k,idx;
    void  *p;
    double v=0.0;
 
@@ -375,6 +387,10 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
    switch(D) {
       case 0:
          i=N;
+         if (N<0 || N>A->NI-1) {
+            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NI=%d)\n",__func__,A->NI);
+            return(NULL);
+         }
          GData[++GDataN]=Def_New(A->NJ,A->NK,1,A->NC,(GType?GType:A->Type));
          n=0;
          while(A->Data[n]) {
@@ -389,6 +405,10 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
          break;
 
       case 1:
+         if (N<0 || N>A->NJ-1) {
+            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NJ=%d)\n",__func__,A->NJ);
+            return(NULL);
+         }
          j=N;
          GData[++GDataN]=Def_New(A->NI,A->NK,1,A->NC,(GType?GType:A->Type));
          n=0;
@@ -404,13 +424,25 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
          break;
 
       case 2:
+         if (N<0 || N>A->NK-1) {
+            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NK=%d)\n",__func__,A->NK);
+            return(NULL);
+         }
          k=N;
          n=0;
          GData[++GDataN]=Def_New(A->NI,A->NJ,1,A->NC,(GType?GType:A->Type));
 //         GData[GDataN]->GridLevels[0]=A->GridLevels[k];
          while(A->Data[n]) {
-            Def_Pointer(A,n,FSIZE2D(A)*k,p);
-            memcpy(GData[GDataN]->Data[n],p,FSIZE2D(A)*TDef_Size[A->Type]);
+            idx=FSIZE2D(A)*k;
+            for(j=0;j<A->NJ;j++) {
+               for(i=0;i<A->NI;i++) {
+                  Def_Get(A,n,idx,v);
+                  Def_Set(GData[GDataN],n,j*GData[GDataN]->NI+i,v);
+                  idx++;
+               }
+            }
+//            Def_Pointer(A,n,FSIZE2D(A)*k,p);
+//            memcpy(GData[GDataN]->Data[n],p,FSIZE2D(A)*TDef_Size[A->Type]);
             n++;
          }
          break;
@@ -431,12 +463,14 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
    if (J0>J1) { n=J0;J0=J1;J1=n; }
    if (K0>K1) { n=K0;K0=K1;K1=n; }
 
-   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1)
+   if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1) {
+      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
-
+   }
+   
    if (FSIZE3D(A)==1) {
       if (!Calc_Compat(GInterp,A,B,2,1))
-         return NULL;
+         return(NULL);
       Def_Get(B,0,0,v);
       Def_Set(A,0,0,v);
    } else {
@@ -456,6 +490,7 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
       n=0;
       while(A->Data[n]) {
          if (!B->Data[n] && FSIZE3D(B)!=1) {
+            App_Log(ERROR,"%s: Grid B does not have a component %d\n",__func__,n);
             return(NULL);
          }
          for(k=K0,bidx=0;k<=K1;k++) {

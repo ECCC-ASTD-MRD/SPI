@@ -1127,6 +1127,32 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          grib_set_double(head->Handle,"iDirectionIncrementInDegrees",xg[3]);
          break;   
          
+//       case 'Z':
+//          f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+//          finger
+//          len=10;
+//          grib_set_string(head->Handle,"gridType","rotated_ll",&len);
+//          grib_set_double(head->Handle,"latitudeOfFirstGridPointInDegrees",xg[0]);
+//          grib_set_double(head->Handle,"longitudeOfFirstGridPointInDegrees",xg[1]);
+//          grib_set_double(head->Handle,"latitudeOfLastGridPointInDegrees",xg[0]+xg[2]*(RPN->Def->NJ-1));
+//          grib_set_double(head->Handle,"longitudeOfLastGridPointInDegrees",xg[1]+xg[3]*(RPN->Def->NI-1));
+//          grib_set_double(head->Handle,"jDirectionIncrementInDegrees",xg[2]);
+//          grib_set_double(head->Handle,"iDirectionIncrementInDegrees",xg[3]);
+//          grib_set_double(Handle,"angleOfRotationInDegrees",&rot);
+//          
+//          grib_get_double(Handle,"latitudeOfSouthernPoleInDegrees",&lats);
+//          grib_get_double(Handle,"longitudeOfSouthernPoleInDegrees",&lons);
+// 
+//          *RT=(TRotationTransform*)malloc(sizeof(TRotationTransform));
+//          (*RT)->Lat=lats;
+//          (*RT)->Lon=lons;
+//          (*RT)->Angle=rot;
+//          lats=DEG2RAD(90.0+lats);
+//          lons=DEG2RAD(lons);
+//          (*RT)->SinTheta=sin(lats);
+//          (*RT)->CosTheta=cos(lats);
+//          (*RT)->SinPhi=sin(lons);
+//          (*RT)->CosPhi=cos(lons);
    }
 #else
    App_ErrorSet("%s: Need RMNLIB",__func__);

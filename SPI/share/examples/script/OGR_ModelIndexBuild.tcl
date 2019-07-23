@@ -34,7 +34,7 @@ set prog     $ops/prog
 set prog_par $par/prog
 
 #                 0             1                    2                     3                   4                 5             6                   7                      8
-set names  {     "RDPS"        "HRDPS National"     "HRDPS Caps"          "CAPSOCE"           "GLSOCE"          "GSL"         "RIOPS"             "SHOP"                 "WEBTIDE"}
+set names  {     "RDPS"        "HRDPS National"     "CAPS"                "CAPSOCE"           "GLSOCE"          "GSL"         "RIOPS"             "SHOP"                 "WEBTIDE"}
 set vars   {      P0            P0                   P0                    GL                  GL                GL            GL                  TM                     M2      }
 #                 0             1                    2                     3                   4                 5             6                   7                        8       9       10    11     12  13
 set subs   {      { "" }        { "" }               { "" }                { "" }              { "" }            { "" }        { "" }              { "" }                 { arctic9 ne_pac4 nwatl sshelf h3o stle400 } }
@@ -44,7 +44,7 @@ set nb 0
 foreach s $subs { incr nb [llength $s] }
 
 #----- Open GEM index file
-eval file delete [glob -nocomplain $env(CI_SPI_OUT)/ModelDomain*]
+eval file delete [glob -nocomplain $env(CI_DATA_OUT)/ModelDomain*]
 ogrfile open INDEXFILE write $env(CI_DATA_OUT)/ModelDomain.shp "ESRI Shapefile"
 ogrlayer create INDEXFILE INDEX "Domain"
 

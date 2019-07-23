@@ -29,7 +29,7 @@ AC_DEFUN([AX_LIB_GDB],
         if test "$withval" = "yes"; then
             if test -d /usr/local/include/gdb.h ; then 
                 gdb_prefix=/usr/local
-            elif test -d /usr/include/gdb. ; then
+            elif test -d /usr/include/gdb.h ; then
                 gdb_prefix=/usr
             else
                 gdb_prefix=""

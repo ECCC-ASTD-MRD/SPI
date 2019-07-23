@@ -12,21 +12,21 @@
 /lib/
 
 #----- Lexer-generated files
-/LibTkGL/TclGeoEER/lex.vexpr_.c
-/LibTkGL/TclGeoEER/y.tab.c
-/LibTkGL/TclGeoEER/y.tab.h
+/libSPI/TclGeoEER/lex.vexpr_.c
+/libSPI/TclGeoEER/y.tab.c
+/libSPI/TclGeoEER/y.tab.h
 
 #----- Autoconf and other automatically generated files
-/LibTkGL/*/Makefile
-/LibTkGL/*/autom4te.cache/
-/LibTkGL/*/config.log
-/LibTkGL/*/config.status
-/LibTkGL/*/configure
-/LibTkGL/*/pkgIndex.tcl
+/libSPI/*/Makefile
+/libSPI/*/autom4te.cache/
+/libSPI/*/config.log
+/libSPI/*/config.status
+/libSPI/*/configure
+/libSPI/*/pkgIndex.tcl
 
 #----- To run the tests
-/eer_SPI/share/examples/script/DataIn
-/eer_SPI/share/examples/script/DataOut
+/SPI/share/examples/script/DataIn
+/SPI/share/examples/script/DataOut
 
 #----- cscope code navigation databases
 cscope.out

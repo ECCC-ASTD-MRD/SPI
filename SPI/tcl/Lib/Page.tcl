@@ -91,7 +91,7 @@
 #    Page::Scale           { Frame { Incr 0 } }
 #    Page::ScaleSet        { Frame }
 #    Page::Size            { Frame Width Height { Intrusion -1 } }
-#    Page::Update          { Frame { VP True } }
+#    Page::Update          { Frame { VP True } { Items True } }
 #    Page::UpdateCommand   { Frame }
 #    Page::UpdateItems     { Frame }
 #    Page::SnapGrid        { Frame }
@@ -500,7 +500,7 @@ proc Page::ActiveScale { Type Frame Id X Y U } {
    set Y [$Frame.page.canvas canvasy [expr $Y-$y] $Param(Snap)]
 
    set ${Type}::Data(Full$Id) 0
-   eval ${Type}::Resize $Frame $Id -999 -999 $X $Y $U
+   ActiveResize $Type $Frame $Id -999 -999 $X $Y $U
 }
 
 #----------------------------------------------------------------------------
@@ -526,15 +526,51 @@ proc Page::ActiveFull { Type Frame Id Full } {
    if { $Full } {
       #----- We've 1 pixel offset ???? and it's in X axis for HW mode and Y for Mesa ???
       if { [glrender -direct] } {
-         bind $Frame.page.canvas <Configure> "update idletasks; ${Type}::Resize $Frame $Id 1 0 \[Page::CanvasWidth $Frame\] \[expr \[Page::CanvasHeight $Frame\]-1\] 0"
-         eval ${Type}::Resize $Frame $Id 1 0 [Page::CanvasWidth $Frame] [expr [Page::CanvasHeight $Frame]-1] 0
+         bind $Frame.page.canvas <Configure> "update idletasks; Page::ActiveResize $Type $Frame $Id 1 0 \[Page::CanvasWidth $Frame\] \[expr \[Page::CanvasHeight $Frame\]-1\] 0"
+         ActiveResize $Type $Frame $Id 1 0 [Page::CanvasWidth $Frame] [expr [Page::CanvasHeight $Frame]-1] 0
       } else {
-         bind $Frame.page.canvas <Configure> "update idletasks; ${Type}::Resize $Frame $Id 0 1 \[expr \[Page::CanvasWidth $Frame\]-1\] \[Page::CanvasHeight $Frame\] 0"
-         eval ${Type}::Resize $Frame $Id 0 1 [expr [Page::CanvasWidth $Frame]-1] [Page::CanvasHeight $Frame] 0
+         bind $Frame.page.canvas <Configure> "update idletasks; Page::ActiveResize $Type $Frame $Id 0 1 \[expr \[Page::CanvasWidth $Frame\]-1\] \[Page::CanvasHeight $Frame\] 0"
+         ActiveResize $Type $Frame $Id 0 1 [expr [Page::CanvasWidth $Frame]-1] [Page::CanvasHeight $Frame] 0
       }
    } else {
       bind $Frame.page.canvas <Configure> ""
    }
+}
+
+
+#----------------------------------------------------------------------------
+# Nom      : <Page::ActiveResize>
+# Creation : Janvier 2019 - E. Legault-Ouelelt - CMC/CMOE
+#
+# But      : Callback de resize lors d'un déplacement/scale d'un item actif
+#
+# Parametres :
+#  <Type>   : Type d'object (namespace)
+#  <Frame>  : Identificateur de Page
+#  <Id>     : Identificateur de l'objet
+#  <X0>     : Position en X du coin supérieur gauche (-999 si inconnue)
+#  <Y0>     : Position en Y du coin supérieur gauche (-999 si inconnue)
+#  <X1>     : Position en X du coin inférieur droit
+#  <Y1>     : Position en Y du coin inférieur droit
+#  <Limit>  : 0 si resize final, 1 si en cours de resize (en cours de dragging)
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc Page::ActiveResize { Type Frame Id X0 Y0 X1 Y1 Limit } {
+   #----- Make sure the buttons follow the item
+   set c $Frame.page.canvas
+   catch {
+       $c coords BSPAGE$Id $X1 $Y1
+       $c coords BMPAGE$Id [expr $X1-11] $Y1
+       $c coords BFPAGE$Id [expr $X1-22] $Y1
+       $c coords BDPAGE$Id $X1 [expr {$Y0==-999 ? [set ${Type}::Data(Y$Id)] : $Y0}]
+   }
+
+   #----- Make the callback for the type
+   ${Type}::Resize $Frame $Id $X0 $Y0 $X1 $Y1 $Limit
 }
 
 #----------------------------------------------------------------------------
@@ -1630,7 +1666,8 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
 #
 # Parametres :
 #  <Frame>   : Identificateur de Page
-#  <VP>      : Identificateur de Viewport
+#  <VP>      : Update Viewports 
+#  <Items>   : Update Items
 #
 # Retour:
 #
@@ -1638,7 +1675,7 @@ proc Page::Size { Frame Width Height { Intrusion -1 } } {
 #
 #----------------------------------------------------------------------------
 
-proc Page::Update { { Frame "" } { VP True } } {
+proc Page::Update { { Frame "" } { VP True } { Items True } } {
    variable Data
 
    #----- Est-ce que la page est valide
@@ -1677,13 +1714,14 @@ proc Page::Update { { Frame "" } { VP True } } {
          }
          $Frame.page.canvas raise PAGEMINI$Frame
       }
+      update idletasks
    }
-   
-   update idletasks
 
    #----- Refresh de l'usager
 
-   Page::UpdateItems $Frame
+   if { $Items } {
+      Page::UpdateItems $Frame
+   }
    OpenGL::Update
 }
 

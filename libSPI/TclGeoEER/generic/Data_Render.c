@@ -1600,18 +1600,29 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    idxk=FSIZE2D(Field->Def)*Field->Def->Level;
    pos=&Field->GPos->Pos[Field->Def->Level][Field->Def->Idx];
 
-   /*Resolution selon la dimension des cellules (mid-grid) et la vue*/   
-   dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
-   
-   if (Field->Spec->InterNb) 
-      dp>>=2;
-   
-   dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
-
-   /*Grille avec loop sur la longitude*/
+   // Grille avec loop sur la longitude
    if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
       ox=1;
-      dp=dp>10?10:dp;
+   }
+   
+   if (Field->Spec->TexRes) {
+      // Résolution spécifié
+      dp=Field->Spec->TexRes;
+   } else if (Field->Spec->Topo) {
+      dp=1;
+   } else {
+      // Resolution selon la dimension des cellules (mid-grid) et la vue
+      dp=Proj->PixDist/Field->GRef->Distance(Field->GRef,Field->Def->NI>>1,Field->Def->NJ>>1,(Field->Def->NI>>1)+1,Field->Def->NJ>>1);
+   
+      if (Field->Spec->InterNb) 
+         dp>>=2;
+   
+      dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+
+      // Grille avec loop sur la longitude
+      if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
+         dp=dp>10?10:dp;
+      }
    }
    
    idx0=idx1=idx2=idx3=0;
@@ -1619,8 +1630,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    v0=v1=v2=v3=0.0;
    mask=Field->Spec->Mask && Field->Def->Mask;
   
-   /*Render as line to fill the imprecision gaps (only when no transparency)*/
-   if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
+   // Render as line to fill the imprecision gaps (only when no transparency)
+   if (GLRender->TRCon && Proj->Ref!=Field->GRef && !Field->Spec->Map->Alpha && !(Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
       for(j=0;j<Field->Def->NJ-dp;j+=dp) {
          glBegin(GL_QUADS);
@@ -1636,13 +1647,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                c2=c3;
             }
 
-            /*If the next index is over the size*/
+            // If the next index is over the size
             if (i>=Field->Def->NI) {
                if (ox) {
-                  /*If the grid wraps around, use the first point*/
+                  // If the grid wraps around, use the first point
                   idx0=j*Field->Def->NI;
                } else {
-                  /*If not, use the last point*/
+                  // If not, use the last point
                   idx0=(j+1)*Field->Def->NI-1;
                }
             } else {
@@ -1655,10 +1666,10 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             VAL2COL(c0,Field->Spec,v0);
             VAL2COL(c3,Field->Spec,v3);
 
-            /* Is the cell valid ??? */
+            // Is the cell valid ??? 
             if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
  
-               /*Check for mask value*/
+               // Check for mask value
                if (mask && (1 || !Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
                   glEnd();
                   glBegin(GL_QUADS);
@@ -1670,7 +1681,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                Vect_Assign(g2,pos[idx2]);
                Vect_Assign(g3,pos[idx3]);
 
-               /* Is the cell visible ??? */
+               // Is the cell visible ??? 
                if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                   if (Field->Spec->InterpDegree[0]=='N') {
                      FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
@@ -1681,7 +1692,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                      dx=MIN(dx,dy);
                      depth=ceil(LOG2(dx));
 
-                     /* Is the cell resolution enough ??? */
+                     // Is the cell resolution enough ??? 
                      if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
                         FFCellQuadLinear(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                      } else {
@@ -1704,7 +1715,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
    
-   /*Render the polygons over the lines*/
+   // Render the polygons over the lines
    for(j=0;j<Field->Def->NJ-dp;j+=dp) {
 
       glBegin(GL_QUADS);
@@ -1720,13 +1731,13 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             c2=c3;
          }
 
-         /*If the next index is over the size*/
+         // If the next index is over the size
          if (i>=Field->Def->NI) {
             if (ox) {
-               /*If the grid wraps around, use the first point*/
+               // f the grid wraps around, use the first point
                idx0=j*Field->Def->NI;
             } else {
-               /*If not, use the last point*/
+               // If not, use the last point
                idx0=(j+1)*Field->Def->NI-1;
             }
          } else {
@@ -1744,10 +1755,10 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             if (!Field->Def->Mask[idx3]) c3=-1;
          }
 
-         /* Is the cell valid ??? */
+         // Is the cell valid ??? 
          if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
-            /*Check for mask value*/
+            // Check for mask value
             if (Field->Spec->InterpDegree[0]!='N' && mask && (!Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
                glEnd();
                glBegin(GL_QUADS);
@@ -1759,7 +1770,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             Vect_Assign(g2,pos[idx2]);
             Vect_Assign(g3,pos[idx3]);
 
-            /* Is the cell visible ??? */
+            // Is the cell visible ??? 
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                if (Field->Spec->InterpDegree[0]=='N') {
                   FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
