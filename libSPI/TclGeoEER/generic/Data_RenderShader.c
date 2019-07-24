@@ -557,7 +557,8 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
  * Nom      : <Data_RenderShaderRayCasting>
  * Creation : Juin 2019 - A. Germain - CMC
  *
- * But      : Effectue l'affichage du chmaps en trois dimension sur le GPU.
+ * But      : Effectue l'affichage du champs en trois dimension sur le GPU.
+ *            Utilise les shaders SHV_RayCasting.glsl et SHF_RayCasting.glsl
  *
  * Parametres  :
  *  <Field>    : Champs
@@ -587,6 +588,7 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
    glUniform1iARB(GLShader_UniformGet(prog,"Colormap"),0);
 
+   /*Setup 3D Data Texture*/
    glActiveTexture(GL_TEXTURE1);
    glBindTexture(GL_TEXTURE_3D,tx[1]);
    glTexParameteri(GL_TEXTURE_3D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
@@ -599,6 +601,7 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    int height=Field->Def->NJ;
    int depth=Field->Def->NK;
 
+   //if data is not float, convert to float before sending texture
    if (Field->Def->Type!=TD_Float32){
       float* data = malloc(depth*height*width*sizeof(float));
       float temp = 0.0;
@@ -657,12 +660,12 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
    float v[3] = {0.0,0.0,0.0};
    float quad[4][3]={{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0},{0.0,0.0,0.0}};
 
-   int MinX = Field->Def->Limits[0][0];// = 300;
-   int MaxX = Field->Def->Limits[0][1];// = 600;
-   int MinY = Field->Def->Limits[1][0];// = 100;
-   int MaxY = Field->Def->Limits[1][1];// = 800;
-   int MinZ = Field->Def->Limits[2][0];// = 5;
-   int MaxZ = Field->Def->Limits[2][1];// = 50;
+   int MinX = Field->Def->Limits[0][0];
+   int MaxX = Field->Def->Limits[0][1];
+   int MinY = Field->Def->Limits[1][0];
+   int MaxY = Field->Def->Limits[1][1];
+   int MinZ = Field->Def->Limits[2][0];
+   int MaxZ = Field->Def->Limits[2][1];
 
    glUniform2fARB(GLShader_UniformGet(prog,"LimitX"),(float)MinX/(float)width,(float)MaxX/(float)width);
    glUniform2fARB(GLShader_UniformGet(prog,"LimitY"),(float)MinY/(float)height,(float)MaxY/(float)height);
@@ -859,39 +862,40 @@ int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj){
       }
    glEnd();
 
+   //done with shader
    glDeleteTextures(2,tx);
    glUseProgramObjectARB(0);
    glActiveTexture(GL_TEXTURE0);
    glDisable(GL_BLEND);
    glEnable(GL_LIGHTING);
 
-   //frame
+   //gray frame to help see the box
    glColor4f(0.75,0.75,0.75,1.0);
    glBegin(GL_LINE_STRIP);
 
-   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMaxZ);
 
    glEnd();
 
    glBegin(GL_LINES);
 
-   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMaxZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMaxZ);
 
-   glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMaxY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMinX,limitDisplayMinY,limitDisplayMinZ);
 
-   glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
-   glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMaxY,limitDisplayMinZ);
+      glVertex3f(limitDisplayMaxX,limitDisplayMinY,limitDisplayMinZ);
 
    glEnd();
 

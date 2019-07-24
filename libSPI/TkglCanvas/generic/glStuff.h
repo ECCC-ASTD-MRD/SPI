@@ -94,6 +94,7 @@
    }\
 }
 
+//structure pour les parametres d'illumination
 typedef struct GLLightingParams{
     GLfloat GLLightAmbiant;
     GLfloat GLLightDiffuse;

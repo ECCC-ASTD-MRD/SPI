@@ -28,13 +28,14 @@ vec4 rayMarching() {
     vec4 inter = vec4(0.0);
     for(int i=0; i<maxLoop; i++){
         texCoord += stepLength*rayDirection;
+        //if the ray is going to take a sample outside of limits, continue
         if(any(lessThan(texCoord,vec3(LimitX.x,LimitY.x,LimitZ.x))))continue;
         if(any(greaterThan(texCoord,vec3(LimitX.y,LimitY.y,LimitZ.y))))continue;
         data = texture3D(TextureData3D,texCoord).r;
 
         // If we have intervals, figure out which we fit in
         if (Nb>0) {
-            idx = -1.0;
+            idx = -1.0;//reinitialize idx, if data is lower than first inter, the color will not be added
             for(int n=0;n<Nb;n++) {
                 inter=texture2DRect(Interval,vec2(n,0.0));
                 if (data<inter.r) {
@@ -46,7 +47,7 @@ vec4 rayMarching() {
             if (data>inter.r && Above==0)
                 continue;
         } else {
-            idx=(data-MinDataDisplay)/Range;
+            idx=(data-MinDataDisplay)/Range; //if no intervals, find corresponding index [0,1]
         }
 
         // Check for colormap limits
@@ -54,11 +55,12 @@ vec4 rayMarching() {
             continue;
         }
 
-        addedColor = texture1D(Colormap,idx).rgba;
+        addedColor = texture1D(Colormap,idx).rgba; //color to add
+        //add color proportionally to alpha, alpha can't go over 1.0
         color.rgb += (addedColor.a+color.a<=1.0)? (addedColor.rgb*addedColor.a):(addedColor.rgb*(1.0 - color.a));
         color.a = (addedColor.a+color.a<=1.0)? (color.a+addedColor.a):1.0;
 
-        if(color.a>=1.0)break;
+        if(color.a>=1.0)break; //stop taking samples when alpha is 1.0
     }
     return color;
 }

@@ -120,6 +120,7 @@ GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name) {
       fclose(f);
    }
 
+   //looks for a geometry shader
    strcpy(file,Path);
    strcat(file,"/SHG_");
    strcat(file,Name);
@@ -213,6 +214,7 @@ void GLShader_UnInstall(GLhandleARB Prog) {
    glDeleteObjectARB(Prog);
 }
 
+//install vertex, geometry and fragment shaders
 GLhandleARB GLShader_InstallGeom(const GLcharARB *VertSrc,const GLcharARB *FragSrc,const GLcharARB *GeomSrc) {
 
    GLhandleARB vert,frag,prog,geom;
