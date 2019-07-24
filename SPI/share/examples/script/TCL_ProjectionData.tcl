@@ -43,4 +43,9 @@ puts "   MASK = [projection data PROJ -MASK $lat $lon]"
 puts "   Moving $lat $lon $dist m at $bearing degrees: [projection function PROJ -circle $lat $lon $dist $bearing]"
 puts "   Moving box $dist t m at $bearing degrees: [projection function PROJ -circle $lat $lon $dist $bearing $box]"
 
+set coords { 0.0 -170.0 0.0 170.0 }
+eval puts \"   Course       : \[projection function PROJ -bearing $coords\]\"
+puts "   Shortest path: [projection function PROJ -path $coords 1000000]"
+puts "   Longest  path: [projection function PROJ -path $coords 1000000 True]"
+
 Log::End

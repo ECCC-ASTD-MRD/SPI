@@ -220,7 +220,7 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
 
    Tcl_Obj    *obj,*tmp;
    Projection *proj;
-   int         idx,n,nobj;
+   int         idx,n,nobj,invert;
    Coord       loc0,loc1,loct;
    double      x,y,d;
 
@@ -285,12 +285,19 @@ static int Projection_Function(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *C
          break;
 
       case PATH:
-         if (Objc!=3){
-            Tcl_WrongNumArgs(Interp,0,Objv,"{ coords } dist");
+         if (Objc!=3 && Objc!=4){
+            Tcl_WrongNumArgs(Interp,0,Objv,"{ coords } dist [invert]");
             return(TCL_ERROR);
          }
          Tcl_GetDoubleFromObj(Interp,Objv[2],&x);
-
+         
+         if (Objc==4) {
+            Tcl_GetBooleanFromObj(Interp,Objv[3],&invert);
+         } else {
+            invert=0;
+         }
+         x=invert?-x:x;
+         
          if (proj->Type && proj->Type->Def==PROJPLANE) {
             Tcl_SetObjResult(Interp,(Tcl_Obj*)Grid_Path(Interp,proj,Objv[1],x));
          } else {
@@ -550,7 +557,7 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
       return(objo);
    }
 
-   /* Get the first path coordinate*/
+   // Get the first path coordinate
    Tcl_ListObjIndex(Interp,List,i++,&obj);
    Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
    Tcl_ListObjIndex(Interp,List,i++,&obj);
@@ -558,11 +565,11 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
 
    while (i<nobj) {
 
-      /* Output start of path segment*/
+      // Output start of path segment
       Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
       Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
 
-      /* Parse all the path coordinates*/
+      // Parse all the path coordinates
       Tcl_ListObjIndex(Interp,List,i++,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
       Tcl_ListObjIndex(Interp,List,i++,&obj);
@@ -577,15 +584,22 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
       clat0=cos(loc0.Lat);
       clat1=cos(loct.Lat);
 
-      /* Figure out true course and distance*/
+      // Figure out true course and distance
       td=2.0*asin(sqrt(pow((sin((loc0.Lat-loct.Lat)/2.0)),2.0)+clat0*clat1*pow((sin((loc0.Lon-loct.Lon)/2.0)),2.0)));
       tc=fmod(atan2(sin(loc0.Lon-loct.Lon)*clat1,clat0*sin(loct.Lat)-slat0*clat1*cos(loc0.Lon-loct.Lon)),M_2PI);
-
+      
+      // Default is to use short path, unless Dist is negative
+      if (Dist<0.0) {
+         td=M_2PI-td;
+         tc-=M_2PI;
+         Dist=-Dist;
+      }
+      
       st=sin(tc);
       ct=cos(tc);
       d=id=M_PI/(180.0*60.0)*(Dist/1852.0);
 
-      /* Iterate on the true course at the specified step*/
+      // Iterate on the true course at the specified step
       while (d<=td) {
          sd=sin(d);
          cd=cos(d);
@@ -603,7 +617,7 @@ Tcl_Obj *Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist){
       loc0=loc1;
    }
 
-   /* Output las path coordinate */
+   // Output las path coordinate
    Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lat));
    Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lon));
 

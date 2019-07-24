@@ -631,19 +631,21 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       return TCL_OK;
    }
 
-   /* Get the first path coordinate*/
+   // Get the first path coordinate
    Tcl_ListObjIndex(Interp,List,i++,&obj);
    Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lat);
    Tcl_ListObjIndex(Interp,List,i++,&obj);
    Tcl_GetDoubleFromObj(Interp,obj,&loc0.Lon);
-
+   
+   Dist=fabs(Dist);
+   
    while (i<nobj) {
 
-      /* Output start of path segment*/
+      // Output start of path segment
       Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lat));
       Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc0.Lon));
 
-      /* Parse all the path coordinates*/
+      // Parse all the path coordinates
       Tcl_ListObjIndex(Interp,List,i++,&obj);
       Tcl_GetDoubleFromObj(Interp,obj,&loc1.Lat);
       Tcl_ListObjIndex(Interp,List,i++,&obj);
@@ -654,7 +656,7 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
 
       ed=id=1.0/(hypot(p1[1]-p0[1],p1[0]-p0[0])/Dist);
 
-      /* Iterate on the grid course at the specified step*/
+      // Iterate on the grid course at the specified step
       while(ed<1.0) {
          p[0]=ILIN(p0[0],p1[0],ed);
          p[1]=ILIN(p0[1],p1[1],ed);
@@ -666,7 +668,7 @@ Tcl_Obj *Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist
       loc0=loc1;
    }
 
-   /* Output las path coordinate */
+   // Output las path coordinate
    Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lat));
    Tcl_ListObjAppendElement(Interp,objo,Tcl_NewDoubleObj(loc1.Lon));
 
