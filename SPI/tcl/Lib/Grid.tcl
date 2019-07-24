@@ -49,7 +49,7 @@ namespace eval Grid {
    set Data(GridColor)    black
    set Data(GridBoundary) 0
    set Data(GridNMin)     80
-   set Data(GridNMax)     1500
+   set Data(GridNMax)     5000
    set Data(Color0)       black                          
    set Data(Color1)       blue                        
    set Data(Color2)       red                        
@@ -100,6 +100,8 @@ namespace eval Grid {
    set Param(Angle)    0                                                           ;# Rotation angle
    set Param(PI)       0                                                           ;# Internal pilot zone in I
    set Param(PJ)       0                                                           ;# Internal pilot zone in J
+
+   set Msg(Size)       { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
 }
 
 #----------------------------------------------------------------------------

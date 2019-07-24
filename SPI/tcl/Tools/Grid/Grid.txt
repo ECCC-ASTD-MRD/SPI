@@ -48,7 +48,6 @@ namespace eval Grid {
 
    #----- Messages
 
-   set Msg(Size)         { "Ces paramètres vont générer une grille très grande, voulez vous continuer ?" "These parameters will generate a very large grid, do you wish to continue ?" }
    set Msg(GridAdd)      { "Vous ne pouvez ajouter une grille tant que la première grille n'est définie." "You cannot add a new grid until the first one is defined." }
    set Msg(SavePath)     { "Vous devez spécifier un répertoire pour la sauvegarde des grilles." "You have to specify a path to save the grids." }
    set Msg(PathExist)    { "Cette résolution existe déja, voulez-vous le re-créer ?" "This resolution already exists, do you want to re-create it ?" }

@@ -622,14 +622,6 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 #pragma omp parallel shared(Res,ptrtable,table,MA,szMA,MB,szptr,m) \
    private(i,last_va,va,lute,ptr,pptr,tid)
    {
-#if 0
-   tid = omp_get_thread_num();
-   if (tid == 0)
-      {
-      int nthreads = omp_get_num_threads();
-      fprintf( stdout, "lut: Number of threads = %d\n", nthreads);
-      }
-#endif
    ptr = NULL;
    last_va = NAN;
 #pragma omp for schedule(static)
@@ -884,7 +876,7 @@ double dlon(TDef *Res,TDef *Def,int Mode) {
 
 double ddx(TDef *Res,TDef *Def,int Mode) {
 
-   unsigned long i,j,idx;
+   unsigned long i,j,k,idx,sk;
    double        d;
    TGeoRef      *gref=NULL;
 
@@ -902,14 +894,17 @@ double ddx(TDef *Res,TDef *Def,int Mode) {
    }
 
 #pragma omp parallel for \
-      private( j,i,idx,d ) \
-      shared( gref,Def,Res ) \
-      schedule(static)
+   private(j,i,idx,d,sk,k) \
+   shared(gref,Def,Res) \
+   schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
          d=gref->Distance(gref,i-0.5,j,i+0.5,j);
-         Def_Set(Res,0,idx+i,d);
+         for(k=0;k<Def->NK;k++) {
+            sk=FSIZE2D(Def)*k;
+            Def_Set(Res,0,sk+idx+i,d);
+         }
       }
    }
    return(1.0);
@@ -917,7 +912,7 @@ double ddx(TDef *Res,TDef *Def,int Mode) {
 
 double ddy(TDef *Res,TDef *Def,int Mode) {
 
-   unsigned long i,j,idx;
+   unsigned long i,j,k,idx,sk;
    double        d;
    TGeoRef      *gref=NULL;
 
@@ -935,14 +930,17 @@ double ddy(TDef *Res,TDef *Def,int Mode) {
    }
 
 #pragma omp parallel for \
-      private( j,i,idx,d ) \
-      shared( gref,Def,Res ) \
-      schedule(static)
+   private( sk,j,i,idx,d ) \
+   shared( gref,Def,Res ) \
+   schedule(static)
    for(j=0;j<Def->NJ;j++) {
       idx=j*Def->NI;
       for(i=0;i<Def->NI;i++) {
          d=gref->Distance(gref,i,j-0.5,i,j+0.5);
-         Def_Set(Res,0,idx+i,d);
+         for(k=0;k<Def->NK;k++) {
+            sk=FSIZE2D(Def)*k;
+            Def_Set(Res,0,sk+idx+i,d);
+         }
       }
    }
    return(1.0);
