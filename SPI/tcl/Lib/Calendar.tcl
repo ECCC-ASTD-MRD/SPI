@@ -91,7 +91,7 @@ proc Calendar::Set { Frame Sec args } {
 #   <Frame>   : Identificateur du Frame.
 #   <Label>   : Libelle
 #   <Var>     : Variable contenant les secondes
-#   <Width>   : Largeur du widget (-1=fill)
+#   <Width>   : Largeur du widget (0=no text,-1=fill)
 #
 # Retour      :
 #
@@ -260,7 +260,7 @@ proc Calendar::Invoke { Frame Second } {
 
    Calendar::Update $Frame
    Calendar::Select $Frame $Data(Day)
-
+   
    grab .cal
    tkwait variable Calendar::Data(Result)
    destroy .cal
@@ -340,6 +340,10 @@ proc Calendar::Update { Frame  } {
    set sec  [clock scan "$Data(Year)$Data(Month)$day" -format "%Y%m%d" -timezone :UTC]
    set date [clock format $sec -format "%B %Y" -timezone :UTC]
 
+   set cyear  [clock format $Data(Second) -format %Y -timezone :UTC]
+   set cmonth [string trimleft [clock format $Data(Second) -format %m -timezone :UTC] 0]
+   set cday   [clock format $Data(Second) -format %e -timezone :UTC]
+
    .cal.date delete CALDAY
    .cal.date itemconf CALDATE -text $date
 
@@ -352,9 +356,16 @@ proc Calendar::Update { Frame  } {
 
       .cal.date create text $x $y -text $day -font $GDefs(Font) -anchor e -tags "CALDAY CALDAY$day"
       .cal.date bind CALDAY$day <Enter>           "Calendar::Select $Frame $day"
-      .cal.date bind CALDAY$day <Leave>           "Calendar::UnSelect $day"
       .cal.date bind CALDAY$day <ButtonRelease-1> { set Calendar::Data(Result) $Calendar::Data(Second) }
 
+      #----- If it is the current date
+      if { $Data(Year)==$cyear && $Data(Month)==$cmonth && $day==$cday } {
+         .cal.date itemconf CALDAY$day -fill #AAAAAA
+         .cal.date bind CALDAY$day <Leave>           "Calendar::UnSelect $day #AAAAAA"
+      } else {
+         .cal.date bind CALDAY$day <Leave>           "Calendar::UnSelect $day black"
+      }
+      
       incr sec 86400
 
       if { $d == 6 } {
@@ -404,14 +415,15 @@ proc Calendar::Select { Frame { Day "" } } {
 #
 # Parametres :
 #   <Day>    : Journee
+#   <Color>  : Unselected color
 #
 # Remarques :
 #
 #----------------------------------------------------------------------------
 
-proc Calendar::UnSelect { Day } {
+proc Calendar::UnSelect { Day { Color black } } {
 
-   .cal.date itemconf CALDAY$Day -fill black
+   .cal.date itemconf CALDAY$Day -fill $Color
    .cal.date itemconf DATE -text ""
 }
 
