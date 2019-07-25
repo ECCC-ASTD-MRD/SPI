@@ -2614,7 +2614,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                   if (Field->Def->Limits[1][1]>Field->Def->NJ-1) Field->Def->Limits[1][1]=Field->Def->NJ-1;
                   if (Field->Def->Limits[2][1]>Field->Def->NK-1) Field->Def->Limits[2][1]=Field->Def->NK-1;
                }
-               Data_Clean(Field,0,0,1);
+               Data_Clean(Field,1,0,1);
             }
             break;
 
