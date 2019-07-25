@@ -166,6 +166,7 @@ namespace eval FSTD {
    #----- Definitions des labels
 
    set Lbl(Params)        { "Paramètres..." "Parameters..." }
+   set Lbl(Limit)         { "Lim" "Lim" }
    set Lbl(Alpha)         { "Transparence" "Transparency" }
    set Lbl(Color)         { "Couleur" "Color" }
    set Lbl(Contour)       { "Contour" "Contour" }
@@ -254,6 +255,8 @@ namespace eval FSTD {
                             "Sub-grid or master grid selection (GRTYP=U)" }
    set Bubble(Tile)       { "Sélectionnez pour reconstruire les grilles\ntuilées (GRTYP=#) en une seule grille"
                             "Select to rebuild tiled grids (GRTYP=#) into one" }
+   set Bubble(Limit)      { "Limites d'affichage des données"
+                            "Limits of data displayed" }
 }
 
 #-------------------------------------------------------------------------------
@@ -390,9 +393,12 @@ proc FSTD::ParamFrame { Frame Apply } {
                   $FSTD::Param(GridIds) 7 3 "FSTD::ParamSet; FSTD::ParamUpdate; Viewport::ForceGrid \$Page::Data(Frame) True"
                checkbutton $Data(Frame).def.l.val.grid.tile -text [lindex $Lbl(UnTile) $GDefs(Lang)] -variable FSTD::Param(UnTile) -onvalue 1 -offvalue 0 \
                  -relief sunken -bd 2 -overrelief raised -offrelief groove -command { fstdfield autountile $FSTD::Param(UnTile) } -indicatoron false
+               checkbutton $Data(Frame).def.l.val.grid.limit -text [lindex $Lbl(Limit) $GDefs(Lang)] \
+                 -onvalue 1 -offvalue 0 -relief groove -bd 2 -overrelief raised -offrelief groove -indicatoron false -selectcolor "" -command "VolumeBox::Create $Data(Frame).def.l.val.grid \"Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame);\""
                pack $Data(Frame).def.l.val.grid.lbl -side left
                pack $Data(Frame).def.l.val.grid.sel -side left -fill x -expand true
                pack $Data(Frame).def.l.val.grid.tile -side left
+               pack $Data(Frame).def.l.val.grid.limit -side left
             pack $Data(Frame).def.l.val.interp $Data(Frame).def.l.val.order $Data(Frame).def.l.val.mod $Data(Frame).def.l.val.fac \
                $Data(Frame).def.l.val.unit $Data(Frame).def.l.val.desc $Data(Frame).def.l.val.grid -side top -padx 2 -anchor n -fill x
 
@@ -444,9 +450,6 @@ proc FSTD::ParamFrame { Frame Apply } {
                FSTD::Param(Volume) "FSTD::ParamSet; FSTD::Scale" 0 -relief groove -bd 2
             pack $Data(Frame).def.r.disp.vol.sel -side left -ipadx 1
             pack $Data(Frame).def.r.disp.vol.lbl -side left -fill y
-            $Data(Frame).def.r.disp.vol.sel.menu add separator
-            $Data(Frame).def.r.disp.vol.sel.menu add command -label [lindex $Lbl(Params) $GDefs(Lang)] \
-               -command "VolumeBox::Create $Data(Frame).def.r.disp.vol \"Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame);\""
 
          frame $Data(Frame).def.r.disp.grid
             label $Data(Frame).def.r.disp.grid.lbl -text " [lindex $Lbl(Grid) $GDefs(Lang)]"
@@ -595,6 +598,7 @@ proc FSTD::ParamFrame { Frame Apply } {
    Bubble::Create $Data(Frame).def.l.val.interp.sel $Bubble(Interp)
    Bubble::Create $Data(Frame).def.l.val.grid.sel   $Bubble(Grid)
    Bubble::Create $Data(Frame).def.l.val.grid.tile  $Bubble(Tile)
+   Bubble::Create $Data(Frame).def.l.val.grid.limit  $Bubble(Limit)
 
    Bubble::Create $Data(Frame).def.l.val.order.font $Bubble(Font)
    Bubble::Create $Data(Frame).def.l.val.order      $Bubble(Format)
