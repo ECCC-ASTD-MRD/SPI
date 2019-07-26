@@ -1625,16 +1625,17 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
    mask=Field->Spec->Mask && Field->Def->Mask;
-  
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+      for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
          glBegin(GL_QUADS);
 
-         for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+         for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-            if (i!=0) {
+            if (i!=Field->Def->Limits[0][0]) {
                idx1=idx0;
                idx2=idx3;
                v1=v0;
@@ -1663,7 +1664,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             VAL2COL(c3,Field->Spec,v3);
 
             /* Is the cell valid ??? */
-            if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+            if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
  
                /*Check for mask value*/
                if (mask && (1 || !Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
@@ -1717,15 +1718,16 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    } else {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
-   
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
    /*Render the polygons over the lines*/
-   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+   for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
 
       glBegin(GL_QUADS);
 
-      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+      for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-         if (i!=0) {
+         if (i!=Field->Def->Limits[0][0]) {
             idx1=idx0;
             idx2=idx3;
             v1=v0;
@@ -1759,7 +1761,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          /* Is the cell valid ??? */
-         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+         if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             /*Check for mask value*/
             if (Field->Spec->InterpDegree[0]!='N' && mask && (!Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
