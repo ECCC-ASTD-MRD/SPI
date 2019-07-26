@@ -491,14 +491,16 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    dn=dp*Field->Def->NI;
    
    // Process gridpoints
-   for(j=0;j<Field->Def->NJ;j+=dp) {
+   for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1];j+=dp) {
       idx0=j*Field->Def->NI;
-      
+
       // If next iteration goes over, use the last j
       if (j>=Field->Def->NJ-dp) dn=(Field->Def->NJ-j-1)*Field->Def->NI;
 
+      idx0+=Field->Def->Limits[0][0];
+
       glBegin(GL_QUAD_STRIP);
-      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+      for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
          fi=i;
          
