@@ -394,7 +394,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                checkbutton $Data(Frame).def.l.val.grid.tile -text [lindex $Lbl(UnTile) $GDefs(Lang)] -variable FSTD::Param(UnTile) -onvalue 1 -offvalue 0 \
                  -relief sunken -bd 2 -overrelief raised -offrelief groove -command { fstdfield autountile $FSTD::Param(UnTile) } -indicatoron false
                checkbutton $Data(Frame).def.l.val.grid.limit -text [lindex $Lbl(Limit) $GDefs(Lang)] \
-                 -onvalue 1 -offvalue 0 -relief groove -bd 2 -overrelief raised -offrelief groove -indicatoron false -selectcolor "" -command "VolumeBox::Create $Data(Frame).def.l.val.grid \"Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame);\""
+                 -onvalue 1 -offvalue 0 -relief groove -bd 2 -overrelief raised -offrelief groove -indicatoron false -selectcolor "" -command ".params.tab.frame1.def.l.val.grid.limit deselect; VolumeBox::Create $Data(Frame).def.l.val.grid \"Page::Update \$Page::Data(Frame); Page::UpdateCommand \$Page::Data(Frame);\""
                pack $Data(Frame).def.l.val.grid.lbl -side left
                pack $Data(Frame).def.l.val.grid.sel -side left -fill x -expand true
                pack $Data(Frame).def.l.val.grid.tile -side left
