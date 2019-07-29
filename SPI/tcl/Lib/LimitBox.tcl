@@ -5,26 +5,26 @@
 # Dorval, Quebec
 #
 # Projet   : Librairie de "Widget" Tk.
-# Fichier  : VolumeBox.tcl
+# Fichier  : LimitBox.tcl
 # Creation : Juin 2019 - A. Germain
 #
 # Description:
-#    Boite de selection des parametres d'affichage des donnees de volume.
+#    Boite de selection des parametres d'affichage des limites.
 #
 # Fonctions:
 #
-#   VolumeBox::Create   { Parent Apply }
+#   LimitBox::Create   { Parent Apply }
 #
 # Remarques :
 #
 #===============================================================================
 
-package provide VolumeBox 1.0
+package provide LimitBox 1.0
 package require FSTD
 
-catch { SPI::Splash "Loading Widget Package VolumeBox 1.0" }
+catch { SPI::Splash "Loading Widget Package LimitBox 1.0" }
 
-namespace eval VolumeBox {
+namespace eval LimitBox {
    variable Lbl
    variable Bubble
    variable Data
@@ -61,10 +61,10 @@ namespace eval VolumeBox {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <VolumeBox::Create>
+# Nom      : <LimitBox::Create>
 # Creation : Juin 2019 - A. Germain
 #
-# But      : Interface des parametres d'affichage de volume
+# But      : Interface des parametres de limites
 #
 # Parametres :
 #   <Parent> : Widget parent
@@ -76,62 +76,62 @@ namespace eval VolumeBox {
 #
 #----------------------------------------------------------------------------
 
-proc VolumeBox::Create { Parent Apply } {
+proc LimitBox::Create { Parent Apply } {
    global GDefs
    variable Lbl
    variable Bubble
    variable Data
    
-   VolumeBox::GetDimensions;
+   LimitBox::GetDimensions;
    set Data(Top)      [expr $Data(NK) - 1]
    set Data(North)    [expr $Data(NJ) - 1]
    set Data(East)     [expr $Data(NI) - 1]
 
-   if { [winfo exist .volbox] } {
-      raise .volbox
+   if { [winfo exist .limbox] } {
+      raise .limbox
       return
    }
 
-   toplevel     .volbox
-   wm geom      .volbox =300x400+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
-   wm transient .volbox .
-   wm resizable .volbox 0 0
-   wm title     .volbox "VolumeBox 1.0"
+   toplevel     .limbox
+   wm geom      .limbox =300x400+[winfo rootx $Parent]+[expr [winfo rooty $Parent]+[winfo height $Parent]]
+   wm transient .limbox .
+   wm resizable .limbox 0 0
+   wm title     .limbox "LimitBox 1.0"
 
-   TabFrame::Create .volbox.tab 1 ""
-   pack .volbox.tab -side top -fill both -expand true -padx 5 -pady 2
+   TabFrame::Create .limbox.tab 1 ""
+   pack .limbox.tab -side top -fill both -expand true -padx 5 -pady 2
 
-   set fr [TabFrame::Add .volbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
+   set fr [TabFrame::Add .limbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
 
       
       
    labelframe $fr.top -text "[lindex $Lbl(Top) $GDefs(Lang)]"
       scale $fr.top.scale -orient horizontal -from 0 -to [ expr $Data(NK) - 1 ] \
-         -showvalue true -variable VolumeBox::Data(Top) -relief flat -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply; VolumeBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(Top) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.top.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.top -side top -fill x -pady 1
    
    labelframe $fr.north -text "[lindex $Lbl(North) $GDefs(Lang)]"
       scale $fr.north.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable VolumeBox::Data(North) -relief flat -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply; VolumeBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(North) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.north.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.north -side top -fill x -pady 1
    
    labelframe $fr.south -text "[lindex $Lbl(South) $GDefs(Lang)]"
       scale $fr.south.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable VolumeBox::Data(South) -relief flat -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply; VolumeBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(South) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.south.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.south -side top -fill x -pady 1   
 
    labelframe $fr.east -text "[lindex $Lbl(East) $GDefs(Lang)]"
       scale $fr.east.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable VolumeBox::Data(East) -relief flat -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply; VolumeBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(East) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.east.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.east -side top -fill x -pady 1
    
    labelframe $fr.west -text "[lindex $Lbl(West) $GDefs(Lang)]"
       scale $fr.west.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable VolumeBox::Data(West) -relief flat -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply; VolumeBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(West) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.west.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.west -side top -fill x -pady 1   
    
@@ -141,24 +141,24 @@ proc VolumeBox::Create { Parent Apply } {
    Bubble::Create $fr.east.scale $Bubble(East)
    Bubble::Create $fr.west.scale $Bubble(West)
 
-   frame .volbox.cmd
-      button .volbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "destroy .volbox"
-      button .volbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "VolumeBox::SetLimits \$VolumeBox::Data(West) \$VolumeBox::Data(South) 0 \$VolumeBox::Data(East) \$VolumeBox::Data(North) \$VolumeBox::Data(Top); VolumeBox::GetLimits; $Apply"
-      pack .volbox.cmd.apply .volbox.cmd.close -side left -fill x -expand true
-   pack .volbox.cmd -side bottom -fill x -padx 5 -pady 5
+   frame .limbox.cmd
+      button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "destroy .limbox"
+      button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply"
+      pack .limbox.cmd.apply .limbox.cmd.close -side left -fill x -expand true
+   pack .limbox.cmd -side bottom -fill x -padx 5 -pady 5
 
-   Bubble::Create .volbox.cmd.apply $Bubble(Apply)
-   Bubble::Create .volbox.cmd.close $Bubble(Close)
+   Bubble::Create .limbox.cmd.apply $Bubble(Apply)
+   Bubble::Create .limbox.cmd.close $Bubble(Close)
 
    
    
-   TabFrame::Select .volbox.tab 0
+   TabFrame::Select .limbox.tab 0
 }
 
-proc VolumeBox::ignore {data} {
+proc LimitBox::ignore {data} {
 }
 #----------------------------------------------------------------------------
-# Nom      : <VolumeBox::SetLimits>
+# Nom      : <LimitBox::SetLimits>
 # Creation : Juin 2019 - A. Germain
 #
 # But      : pour definir les limites
@@ -177,7 +177,7 @@ proc VolumeBox::ignore {data} {
 #
 #----------------------------------------------------------------------------    
 
-proc VolumeBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
+proc LimitBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
          set temp [list $X0 $Y0 $Z0 $X1 $Y1 $Z1]
@@ -187,7 +187,7 @@ proc VolumeBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <VolumeBox::GetLimits>
+# Nom      : <LimitBox::GetLimits>
 # Creation : Juin 2019 - A. Germain
 #
 # But      : pour recupere les limites
@@ -201,10 +201,10 @@ proc VolumeBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
 #
 #----------------------------------------------------------------------------    
 
-proc VolumeBox::GetLimits { } {
+proc LimitBox::GetLimits { } {
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set VolumeBox::Data(limits) [fstdfield stats $field -limits]
+         set LimitBox::Data(limits) [fstdfield stats $field -limits]
          break
       }
 
@@ -212,7 +212,7 @@ proc VolumeBox::GetLimits { } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <VolumeBox::GetDimensions>
+# Nom      : <LimitBox::GetDimensions>
 # Creation : Juin 2019 - A. Germain
 #
 # But      : pour recupere les valeurs de NI NJ et NK
@@ -226,12 +226,12 @@ proc VolumeBox::GetLimits { } {
 #
 #----------------------------------------------------------------------------    
 
-proc VolumeBox::GetDimensions { } {
+proc LimitBox::GetDimensions { } {
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set VolumeBox::Data(NI) [fstdfield define $field -NI]
-         set VolumeBox::Data(NJ) [fstdfield define $field -NJ]
-         set VolumeBox::Data(NK) [fstdfield define $field -NK]
+         set LimitBox::Data(NI) [fstdfield define $field -NI]
+         set LimitBox::Data(NJ) [fstdfield define $field -NJ]
+         set LimitBox::Data(NK) [fstdfield define $field -NK]
          break
       }
    }
