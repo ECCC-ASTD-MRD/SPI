@@ -2155,7 +2155,8 @@ proc Viewport::Lighting     { Frame Lang Apply } {
 
       button $Frame.button -text [lindex $Viewport::Lbl(Default) $Lang] -bd 1 -height 1 -command "set Viewport::Map(LightAmbiant) 0.1; set Viewport::Map(LightDiffuse) 1.5; set Viewport::Map(LightSpecular) 0.6; set Viewport::Map(MaterialSpecular) 1.0; set Viewport::Map(MaterialShininess) 64; glrender -lightambiant 0.1 -lightdiffuse 1.5 -lightspecular 0.6 -materialspecular 1.0 -materialshininess 64; $Apply configure -state normal; Viewport::ConfigSet \$Page::Data(Frame)"
 
-      pack $Frame.sun $Frame.ambiant $Frame.diffuse $Frame.lspecular $Frame.mspecular $Frame.shininess $Frame.button -side top -anchor sw
+      pack $Frame.sun $Frame.ambiant $Frame.diffuse $Frame.lspecular $Frame.mspecular $Frame.shininess -side top -anchor sw
+      pack $Frame.button -side top -anchor sw -fill x
 
       Bubble::Create $Frame.sun        $Viewport::Bubble(Sun)
       Bubble::Create $Frame.ambiant    $Viewport::Bubble(LightAmbiant)
