@@ -96,7 +96,7 @@ proc Locator::WinDef { } {
       #----- Frame des items de recherches
 
       frame .locator.menu.sel -relief sunken -bd 1
-      foreach type { 0 1 2 3 4 5 } {
+      foreach type { 0 1 2 3 4 5 6 } {
          radiobutton .locator.menu.sel.type$type -image [lindex $Data(Icons) $type] -variable Locator::Data(Current) -value $type \
             -command "Locator::Get $type" -indicatoron False -selectcolor "" -relief raised -bd 1
          pack .locator.menu.sel.type$type -side left -fill y -ipadx 10
@@ -180,7 +180,8 @@ proc Locator::WinDef { } {
    Bubble::Create .locator.menu.sel.type2 $Bubble(CTBT)
    Bubble::Create .locator.menu.sel.type3 $Bubble(Meteo)
    Bubble::Create .locator.menu.sel.type4 $Bubble(City)
-   Bubble::Create .locator.menu.sel.type5 $Bubble(NavAid)
+   Bubble::Create .locator.menu.sel.type5 $Bubble(Spill)
+   Bubble::Create .locator.menu.sel.type6 $Bubble(NavAid)
 
    Bubble::Create .locator.head.no   $Bubble(Sort)
    Bubble::Create .locator.head.name $Bubble(Sort)

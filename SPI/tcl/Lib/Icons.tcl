@@ -228,6 +228,7 @@ image create photo ACT_PLANE   -file $GDefs(Dir)/share/image/Symbol/Icon/Active_
 image create photo SEL_VOLC  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_VOLCANO.gif
 image create photo SEL_NUCL  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_NUCLEAR.gif
 image create photo SEL_CTBT  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_CTBT.gif
+image create photo SEL_SPILL -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_SPILL.gif
 image create photo SEL_FIRE  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_FIRE.gif
 image create photo SEL_OTHE  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_OTHER.gif
 image create photo SEL_STAT  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_STATION.gif
