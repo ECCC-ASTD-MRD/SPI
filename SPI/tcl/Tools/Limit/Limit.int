@@ -1,0 +1,82 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Interface de selection des limites
+# Fichier  : Limit.int
+# Creation : Juillet 2019
+#
+# Description:
+#
+#    Cette interface permet de selectionner les limites d'affichage d'un champs
+#
+#
+#===============================================================================
+
+#----------------------------------------------------------------------------
+# Nom      : <Limit::Window>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Initialise le package de l'outil et son interface
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc Limit::Window { } {
+   global GDefs
+   variable Data
+   variable Lbl
+   variable Bubble
+   variable Param
+
+   set Data(Active) 1
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
+   set Param(Window) .limit
+
+   if { ![winfo exists .limit] } {
+
+      if { $Param(Dock) } {
+         frame .limit
+         SPI::Dock .limit
+      } else {
+         toplevel         .limit
+         wm title         .limit "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)]] $Param(Version))"
+         eval wm geometry .limit $Param(Geom)
+         wm resizable     .limit 1 1
+         wm protocol      .limit WM_DELETE_WINDOW { Limit::Close }
+
+         if { $SPI::Param(Window) } { wm transient .limit . }
+      }
+
+      TabFrame::Create .limit.tab 1 ""
+      set Data(Tab) [TabFrame::Add .limit.tab 1 [lindex $Param(Title) $GDefs(Lang)] True]
+      pack .limit.tab -side top -fill both -expand true
+
+      frame $Data(Tab).head
+         checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue Limit -offvalue SPI \
+            -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
+            -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         pack $Data(Tab).head.mode -side left -padx 2
+      pack $Data(Tab).head -side top -fill x
+
+      frame .limit.dock -relief raised -bd 1
+         button .limit.dock.sel -image DOCK -anchor w -relief flat -bd 1 -overrelief raised -command { SPI::DockTool Limit }
+         button .limit.dock.del -image DOCKDELETE -anchor w -relief flat -bd 1 -overrelief raised -command Limit::Close
+         entry .limit.dock.coo -textvariable Limit::Data(Coo) -bg $GDefs(ColorLight) -width 20 -bd 1
+         pack .limit.dock.sel .limit.dock.del -side left
+         pack .limit.dock.coo -side left -fill both -expand true
+      pack .limit.dock -side bottom -fill x
+
+      Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
+   }
+   raise  .limit
+}

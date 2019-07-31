@@ -180,7 +180,7 @@ proc LimitBox::ignore {data} {
 proc LimitBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set temp [list $X0 $Y0 $Z0 $X1 $Y1 $Z1]
+         set temp [list [expr int($X0)] [expr int($Y0)] [expr int($Z0)] [expr int($X1)] [expr int($Y1)] [expr int($Z1)] ]
          fstdfield stats $field -limits $temp 
       }
    }
