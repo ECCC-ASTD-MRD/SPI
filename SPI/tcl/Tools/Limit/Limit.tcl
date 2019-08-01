@@ -58,7 +58,7 @@ proc Limit::Close { } {
 
 #----------------------------------------------------------------------------
 # Nom      : <Limit::Draw...>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+# Creation : Aout 2019 - A. Germain - CMC
 #
 # But      : Fonctions de manipulation sur la projection
 #
@@ -75,8 +75,18 @@ proc Limit::Close { } {
 proc Limit::DrawInit { Frame VP } {
    variable Data
 
-   set Data(Lat0)   $Viewport::Map(LatCursor)
-   set Data(Lon0)   $Viewport::Map(LonCursor)
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(X0)   $Viewport::Map(GridICursor)
+      set Data(Y0)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(X0)   [lindex $temp 0]
+      set Data(Y0)   [lindex $temp 1]
+   }
 }
 
 proc Limit::Draw { Frame VP } {
@@ -86,9 +96,18 @@ proc Limit::Draw { Frame VP } {
       $Data(Canvas) delete LIMIT
    }
 
-   set Data(Lat1)   $Viewport::Map(LatCursor)
-   set Data(Lon1)   $Viewport::Map(LonCursor)
-
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(X1)   $Viewport::Map(GridICursor)
+      set Data(Y1)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(X1)   [lindex $temp 0]
+      set Data(Y1)   [lindex $temp 1]
+   }
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
    set Data(VP)     $VP
@@ -99,32 +118,18 @@ proc Limit::Draw { Frame VP } {
 proc Limit::DrawDone { Frame VP } {
    variable Data
 
-   if { $Data(Lat0)>$Data(Lat1) } {
-      set tmp $Data(Lat1)
-      set Data(Lat1) $Data(Lat0)
-      set Data(Lat0) $tmp
-   }
-
-   if { $Data(Lon0)>$Data(Lon1) } {
-      set tmp $Data(Lon1)
-      set Data(Lon1) $Data(Lon0)
-      set Data(Lon0) $tmp
-   }
-
-   if { $Data(Lat0)==$Data(Lat1) || $Data(Lon0)==$Data(Lon1) } {
-      set Data(Coo) ""
-   } else {
-      set Data(Coo) "$Data(Lat0),$Data(Lon0) - $Data(Lat1),$Data(Lon1)"
-   }
-
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set initial [fstdfield stats $field -coordpoint $Data(Lat0) $Data(Lon0)]
-         set end [fstdfield stats $field -coordpoint $Data(Lat1) $Data(Lon1)]
          if { $LimitBox::Data(Top) == 0 } {
             set LimitBox::Data(Top) [expr [fstdfield define $field -NK] - 1]
          }
-         LimitBox::SetLimits [lindex $initial 0] [lindex $initial 1] 0 [lindex $end 0] [lindex $end 1] $LimitBox::Data(Top)
+         set LimitBox::Data(North) $Data(Y1)
+         set LimitBox::Data(South) $Data(Y0)
+         set LimitBox::Data(East) $Data(X1)
+         set LimitBox::Data(West) $Data(X0)
+         LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
+         Page::Update $Page::Data(Frame)
+         Page::UpdateCommand $Page::Data(Frame)
       }
    }
 }
@@ -132,8 +137,18 @@ proc Limit::DrawDone { Frame VP } {
 proc Limit::MoveInit { Frame VP } {
    variable Data
 
-   set Data(LonD) $Viewport::Map(LonCursor)
-   set Data(LatD) $Viewport::Map(LatCursor)
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(XD)   $Viewport::Map(GridICursor)
+      set Data(YD)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(XD)   [lindex $temp 0]
+      set Data(YD)   [lindex $temp 1]
+   }
 }
 
 proc Limit::Move { Frame VP } {
@@ -141,35 +156,48 @@ proc Limit::Move { Frame VP } {
 
    #----- Effectuer la translation
 
-   set lat0 [expr $Data(Lat0) + $Viewport::Map(LatCursor) - $Data(LatD)]
-   set lat1 [expr $Data(Lat1) + $Viewport::Map(LatCursor) - $Data(LatD)]
-
-   if { $lat0 > -90.0 && $lat0 < 90.0 && $lat1 > -90.0 && $lat1 < 90.0 } {
-
-      set Data(Lat0) $lat0
-      set Data(Lat1) $lat1
-      eval set Data(Lon0) [Viewport::CheckCoord [expr $Data(Lon0) + $Viewport::Map(LonCursor) - $Data(LonD)]]
-      eval set Data(Lon1) [Viewport::CheckCoord [expr $Data(Lon1) + $Viewport::Map(LonCursor) - $Data(LonD)]]
+   if { $Viewport::Map(Type)=="grid" } {
+      set deltaX [expr $Viewport::Map(GridICursor) - $Data(XD)]
+      set deltaY [expr $Viewport::Map(GridJCursor) - $Data(YD)]
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set deltaX [expr [lindex $temp 0] - $Data(XD)]
+      set deltaY [expr [lindex $temp 1] - $Data(YD)]
    }
-
-   #----- Reaffecter le point de reference de translation
 
    if { $Data(Canvas)!="" } {
       $Data(Canvas) delete LIMIT
    }
 
-   set Data(LonD)   $Viewport::Map(LonCursor)
-   set Data(LatD)   $Viewport::Map(LatCursor)
-
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(XD)   $Viewport::Map(GridICursor)
+      set Data(YD)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(XD)   [lindex $temp 0]
+      set Data(YD)   [lindex $temp 1]
+   }
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
    set Data(VP)     $VP
-
-   Limit::UpdateItems $Frame
+   Limit::MoveItems $Frame $deltaX $deltaY
 }
 
 proc Limit::MoveDone { Frame VP } {
    variable Data
+
+   set Data(X0) [lindex $Data(PG0) 0]
+   set Data(Y0) [lindex $Data(PG0) 1]
+   set Data(X1) [lindex $Data(PG2) 0]
+   set Data(Y1) [lindex $Data(PG2) 1]
    Limit::DrawDone $Frame $VP
 }
 
@@ -193,14 +221,13 @@ proc Limit::Update { Frame } {
 
 #-------------------------------------------------------------------------------
 # Nom      : <Limit::UpdateItems>
-# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+# Creation : Aout 2019 - A. Germain - CMC
 #
 # But      : Effectuer le "Refresh" des items relatifs a cet outils sur
 #            la projection.
 #
 # Parametres :
 #   <Frame>  : Identificateur de Page
-#   <VP>     : Identificateur du Viewport
 #
 # Remarques :
 #    - Cette fonctions est appele par SPI au besoin.
@@ -212,9 +239,71 @@ proc Limit::UpdateItems { Frame } {
    variable Data
 
    $Data(Canvas) delete LIMIT
+   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+
+         set Data(P0) [fstdfield stats $field -gridpoint $Data(X0) $Data(Y0)]
+         set Data(P1) [fstdfield stats $field -gridpoint $Data(X1) $Data(Y0)]
+         set Data(P2) [fstdfield stats $field -gridpoint $Data(X1) $Data(Y1)]
+         set Data(P3) [fstdfield stats $field -gridpoint $Data(X0) $Data(Y1)]
+
+      }
+   }
+   if { $Data(VP)!="" } {
+      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Limit::MoveItems>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
+#            la projection quand il bouge.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <deltaX> : Deplacement en X
+#   <deltaY> : Deplacement en Y
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc Limit::MoveItems { Frame deltaX deltaY } {
+   global   GDefs
+   variable Data
+
+   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+
+         set Data(PG0) [fstdfield stats $field -coordpoint [lindex $Data(P0) 0] [lindex $Data(P0) 1]]
+         set Data(PG1) [fstdfield stats $field -coordpoint [lindex $Data(P1) 0] [lindex $Data(P1) 1]]
+         set Data(PG2) [fstdfield stats $field -coordpoint [lindex $Data(P2) 0] [lindex $Data(P2) 1]]
+         set Data(PG3) [fstdfield stats $field -coordpoint [lindex $Data(P3) 0] [lindex $Data(P3) 1]]
+
+         lset Data(PG0) 0 [expr [lindex $Data(PG0) 0] + $deltaX]
+         lset Data(PG0) 1 [expr [lindex $Data(PG0) 1] + $deltaY]
+         lset Data(PG1) 0 [expr [lindex $Data(PG1) 0] + $deltaX]
+         lset Data(PG1) 1 [expr [lindex $Data(PG1) 1] + $deltaY]
+         lset Data(PG2) 0 [expr [lindex $Data(PG2) 0] + $deltaX]
+         lset Data(PG2) 1 [expr [lindex $Data(PG2) 1] + $deltaY]
+         lset Data(PG3) 0 [expr [lindex $Data(PG3) 0] + $deltaX]
+         lset Data(PG3) 1 [expr [lindex $Data(PG3) 1] + $deltaY]
+
+         set Data(P0) [fstdfield stats $field -gridpoint [lindex $Data(PG0) 0] [lindex $Data(PG0) 1]]
+         set Data(P1) [fstdfield stats $field -gridpoint [lindex $Data(PG1) 0] [lindex $Data(PG1) 1]]
+         set Data(P2) [fstdfield stats $field -gridpoint [lindex $Data(PG2) 0] [lindex $Data(PG2) 1]]
+         set Data(P3) [fstdfield stats $field -gridpoint [lindex $Data(PG3) 0] [lindex $Data(PG3) 1]]
+
+      }
+   }
+
+   $Data(Canvas) delete LIMIT
 
    if { $Data(VP)!="" } {
-      Viewport::DrawRange $Data(Frame) $Data(VP) $Data(Lat0) $Data(Lon0) $Data(Lat1) $Data(Lon1) LIMIT red
+      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
    }
 }
 
