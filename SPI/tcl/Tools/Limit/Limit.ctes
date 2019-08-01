@@ -31,17 +31,12 @@ namespace eval Limit {
    set Data(Frame)  ""       ;#Frame actif
    set Data(VP)     ""       ;#Viewport actif
 
-   set Data(X0)   0          ;#Coordonnees des points de selection
-   set Data(Y0)   0
-   set Data(X1)   0
-   set Data(Y1)   0
-
    set Data(P0)   0          ;#Coordonnees des 4 coins en lat lon
    set Data(P1)   0
    set Data(P2)   0
    set Data(P3)   0
 
-   set Data(PG0)   0          ;#Coordonnees des 4 coins en point de grille
+   set Data(PG0)   0         ;#Coordonnees des 4 coins en point de grille
    set Data(PG1)   0
    set Data(PG2)   0
    set Data(PG3)   0

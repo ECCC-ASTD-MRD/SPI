@@ -76,16 +76,16 @@ proc Limit::DrawInit { Frame VP } {
    variable Data
 
    if { $Viewport::Map(Type)=="grid" } {
-      set Data(X0)   $Viewport::Map(GridICursor)
-      set Data(Y0)   $Viewport::Map(GridJCursor)
+      set LimitBox::Data(West)   $Viewport::Map(GridICursor)
+      set LimitBox::Data(South)   $Viewport::Map(GridJCursor)
    } else {
       foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
          if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
             set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
          }
       }
-      set Data(X0)   [lindex $temp 0]
-      set Data(Y0)   [lindex $temp 1]
+      set LimitBox::Data(West)   [lindex $temp 0]
+      set LimitBox::Data(South)   [lindex $temp 1]
    }
 }
 
@@ -97,16 +97,16 @@ proc Limit::Draw { Frame VP } {
    }
 
    if { $Viewport::Map(Type)=="grid" } {
-      set Data(X1)   $Viewport::Map(GridICursor)
-      set Data(Y1)   $Viewport::Map(GridJCursor)
+      set LimitBox::Data(East)   $Viewport::Map(GridICursor)
+      set LimitBox::Data(North)   $Viewport::Map(GridJCursor)
    } else {
       foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
          if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
             set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
          }
       }
-      set Data(X1)   [lindex $temp 0]
-      set Data(Y1)   [lindex $temp 1]
+      set LimitBox::Data(East)   [lindex $temp 0]
+      set LimitBox::Data(North)   [lindex $temp 1]
    }
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
@@ -123,10 +123,6 @@ proc Limit::DrawDone { Frame VP } {
          if { $LimitBox::Data(Top) == 0 } {
             set LimitBox::Data(Top) [expr [fstdfield define $field -NK] - 1]
          }
-         set LimitBox::Data(North) $Data(Y1)
-         set LimitBox::Data(South) $Data(Y0)
-         set LimitBox::Data(East) $Data(X1)
-         set LimitBox::Data(West) $Data(X0)
          LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
          Page::Update $Page::Data(Frame)
          Page::UpdateCommand $Page::Data(Frame)
@@ -194,10 +190,10 @@ proc Limit::Move { Frame VP } {
 proc Limit::MoveDone { Frame VP } {
    variable Data
 
-   set Data(X0) [lindex $Data(PG0) 0]
-   set Data(Y0) [lindex $Data(PG0) 1]
-   set Data(X1) [lindex $Data(PG2) 0]
-   set Data(Y1) [lindex $Data(PG2) 1]
+   set LimitBox::Data(West) [lindex $Data(PG0) 0]
+   set LimitBox::Data(South) [lindex $Data(PG0) 1]
+   set LimitBox::Data(East) [lindex $Data(PG2) 0]
+   set LimitBox::Data(North) [lindex $Data(PG2) 1]
    Limit::DrawDone $Frame $VP
 }
 
@@ -242,10 +238,10 @@ proc Limit::UpdateItems { Frame } {
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
 
-         set Data(P0) [fstdfield stats $field -gridpoint $Data(X0) $Data(Y0)]
-         set Data(P1) [fstdfield stats $field -gridpoint $Data(X1) $Data(Y0)]
-         set Data(P2) [fstdfield stats $field -gridpoint $Data(X1) $Data(Y1)]
-         set Data(P3) [fstdfield stats $field -gridpoint $Data(X0) $Data(Y1)]
+         set Data(P0) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(South)]
+         set Data(P1) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(South)]
+         set Data(P2) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(North)]
+         set Data(P3) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(North)]
 
       }
    }
