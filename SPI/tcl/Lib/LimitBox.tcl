@@ -198,6 +198,9 @@ proc LimitBox::ignore {data} {
 #----------------------------------------------------------------------------
 
 proc LimitBox::Close { } {
+   if { $Page::Data(ToolMode)=="LimitBox" } {
+      SPI::ToolMode SPI Zoom
+   }
    destroy .limbox
 }
 
