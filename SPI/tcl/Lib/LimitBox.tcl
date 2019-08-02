@@ -37,10 +37,22 @@ namespace eval LimitBox {
    set Data(West)     0.0
 
    set Data(RealTime) [expr $OpenGL::Param(Res)<=1] ;#Reaffichage interactif
+   set Data(Canvas)   ""
+   set Data(VP)       ""
 
    set Data(NI)       0
    set Data(NJ)       0
    set Data(NK)       0
+
+   set Data(P0)       0          ;#Coordonnees des 4 coins en lat lon
+   set Data(P1)       0
+   set Data(P2)       0
+   set Data(P3)       0
+
+   set Data(PG0)      0         ;#Coordonnees des 4 coins en point de grille
+   set Data(PG1)      0
+   set Data(PG2)      0
+   set Data(PG3)      0
 
    set Lbl(Params)    { "Paramètres" "Parameters" }
    set Lbl(Close)     { "Fermer" "Close" }
@@ -152,7 +164,7 @@ proc LimitBox::Create { Parent Apply } {
          -overrelief raised -offrelief flat \
          -variable LimitBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
       checkbutton .limbox.cmd.pick -variable Page::Data(ToolMode) -relief raised -bd 1 -overrelief raised -offrelief flat \
-         -onvalue Limit -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         -onvalue LimitBox -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
       button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::Close"
       button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply"
       pack .limbox.cmd.real .limbox.cmd.pick -side left
@@ -266,5 +278,261 @@ proc LimitBox::GetDimensions { } {
          set LimitBox::Data(NK) [fstdfield define $field -NK]
          break
       }
+   }
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <LimitBox::Draw...>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Fonctions de manipulation sur la projection
+#
+# Parametres :
+#  <Frame>   : Identificateur de Page
+#  <VP>      : Identificateur du Viewport
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc LimitBox::DrawInit { Frame VP } {
+   variable Data
+
+   if { $Viewport::Map(Type)=="grid" } {
+      set LimitBox::Data(West)   $Viewport::Map(GridICursor)
+      set LimitBox::Data(South)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set LimitBox::Data(West)   [lindex $temp 0]
+      set LimitBox::Data(South)   [lindex $temp 1]
+   }
+}
+
+proc LimitBox::Draw { Frame VP } {
+   variable Data
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
+   }
+
+   if { $Viewport::Map(Type)=="grid" } {
+      set LimitBox::Data(East)   $Viewport::Map(GridICursor)
+      set LimitBox::Data(North)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set LimitBox::Data(East)   [lindex $temp 0]
+      set LimitBox::Data(North)   [lindex $temp 1]
+   }
+   set Data(Canvas) $Frame.page.canvas
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+
+   LimitBox::UpdateItems $Frame
+}
+
+proc LimitBox::DrawDone { Frame VP } {
+   variable Data
+
+   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+         if { $LimitBox::Data(Top) == 0 } {
+            set LimitBox::Data(Top) [expr [fstdfield define $field -NK] - 1]
+         }
+         if { $LimitBox::Data(RealTime) } {
+            LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
+            Page::Update $Page::Data(Frame)
+            Page::UpdateCommand $Page::Data(Frame)
+         }
+      }
+   }
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
+   }
+}
+
+proc LimitBox::MoveInit { Frame VP } {
+   variable Data
+
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(XD)   $Viewport::Map(GridICursor)
+      set Data(YD)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(XD)   [lindex $temp 0]
+      set Data(YD)   [lindex $temp 1]
+   }
+}
+
+proc LimitBox::Move { Frame VP } {
+   variable Data
+
+   #----- Effectuer la translation
+
+   if { $Viewport::Map(Type)=="grid" } {
+      set deltaX [expr $Viewport::Map(GridICursor) - $Data(XD)]
+      set deltaY [expr $Viewport::Map(GridJCursor) - $Data(YD)]
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set deltaX [expr [lindex $temp 0] - $Data(XD)]
+      set deltaY [expr [lindex $temp 1] - $Data(YD)]
+   }
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
+   }
+
+   if { $Viewport::Map(Type)=="grid" } {
+      set Data(XD)   $Viewport::Map(GridICursor)
+      set Data(YD)   $Viewport::Map(GridJCursor)
+   } else {
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+            set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
+         }
+      }
+      set Data(XD)   [lindex $temp 0]
+      set Data(YD)   [lindex $temp 1]
+   }
+   set Data(Canvas) $Frame.page.canvas
+   set Data(Frame)  $Frame
+   set Data(VP)     $VP
+   LimitBox::MoveItems $Frame $deltaX $deltaY
+}
+
+proc LimitBox::MoveDone { Frame VP } {
+   variable Data
+
+   set LimitBox::Data(West) [lindex $Data(PG0) 0]
+   set LimitBox::Data(South) [lindex $Data(PG0) 1]
+   set LimitBox::Data(East) [lindex $Data(PG2) 0]
+   set LimitBox::Data(North) [lindex $Data(PG2) 1]
+   LimitBox::DrawDone $Frame $VP
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::Update>
+# Creation : Juin 2003 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Effectuer le "Refresh" de l'outils apres une mise a jour dans SPI
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::Update { Frame } {
+   variable Data
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::UpdateItems>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
+#            la projection.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::UpdateItems { Frame } {
+   global   GDefs
+   variable Data
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
+   }
+   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+
+         set Data(P0) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(South)]
+         set Data(P1) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(South)]
+         set Data(P2) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(North)]
+         set Data(P3) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(North)]
+
+      }
+   }
+   if { $Data(VP)!="" } {
+      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::MoveItems>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Effectuer le "Refresh" des items relatifs a cet outils sur
+#            la projection quand il bouge.
+#
+# Parametres :
+#   <Frame>  : Identificateur de Page
+#   <deltaX> : Deplacement en X
+#   <deltaY> : Deplacement en Y
+#
+# Remarques :
+#    - Cette fonctions est appele par SPI au besoin.
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::MoveItems { Frame deltaX deltaY } {
+   global   GDefs
+   variable Data
+
+   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+
+         set Data(PG0) [fstdfield stats $field -coordpoint [lindex $Data(P0) 0] [lindex $Data(P0) 1]]
+         set Data(PG1) [fstdfield stats $field -coordpoint [lindex $Data(P1) 0] [lindex $Data(P1) 1]]
+         set Data(PG2) [fstdfield stats $field -coordpoint [lindex $Data(P2) 0] [lindex $Data(P2) 1]]
+         set Data(PG3) [fstdfield stats $field -coordpoint [lindex $Data(P3) 0] [lindex $Data(P3) 1]]
+
+         lset Data(PG0) 0 [expr [lindex $Data(PG0) 0] + $deltaX]
+         lset Data(PG0) 1 [expr [lindex $Data(PG0) 1] + $deltaY]
+         lset Data(PG1) 0 [expr [lindex $Data(PG1) 0] + $deltaX]
+         lset Data(PG1) 1 [expr [lindex $Data(PG1) 1] + $deltaY]
+         lset Data(PG2) 0 [expr [lindex $Data(PG2) 0] + $deltaX]
+         lset Data(PG2) 1 [expr [lindex $Data(PG2) 1] + $deltaY]
+         lset Data(PG3) 0 [expr [lindex $Data(PG3) 0] + $deltaX]
+         lset Data(PG3) 1 [expr [lindex $Data(PG3) 1] + $deltaY]
+
+         set Data(P0) [fstdfield stats $field -gridpoint [lindex $Data(PG0) 0] [lindex $Data(PG0) 1]]
+         set Data(P1) [fstdfield stats $field -gridpoint [lindex $Data(PG1) 0] [lindex $Data(PG1) 1]]
+         set Data(P2) [fstdfield stats $field -gridpoint [lindex $Data(PG2) 0] [lindex $Data(PG2) 1]]
+         set Data(P3) [fstdfield stats $field -gridpoint [lindex $Data(PG3) 0] [lindex $Data(PG3) 1]]
+
+      }
+   }
+
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
+   }
+
+   if { $Data(VP)!="" } {
+      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
    }
 }
