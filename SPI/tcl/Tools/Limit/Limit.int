@@ -65,7 +65,10 @@ proc Limit::Window { } {
          checkbutton $Data(Tab).head.mode -variable Page::Data(ToolMode) -onvalue Limit -offvalue SPI \
             -image ARROW -indicatoron 0 -relief sunken -bd 1 -overrelief raised -offrelief flat -selectcolor $GDefs(ColorFrame) \
             -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
-         pack $Data(Tab).head.mode -side left -padx 2
+         checkbutton $Data(Tab).head.real -image DOCSEL -bd 1 -relief sunken \
+            -overrelief raised -offrelief flat \
+            -variable LimitBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
+         pack $Data(Tab).head.mode $Data(Tab).head.real -side left -padx 2
       pack $Data(Tab).head -side top -fill x
 
       frame .limit.dock -relief raised -bd 1
@@ -77,6 +80,7 @@ proc Limit::Window { } {
       pack .limit.dock -side bottom -fill x
 
       Bubble::Create $Data(Tab).head.mode $Bubble(Mode)
+      Bubble::Create $Data(Tab).head.real $Bubble(Real)
    }
    raise  .limit
 }

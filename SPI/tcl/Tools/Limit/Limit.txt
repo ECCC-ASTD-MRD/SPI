@@ -27,4 +27,5 @@ namespace eval Limit {
    #----- Bulles d'aides
 
    set Bubble(Mode)    { "Mode de sélection des limites" "Limit selection mode" }
+   set Bubble(Real)  { "Applique les parametres interactivement" "Apply parameters interactively" }
 }

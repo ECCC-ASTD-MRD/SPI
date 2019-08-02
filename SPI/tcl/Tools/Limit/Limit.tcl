@@ -123,10 +123,15 @@ proc Limit::DrawDone { Frame VP } {
          if { $LimitBox::Data(Top) == 0 } {
             set LimitBox::Data(Top) [expr [fstdfield define $field -NK] - 1]
          }
-         LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
-         Page::Update $Page::Data(Frame)
-         Page::UpdateCommand $Page::Data(Frame)
+         if { $LimitBox::Data(RealTime) } {
+            LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
+            Page::Update $Page::Data(Frame)
+            Page::UpdateCommand $Page::Data(Frame)
+         }
       }
+   }
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
    }
 }
 

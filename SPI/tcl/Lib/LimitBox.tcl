@@ -36,9 +36,10 @@ namespace eval LimitBox {
    set Data(East)     0.0
    set Data(West)     0.0
 
+   set Data(RealTime) [expr $OpenGL::Param(Res)<=1] ;#Reaffichage interactif
+
    set Data(NI)       0
    set Data(NJ)       0
-   
    set Data(NK)       0
 
    set Lbl(Params)    { "Paramètres" "Parameters" }
@@ -52,11 +53,13 @@ namespace eval LimitBox {
 
    set Bubble(Apply)      { "Appliquer les paramêtres" "Apply the parameters" }
    set Bubble(Close)      { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
+   set Bubble(Mode)       { "Mode de sélection des limites" "Limit selection mode" }
    set Bubble(Top)        { "Change l'emplacement du plan de coupe au dessus" "Change position of the top clip plane" }
    set Bubble(North)      { "Change l'emplacement du plan de coupe au nord" "Change position of the north clip plane" }
    set Bubble(South)      { "Change l'emplacement du plan de coupe au sud" "Change position of the south clip plane" }
    set Bubble(East)       { "Change l'emplacement du plan de coupe a l'est" "Change position of the east clip plane" }
    set Bubble(West)       { "Change l'emplacement du plan de coupe a l'ouest" "Change position of the west clip plane" }
+   set Bubble(Real)       { "Applique les parametres interactivement" "Apply parameters interactively" }
    
 }
 
@@ -82,7 +85,10 @@ proc LimitBox::Create { Parent Apply } {
    variable Bubble
    variable Data
    
-   LimitBox::GetDimensions;
+   LimitBox::GetDimensions
+
+   set Data(South)    0.0
+   set Data(West)     0.0
    set Data(Top)      [expr $Data(NK) - 1]
    set Data(North)    [expr $Data(NJ) - 1]
    set Data(East)     [expr $Data(NI) - 1]
@@ -107,31 +113,31 @@ proc LimitBox::Create { Parent Apply } {
       
    labelframe $fr.top -text "[lindex $Lbl(Top) $GDefs(Lang)]"
       scale $fr.top.scale -orient horizontal -from 0 -to [ expr $Data(NK) - 1 ] \
-         -showvalue true -variable LimitBox::Data(Top) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(Top) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.top.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.top -side top -fill x -pady 1
    
    labelframe $fr.north -text "[lindex $Lbl(North) $GDefs(Lang)]"
       scale $fr.north.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable LimitBox::Data(North) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(North) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.north.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.north -side top -fill x -pady 1
    
    labelframe $fr.south -text "[lindex $Lbl(South) $GDefs(Lang)]"
       scale $fr.south.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable LimitBox::Data(South) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(South) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.south.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.south -side top -fill x -pady 1   
 
    labelframe $fr.east -text "[lindex $Lbl(East) $GDefs(Lang)]"
       scale $fr.east.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable LimitBox::Data(East) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(East) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.east.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.east -side top -fill x -pady 1
    
    labelframe $fr.west -text "[lindex $Lbl(West) $GDefs(Lang)]"
       scale $fr.west.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable LimitBox::Data(West) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+         -showvalue true -variable LimitBox::Data(West) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
       pack $fr.west.scale -side left -fill x -expand true -padx 2 -pady 0
    pack $fr.west -side top -fill x -pady 1   
    
@@ -142,14 +148,21 @@ proc LimitBox::Create { Parent Apply } {
    Bubble::Create $fr.west.scale $Bubble(West)
 
    frame .limbox.cmd
-      button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "destroy .limbox"
+      checkbutton .limbox.cmd.real -image DOCSEL -bd 1 -relief raised \
+         -overrelief raised -offrelief flat \
+         -variable LimitBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
+      checkbutton .limbox.cmd.pick -variable Page::Data(ToolMode) -relief raised -bd 1 -overrelief raised -offrelief flat \
+         -onvalue Limit -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::Close"
       button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply"
+      pack .limbox.cmd.real .limbox.cmd.pick -side left
       pack .limbox.cmd.apply .limbox.cmd.close -side left -fill x -expand true
    pack .limbox.cmd -side bottom -fill x -padx 5 -pady 5
 
    Bubble::Create .limbox.cmd.apply $Bubble(Apply)
    Bubble::Create .limbox.cmd.close $Bubble(Close)
-
+   Bubble::Create .limbox.cmd.real  $Bubble(Real)
+   Bubble::Create .limbox.cmd.pick  $Bubble(Mode)
    
    
    TabFrame::Select .limbox.tab 0
@@ -157,6 +170,25 @@ proc LimitBox::Create { Parent Apply } {
 
 proc LimitBox::ignore {data} {
 }
+
+#----------------------------------------------------------------------------
+# Nom      : <LimitBox::Close>
+# Creation : Aout 2019 - A. Germain
+#
+# But      : Ferme la fenetre
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+
+proc LimitBox::Close { } {
+   destroy .limbox
+}
+
 #----------------------------------------------------------------------------
 # Nom      : <LimitBox::SetLimits>
 # Creation : Juin 2019 - A. Germain
