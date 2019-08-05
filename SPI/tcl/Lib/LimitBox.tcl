@@ -165,7 +165,7 @@ proc LimitBox::Create { Parent Apply } {
          -overrelief raised -offrelief flat \
          -variable LimitBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
       checkbutton .limbox.cmd.pick -variable Page::Data(ToolMode) -relief raised -bd 1 -overrelief raised -offrelief flat \
-         -onvalue LimitBox -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+         -onvalue LimitBox -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command "LimitBox::ToggleTool"
       button .limbox.cmd.reset -bitmap "@$GDefs(Dir)/share/bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "LimitBox::Reset; $Apply"
       button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::Close"
@@ -205,6 +205,9 @@ proc LimitBox::ignore {data} {
 proc LimitBox::Close { } {
    if { $Page::Data(ToolMode)=="LimitBox" } {
       SPI::ToolMode SPI Zoom
+   }
+   if { $LimitBox::Data(Canvas)!="" } {
+      $LimitBox::Data(Canvas) delete LIMIT
    }
    destroy .limbox
 }
@@ -363,9 +366,6 @@ proc LimitBox::DrawDone { Frame VP } {
          }
       }
    }
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete LIMIT
-   }
 }
 
 proc LimitBox::MoveInit { Frame VP } {
@@ -471,22 +471,23 @@ proc LimitBox::Update { Frame } {
 proc LimitBox::UpdateItems { Frame } {
    global   GDefs
    variable Data
-
-   if { $Data(Canvas)!="" } {
-      $Data(Canvas) delete LIMIT
-   }
-   foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
-      if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-
-         set Data(P0) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(South)]
-         set Data(P1) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(South)]
-         set Data(P2) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(North)]
-         set Data(P3) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(North)]
-
+   if { $Page::Data(ToolMode)=="LimitBox" } {
+      if { $Data(Canvas)!="" } {
+         $Data(Canvas) delete LIMIT
       }
-   }
-   if { $Data(VP)!="" } {
-      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
+      foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
+         if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
+
+            set Data(P0) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(South)]
+            set Data(P1) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(South)]
+            set Data(P2) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(North)]
+            set Data(P3) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(North)]
+
+         }
+      }
+      if { $Data(VP)!="" } {
+         Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
+      }
    }
 }
 
@@ -563,4 +564,31 @@ proc LimitBox::Reset {  } {
    set LimitBox::Data(North)    [expr $LimitBox::Data(NJ) - 1]
    set LimitBox::Data(East)     [expr $LimitBox::Data(NI) - 1]
    LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
+   if { $LimitBox::Data(Canvas)!="" } {
+      $LimitBox::Data(Canvas) delete LIMIT
+   }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::ToggleTool>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Efface ou trace le carré de l'outil dependament si l'outil
+#            est activé ou désactivé
+#
+# Parametres :
+#
+# Remarques : Appeler quand on clique sur le bouton de l'outil
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::ToggleTool {  } {
+   variable Data
+   SPI::ToolMode $Page::Data(ToolMode) Data True
+   if { $LimitBox::Data(Canvas)!="" } {
+      $LimitBox::Data(Canvas) delete LIMIT
+   }
+   if { $Data(VP)!="" && $Page::Data(ToolMode) == "LimitBox" } {
+      Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
+   }
 }
