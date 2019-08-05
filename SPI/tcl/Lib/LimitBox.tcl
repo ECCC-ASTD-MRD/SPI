@@ -66,6 +66,7 @@ namespace eval LimitBox {
    set Bubble(Apply)      { "Appliquer les paramêtres" "Apply the parameters" }
    set Bubble(Close)      { "Fermer sans appliquer les paramêtres"  "Close without applying the parameters" }
    set Bubble(Mode)       { "Mode de sélection des limites" "Limit selection mode" }
+   set Bubble(Reset)      { "Réinitialiser les limites" "Reset limits" }
    set Bubble(Top)        { "Change l'emplacement du plan de coupe au dessus" "Change position of the top clip plane" }
    set Bubble(North)      { "Change l'emplacement du plan de coupe au nord" "Change position of the north clip plane" }
    set Bubble(South)      { "Change l'emplacement du plan de coupe au sud" "Change position of the south clip plane" }
@@ -165,9 +166,12 @@ proc LimitBox::Create { Parent Apply } {
          -variable LimitBox::Data(RealTime) -onvalue 1 -offvalue 0 -indicatoron false
       checkbutton .limbox.cmd.pick -variable Page::Data(ToolMode) -relief raised -bd 1 -overrelief raised -offrelief flat \
          -onvalue LimitBox -offvalue SPI -selectcolor "" -image ARROW -indicatoron false -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      button .limbox.cmd.reset -bitmap "@$GDefs(Dir)/share/bitmap/CLEAR.xbm" -relief raised \
+         -bd 1 -command "LimitBox::Reset; $Apply"
       button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::Close"
       button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply"
       pack .limbox.cmd.real .limbox.cmd.pick -side left
+      pack .limbox.cmd.reset -side left -fill y
       pack .limbox.cmd.apply .limbox.cmd.close -side left -fill x -expand true
    pack .limbox.cmd -side bottom -fill x -padx 5 -pady 5
 
@@ -175,6 +179,7 @@ proc LimitBox::Create { Parent Apply } {
    Bubble::Create .limbox.cmd.close $Bubble(Close)
    Bubble::Create .limbox.cmd.real  $Bubble(Real)
    Bubble::Create .limbox.cmd.pick  $Bubble(Mode)
+   Bubble::Create .limbox.cmd.reset $Bubble(Reset)
    
    
    TabFrame::Select .limbox.tab 0
@@ -498,7 +503,6 @@ proc LimitBox::UpdateItems { Frame } {
 #   <deltaY> : Deplacement en Y
 #
 # Remarques :
-#    - Cette fonctions est appele par SPI au besoin.
 #
 #-------------------------------------------------------------------------------
 
@@ -538,4 +542,25 @@ proc LimitBox::MoveItems { Frame deltaX deltaY } {
    if { $Data(VP)!="" } {
       Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::Reset>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Remettre les limites pour avoir tous les points de grilles
+#
+# Parametres :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::Reset {  } {
+   set LimitBox::Data(South)    0.0
+   set LimitBox::Data(West)     0.0
+   set LimitBox::Data(Top)      [expr $LimitBox::Data(NK) - 1]
+   set LimitBox::Data(North)    [expr $LimitBox::Data(NJ) - 1]
+   set LimitBox::Data(East)     [expr $LimitBox::Data(NI) - 1]
+   LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
 }
