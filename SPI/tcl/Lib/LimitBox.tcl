@@ -117,6 +117,7 @@ proc LimitBox::Create { Parent Apply } {
    wm transient .limbox .
    wm resizable .limbox 0 0
    wm title     .limbox "LimitBox 1.0"
+   wm protocol  .limbox WM_DELETE_WINDOW { LimitBox::Close }
 
    TabFrame::Create .limbox.tab 1 ""
    pack .limbox.tab -side top -fill both -expand true -padx 5 -pady 2
@@ -202,6 +203,7 @@ proc LimitBox::ignore {data} {
 # Remarques :
 #
 #----------------------------------------------------------------------------
+
 
 proc LimitBox::Close { } {
    if { $Page::Data(ToolMode)=="LimitBox" } {
@@ -613,7 +615,7 @@ proc LimitBox::ToggleTool {  } {
 
 proc LimitBox::ChangeField {  } {
    LimitBox::GetDimensions
-   if { $LimitBox::Data(LimBoxFrame)!="" } {
+   if { [winfo exist .limbox] } {
       $LimitBox::Data(LimBoxFrame).top.scale configure -to [ expr $LimitBox::Data(NK) - 1 ]
       $LimitBox::Data(LimBoxFrame).north.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
       $LimitBox::Data(LimBoxFrame).south.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
