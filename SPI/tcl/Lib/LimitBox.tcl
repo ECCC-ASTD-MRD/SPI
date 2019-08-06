@@ -99,13 +99,7 @@ proc LimitBox::Create { Parent Apply } {
    variable Bubble
    variable Data
    
-   LimitBox::GetDimensions
-
-   set Data(South)    0.0
-   set Data(West)     0.0
-   set Data(Top)      [expr $Data(NK) - 1]
-   set Data(North)    [expr $Data(NJ) - 1]
-   set Data(East)     [expr $Data(NI) - 1]
+   LimitBox::ChangeField
 
    if { [winfo exist .limbox] } {
       raise .limbox
@@ -206,11 +200,12 @@ proc LimitBox::ignore {data} {
 
 
 proc LimitBox::Close { } {
+   variable Data
    if { $Page::Data(ToolMode)=="LimitBox" } {
       SPI::ToolMode SPI Zoom
    }
-   if { $LimitBox::Data(Canvas)!="" } {
-      $LimitBox::Data(Canvas) delete LIMIT
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
    }
    destroy .limbox
 }
@@ -290,11 +285,12 @@ proc LimitBox::GetLimits { } {
 #----------------------------------------------------------------------------    
 
 proc LimitBox::GetDimensions { } {
+   variable Data
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set LimitBox::Data(NI) [fstdfield define $field -NI]
-         set LimitBox::Data(NJ) [fstdfield define $field -NJ]
-         set LimitBox::Data(NK) [fstdfield define $field -NK]
+         set Data(NI) [fstdfield define $field -NI]
+         set Data(NJ) [fstdfield define $field -NJ]
+         set Data(NK) [fstdfield define $field -NK]
          break
       }
    }
@@ -320,16 +316,16 @@ proc LimitBox::DrawInit { Frame VP } {
    variable Data
 
    if { $Viewport::Map(Type)=="grid" } {
-      set LimitBox::Data(West)   $Viewport::Map(GridICursor)
-      set LimitBox::Data(South)   $Viewport::Map(GridJCursor)
+      set Data(West)   $Viewport::Map(GridICursor)
+      set Data(South)   $Viewport::Map(GridJCursor)
    } else {
       foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
          if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
             set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
          }
       }
-      set LimitBox::Data(West)   [lindex $temp 0]
-      set LimitBox::Data(South)   [lindex $temp 1]
+      set Data(West)   [lindex $temp 0]
+      set Data(South)   [lindex $temp 1]
    }
 }
 
@@ -341,16 +337,16 @@ proc LimitBox::Draw { Frame VP } {
    }
 
    if { $Viewport::Map(Type)=="grid" } {
-      set LimitBox::Data(East)   $Viewport::Map(GridICursor)
-      set LimitBox::Data(North)   $Viewport::Map(GridJCursor)
+      set Data(East)   $Viewport::Map(GridICursor)
+      set Data(North)   $Viewport::Map(GridJCursor)
    } else {
       foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
          if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
             set temp [fstdfield stats $field -coordpoint $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)]
          }
       }
-      set LimitBox::Data(East)   [lindex $temp 0]
-      set LimitBox::Data(North)   [lindex $temp 1]
+      set Data(East)   [lindex $temp 0]
+      set Data(North)   [lindex $temp 1]
    }
    set Data(Canvas) $Frame.page.canvas
    set Data(Frame)  $Frame
@@ -364,11 +360,11 @@ proc LimitBox::DrawDone { Frame VP } {
 
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         if { $LimitBox::Data(Top) == 0 } {
-            set LimitBox::Data(Top) [expr [fstdfield define $field -NK] - 1]
+         if { $Data(Top) == 0 } {
+            set Data(Top) [expr [fstdfield define $field -NK] - 1]
          }
-         if { $LimitBox::Data(RealTime) } {
-            LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
+         if { $Data(RealTime) } {
+            LimitBox::SetLimits $Data(West) $Data(South) 0 $Data(East) $Data(North) $Data(Top)
             Page::Update $Page::Data(Frame)
             Page::UpdateCommand $Page::Data(Frame)
          }
@@ -436,10 +432,10 @@ proc LimitBox::Move { Frame VP } {
 proc LimitBox::MoveDone { Frame VP } {
    variable Data
 
-   set LimitBox::Data(West) [lindex $Data(PG0) 0]
-   set LimitBox::Data(South) [lindex $Data(PG0) 1]
-   set LimitBox::Data(East) [lindex $Data(PG2) 0]
-   set LimitBox::Data(North) [lindex $Data(PG2) 1]
+   set Data(West) [lindex $Data(PG0) 0]
+   set Data(South) [lindex $Data(PG0) 1]
+   set Data(East) [lindex $Data(PG2) 0]
+   set Data(North) [lindex $Data(PG2) 1]
    LimitBox::DrawDone $Frame $VP
 }
 
@@ -486,10 +482,10 @@ proc LimitBox::UpdateItems { Frame } {
       foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
          if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
 
-            set Data(P0) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(South)]
-            set Data(P1) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(South)]
-            set Data(P2) [fstdfield stats $field -gridpoint $LimitBox::Data(East) $LimitBox::Data(North)]
-            set Data(P3) [fstdfield stats $field -gridpoint $LimitBox::Data(West) $LimitBox::Data(North)]
+            set Data(P0) [fstdfield stats $field -gridpoint $Data(West) $Data(South)]
+            set Data(P1) [fstdfield stats $field -gridpoint $Data(East) $Data(South)]
+            set Data(P2) [fstdfield stats $field -gridpoint $Data(East) $Data(North)]
+            set Data(P3) [fstdfield stats $field -gridpoint $Data(West) $Data(North)]
 
          }
       }
@@ -566,14 +562,15 @@ proc LimitBox::MoveItems { Frame deltaX deltaY } {
 #-------------------------------------------------------------------------------
 
 proc LimitBox::Reset {  } {
-   set LimitBox::Data(South)    0.0
-   set LimitBox::Data(West)     0.0
-   set LimitBox::Data(Top)      [expr $LimitBox::Data(NK) - 1]
-   set LimitBox::Data(North)    [expr $LimitBox::Data(NJ) - 1]
-   set LimitBox::Data(East)     [expr $LimitBox::Data(NI) - 1]
-   LimitBox::SetLimits $LimitBox::Data(West) $LimitBox::Data(South) 0 $LimitBox::Data(East) $LimitBox::Data(North) $LimitBox::Data(Top)
-   if { $LimitBox::Data(Canvas)!="" } {
-      $LimitBox::Data(Canvas) delete LIMIT
+   variable Data
+   set Data(South)    0.0
+   set Data(West)     0.0
+   set Data(Top)      [expr $Data(NK) - 1]
+   set Data(North)    [expr $Data(NJ) - 1]
+   set Data(East)     [expr $Data(NI) - 1]
+   LimitBox::SetLimits $Data(West) $Data(South) 0 $Data(East) $Data(North) $Data(Top)
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
    }
 }
 
@@ -593,8 +590,8 @@ proc LimitBox::Reset {  } {
 proc LimitBox::ToggleTool {  } {
    variable Data
    SPI::ToolMode $Page::Data(ToolMode) Data True
-   if { $LimitBox::Data(Canvas)!="" } {
-      $LimitBox::Data(Canvas) delete LIMIT
+   if { $Data(Canvas)!="" } {
+      $Data(Canvas) delete LIMIT
    }
    if { $Data(VP)!="" && $Page::Data(ToolMode) == "LimitBox" } {
       Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
@@ -614,13 +611,14 @@ proc LimitBox::ToggleTool {  } {
 #-------------------------------------------------------------------------------
 
 proc LimitBox::ChangeField {  } {
+   variable Data
    LimitBox::GetDimensions
    if { [winfo exist .limbox] } {
-      $LimitBox::Data(LimBoxFrame).top.scale configure -to [ expr $LimitBox::Data(NK) - 1 ]
-      $LimitBox::Data(LimBoxFrame).north.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
-      $LimitBox::Data(LimBoxFrame).south.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
-      $LimitBox::Data(LimBoxFrame).east.scale configure -to [ expr $LimitBox::Data(NI) - 1 ]
-      $LimitBox::Data(LimBoxFrame).west.scale configure -to [ expr $LimitBox::Data(NI) - 1 ]
+      $Data(LimBoxFrame).top.scale configure -to [ expr $Data(NK) - 1 ]
+      $Data(LimBoxFrame).north.scale configure -to [ expr $Data(NJ) - 1 ]
+      $Data(LimBoxFrame).south.scale configure -to [ expr $Data(NJ) - 1 ]
+      $Data(LimBoxFrame).east.scale configure -to [ expr $Data(NI) - 1 ]
+      $Data(LimBoxFrame).west.scale configure -to [ expr $Data(NI) - 1 ]
    }
    LimitBox::GetLimits
    LimitBox::UpdateItems ""
