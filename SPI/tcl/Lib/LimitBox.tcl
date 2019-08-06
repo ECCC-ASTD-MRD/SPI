@@ -29,7 +29,6 @@ namespace eval LimitBox {
    variable Bubble
    variable Data
 
-   set Data(limits)   {0.0 0.0 0.0 1.0 1.0 1.0}
    set Data(Top)      0.0
    set Data(North)    0.0
    set Data(South)    0.0
@@ -39,6 +38,8 @@ namespace eval LimitBox {
    set Data(RealTime) [expr $OpenGL::Param(Res)<=1] ;#Reaffichage interactif
    set Data(Canvas)   ""
    set Data(VP)       ""
+   set Data(Frame)    ""
+   set Data(LimBoxFrame)    ""
 
    set Data(NI)       0
    set Data(NJ)       0
@@ -120,45 +121,45 @@ proc LimitBox::Create { Parent Apply } {
    TabFrame::Create .limbox.tab 1 ""
    pack .limbox.tab -side top -fill both -expand true -padx 5 -pady 2
 
-   set fr [TabFrame::Add .limbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
+   set Data(LimBoxFrame) [TabFrame::Add .limbox.tab 1 [lindex $Lbl(Params) $GDefs(Lang)] False ""]
 
       
       
-   labelframe $fr.top -text "[lindex $Lbl(Top) $GDefs(Lang)]"
-      scale $fr.top.scale -orient horizontal -from 0 -to [ expr $Data(NK) - 1 ] \
-         -showvalue true -variable LimitBox::Data(Top) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $fr.top.scale -side left -fill x -expand true -padx 2 -pady 0
-   pack $fr.top -side top -fill x -pady 1
+   labelframe $Data(LimBoxFrame).top -text "[lindex $Lbl(Top) $GDefs(Lang)]"
+      scale $Data(LimBoxFrame).top.scale -orient horizontal -from 0 -to [ expr $Data(NK) - 1 ] \
+         -showvalue true -variable LimitBox::Data(Top) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+      pack $Data(LimBoxFrame).top.scale -side left -fill x -expand true -padx 2 -pady 0
+   pack $Data(LimBoxFrame).top -side top -fill x -pady 1
    
-   labelframe $fr.north -text "[lindex $Lbl(North) $GDefs(Lang)]"
-      scale $fr.north.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable LimitBox::Data(North) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $fr.north.scale -side left -fill x -expand true -padx 2 -pady 0
-   pack $fr.north -side top -fill x -pady 1
+   labelframe $Data(LimBoxFrame).north -text "[lindex $Lbl(North) $GDefs(Lang)]"
+      scale $Data(LimBoxFrame).north.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
+         -showvalue true -variable LimitBox::Data(North) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+      pack $Data(LimBoxFrame).north.scale -side left -fill x -expand true -padx 2 -pady 0
+   pack $Data(LimBoxFrame).north -side top -fill x -pady 1
    
-   labelframe $fr.south -text "[lindex $Lbl(South) $GDefs(Lang)]"
-      scale $fr.south.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
-         -showvalue true -variable LimitBox::Data(South) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $fr.south.scale -side left -fill x -expand true -padx 2 -pady 0
-   pack $fr.south -side top -fill x -pady 1   
+   labelframe $Data(LimBoxFrame).south -text "[lindex $Lbl(South) $GDefs(Lang)]"
+      scale $Data(LimBoxFrame).south.scale -orient horizontal -from 0 -to [ expr $Data(NJ) - 1 ] \
+         -showvalue true -variable LimitBox::Data(South) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+      pack $Data(LimBoxFrame).south.scale -side left -fill x -expand true -padx 2 -pady 0
+   pack $Data(LimBoxFrame).south -side top -fill x -pady 1
 
-   labelframe $fr.east -text "[lindex $Lbl(East) $GDefs(Lang)]"
-      scale $fr.east.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable LimitBox::Data(East) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $fr.east.scale -side left -fill x -expand true -padx 2 -pady 0
-   pack $fr.east -side top -fill x -pady 1
+   labelframe $Data(LimBoxFrame).east -text "[lindex $Lbl(East) $GDefs(Lang)]"
+      scale $Data(LimBoxFrame).east.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
+         -showvalue true -variable LimitBox::Data(East) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+      pack $Data(LimBoxFrame).east.scale -side left -fill x -expand true -padx 2 -pady 0
+   pack $Data(LimBoxFrame).east -side top -fill x -pady 1
    
-   labelframe $fr.west -text "[lindex $Lbl(West) $GDefs(Lang)]"
-      scale $fr.west.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
-         -showvalue true -variable LimitBox::Data(West) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
-      pack $fr.west.scale -side left -fill x -expand true -padx 2 -pady 0
-   pack $fr.west -side top -fill x -pady 1   
+   labelframe $Data(LimBoxFrame).west -text "[lindex $Lbl(West) $GDefs(Lang)]"
+      scale $Data(LimBoxFrame).west.scale -orient horizontal -from 0 -to [ expr $Data(NI) - 1 ] \
+         -showvalue true -variable LimitBox::Data(West) -relief flat -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); if { \$LimitBox::Data(RealTime) } { $Apply }; LimitBox::ignore" -width 14 -sliderlength 8 -bd 1 -resolution 1
+      pack $Data(LimBoxFrame).west.scale -side left -fill x -expand true -padx 2 -pady 0
+   pack $Data(LimBoxFrame).west -side top -fill x -pady 1
    
-   Bubble::Create $fr.top.scale $Bubble(Top)
-   Bubble::Create $fr.north.scale $Bubble(North)
-   Bubble::Create $fr.south.scale $Bubble(South)
-   Bubble::Create $fr.east.scale $Bubble(East)
-   Bubble::Create $fr.west.scale $Bubble(West)
+   Bubble::Create $Data(LimBoxFrame).top.scale $Bubble(Top)
+   Bubble::Create $Data(LimBoxFrame).north.scale $Bubble(North)
+   Bubble::Create $Data(LimBoxFrame).south.scale $Bubble(South)
+   Bubble::Create $Data(LimBoxFrame).east.scale $Bubble(East)
+   Bubble::Create $Data(LimBoxFrame).west.scale $Bubble(West)
 
    frame .limbox.cmd
       checkbutton .limbox.cmd.real -image DOCSEL -bd 1 -relief raised \
@@ -169,7 +170,7 @@ proc LimitBox::Create { Parent Apply } {
       button .limbox.cmd.reset -bitmap "@$GDefs(Dir)/share/bitmap/CLEAR.xbm" -relief raised \
          -bd 1 -command "LimitBox::Reset; $Apply"
       button .limbox.cmd.close -text [lindex $Lbl(Close) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::Close"
-      button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); LimitBox::GetLimits; $Apply"
+      button .limbox.cmd.apply -text [lindex $Lbl(Apply) $GDefs(Lang)] -bd 1 -relief raised -command "LimitBox::SetLimits \$LimitBox::Data(West) \$LimitBox::Data(South) 0 \$LimitBox::Data(East) \$LimitBox::Data(North) \$LimitBox::Data(Top); $Apply"
       pack .limbox.cmd.real .limbox.cmd.pick -side left
       pack .limbox.cmd.reset -side left -fill y
       pack .limbox.cmd.apply .limbox.cmd.close -side left -fill x -expand true
@@ -257,12 +258,17 @@ proc LimitBox::SetLimits { X0 Y0 Z0 X1 Y1 Z1 } {
 #----------------------------------------------------------------------------    
 
 proc LimitBox::GetLimits { } {
+   variable Data
    foreach field [concat $FSTD::Data(List) $FSTD::Data(ListTool)] {
       if { [FSTD::ParamGetMode $field]==$FSTD::Param(Spec) } {
-         set LimitBox::Data(limits) [fstdfield stats $field -limits]
+         set temp [fstdfield stats $field -limits]
+         set Data(Top) [lindex $temp 5]
+         set Data(North) [lindex $temp 4]
+         set Data(South) [lindex $temp 1]
+         set Data(East) [lindex $temp 3]
+         set Data(West) [lindex $temp 0]
          break
       }
-
    }
 }
 
@@ -591,4 +597,29 @@ proc LimitBox::ToggleTool {  } {
    if { $Data(VP)!="" && $Page::Data(ToolMode) == "LimitBox" } {
       Viewport::DrawLine $Data(Frame) $Data(VP) "$Data(P0) 0 $Data(P1) 0 $Data(P2) 0 $Data(P3) 0 $Data(P0) 0" LIMIT blue 2 TRUE
    }
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <LimitBox::ChangeField>
+# Creation : Aout 2019 - A. Germain - CMC
+#
+# But      : Actualiser les limites et dimensions de la donnée
+#
+# Parametres :
+#
+# Remarques : Appeler quand on change de field selectionné
+#
+#-------------------------------------------------------------------------------
+
+proc LimitBox::ChangeField {  } {
+   LimitBox::GetDimensions
+   if { $LimitBox::Data(LimBoxFrame)!="" } {
+      $LimitBox::Data(LimBoxFrame).top.scale configure -to [ expr $LimitBox::Data(NK) - 1 ]
+      $LimitBox::Data(LimBoxFrame).north.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
+      $LimitBox::Data(LimBoxFrame).south.scale configure -to [ expr $LimitBox::Data(NJ) - 1 ]
+      $LimitBox::Data(LimBoxFrame).east.scale configure -to [ expr $LimitBox::Data(NI) - 1 ]
+      $LimitBox::Data(LimBoxFrame).west.scale configure -to [ expr $LimitBox::Data(NI) - 1 ]
+   }
+   LimitBox::GetLimits
+   LimitBox::UpdateItems ""
 }

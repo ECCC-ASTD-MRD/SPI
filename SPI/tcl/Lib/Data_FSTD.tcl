@@ -321,7 +321,7 @@ proc FSTD::ParamFrame { Frame Apply } {
 
    labelframe $Data(Frame).var -text [lindex $Lbl(Field) $GDefs(Lang)]
       ComboBox::Create $Data(Frame).var.sel FSTD::Param(Spec) noedit sorted nodouble -1 \
-          "" 18 3 { FSTD::ParamGet; FSTD::ParamPut; LimitBox::Close}
+          "" 18 3 { FSTD::ParamGet; FSTD::ParamPut; LimitBox::ChangeField }
       menubutton $Data(Frame).var.lbl -textvariable FSTD::Param(Mode) -relief groove -bd 2 -menu $Data(Frame).var.lbl.lst
       pack $Data(Frame).var.lbl -side left -fill x -padx 2 -pady 1
       pack $Data(Frame).var.sel -side left -fill both -expand True -padx 2 -pady 2
