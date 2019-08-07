@@ -1625,16 +1625,17 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
    mask=Field->Spec->Mask && Field->Def->Mask;
-  
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+      for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
          glBegin(GL_QUADS);
 
-         for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+         for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-            if (i!=0) {
+            if (i!=Field->Def->Limits[0][0]) {
                idx1=idx0;
                idx2=idx3;
                v1=v0;
@@ -1663,7 +1664,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             VAL2COL(c3,Field->Spec,v3);
 
             /* Is the cell valid ??? */
-            if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+            if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
  
                /*Check for mask value*/
                if (mask && (1 || !Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
@@ -1717,15 +1718,16 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    } else {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
-   
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
    /*Render the polygons over the lines*/
-   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+   for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
 
       glBegin(GL_QUADS);
 
-      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+      for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-         if (i!=0) {
+         if (i!=Field->Def->Limits[0][0]) {
             idx1=idx0;
             idx2=idx3;
             v1=v0;
@@ -1759,7 +1761,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          }
 
          /* Is the cell valid ??? */
-         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+         if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             /*Check for mask value*/
             if (Field->Spec->InterpDegree[0]!='N' && mask && (!Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
@@ -1937,8 +1939,10 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             if (VIN(pos[0],1,Proj->VP->Width) && VIN(pos[1],1,Proj->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
                if (high && DisplayHighs) {
+                  if(ip>Field->Def->Limits[0][0]&&ip<Field->Def->Limits[0][1]&&jp>Field->Def->Limits[1][0]&&jp<Field->Def->Limits[1][1])
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"H",lbl);
                } else if (DisplayLows) {
+                  if(ip>Field->Def->Limits[0][0]&&ip<Field->Def->Limits[0][1]&&jp>Field->Def->Limits[1][0]&&jp<Field->Def->Limits[1][1])
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"L",lbl);
                }
             }
@@ -2131,8 +2135,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                }
             }
          } else {
-            for (j0=0;j0<Field->Def->NJ;j0+=Field->Spec->Sample) {
-               for (i0=0;i0<Field->Def->NI;i0+=Field->Spec->Sample) {
+            for (j0=Field->Def->Limits[1][0];j0<Field->Def->Limits[1][1];j0+=Field->Spec->Sample) {
+               for (i0=Field->Def->Limits[0][0];i0<Field->Def->Limits[0][1];i0+=Field->Spec->Sample) {
 
                   if (Field->GRef->Project(Field->GRef,i0,j0,&coo.Lat,&coo.Lon,1,1)) {
                   
@@ -2190,7 +2194,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             
             dz=0;i=0;
             while (dz<n) {
-               if (xy[dz]<=Field->Def->NI && xy[n+dz]<=Field->Def->NJ && xy[dz]>=1 && xy[n+dz]>=1) {
+               if (xy[dz]<=Field->Def->Limits[0][1] && xy[n+dz]<=Field->Def->Limits[1][1] && xy[dz]>=Field->Def->Limits[0][0] && xy[n+dz]>=Field->Def->Limits[1][0]) {
                   if (!mask || Field->Def->Mask[FIDX2D(Field->Def,(int)xy[dz],(int)xy[n+dz])]) {
                      ll[i]=ll[dz];
                      ll[mem+i]=ll[mem+dz];
@@ -2213,8 +2217,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
 
             n=0;
-            for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
-               for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
+            for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1];j+=Field->Spec->Sample) {
+               for(i=Field->Def->Limits[0][0];i<Field->Def->Limits[0][1];i+=Field->Spec->Sample) {
                   dn=FIDX2D(Field->Def,i,j);
                   dz=dn*Field->Def->Level;
                   Def_Get(Field->Def,0,dn,u);
