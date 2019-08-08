@@ -57,6 +57,9 @@ puts "   Max     : [gdalband stats RASTER -max]"
 puts "   Histogram  : [gdalband stats RASTER -histogram 0]"
 puts "   Stretch 10%: [gdalband stats RASTER -stretch 0 PERCENT_CLIP 10 90]"
 
+georef create UPS "+proj=ups +lon_0=-143 +ellps=WGS84 +R=480"
+puts "   WKT conversion from PROJ string: [georef export UPS WKT]."
+
 #----- converions pixel-latlon et inverse
 set ll [gdalband project RASTER 100 100]
 set xy [gdalband unproject RASTER [lindex $ll 0] [lindex $ll 1]]
