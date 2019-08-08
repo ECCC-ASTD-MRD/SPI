@@ -42,10 +42,11 @@ namespace eval Locator {
    set Data(3)         ""
    set Data(4)         ""
    set Data(5)         ""
+   set Data(6)         ""
    set Data(Coo)       ""
    set Data(Current)   0
-   set Data(Icons)     [list SEL_VOLC SEL_NUCL SEL_CTBT SEL_STAT SEL_CITY SEL_PLANE]
-   set Data(Files)     [list "$GDefs(Dir)/data/Volcano.src" "$GDefs(Dir)/data/Nuclear.src" "$GDefs(Dir)/data/CTBT.src" "$GDefs(Dir)/data/Meteo.src" "$GDefs(Dir)/data/City.src" "$GDefs(Dir)/data/NavAid.src"]
+   set Data(Icons)     [list SEL_VOLC SEL_NUCL SEL_CTBT SEL_STAT SEL_CITY SEL_SPILL SEL_PLANE]
+   set Data(Files)     [list "$GDefs(Dir)/data/Volcano.src" "$GDefs(Dir)/data/Nuclear.src" "$GDefs(Dir)/data/CTBT.src" "$GDefs(Dir)/data/Meteo.src" "$GDefs(Dir)/data/City.src" "$GDefs(Dir)/data/Spill.src" "$GDefs(Dir)/data/NavAid.src"]
 
    #----- Variable de restriction et de selection
 
@@ -62,5 +63,3 @@ namespace eval Locator {
 
    set Data(Nb)        0
 }
-
-

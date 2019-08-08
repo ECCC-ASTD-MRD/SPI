@@ -43,7 +43,7 @@ namespace eval Locator {
    set Lbl(Upper)   { "Majuscule seulement" "Uppercase only" }
 
    set Lbl(PrintList) { "Liste de sources" "Source list" }
-   set Lbl(PrintType) { "Volcanique Nucléaire CTBT Stations Villes" "Volcanic Nuclear CTBT Stations City" }
+   set Lbl(PrintType) { "Volcanique Nucléaire CTBT Stations Villes Déversement Navigation" "Volcanic Nuclear CTBT Stations City Spill Navigation" }
    set Lbl(PrintNb)   { "Nombre de sources    :" "Number of sources :" }
    set Lbl(PrintCrit) { "Critères de sélection:" "Selection criteria:" }
    set Lbl(PrintHead) { "Numéro   Nom                           Sous-Région          Latitude Longitude  Hauteur (m)" \
@@ -54,8 +54,9 @@ namespace eval Locator {
    set Bubble(Volcanic)   { "Type de localisation Volcanique" "Volcanic localisation type" }
    set Bubble(Nuclear)    { "Type de localisation Nucléaire" "Nuclear localisation type" }
    set Bubble(CTBT)       { "Type de localisation CTBT" "CTBT localisation type" }
-   set Bubble(City)       { "Type de localisation Ville" "City localisation type" }
    set Bubble(Meteo)      { "Type de localisation Stations météorologiques" "Meteorological stations localisation type" }
+   set Bubble(City)       { "Type de localisation Ville" "City localisation type" }
+   set Bubble(Spill)      { "Type de localisation Déversement" "Spill localisation type" }
    set Bubble(NavAid)     { "Type de localisation Aides à la navigation" "Navigation aids localisation type" }
 
    set Bubble(SearchNum)  { "Recherche interactive selon le numéro" "Interactive search by number" }
