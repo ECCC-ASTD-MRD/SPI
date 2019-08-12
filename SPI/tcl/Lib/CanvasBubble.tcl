@@ -110,7 +110,7 @@ proc CanvasBubble::Create { Canvas Tag Text { WrapLen 0 } } {
    if { [info exists Data(TagList$Canvas)] } {
       set idx [lsearch -exact $Data(TagList$Canvas) $Tag]
    } else {
-      set Data(State$Canvas) 1
+      set Data(State$Canvas) $Data(State)
    }
 
    if { $idx == -1 } {
