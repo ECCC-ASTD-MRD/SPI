@@ -1608,12 +1608,11 @@ TDataSpec *DataSpec_Create(Tcl_Interp *Interp,char *Name) {
    }
 
    spec=DataSpec_New();
-   spec->Name=strdup(Name);
-
    if (!spec) {
       Tcl_AppendResult(Interp,"\n   DataSpec_Create : Could not allocate memory for a configuration object",(char*)NULL);
       return(NULL);
    }
+   spec->Name=strdup(Name);
    Tcl_SetHashValue(entry,spec);
 
    return(spec);

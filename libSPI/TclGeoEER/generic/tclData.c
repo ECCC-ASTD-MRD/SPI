@@ -745,6 +745,7 @@ void Data_GetStat(TData *Field){
 
 void Data_StatFree(TDataStat *Stat) {
    if (Stat->Histo) free(Stat->Histo);
+   free(Stat);
 }
 
 void Data_DefFree(TData *Field) {

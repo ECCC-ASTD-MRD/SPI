@@ -116,6 +116,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
    GDALDataType   type;
    Vect3d         *pos;
    TDef         **lutdefs=NULL;
+   TZRef         *zref;
 
    extern const char *TDef_InterpVString[];
    extern const char *TDef_InterpRString[];
@@ -408,8 +409,9 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
                               Def_Set(band->Def,0,k,0);
                            }
                            GeoRef_Find(GeoRef_Resize(band->GRef,band->Def->NI,band->Def->NJ));
-                           ZRef_Free(band->ZRef);
-                           band->ZRef=ZRef_Define(band->ZRef->Type,nk,band->ZRef->Levels);
+                           zref=band->ZRef;
+                           band->ZRef=ZRef_Define(zref->Type,nk,zref->Levels);
+                           ZRef_Free(zref);
                         }
                      }
                   }
