@@ -461,6 +461,11 @@ proc Log::End { { Status 0 } { Exit True } } {
    }
 
    set Param(SecEnd) [clock seconds]
+   set runsec [expr $Param(SecEnd)-$Param(SecStart)]
+
+   #----- For long running programs only (like EERDaemon)
+   set runday [expr $runsec/86400]
+   set runday [expr {$runday?"${runday}d ":""}]
 
    Log::Print MUST "\n-------------------------------------------------------------------------------"
    if { ${Status}==0 } {
@@ -473,7 +478,7 @@ proc Log::End { { Status 0 } { Exit True } } {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
    Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
-   Log::Print MUST "Total running time  : [clock format [expr $Param(SecEnd)-$Param(SecStart)] -format "%H:%M:%S" -timezone :UTC]"
+   Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
