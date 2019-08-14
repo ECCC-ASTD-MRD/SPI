@@ -199,6 +199,7 @@ proc DBBox::ReadDB { DB } {
    set idxs $Param(${DB}Idx)
    set nb   [llength $idxs]
    set data {}
+   set view {}
 
    set fd   [open $Param(${DB}File) r]
    while { [gets $fd line]>=0 } {
@@ -212,21 +213,18 @@ proc DBBox::ReadDB { DB } {
             }
          }
 
-         #----- Check for oil DB and replace -999 with N/A, SQRT with refined, LOG with crude
-         if  { $DB == "Oil" } {
-            set tmplst {}
-            foreach el $lst {
-               set new_el [string map {"-999" "N/A"} $el]
-               lappend tmplst $new_el
-            }
-            set lst $tmplst
-         }
-         lappend data $lst
+         lappend view $lst
+         lappend data $line
       }
    }
    close $fd
 
    set Data(DB$DB) $data
+   set Data(View$DB) $view
+
+   if { [llength [info procs Post$DB]] } {
+       Post$DB
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -236,7 +234,8 @@ proc DBBox::ReadDB { DB } {
 # But      : Parmet à un script la recherche de données dans une base de données
 #
 # Parametres :
-#     <DB>     : La base de données à parcourir
+#     <DB>     : La base de données à parcourir, préfixée de 'DB' pour la BD
+#                complète ou 'View' pour la BD affichée. (Ex: ViewOil)
 #     <Column> : La colonne (nom ou index) où appliquer le pattern
 #     <Pattern>: Le pattern de recherche
 #
@@ -249,18 +248,22 @@ proc DBBox::Search { DB Column Pattern } {
    variable Param
    variable Data
 
-   CheckDB $DB
+   set db [regsub {^(?:DB|View)} $DB ""]
+
+   CheckDB $db
 
    #----- Find the column we are searching
    if { [string is integer $Column] } {
       set idx $Column
    } else {
-      if { [set idx [lsearch -exact $Param(${DB}Lst) $Column]] == -1 } {
+      if { [set idx [lsearch -exact $Param(${db}Lst) $Column]] == -1 } {
          return {}
+      } elseif { [string match DB* $DB] } {
+          set idx [lindex $Param(${db}Idx) $idx]
       }
    }
 
-   return [lsearch -glob -nocase -index $idx -inline -all $Data(DB$DB) $Pattern]
+   return [lsearch -glob -nocase -index $idx -inline -all $Data($DB) $Pattern]
 }
 
 #-------------------------------------------------------------------------------
@@ -426,7 +429,7 @@ proc DBBox::Update { DB W } {
    $W delete 0 end
 
    #----- Only keep items that match the criterias
-   set lst $Data(DB$DB)
+   set lst $Data(View$DB)
    set idx 0
    foreach key $Param(${DB}Lst) {
       if { [info exists Search($DB$key)] && $Search($DB$key)!="" } {
