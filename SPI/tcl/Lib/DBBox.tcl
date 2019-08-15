@@ -263,7 +263,7 @@ proc DBBox::Search { DB Column Pattern } {
       }
    }
 
-   return [lsearch -glob -nocase -index $idx -inline -all $Data(DB$DB) $Pattern]
+   return [lsearch -glob -nocase -index $idx -inline -all $Data($DB) $Pattern]
 }
 
 #-------------------------------------------------------------------------------
