@@ -3,8 +3,8 @@ export TCL_VERSION=8.6
 export SPI_MAJOR=8
 export SPI_MINOR=0
 export SPI_PATCHLEVEL=0
-export SPI_STATE=-rc1
-export SPI_DATE="2019/07/11"
+export SPI_STATE=
+export SPI_DATE="2019/08/09"
 export SPI_VERSION=${SPI_MAJOR}.${SPI_MINOR}.${SPI_PATCHLEVEL}
 
 export EER_VERSION=3.4.0
