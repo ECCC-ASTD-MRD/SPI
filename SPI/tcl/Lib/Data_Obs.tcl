@@ -73,6 +73,9 @@ namespace eval Obs {
          Log::Print ERROR "Problems while loading BUFR tables\n\n$error"
       }
    } else {
+      proc ::metobs { args } {
+         return False
+      }
       Log::Print WARNING "libSPI has not been build with libecbufr, meteorological observations (metobs) will not be supported"
    }
    

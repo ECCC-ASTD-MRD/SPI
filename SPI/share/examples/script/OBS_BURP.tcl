@@ -49,8 +49,8 @@ puts "5022 value  :[metobs define NEWOBS -ELEMENT "Position 1" 5022 ]"
 
 #----- Create a metobs object and read a file
 metobs create BURPDATA
-#metobs read BURPDATA $env(CI_DATA_IN)/2007021500_
-metobs read BURPDATA /space/hall1/sitestore/eccc/cmd/a/jud000/maestro_archives/DG2H17UAAI_pre/banco.derialt.2016121600_ai
+metobs read BURPDATA $env(CI_DATA_IN)/2007021500_
+#metobs read BURPDATA /space/hall1/sitestore/eccc/cmd/a/jud000/maestro_archives/DG2H17UAAI_pre/banco.derialt.2016121600_ai
 #metobs read BURPDATA /users/dor/afsr/005/Scripts/For/JeanMarc/obs/2011012000_sf
 
 #----- Output global info on the metobs
