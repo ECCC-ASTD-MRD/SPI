@@ -103,12 +103,6 @@ proc RPN2OGR::Run { } {
          set date [clock format $datev -format "%Y%m%d" -gmt True]
          set time [clock format $datev -format "%H%M" -gmt True]
          Log::Print INFO "   Found date $date $time"
-         
-         #----- Create filename 
-         set name [string map [list %d $date %t $time] $Param(Out)]
-         if  { [set nb [llength [glob -nocomplain ${name}*.*]]] } {
-            set name $name.[incr nb]
-         }
 
          set v 0
          foreach var $Param(Vars) {
@@ -139,6 +133,12 @@ proc RPN2OGR::Run { } {
          if { [llength $fields] && $Param(Format)!="KMZ" && $Param(Mode)!="CONTOUR" && $Param(Mode)!="POLYGON" } {
             Log::Print INFO "   Exporting [llength $fields] field(s)"
 
+            #----- Create filename
+            set name [string map [list %d $date %t $time] $Param(Out)]
+            if  { [set nb [llength [glob -nocomplain ${name}*.*]]] } {
+                set name $name.[incr nb]
+            }
+
             ogrfile open FILE write $name $Param(Format) 
 
             if { [georef is REF] } {
@@ -159,17 +159,20 @@ proc RPN2OGR::Run { } {
       fstdfile close FILEIN
    }
 
+
    if { [llength $kmlfields] && ($Param(Format)=="KMZ" || $Param(Mode)=="CONTOUR" || $Param(Mode)=="POLYGON") } {
       Export::Vector::Export $Param(Out) $Param(Format) $kmlfields $Param(Options)
-      eval fstdfield free $kmlfields
-      set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]
+      fstdfield free {*}$kmlfields
+      if { $Param(Format)!="KMZ" } {
+          set outs [glob [string map [list %n * %l * %h * %e * %d * %t * %1 * %2 * %3 *] $Param(Out)]*]
+      }
    }
    
    if { $Param(Zip) &&  $Param(Format)!="KMZ" } {
-     set name [string map [list %n "" %l "" %h "" %e "" %d "" %t "" %1 "" %2 "" %3 ""] $Param(Out)]
+     set name [file dirname $Param(Out)]/[regsub -all {[_.]?%[nlhedt123]} [file tail $Param(Out)] ""]
      Log::Print INFO "Zipping results to $name"
-     eval exec zip -j -r $name.zip $outs
-     eval file delete -force $outs
+     exec zip -j -r $name.zip {*}$outs
+     file delete -force {*}$outs
    }
    
    if { ![llength $kmlfields] } {

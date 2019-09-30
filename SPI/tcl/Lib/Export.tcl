@@ -334,8 +334,9 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
       set name    [string map [list %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] $file]
 
       if { $Format=="KMZ" && $f=="" } {
+         set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
          set file $name     
-         set f [open ${file}.kml w]
+         set f [open $kmzname.kml w]
          
          puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
    <Document>
@@ -417,9 +418,9 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
    if { $Format=="KMZ" } {
       puts $f "</Document>\n</kml>"
       close $f
-      file delete -force ${file}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
-      eval file delete ${file}.kml $kmz
+      file delete -force $kmzname.kmz
+      exec zip -j $kmzname.kmz $kmzname.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png {*}$kmz
+      file delete $kmzname.kml {*}$kmz
    }
 
    Dialog::WaitDestroy
@@ -458,7 +459,8 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
    set ext  [file extension $Path]
 
    if { $Format=="KMZ" } {
-      set f [open ${file}.kml w]
+      set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
+      set f [open $kmzname.kml w]
       puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
 <Document>
    <ScreenOverlay>
@@ -535,8 +537,8 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
          </Link>
       </NetworkLink>
    </Folder>\n"
-            lappend kmz ${name}${ext} ${name}_legend.png
-            ogrfile open FILE write $name${ext} KML
+            lappend kmz ${name}.kml ${name}_legend.png
+            ogrfile open FILE write $name.kml KML
          }
          default {
             ogrfile open FILE write $name${ext} $Format
@@ -552,9 +554,9 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
    if { $Format=="KMZ" } {
       puts $f "</Document>\n</kml>"
       close $f
-      file delete -force ${name}.kmz
-      eval exec zip -j ${file}.kmz ${file}.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png $kmz
-      eval file delete ${file}.kml $kmz
+      file delete -force $kmzname.kmz
+      exec zip -j $kmzname.kmz $kmzname.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png {*}$kmz
+      file delete $kmzname.kml {*}$kmz
    }
 
    Dialog::WaitDestroy
