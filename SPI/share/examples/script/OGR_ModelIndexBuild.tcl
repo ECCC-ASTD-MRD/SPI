@@ -26,19 +26,19 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-set ops /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/dbase
-set par /space/hall1/sitestore/eccc/cmod/prod/hubs/gridpt/par/dbase
+set ops $env(CMCGRIDF)
+set par $env(CMCGRIDP)
 
 set anal     $ops/anal
 set prog     $ops/prog
 set prog_par $par/prog
 
 #                 0             1                    2                     3                   4                 5             6                   7                      8
-set names  {     "RDPS"        "HRDPS National"     "CAPS"                "CAPSOCE"           "GLSOCE"          "GSL"         "RIOPS"             "SHOP"                 "WEBTIDE"}
+set names  {     "RDPS"        "HRDPS"     "CAPS"                "CAPSOCE"           "GLSOCE"          "GSL"         "RIOPS"             "SHOP"                 "WEBTIDE"}
 set vars   {      P0            P0                   P0                    GL                  GL                GL            GL                  TM                     M2      }
 #                 0             1                    2                     3                   4                 5             6                   7                        8       9       10    11     12  13
 set subs   {      { "" }        { "" }               { "" }                { "" }              { "" }            { "" }        { "" }              { "" }                 { arctic9 ne_pac4 nwatl sshelf h3o stle400 } }
-set models [list  $prog/reghyb  $prog/lam/nat.model  $prog/lam/caps.model  $prog/lam/caps.oce  $prog_par/glsoce  $prog/gsloce  $prog/riops.native  $anal/shop/stlawrence  $env(WEBTIDE_DATA)]
+set models [list  $prog/reghyb  $prog/lam/nat.model  $prog/lam/caps.model  $prog/lam/caps.oce  $prog/wcps.oce  $prog/gsloce  $prog/riops.native  $anal/shop/stlawrence  $env(WEBTIDE_DATA)]
 
 set nb 0
 foreach s $subs { incr nb [llength $s] }
