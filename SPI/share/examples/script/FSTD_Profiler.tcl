@@ -43,6 +43,7 @@ namespace eval Profiler {
 }
 
 proc Profiler::Run { } {
+   global env
    variable Data
    variable Param
 
