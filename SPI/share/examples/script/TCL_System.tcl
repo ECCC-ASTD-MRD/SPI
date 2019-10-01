@@ -87,7 +87,7 @@ if { ![set pid [system fork]] } {
    system exit 0
 } else {
 #   system signal SIGKILL -send $pid
-   puts "Waiting for child process"
+   puts "Waiting for child process $pid"
    system wait $pid
 }
 
