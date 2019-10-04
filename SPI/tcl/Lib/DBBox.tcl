@@ -185,7 +185,7 @@ proc DBBox::ReadDB { DB } {
    
    #----- Make sure the file exists
    if { ![info exists Param(${DB}File)] } {
-      set err "Invalid DB : '$DB'. No definition loaded for that DB. Available DB are : \[[lmap db [array names Param *File] {string range 0 end-4}]\]"
+      set err "Invalid DB : '$DB'. No definition loaded for that DB. Available DB are : \[[lmap db [array names Param *File] {string range $db 0 end-4}]\]"
       Log::Print ERROR "DBBox : $err"
       return -code error $err
    } elseif { $Param(${DB}File)=="" || ![file exists $Param(${DB}File)] } {
