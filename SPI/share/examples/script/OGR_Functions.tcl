@@ -46,6 +46,9 @@ puts "   Reference projection: [georef define $ref0 -projection]"
 puts "   LatLon    projection: [georef define LLREF -projection]"
 puts "   Test reference same : [georef isequal $ref0 LLREF]"
 
+#----- Copy a georef
+georef copy CREF  $ref0
+
 #----- simplify the geometry
 ogrlayer stats LAYER0 -segmentize 1.0
 ogrlayer stats LAYER0 -simplify  3
