@@ -72,7 +72,7 @@ proc Areas::CreateWidget { Parent } {
       $Parent.areas add cascade -label $l -menu $Parent.areas.t$no
       menu $Parent.areas.t$no -tearoff 1
 
-      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display $layer"
+      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Fill) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Fill$layer) -command "Areas::DisplayFill \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId \"$layer\""
       foreach l $layer {
