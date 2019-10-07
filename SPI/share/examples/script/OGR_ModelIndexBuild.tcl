@@ -16,7 +16,8 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Retour:
 #
-# Remarques  :
+# Remarques  : Modifier la provenance des fichiers d'input. Ils se trouvent dorénavant dans le répertoire "DataIn" avec seul les champs nécessaires
+#              pour créer les shapefiles. Pour les modèles "shop" et "glsoce (grands Lacs)", nous avons un contenu texte qui correspond aux lat/lon du shapefile.
 #
 #============================================================================
 
