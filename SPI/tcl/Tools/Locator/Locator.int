@@ -1,0 +1,195 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet    : Interface de selection de source.
+# Fichier   : Locator.int
+# Creation  : Juin 1997 - J.P. Gauthier - CMC/CMOE
+#
+# Description:
+#
+#       Cette interface permet de rechercher et de selectionne une source de type
+#       Volcan, Nucleaire ou CTBT grace a une interface.
+#
+# Remarques :
+#
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Nom      : <Locator::Window>
+# Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Gere la fenetre de selection de sources volcanique ou nucleaire
+#
+# Parametres :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Locator::Window { args } {
+   global GDefs
+   variable Data
+   variable Param
+
+   if { ![winfo exists .locator] } {
+
+      toplevel .locator
+
+      wm title         .locator "[lindex $SPI::Title(SPI) $GDefs(Lang)] $GDefs(Version) ([lindex $Param(Title) $GDefs(Lang)] $Param(Version))"
+      wm resizable     .locator 0 1
+      eval wm geometry .locator $Param(Geom)
+      wm protocol      .locator WM_DELETE_WINDOW { Locator::Close }
+
+      if { $SPI::Param(Window) } { wm transient .locator . }
+
+      Locator::WinDef
+
+      set Data(Inst)   0
+   } else {
+      wm deiconify .locator
+      raise        .locator
+   }
+
+   #----- Selection d'un type de localisation
+
+   if { $args!="" } {
+       set Data(Current) [lindex $args 0]
+      if { [llength $args]>1 } {
+         wm withdraw .locator
+      }
+   }
+
+   #----- Afficher les sources du type selectionne des l'ouverture de la fenetre
+
+   set Data(Active) 1
+   set Data(Canvas) $Page::Data(Canvas)
+   set Data(Frame)  $Page::Data(Frame)
+
+   Locator::Get $Data(Current)
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <Locator::::WinDef>
+# Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Creer l'interface
+#
+# Parametres :
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc Locator::WinDef { } {
+   global GDefs
+   variable Lbl
+   variable Bubble
+   variable Data
+
+   # ----- Creer un menu avec les options Fichier et Liste.
+   frame .locator.menu -relief raised -bd 1
+   pack .locator.menu -side top -fill x
+
+      #----- Frame des items de recherches
+
+      frame .locator.menu.sel -relief sunken -bd 1
+      foreach type { 0 1 2 3 4 5 6 } {
+         radiobutton .locator.menu.sel.type$type -image [lindex $Data(Icons) $type] -variable Locator::Data(Current) -value $type \
+            -command "Locator::Get $type" -indicatoron False -selectcolor "" -relief raised -bd 1
+         pack .locator.menu.sel.type$type -side left -fill y -ipadx 10
+      }
+      pack .locator.menu.sel -side right -fill y
+
+      # ----- Afficher les menus
+
+      menubutton .locator.menu.file -text [lindex $Lbl(File) $GDefs(Lang)] -menu .locator.menu.file.menu -bd 1 -underline 0
+      pack .locator.menu.file -side left
+
+      menu .locator.menu.file.menu
+         .locator.menu.file.menu add command -label [lindex $Lbl(Print) $GDefs(Lang)] -command "PrintBox::Create .locator.list.box PRINT Locator"
+         .locator.menu.file.menu add command -label [lindex $Lbl(Export) $GDefs(Lang)] -underline 0 \
+             -command { Locator::Export [FileBox::Create . {} Save [list $FileBox::Type(ICO)] Sources.ico] }
+         .locator.menu.file.menu add separator
+         .locator.menu.file.menu add command -label [lindex $Lbl(Quit) $GDefs(Lang)] -underline 0 -command "Locator::Close"
+
+   # ----- Creer le frame des bouttons entetes.
+
+   frame .locator.head
+      radiobutton .locator.head.no -bd 1 -text [lindex $Lbl(No) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 8 -variable Locator::Data(Sort) -value No
+      radiobutton .locator.head.name -bd 1 -text [lindex $Lbl(Name) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 29 -variable Locator::Data(Sort) -value Name
+      radiobutton .locator.head.area -bd 1 -text [lindex $Lbl(Area) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 20 -variable Locator::Data(Sort) -value Area
+      radiobutton .locator.head.lat -bd 1 -text [lindex $Lbl(Lat) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 11 -variable Locator::Data(Sort) -value Lat
+      radiobutton .locator.head.lon -bd 1 -text [lindex $Lbl(Lon) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 12 -variable Locator::Data(Sort) -value Lon
+      radiobutton .locator.head.elev -bd 1 -text [lindex $Lbl(Elev) $GDefs(Lang)] -indicatoron False \
+         -command { Locator::Sort $Locator::Data(Current); Locator::Insert $Locator::Data(Current) 1 1 } -width 10 -variable Locator::Data(Sort) -value Elev
+      pack .locator.head.no .locator.head.name .locator.head.area .locator.head.lat .locator.head.lon -ipadx 2 -ipady 2 -side left
+      pack .locator.head.elev  -ipadx 2 -ipady 2 -side left -fill x -expand true
+   pack .locator.head -side top -anchor w  -fill x
+
+   #----- Creer le frame du bas qui va contenir le listbox.
+
+   frame .locator.list -relief raised -bd 1
+      listbox .locator.list.box -relief sunken -bd 1 -exportselection false \
+         -yscrollcommand ".locator.list.scroll set" -height 10 -width 80 -bg $GDefs(ColorLight)
+      pack .locator.list.box -side left -fill both -expand true
+      scrollbar .locator.list.scroll -command ".locator.list.box yview" -bd 1 -width 10
+      pack .locator.list.scroll -side left -fill y
+   pack .locator.list -side top -anchor w -expand true -fill both
+
+   frame .locator.sel -relief raised -bd 1
+      entry .locator.sel.no   -width 9  -relief sunken -bd 1 -textvariable Locator::Data(No)   -bg $GDefs(ColorLight)
+      entry .locator.sel.name -width 28 -relief sunken -bd 1 -textvariable Locator::Data(Name) -bg $GDefs(ColorLight)
+      entry .locator.sel.area -width 20 -relief sunken -bd 1 -textvariable Locator::Data(Area) -bg $GDefs(ColorLight)
+      label .locator.sel.job  -textvariable Locator::Data(Job) -textvariable Locator::Data(Job) -anchor w
+      label .locator.sel.nb   -width 6  -relief sunken -bd 1 -textvariable Locator::Data(Nb)     -bg $GDefs(ColorLight)
+      pack .locator.sel.no .locator.sel.name .locator.sel.area -side left -fill y
+      pack .locator.sel.job -side left -fill both -expand true
+      pack .locator.sel.nb -side right -fill y
+   pack .locator.sel -side top -anchor w -fill x
+
+   bind .locator.sel.no   <Any-KeyRelease>   { Locator::Insert $Locator::Data(Current) 1 1 }
+   bind .locator.sel.name <Any-KeyRelease>   { Locator::Insert $Locator::Data(Current) 1 1 }
+   bind .locator.sel.area <Any-KeyRelease>   { Locator::Insert $Locator::Data(Current) 1 1 }
+   bind .locator.list.box <B1-ButtonRelease> { Locator::Select %W %y False }
+   bind .locator.list.box <Double-B1-ButtonRelease> { Locator::Select %W  %y True }
+
+   #----- Afficher le bouton pour fermer la fenetre de selection
+   frame .locator.cmd
+      checkbutton .locator.cmd.mode -variable Page::Data(ToolMode) -onvalue Locator -offvalue SPI \
+         -image ARROW -indicatoron 0 -bd 1 -width 50 -selectcolor $GDefs(ColorFrame) \
+         -command { SPI::ToolMode $Page::Data(ToolMode) Data True }
+      button .locator.cmd.close -bd 1 -relief raised -text [lindex $Lbl(Close) $GDefs(Lang)] -command "Locator::Close"
+      pack .locator.cmd.mode -side left -fill y
+      pack .locator.cmd.close -side top -fill x
+   pack .locator.cmd -side top -fill x
+
+   Bubble::Create .locator.sel.no   $Bubble(SearchNum)
+   Bubble::Create .locator.sel.name $Bubble(SearchName)
+   Bubble::Create .locator.sel.area $Bubble(SearchArea)
+
+   Bubble::Create .locator.menu.sel.type0 $Bubble(Volcanic)
+   Bubble::Create .locator.menu.sel.type1 $Bubble(Nuclear)
+   Bubble::Create .locator.menu.sel.type2 $Bubble(CTBT)
+   Bubble::Create .locator.menu.sel.type3 $Bubble(Meteo)
+   Bubble::Create .locator.menu.sel.type4 $Bubble(City)
+   Bubble::Create .locator.menu.sel.type5 $Bubble(Spill)
+   Bubble::Create .locator.menu.sel.type6 $Bubble(NavAid)
+
+   Bubble::Create .locator.head.no   $Bubble(Sort)
+   Bubble::Create .locator.head.name $Bubble(Sort)
+   Bubble::Create .locator.head.area $Bubble(Sort)
+   Bubble::Create .locator.head.lat  $Bubble(Sort)
+   Bubble::Create .locator.head.lon  $Bubble(Sort)
+   Bubble::Create .locator.head.elev $Bubble(Sort)
+   Bubble::Create .locator.list.box  $Bubble(List)
+   Bubble::Create .locator.sel.nb    $Bubble(Nb)
+   Bubble::Create .locator.close     $Bubble(Close)
+}

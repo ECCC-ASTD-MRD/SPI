@@ -1,0 +1,40 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : GTour.ctes
+# Creation : Avril 2006 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Outils de now-casting.
+#
+# Remarques :
+#
+#===============================================================================
+
+namespace eval GTour { } {
+   variable Data
+   variable Param
+
+   set Param(Title)   { "GoogleEarth Tour" "GoogleEarth Tour" }
+   set Param(Version) 1.0
+   set Param(Icon)    GEOGOOGLE                                   ;#Icone
+   set Param(Geom)    { 200x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+
+   set Param(InfoDuration)     10               ;# Information duration in seconds
+   set Param(TransitDuration)  6                ;# Transition duration in seconds
+   set Param(Elevation)        20000            ;# Default elevation
+   set Param(Path)             /tmp/[pid]       ;# Temporary kml creation path
+   
+   set Data(Active) 0                                           ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                                          ;#Canvas Actif
+   set Data(Frame)  ""                                          ;#Frame actif
+   set Data(VP)     ""                                          ;#Viewport actif
+
+   set Data(Features)  {}                       ;# List of Features
+   set Data(FeatureNb) 0                        ;# Number of features   
+}

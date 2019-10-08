@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# post-install <domainHome> <packageHome>
+
+domainHome=$1
+packageHome=$2
+
+# create profiles
+packageName=`basename ${packageHome}`
+packageVersion=`echo $packageName | cut -d _ -f2`
+profileDirPath=${packageHome}/etc/profile.d
+profilePath=${profileDirPath}/${packageName}.sh
+loginPath=${profileDirPath}/${packageName}.csh
+
+rm -f ${profilePath} ${loginPath}
+mkdir -p ${profileDirPath}
+
+COMP=${COMP_ARCH:+-${COMP_ARCH}}
+
+cat > ${profilePath} << EOF
+export SPI_PATH=${packageHome}
+
+#----- If within CMC environment and SPI_LIB not loaded, load only the profile
+
+if [[ -n \${ORDENV_VERSION} && -z \${SPI_LIB} && -d ${domainHome}/libSPI_${packageVersion}${COMP}_\${ORDENV_PLAT} ]]; then
+   . ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT}/etc/profile.d/libSPI_${packageVersion}${COMP}_\${ORDENV_PLAT}.sh
+fi
+EOF

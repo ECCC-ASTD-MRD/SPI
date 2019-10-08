@@ -1,0 +1,92 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : APViz.ctes
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Descriptions des variables internes du module
+#
+#===============================================================================
+
+namespace eval APViz {
+   global env
+   global GDefs
+   variable Data
+   variable Param
+   variable FieldList
+
+   set Param(Title)   { "APViz" "APViz" }
+   set Param(Version) 1.0
+   set Param(Geom)    { 425x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Icon)    EYE
+   set Param(Dock)    1                                           ;#Flag d'activation de l'outils
+   
+   #----- For FileBox
+   set Param(Formats) 	{{Tcl {*.tcl}}}
+   
+   set Param(ConfigPath) ""
+
+   set Data(Active) 0        ;#Flag d'activation de l'outils
+   set Data(Canvas) ""       ;#Canvas Actif
+   set Data(Frame)  ""       ;#Frame actif
+   set Data(VP)     ""       ;#Viewport actif
+   set Data(Tab)    ""       ;#Onglet de l'outils
+   
+   set Data(Secs)   0
+   
+   #----- Widgets
+   set Data(RangeSection)	""	; #Section des variables
+   set Data(DateCBWidget)	""
+   
+   #----- LEVEL 1
+   set Data(Folder)		""
+   set Data(Folders)		{}
+   
+   #----- LEVEL 2
+   set Data(MacroCategory)	""	; #textvariable de la ComboBox pour MacroCategory
+   set Data(MacroCategories)	{}
+   
+   #----- LEVEL 3
+   set Data(OpenedFiles)	""
+   set Data(LayerIDs)		""
+   set Data(CalcIDs)		""
+   set Data(Alphas)             { A B C D E F G H I J K L M N O P Q R S T U V W X Y Z }
+   
+   set Data(CurrentProduct)	""
+   set Data(ConfigPath)		""
+   
+   set Data(AutoUpdateEventID)	""
+   set Data(Layers)		{}
+   set Data(Colormaps)          {}
+   set Data(ColormapPairs)      {}      ; #Contient des paires {NewColormapID OriginalColormapID}
+   set Data(DZ_GZpairs)         {}
+   set Data(Dates)              {}
+   set Data(Date)               ""
+
+   set Data(Secs)               0
+   set Data(ColNames)           { Models Runs Hours Sources Vars Levels IP3s Viewports Etikets}
+   set Data(DefaultColormap)    ""
+   set Data(ImageName)          ""
+   set Data(ProductPaths)       {}
+   
+   #----- Dictionaries
+   set Data(VarsDict)           ""      ; #Dictionaire contenant le nombre de variables pour chaque type de variable (VARTYPE: VARTYPE_NB)
+   set Data(VarParamsDict)      ""      ; #Dictionaire contenant l'index de param pour une variable a un rowid spcifique (VARROWID: PARAMSINDEX)
+   set Data(AlphaDict)          ""      ; #Dictionnaire contenant les les valeurs alpha des layers. format=> Key: letter, Value: layer_index or calc_index (ex: (A: L0))
+   set Data(RangeNames)         {}      ; #Dictionnaire contenant le nom des Ranges (Pour al fonctionnalite d'ajout d'une couche)
+   set Data(Ranges)             {}      ; #Dictionnaire contenant les Ranges (liste de valeurs possibles definies dans les fichiers de config)
+   set Data(NewAlphaDict)       ""      ; #Paires de valeurs-> key: oldLetter ,value: newLetter utilise lors de la sauvegarde du fichier
+   
+   set FieldList(ALL)           {PN GZ ES TT HR HU QQ QR UU VV WW NW RT RC PR PC RN SN PE FR SR BE BI BS D3 EP HL IH IL NT RE REMN SW TVE-TRW-SVR TVE-TRW-MSVR TVE-TRW-LGT \
+                                 TVE-CRT-SVR TVE-CRT-MSVR TVE-CRT-LGT TD TW T7 T8 HMX HMXX UV UVMX EI DZ WA WF Z9 AL HD LTG ME MG TS SD DN XA LG TP I5 FC FS FV ZET GL TM EV \
+                                 I0 I1 I2 I3 I4 I6 I7 I8 I9 AC AF N2 NO O3 S2 AQHI WH WTP PD ECCH ECCM ECCL ECC TCC PRMM RNMM SNMM PEMM FRMM KT SDNO DNNO N0 O1 WGE WGN WGX \
+                                 SLQR SNLR ZR SND S2L RS2L L1 TTI KI}
+}

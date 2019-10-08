@@ -1,0 +1,32 @@
+#----- Load versions
+. ${SPI_PATH}/VERSION
+
+#----- Library locations
+if [ -z $SPI_LIB ]; then
+   printf -- "(ERROR) Unable to find SPI librairies. Either define SPI_LIB to the location of SPI's librairies or source the correct cmoe/base domain\n"
+fi
+
+#----- If not within EC environment
+[ -z $CMCPROD ] && export CMCPROD=""
+[ -z $AFSISIO ] && export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
+
+export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
+export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
+export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
+
+#----- Internal logging
+export APP_VERBOSE=INFO
+
+#----- Dependencies (within CMC)
+if [[ -n \${ORDENV_VERSION} ]]; then
+   if [ `domainname -d` = "science.gc.ca" ]; then
+      [[ ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]]                          || . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
+      [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
+      [[ -d ${GDB_PATH} ]]                                               || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
+   else 
+      #----- On the EC side
+      [[ ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]]                || . ssmuse-sh -d comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -d hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
+      [[ ${LD_LIBRARY_PATH} =~ cmds/ext/${CMDS_EXT_VERSION} ]] || . ssmuse-sh -d cmds/ext/${CMDS_EXT_VERSION}
+      [[ -d ${GDB_PATH} ]]                                     || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
+   fi
+fi

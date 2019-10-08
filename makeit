@@ -1,0 +1,137 @@
+#!/bin/bash
+#----- On version change:
+#-----    Change version in TclGeoEER/configure.in
+#-----    Check for new versions of dict and bufr in $CMCCONST
+. SPI*/VERSION
+
+if [[ -n $COMP_ARCH ]]; then
+   COMP=-${COMP_ARCH}
+fi
+ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
+
+BLD=0
+SRC=0
+CLR=0
+INS=0
+INSTALL_PATH=""
+
+HELP="Arguments must be:\n\n   Information parameters:
+\t-help           : This information
+\t-version        : Version
+
+   Commands:
+\t-clear          : Clear packages
+\t-build          : Build packages
+\t-install [path] : Install packages
+\t-src            : Build source package\n"
+
+#----- Get arguments.
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -clear)   CLR=1;;
+        -build)   BLD=1;;
+        -src)     SRC=1;;
+        -install) INS=1;INSTALL_PATH=$2;shift;;
+
+        -h|-help)    printf -- "$HELP\n"; exit 0;;
+        -v|-version) printf -- "$VERSION\n"; exit 0;;
+        --)          shift; break;;
+        *)           printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
+    esac
+    shift
+done
+
+if [[ $CLR -eq 1 ]]; then
+   printf -- "\n----- Cleaning -----\n"
+   cd libSPI-${SPI_VERSION}
+   ./makeit -clear
+
+   cd ..
+fi
+
+if [[ $BLD -eq 1 ]]; then
+
+   export SSM_DEV=`pwd`/..
+   
+   printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
+   mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
+   
+   cd ${SSM_DEV}/src/eerUtils-${EER_VERSION}
+   ./makeit -build -ssm
+   
+   cd ${SSM_DEV}/src/libSPI-${SPI_VERSION}
+   ./makeit -ext -reconf -build -ssm
+
+   cd ${SSM_DEV}/src/SPI-${SPI_VERSION}
+   ./makeit -ssm
+
+   cd ${SSM_DEV}/src/GenPhysX-${GENPHYSX_VERSION}
+   ./makeit -reconf -build -ssm
+   
+   cd ${SSM_DEV}/src/
+fi
+
+if [[ $INS -eq 1 ]]; then
+
+   export SSM_DEV=`pwd`/..
+   
+   if [[ -z ${INSTALL_PATH} ]]; then   
+      printf -- "(ERROR) No installation path specified\n"
+      exit -1
+   fi
+   INSTALL_PATH=`readlink -f ${INSTALL_PATH}`
+
+   mkdir -p ${INSTALL_PATH}
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/eerUtils_${EER_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/SPI_${SPI_VERSION}_all.ssm
+   tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}.ssm
+
+   printf -- "
+Add theses variables to you environment:
+   sh/ksh/bash shell:
+      export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
+      export SPI_LIB=${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
+      export SPI_PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all
+      export PATH=${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:${INSTALL_PATH}/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}/bin:\$PATH
+      
+   csh shell:
+      setenv GDB_PATH \[path where you uncompress DBGeo.tgz\]/data
+      setenv SPI_LIB ${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
+      setenv SPI_PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all
+      setenv PATH ${INSTALL_PATH}/SPI_${SPI_VERSION}_all/bin:${INSTALL_PATH}/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}/bin:\$PATH
+   
+and launch SPI with the command \"SPI\"\n"
+   printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
+fi
+
+#----- Only used to prepare the src distribution package
+if [[ $SRC -eq 1 ]]; then
+
+   printf -- "\n----- Building source package : ${SSM_DEV}/src/SPI-${SPI_VERSION}  -----\n"
+
+   cd ../libeerUtils
+   ./makeit -src
+
+   cd ../GenPhysX
+   ./makeit -src
+   
+   cd ../SPI/libSPI
+   ./makeit -clear
+   cd ..
+
+   rm -f -r ${SSM_DEV}/src/SPI* ${SSM_DEV}/src/libSPI* ${SSM_DEV}/src/INSTALL.txt ${SSM_DEV}/src/makeit
+   cp -r libSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
+   cp -r SPI ${SSM_DEV}/src/SPI-${SPI_VERSION}
+   cp makeit INSTALL.txt ${SSM_DEV}/src
+   find ${SSM_DEV}/src/libSPI-${SPI_VERSION} -name .git -prune -exec rm -f -r {} \+
+   find ${SSM_DEV}/src/libSPI-${SPI_VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   
+   #-----Copy constant files
+   mkdir ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   cd $AFSISIO/datafiles/constants/
+   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   
+   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
+fi
+

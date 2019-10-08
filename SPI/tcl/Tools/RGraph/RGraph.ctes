@@ -1,0 +1,60 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2121 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : RGraph.ctes
+# Creation : Décembre 2018
+#
+# Description:
+#    Outil pour faire des graphiques en utilisant le langage R
+#
+#    Descriptions des variables internes du module
+#===============================================================================
+
+namespace eval RGraph {
+    variable Dev
+    variable Data
+    variable Param
+    variable Syntax
+
+    set Param(Title)        {"Graphique R" "R Graph"}
+    set Param(Version)      1.0
+    set Param(Geom)         { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+    set Param(Icon)         GRAPH
+    set Param(Dock)         1                                           ;#Flag d'activation de l'outils
+    set Param(EditRGeom)    { 600x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+    set Param(EditRHL)      1                                           ;# Syntax highlighting
+    set Param(RFileExt)     {{R Script File {*.R *.r *.RScript *}}}     ;#R file extension
+    set Param(RDataGeom)    { 600x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+
+    #----- Regexp for the syntax highlighting
+    set Syntax(RKeyword)    {\m(?:return|break|next|else|if|repeat|for|while|in)\M}
+    set Syntax(ROperator)   {(?:%\S*%|[&|!<>^~/:*+=-])}
+    set Syntax(RNumber)     {\m(?:NA NA_integer_|NA_character_|Inf|NaN|NA_complex_|NA_real_|(?:\d+(?:[Ee]\+?\d+)?|0x[0-9a-fA-F]+)L?|\d+\.\d*(?:[Ee][+-]?\d+)?|\.\d+(?:[Ee][+-]?\d+)?|\d+[Ee][+-]?\d+)\M}
+    set Syntax(RConstant)   {\m(?:LETTERS|R.version.string|NULL|F|FALSE|T|TRUE|letters|month.name|pi|month.abb)\M}
+    set Syntax(RString)     {(["'])(?:\\?[^\\]|\\\\)*?\1}
+    set Syntax(RType)       {\m(?:vector|list|logical|category|complex|data.frame|double|array|function|integer|matrix|character|numeric)\M}
+    set Syntax(RDelimiter)  {[][,:;(){}]}
+    set Syntax(RSpecial)    {(?:[$@]|\m(?:detach|library|require|source|attach)\M)}
+
+    set Syntax(RSpecialInString) {\\(?:[0-7]{1,3}|x[0-9a-fA-F]{1,2}|u[0-9a-fA-F]{1,4}|U[0-9a-fA-F]{1,8}|u\{[0-9a-fA-F]{1,4}\}|U\{[0-9a-fA-F]{1,8}\}|[nrtbafv'"\\])}
+
+    set Data(Active)    0        ;#Flag d'activation de l'outils
+    set Data(Canvas)    ""       ;#Canvas Actif
+    set Data(Frame)     ""       ;#Frame actif
+    set Data(VP)        ""       ;#Viewport actif
+
+    set Data(Lat0)      0        ;#Coordonnees de la boite de selection
+    set Data(Lon0)      0
+    set Data(Lat1)      0
+    set Data(Lon1)      0
+
+    set Data(Init)          0
+    set Data(Home)          [file dirname [info script]]
+    set Data(GraphTypes)    {}
+    set Data(Id)            ""
+    set Data(Ids)           {}
+}

@@ -1,0 +1,83 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Librairie de "Widget" Tk.
+# Fichier  : Mapper.ctes
+# Creation : Juin 2002 - J.P.Gauthier - CMC/CMOE
+#
+# Description:
+#    Permet d'afficher un selecteur de champs de fichier geotiff.
+#
+# Remarques :
+#
+#===============================================================================
+
+namespace eval Mapper { } {
+   global   env
+   variable Bubble
+   variable Data
+   variable Param
+   variable License
+
+   set License(OpenStreetMap)     "© OpenStreetMap contributors"
+   set License(Stamen-Toner)      "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under ODbL"
+   set License(Stamen-Watercolor) "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
+   set License(Stamen-Terrain)    "Map tiles by Stamen Design, under CC BY 3.0. Data by OpenStreetMap, under CC BY SA"
+   set License(OneEarth)          "Data provided by NASA / JPL"
+   set License(BlueMarble)        "Data provided by NASA / JPL"
+   set License(MSVirtualEarth)    "Data, imagery and map information provided by Microsoft VirtualEarth"
+   set License(Google-Maps)            "Data, imagery and map information provided by Google"
+   set License(Google-Satellite)       "Data, imagery and map information provided by Google"
+   set License(Google-SatelliteHybrid) "Data, imagery and map information provided by Google"
+   set License(Google-Terrain)         "Data, imagery and map information provided by Google"
+   set License(Google-TerrainHybrid)   "Data, imagery and map information provided by Google"
+   set License(ESRI-WorldStreet)       "Data, imagery and map information provided by ESRI"
+   set License(ESRI-WorldTopo)         "Data, imagery and map information provided by ESRI"
+
+   set Param(Title)     { "Données Geographiques" "Geographical data" }
+   set Param(Version)   2.1
+   set Param(Icon)      BINOCULAR                                   ;#Icone
+   set Param(Geom)      { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Dock)      1                                           ;#Flag d'activation de l'outils
+
+   set Data(Job)    ""                    ;#Texte de processus
+   set Data(Active) 0                     ;#Flag d'activation de l'outils
+   set Data(Canvas) ""                    ;#Canvas Actif
+   set Data(Frame)  ""                    ;#Frame actif
+   set Data(VP)     ""                    ;#Viewport actif
+
+   set Data(Init)      False                  ;#Flag d'initialisation de l'interface
+   set Data(Job)       ""
+   set Data(Sel)       ""
+   set Data(Mode)      ""
+   set Data(IdNo)      0                      ;#Flag d'activation de l'outils
+
+   set Data(Frame1) ""
+   set Data(Frame2) ""
+   set Data(Frame3) ""
+   set Data(Frame4) ""
+   set Data(Frame5) ""
+   set Data(RefVP)  ""
+
+   set Data(LonD)         0
+   set Data(LatD)         0
+   set Data(Lat0)        -90.0
+   set Data(Lat1)        -90.0
+   set Data(Lon0)        -180.0
+   set Data(Lon1)        -180.0
+   set Data(Coo)         ""
+   set Data(Time)        0
+   set Data(Object)      ""
+   set Data(GeoRef)      ""
+   set Data(RealTime)    False
+   set Data(Proj)        ""
+   set Data(Cut)         False
+   set Data(CutShow)     False
+   set Data(PickSize)    2
+        
+   set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
+   set Bubble(Close)   { "Fermer l'outils" "Close the tool" }
+}

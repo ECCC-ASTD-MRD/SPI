@@ -1,0 +1,372 @@
+#!/bin/bash
+#----- On version change:
+#-----    Change version in TclGeoEER/configure.in
+#-----    Check for new versions of dict and bufr in $CMCCONST
+. ../SPI*/VERSION
+
+NAME="libSPI"
+DESCRIPTION="SPI libraries"
+SUMMARY="SPI compiled libraries and dependencies (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
+MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
+export VERSION=$SPI_VERSION
+export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
+
+if [[ (-z $SSM_DEV) ]]; then
+   echo "(ERROR) Variables SSM_DEV not defined."
+   exit 1
+fi
+
+if [[ -n $COMP_ARCH ]]; then
+   SSM_COMP=-${COMP_ARCH}
+fi
+
+ORDENV_PLAT=${ORDENV_PLAT:-`uname -s`-`uname -m`}
+
+SSM_VERSION=${VERSION}${SSM_COMP}
+SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
+
+HELP="Arguments must be:\n\n   Information parameters:
+\t-help        : This information
+\t-version     : Version
+
+   Commands:
+\t-build       : Compile package
+\t-clear       : Clear package
+\t-reconf      : Reconfigure package
+\t-ssm         : Build SSM package
+\t-ext         : Build external dependencies
+\t-all         : Build and packages everything\n"
+
+BLD=0
+EXT=0
+SSM=0
+REC=0
+CLR=0
+AUT=0
+
+#----- Get arguments
+while [ $# -gt 0 ]; do
+    case "$1" in
+        -clear)   CLR=1;;
+        -auto)    AUT=1;;
+        -reconf)  REC=1;;
+        -build)   BLD=1;;
+        -ext)     EXT=1;;
+        -ssm)     SSM=1;;
+        -all)     EXT=1;BLD=1;SSM=1;REC=1;;
+
+        -h|-help)     printf -- "$HELP\n"; exit 0;;
+        -v|-version)  printf -- "$VERSION\n"; exit 0;;
+        --)        shift; break;;
+        *)         printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
+    esac
+    shift
+done
+
+ARCH=`uname -s`
+PROC=`uname -m | tr _ -`
+
+#----- Dependencies paths
+
+SRC_PATH=`pwd`
+TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                         #----- Temporary directory where the external libraries will be compiled
+LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                        #----- Where to install libraries
+LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
+LIB_EXT=${CMD_EXT_PATH}/${ORDENV_PLAT}                                           #----- External libraries
+
+export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
+export LIBRARY_PATH=${LIB_PATH}/lib:$LIBRARY_PATH
+
+if [[ -n $INTEL_LICENSE_FILE ]]; then
+   export CC=icc
+   export CXX=icpc
+   export LDFLAGS="-lintlc -lifcore -lifport -limf"
+fi
+
+if [[ $ARCH == "AIX" ]]; then
+   export CC=xlc
+   export CXX=xlc++
+   export make=gmake
+   export LIBPATH=$LD_LIBRARY_PATH
+fi
+
+DEF_PWD=$PWD
+
+#export CFLAGS=" -fopenmp -lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -liomp5 -lpthread -lm"
+#export CFLAGS="-lmkl_intel_lp64 -lmkl_core -lmkl_intel_thread -lpthread -lm"
+
+printf -- "\n----- Building platform : ${ORDENV_PLAT} -----\n"
+
+if [[ $EXT -eq 1 ]]; then
+
+   printf -- "\n----- Making external dependencies -----\n"
+
+   #----- Package to be compiled / installed
+   TCL_VERSION=8.6.6
+   TCLLIB=Tcllib-1.18
+   TCLTLS=tcltls-1.7.12
+   TKIMG=tkimg1.4.6
+   TKTABLE=Tktable2.10
+   TKDND=tkdnd2.8
+   TDOM=tdom-master
+   GDB=gdb
+   MESA=mesa-7.9.2
+
+   #----- Create output directories (link to SSM workspace)
+   rm -f -r ${LIB_PATH}
+   mkdir -p ${LIB_PATH}/lib ${LIB_PATH}/include ${LIB_PATH}/man/man1
+
+   [ -e "${TMP_PATH}" ] && rm -rf "${TMP_PATH}"
+   mkdir -p "${TMP_PATH}"
+   echo "- Temporary directory is : $TMP_PATH"
+   echo "- Install directory is   : $LIB_PATH"
+
+   set -e
+
+   #----- Mesa
+   if [[ $ARCH != "AIX" ]]; then
+      echo "- Building ${TMP_PATH}/${MESA}/build.log"
+      mkdir ${TMP_PATH}/${MESA}
+      cd ${TMP_PATH}/${MESA}
+      cp -r -p ${SSM_DEV}/src/ext/${MESA}/ ${TMP_PATH}/
+#mesa-13+      ./configure --prefix=${LIB_PATH}/GL --disable-driglx-direct --enable-glx=xlib -disable-dri --with-gallium-drivers=swrast --disable-egl
+      (./configure --prefix=${LIB_PATH}/GL --disable-gallium --with-x --with-driver=xlib --disable-driglx-direct --disable-egl
+      make 
+      make install) > ${TMP_PATH}/${MESA}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+   
+   #----- gdb
+   echo "- Building ${TMP_PATH}/${GDB}/build.log"
+   cp -r -p ${SSM_DEV}/src/ext/${GDB}/ ${TMP_PATH}/
+   cd ${TMP_PATH}/${GDB}/src
+   (make; cp -d libgdb.a ${LIB_PATH}/lib; cp -d gdb.h declare.h ${LIB_PATH}/include) > ${TMP_PATH}/${GDB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+     
+   #----- Tcl
+   echo "- Building ${TMP_PATH}/tcl${TCL_VERSION}/build.log"
+   mkdir ${TMP_PATH}/tcl${TCL_VERSION}
+   cd ${TMP_PATH}/tcl${TCL_VERSION}
+   (${SSM_DEV}/src/ext/tcl${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads  --enable-64bit
+   make install) > ${TMP_PATH}/tcl${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tk
+   echo "- Building ${TMP_PATH}/tk${TCL_VERSION}/build.log"
+   mkdir ${TMP_PATH}/tk${TCL_VERSION}
+   cd ${TMP_PATH}/tk${TCL_VERSION}
+   (${SSM_DEV}/src/ext/tk${TCL_VERSION}/unix/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib --enable-xft=no
+
+   #----- Remove visibility-hidden flag from makefile for glCanvas to work
+   mv Makefile Makefile.hidden
+   sed 's/-DMODULE_SCOPE=\(\\ \|[^ ]\)*[^\\] //' <Makefile.hidden >Makefile
+   make install) > ${TMP_PATH}/tk${TCL_VERSION}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tcllib
+   echo "- Installing ${TMP_PATH}/${TCLLIB}/build.log"
+   mkdir ${TMP_PATH}/${TCLLIB}
+   cd ${SSM_DEV}/src/ext/${TCLLIB}
+   ./installer.tcl -no-gui -no-nroff -no-examples -no-apps -no-wait -pkg-path ${LIB_PATH}/TCL/lib/${TCLLIB} > ${TMP_PATH}/${TCLLIB}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tcltls
+   echo "- Building ${TMP_PATH}/${TCLTLS}/build.log"
+   mkdir ${TMP_PATH}/${TCLTLS}
+   cd ${TMP_PATH}/${TCLTLS}
+   (${SSM_DEV}/src/ext/${TCLTLS}/configure --prefix=${LIB_PATH}/TCL --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TCLTLS}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- TkImg
+#    if [[ $ARCH != "AIX" ]]; then
+#       echo "- Building ${TMP_PATH}/${TKIMG}/build.log"
+#       mkdir ${TMP_PATH}/${TKIMG}
+#       cd ${TMP_PATH}/${TKIMG}
+#       
+#       #----- Because some setup enable jbig without the big stuff
+#       (${SSM_DEV}/src/ext/${TKIMG}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib --with-tk=${LIB_PATH}/TCL/lib
+#       #----- TCLLIBPATH is necessary to make sure tcl script /usr/bin/dtplite executes on a tclsh with a valid doctools package
+#       TCLLIBPATH="${LIB_PATH}/TCL/lib $TCLLIBPATH"
+#       make install) > ${TMP_PATH}/${TKIMG}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+#    fi
+
+   #----- TkTable
+   echo "- Building ${TMP_PATH}/${TKTABLE}/build.log"
+   mkdir ${TMP_PATH}/${TKTABLE}
+   cd ${TMP_PATH}/${TKTABLE}
+   (${SSM_DEV}/src/ext/${TKTABLE}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TKTABLE}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- Tkdnd
+   echo "- Building ${TMP_PATH}/${TKDND}/build.log"
+   mkdir ${TMP_PATH}/${TKDND}
+   cd ${TMP_PATH}/${TKDND}
+   (${SSM_DEV}/src/ext/${TKDND}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tcl=${LIB_PATH}/TCL/lib
+   make install) > ${TMP_PATH}/${TKDND}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+
+   #----- tDOM
+   if [[ $ARCH != "AIX" ]]; then
+      echo "- Building ${TMP_PATH}/${TDOM}/build.log"
+      mkdir ${TMP_PATH}/${TDOM}
+      cd ${TMP_PATH}/${TDOM}
+      (${SSM_DEV}/src/ext/${TDOM}/configure --prefix=${LIB_PATH}/TCL --enable-threads --enable-64bit --with-tclinclude=${LIB_PATH}/TCL/include --with-tcl=${LIB_PATH}/TCL/lib
+      make install) > ${TMP_PATH}/${TDOM}/build.log 2>&1 || { err=$?; printf "\n*** ERROR *** : An error occurred (code $err). Check log for details.\n"; exit $err; }
+   fi
+
+   cd $SRC_PATH
+
+   #----- Copy local share definitions (CMC constant files and GRIB adjustment for ARGOS GRIB1)
+   cp -rp share ${LIB_PATH}
+
+   rm -f -r ${TMP_PATH}
+   set +e
+fi
+
+if [[ $CLR -eq 1 ]]; then
+   cd $DEF_PWD
+
+   printf -- "\n----- Cleaning TclSystem Library -----\n"
+   cd TclSystem
+   make distclean
+
+   printf -- "\n----- Cleaning TkglCanvas Library -----\n"
+   cd ../TkglCanvas
+   make distclean
+
+   printf -- "\n----- Cleaning TclGeoEER Library -----\n"
+   cd ../TclGeoEER
+   make distclean
+
+   cd ..
+fi
+
+if [[ $BLD -eq 1 ]]; then
+   cd $DEF_PWD
+
+   type -P autoconf2.50 && autoconf=autoconf2.50 || autoconf=autoconf
+   export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
+   
+   #----- System with no OpenGL
+   ldconfig -p | grep -q 'libGL\.so' || { export LDFLAGS="-L$LIB_PATH/GL/lib export"; export CFLAGS="$CFLAGS -I$LIB_PATH/GL/include"; }
+
+   printf -- "\n----- Making TclSystem Library  -----\n"
+   cd TclSystem
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
+      ./configure \
+      --prefix=${LIB_PATH}/TCL \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-eer=${LIB_EER}
+   fi
+   make install || exit 1
+
+   printf -- "\n----- Making TkglCanvas Library -----\n"
+
+   cd ../TkglCanvas
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
+      ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL/ \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib
+   fi
+   make install || exit 1
+
+   printf -- "\n----- Making TclGeoEER Library -----\n"
+
+   cd ../TclGeoEER
+   if [[ $REC -eq 1 ]]; then
+      make distclean
+      if [[ $AUT -eq 1 ]]; then $autoconf; fi
+      ./configure \
+      --prefix=${LIB_PATH}/TCL/ \
+      --exec-prefix=${LIB_PATH}/TCL \
+      --enable-threads \
+      --enable-64bit \
+      --with-tcl=${LIB_PATH}/TCL/lib \
+      --with-tk=${LIB_PATH}/TCL/lib \
+      --with-gdb=${LIB_PATH} \
+      --with-eer=${LIB_EER} \
+      --with-rmn=${LIB_EER} \
+      --with-gdal=`which gdal-config` \
+      --with-ecbufr=${LIB_EXT} \
+      --with-sqlite3 \
+      --with-eccodes=${LIB_EXT} \
+      --with-flt=${LIB_EXT} \
+      --with-urp=${LIB_EXT}
+   fi
+   make install || exit 1
+
+   if [[ "$ORDENV_DIST" != "sles" ]]; then
+       printf -- "\n----- Making TclR Library -----\n"
+
+       cd ../TclR
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
+
+       printf -- "\n----- Making TclRDevice Library -----\n"
+
+       cd ../TclRDevice
+       if [[ $REC -eq 1 ]]; then
+          make distclean
+          [[ $AUT -eq 1 ]] && $autoconf
+          ./configure \
+          --prefix=${LIB_PATH}/TCL/ \
+          --exec-prefix=${LIB_PATH}/TCL \
+          --enable-threads \
+          --enable-64bit \
+          --with-tcl=${LIB_PATH}/TCL/lib \
+          --with-tk=${LIB_PATH}/TCL/lib \
+          --with-R=$(R RHOME)
+       fi
+       make install || exit 1
+   fi
+
+   cd ${LIB_PATH}/lib
+   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
+   ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
+
+   ln -fs ../TCL/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
+   ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+
+   ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
+   ln -fs libTclSystem1.2.so libTclSystem.so
+
+   ln -fs ../TCL/lib/TclR1.0/libTclR1.0.so
+   ln -fs libTclR1.0.so libTclR.so
+
+   ln -fs ../TCL/lib/TclRDevice1.0/libTclRDevice1.0.so
+   ln -fs libTclRDevice1.0.so libTclRDevice.so
+
+   cd ${SRC_PATH}
+
+fi
+
+if [[ $SSM -eq 1 ]]; then
+   printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
+
+   rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm
+   mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
+   cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
+   
+   find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
+   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${SSM_VERSION}/" -e "s/PLATFORM/${ORDENV_PLAT}/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/BUILDINFO/${BUILDINFO}/" -e "s/DESCRIPTION/${DESCRIPTION}/" -e "s/SUMMARY/${SUMMARY}/" .ssm.d/control.json > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control.json
+   cd ${SSM_DEV}/workspace; tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
+#   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
+
+   cd ${SRC_PATH}
+fi

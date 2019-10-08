@@ -1,0 +1,61 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2100 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : Grid.ctes
+# Creation : Juin 2003
+#
+# Description:
+#    Coquille vide demontrant les points d'entree pour la creation de nouveaux outils
+#    a l'interface SPI
+#
+#    Descriptions des variables internes du module
+#
+#===============================================================================
+
+namespace eval Grid {
+   global env
+   variable Data
+   variable Param
+   variable GenPhysX
+
+   set Param(Title)      { "Grid Maker" "Grid Maker" }
+   set Param(Version)    0.1
+   set Param(Geom)       { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
+   set Param(Icon)       ARROWGRID
+   set Param(Dock)       1                                           ;#Fenetre separee ou non
+
+   set Data(Active) 0        ;#Flag d'activation de l'outils
+   set Data(Canvas) ""       ;#Canvas Actif
+   set Data(Frame)  ""       ;#Frame actif
+   set Data(VP)     ""       ;#Viewport actif
+   set Data(Tab)    ""       ;#Widget
+   
+   set Data(SavePath) ""
+   if { [info exists env(RELW_GENPATH)] } {
+      set Data(SavePath) $env(RELW_GENPATH)
+   }
+   
+   set Data(Cascs)     { HRDPS RDPS GDPS }
+   set Data(CascGDPS)  { 250 1000 2500 10000 }
+   set Data(CascRDPS)  { 250 1000 2500 }
+   set Data(CascHRDPS) { 250 1000 }
+   
+   colormap create GRID0; colormap control GRID0 -add 255 128 128 128 255; colormap control GRID0 -add 0 100 100 100 255
+   colormap create GRID1; colormap control GRID1 -add 255 000 000 255 255; colormap control GRID1 -add 0 000 000 200 255
+   colormap create GRID2; colormap control GRID2 -add 255 255 000 000 255; colormap control GRID2 -add 0 200 000 000 255
+   colormap create GRID3; colormap control GRID3 -add 255 255 255 000 255; colormap control GRID3 -add 0 200 200 000 255
+   colormap create GRID4; colormap control GRID4 -add 255 000 255 000 255; colormap control GRID4 -add 0 000 200 000 255
+
+   set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS-5.1 RELWS-1.0 }
+   set GenPhysX(Target)  RELWS-1.0
+   set GenPhysX(Hosts)   { ppp3 ppp4 }
+   set GenPhysX(Host)    ppp1
+   set GenPhysX(Time)    10800
+   set GenPhysX(Memory)  100G
+   set GenPhysX(CPU)     1
+   set GenPhysX(On)      True
+}

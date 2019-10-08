@@ -1,0 +1,51 @@
+#===============================================================================
+# Environnement Canada
+# Centre Meteorologique Canadian
+# 2121 Trans-Canadienne
+# Dorval, Quebec
+#
+# Projet   : Package d'interface pour SPI
+# Fichier  : RGraph.txt
+# Creation : Décembre 2018
+#
+# Description:
+#    Outil pour faire des graphiques en utilisant le langage R
+#
+#    Description des divers textes et messages
+#===============================================================================
+
+namespace eval RGraph {
+    variable Lbl
+    variable Msg
+    variable Bubble
+
+    #----- Labels
+
+    set Lbl(TypeChoose)     {"Choisir type..." "Choose type..."}
+    set Lbl(Edit)           {"Éditer code R" "Edit R Code"}
+    set Lbl(Apply)          {"Appliquer" "Apply"}
+    set Lbl(RParams)        {"Paramètres R" "R Params"}
+    set Lbl(Ok)             {"Ok" "Ok"}
+    set Lbl(Cancel)         {"Annuler" "Cancel"}
+    set Lbl(Unmodified)     {"Original" "Default"}
+    set Lbl(Modified)       {"Modifié" "Modified"}
+    set Lbl(Marker)         {"Marqueur" "Marker"}
+    set Lbl(Position)       {"Position" "Position"}
+
+    #----- Messages
+
+    set Msg(EditRReset)     {"Réinitialiser le code R courant par le code par défaut?\nTous les changements non-sauvegardés dans un fichier seront définitivement perdus."
+                            "Reset the current R code with the default one?\nAll changes that haven't been saved in a file will be lost." }
+    set Msg(EditROpen)      {"Des changements ont été effectués et n'ont pas été sauvegardés.\nTous les changements non-sauvegardés dans un fichier seront définitivement perdus."
+                            "There are unsaved changes in the editor.\nAll changes that haven't been saved in a file will be lost." }
+    set Msg(ReadingFld)     {"Lecture des champs" "Reading fields"}
+
+    #----- Bulles d'aides
+
+    set Bubble(Mode)        {"Mode de sélection de l'outils" "Tool selection mode"}
+    set Bubble(EditROpen)   {"Ouvrir et importer un script R" "Open and import an R script"}
+    set Bubble(EditRSave)   {"Sauvegarder le script R courant dans un fichier" "Save the current R script into a file"}
+    set Bubble(EditRReset)  {"Réinitialiser le code R au code par défaut" "Reset the R code to the default one"}
+    set Bubble(EditRRun)    {"Exécuter le code R courant" "Run current R code"}
+    set Bubble(EditRHL)     {"Activer/désactiver la coloration syntaxique du code" "Toggle syntax highlighting on or off"}
+}

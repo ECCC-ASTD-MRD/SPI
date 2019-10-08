@@ -1,4 +1,0 @@
-#/bin/ksh
-
-mkfontscale
-mkfontdir
