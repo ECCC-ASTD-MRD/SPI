@@ -18,7 +18,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Remarques  : Modifier la provenance des fichiers d'input. Ils se trouvent dorénavant dans le répertoire "DataInForModelIndexBuild" avec seul les champs nécessaires
 #              pour créer les shapefiles. Pour les modèles "shop" et "glsoce (grands Lacs)", nous avons un contenu texte qui correspond aux lat/lon du shapefile.
-#
+#              besoind de la variable d'env WEBTIDE_DATA (export WEBTIDE_DATA=/ssm/net/cmoe/eer/master/WebTide_0.7.1_all/share)
 #============================================================================
 
 package require TclData
@@ -36,8 +36,6 @@ set models [list  rdps.fstd     hrdps.fstd  caps_eta.fstd   caps_oce.fstd   ciop
 
 set nb 0
 foreach s $subs { incr nb [llength $s] }
-
-set CI_DATA_IN [file dirname [exec readlink -e [info script]]]/DataInForModelIndexBuild
 
 #----- Open GEM index file
 eval file delete [glob -nocomplain $env(CI_DATA_OUT)/ModelDomain*]
@@ -66,7 +64,7 @@ foreach model $models sub $subs var $vars name $names {
       Log::Print INFO "Processing $model $s"
 
       #------ Read lat/lon for glsoce model (Great Lakes)
-      set file [open "$CI_DATA_IN/$model" r]
+      set file [open "$env(CI_DATA_IN)/Model/$model" r]
       set coord_glsoce [gets $file]
       close $file
 
@@ -91,7 +89,7 @@ foreach model $models sub $subs var $vars name $names {
       Log::Print INFO "Processing $model $s"
 
       #------ Read lat/lon for SHOP model (St-Lawrence river)
-      set file [open "$CI_DATA_IN/$model" r]
+      set file [open "$env(CI_DATA_IN)/Model/$model" r]
       set coord_shop [gets $file]
       close $file
 
@@ -122,7 +120,7 @@ foreach model $models sub $subs var $vars name $names {
          if { $name=="WEBTIDE"} {
             set file [glob -nocomplain $model/$s/*.fstd]
          } else {
-            set file $CI_DATA_IN/$model
+            set file $env(CI_DATA_IN)/Model/$model
          }
          if { ![llength $file] } {
             Log::Print WARNING "No data is available of model $model/$s"
