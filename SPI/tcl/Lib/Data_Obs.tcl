@@ -59,13 +59,17 @@ namespace eval Obs {
          } else {
             set path $env(SPI_LIB)/share/rmn
          }
-            
-         if { $GDefs(Lang)==0 } {
-            metobs table -readmaster B $path/table_b_bufr_f
-            metobs table -readmaster D $path/table_d_bufr_f
+
+         if { [file exists $path/table_b_bufr_e] } {  
+            if { $GDefs(Lang)==0 } {
+               metobs table -readmaster B $path/table_b_bufr_f
+               metobs table -readmaster D $path/table_d_bufr_f
+            } else {
+               metobs table -readmaster B $path/table_b_bufr_e
+               metobs table -readmaster D $path/table_d_bufr_e
+            }
          } else {
-            metobs table -readmaster B $path/table_b_bufr_e
-            metobs table -readmaster D $path/table_d_bufr_e
+            Log::Print WARNING "Path to BUFR tables not accessible, try loading CMOI environment."
          }
       } error ]
 
