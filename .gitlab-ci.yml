@@ -15,7 +15,7 @@ build:
    stage: build
    script:
       - . SPI/VERSION
-      - . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
+      - . ssmuse-sh -x eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
       - . r.env.dot --arch amd64
       - . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
       - cd libSPI
@@ -28,7 +28,7 @@ test:
    stage: test
    variables:
    script:
-      - CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
+      - ${HOME}/bin/ubuntu-18.04-amd64-64/CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
    only:
       - master
       - dev
