@@ -17,6 +17,7 @@ build:
       - . SPI/VERSION
       - . ssmuse-sh -x /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
       - . r.env.dot --arch amd64
+      - intel
       - cd libSPI
       - ./makeit -build -auto -reconf
    only:
