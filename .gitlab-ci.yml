@@ -28,7 +28,7 @@ test:
    stage: test
    variables:
    script:
-      - ${HOME}/bin/ubuntu-18.04-amd64-64/CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
+      - CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
    only:
       - master
       - dev
