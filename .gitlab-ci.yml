@@ -20,6 +20,7 @@ build:
       - ./makeit -build -auto -reconf
    only:
       - master
+      - dev
 
 test:
    stage: test
@@ -28,6 +29,7 @@ test:
       - CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
    only:
       - master
+      - dev
 
 package:
    stage: package
