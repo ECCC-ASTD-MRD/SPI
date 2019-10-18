@@ -14,7 +14,7 @@ stages:
 build:
    stage: build
    script:
-      - . ssmuse-sh -x ${SSM_EXT}
+      - . ssmuse-sh -x ${CMD_EXT_PATH}
       - . r.env.dot --arch amd64
       - cd libSPI
       - ./makeit -build -auto -reconf
