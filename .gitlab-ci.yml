@@ -15,8 +15,9 @@ build:
    stage: build
    script:
       - . ssmuse-sh -x ${SSM_EXT}
+      - . r.env.dot --arch amd64
       - cd libSPI
-      - ./makeit -build -reconf
+      - ./makeit -build -auto -reconf
    only:
       - master
 
