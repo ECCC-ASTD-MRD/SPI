@@ -20,7 +20,6 @@ dnl	to configure the system for the local environment.
 #-----------------------------------------------------------------------
 
 AC_INIT([TclGeoEER], [8.0.0])
-
 PKG_CFLAGS="-D_GNU_SOURCE -D_DEFAULT_SOURCE"
 
 # ---------------------------------------------------------------------------
