@@ -9,6 +9,8 @@ cd ${CI_PROJECT_DIR}
 
 #----- Initialize environment
 . SPI/VERSION
+. ssmuse-sh -x eccc/mrd/rpn/libs/${RMN_VERSION}
+. ssmuse-sh -x eccc/mrd/rpn/utils/${RMN_VERSION}
 
 export LD_LIBRARY_PATH=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}/lib:${LD_LIBRARY_PATH}
 export SPI_LIB=${SSM_DEV}/workspace/libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}
