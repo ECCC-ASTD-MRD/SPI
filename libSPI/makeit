@@ -359,6 +359,7 @@ fi
 if [[ $SSM -eq 1 ]]; then
    printf -- "\n----- Building ssm package : ${SSM_DEV}/workspace/${SSM_NAME} -----\n"
 
+   touch ${SSM_DEV}/workspace/${SSM_NAME}
    rm -f -r ${SSM_DEV}/package/${SSM_NAME}.ssm
    mkdir -p ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d ${SSM_DEV}/workspace/${SSM_NAME}/etc/profile.d
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d

@@ -53,7 +53,7 @@ namespace eval Grid {
    set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS-5.1 RELWS-1.0 }
    set GenPhysX(Target)  RELWS-1.0
    set GenPhysX(Hosts)   { ppp3 ppp4 }
-   set GenPhysX(Host)    ppp1
+   set GenPhysX(Host)    ppp3
    set GenPhysX(Time)    10800
    set GenPhysX(Memory)  100G
    set GenPhysX(CPU)     1
