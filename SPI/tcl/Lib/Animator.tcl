@@ -1029,10 +1029,8 @@ proc Animator::Play { } {
       #----- Determiner le temps courant
       set Play(Now) [set info [lindex $Play(Frames) $Play(Frame)]]
 
-      if { [llength $info]>1 } {
-         #----- If the playlist is a command
-         eval set info \[$info\]
-      } else {
+      #----- If the playlist is a command
+      if { [catch { eval set info \[$info\] }] } {
          #----- Playlist is a single item, Get related info
          foreach vp $Play(VPs) {
             if { [info exists Play($vp$info)] } {
