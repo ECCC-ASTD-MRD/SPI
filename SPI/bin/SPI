@@ -59,9 +59,6 @@ if [[ $SOFT -eq 1 ]]
 then
    export LD_LIBRARY_PATH=${SPI_LIB}/GL/lib:${LD_LIBRARY_PATH}
    unset vg
-
-   #----- this had to be forced on early Fedoras
-#   export LD_PRELOAD=${SPI_LIB}/GL/lib/libGL.so
 fi
 
 #----- Load up the fonts

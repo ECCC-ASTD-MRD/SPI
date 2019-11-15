@@ -2574,11 +2574,6 @@ foreach file $SPI::Param(Geos) {
 set argv $SPI::Param(Args)
 set argc [llength $SPI::Param(Args)]
 
-#----- Patch pour les $#@%@! de system RedHat en #$%$#^@$ de 64 bit
-#      Y faut faire un LD_PRELOAD de la lib GL avant de lancer le tout parce que le LD_LIBRARY_PATH
-#      marche pas pis y faut le deloader parce que le 64 bit kapote quand on fait un exec
-set env(LD_PRELOAD) ""
-
 #----- Execution du script si necessaire
 foreach script $SPI::Param(Script) {
    Log::Print INFO "System: Starting execution of script $script"
