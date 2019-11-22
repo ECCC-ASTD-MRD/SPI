@@ -150,6 +150,10 @@ proc Grid::ConfigSet { } {
             -width 2 -color $Data(Color$no) -colormap GRID$no -rendertexture $texture -interpdegree NEAREST
       }
    }
+   if { [fstdfield is $Data(GridId)] } {
+      fstdfield configure $Data(GridId) -renderparticle $grid -renderboundary $Data(GridBoundary) \
+         -width 2 -color $Data(Color0) -colormap GRID0 -rendertexture $texture -interpdegree NEAREST
+   }
    Viewport::UpdateData $Data(Frame)        
 }
 
