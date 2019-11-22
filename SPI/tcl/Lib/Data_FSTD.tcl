@@ -359,7 +359,7 @@ proc FSTD::ParamFrame { Frame Apply } {
                pack $Data(Frame).def.l.val.mod.lbl  $Data(Frame).def.l.val.mod.fac $Data(Frame).def.l.val.mod.mul -side left
                pack $Data(Frame).def.l.val.mod.val -side left -fill x -expand true
                bind $Data(Frame).def.l.val.mod.val <Any-KeyRelease> "FSTD::ParamSet"
-               bind $Data(Frame).def.l.val.mod.fac <Any-KeyRelease> "FSTD::ParamSet"
+               bind $Data(Frame).def.l.val.mod.fac <Any-KeyRelease> {if { [string is double $FSTD::Param(TopoFac)] } FSTD::ParamSet}
             frame $Data(Frame).def.l.val.fac
                label $Data(Frame).def.l.val.fac.lbl -text [lindex $Lbl(Conv) $GDefs(Lang)]
                label $Data(Frame).def.l.val.fac.lbld -text "+"
@@ -368,8 +368,8 @@ proc FSTD::ParamFrame { Frame Apply } {
                entry $Data(Frame).def.l.val.fac.self -textvariable FSTD::Param(Factor) -bd 1 -width 7 -bg $GDefs(ColorLight)
                pack $Data(Frame).def.l.val.fac.lbl $Data(Frame).def.l.val.fac.lbld $Data(Frame).def.l.val.fac.seld $Data(Frame).def.l.val.fac.lblf -side left
                pack $Data(Frame).def.l.val.fac.self -side left -fill x -expand true
-               bind $Data(Frame).def.l.val.fac.seld <Any-KeyRelease> { FSTD::ParamSet }
-               bind $Data(Frame).def.l.val.fac.self <Any-KeyRelease> { FSTD::ParamSet }
+               bind $Data(Frame).def.l.val.fac.seld <Any-KeyRelease> {if { [string is double $FSTD::Param(Delta)] } FSTD::ParamSet}
+               bind $Data(Frame).def.l.val.fac.self <Any-KeyRelease> {if { [string is double $FSTD::Param(Factor)] } FSTD::ParamSet}
            frame $Data(Frame).def.l.val.unit
                label $Data(Frame).def.l.val.unit.lbl -text [lindex $Lbl(Unit) $GDefs(Lang)]
                entry $Data(Frame).def.l.val.unit.sel -textvariable FSTD::Param(Unit) -bd 1 -width 12 -bg $GDefs(ColorLight)
