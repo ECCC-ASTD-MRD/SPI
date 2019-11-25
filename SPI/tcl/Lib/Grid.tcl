@@ -495,7 +495,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    variable Param
    variable Data
 
-   set center      False
+   set center      [expr {$Lat!=0.0 && $Lon!=0.0}]
 
    set Param(Id)   [lindex $Scale 0]                          ;#----- Grid scale name
    set Param(Type) [string trimleft  [lindex $Scale 1] "("]   ;#----- Grid type
@@ -532,6 +532,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    #----- For latlon grid, check for global case
    if { $Param(Type)=="ZL" || $Param(Type)=="LL" || $Param(Type)=="ZE" } {
       if { [expr ($Param(NI)*$Param(ResLLX))>=(360-$Param(ResLLX))] } {
+          set center False
           set Param(Lon0) -180
           set Param(Lon1) 180
           set Param(Lat0) -90
@@ -545,7 +546,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
       }
    }
 
-   if { $center || $Lon!=0.0 } {
+   if { $center } {
       Grid::Center $Lat $Lon
    } else {
       Grid::Create $Data(GridId)
@@ -1092,4 +1093,3 @@ proc Grid::Write { FILE ID { IP1 0 } { IP2 0 } { IP3 0 } { ETIKET GRID } { Grid 
       fstdfield write ${ID} $FILE -8 True
    }
 }
-
