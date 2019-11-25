@@ -495,7 +495,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
    variable Param
    variable Data
 
-   set center      [expr {$Lat!=0.0 && $Lon!=0.0}]
+   set center      [expr {$Lat!=0.0 || $Lon!=0.0}]
 
    set Param(Id)   [lindex $Scale 0]                          ;#----- Grid scale name
    set Param(Type) [string trimleft  [lindex $Scale 1] "("]   ;#----- Grid type
