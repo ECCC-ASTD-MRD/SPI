@@ -572,6 +572,7 @@ proc FSTD::ParamFrame { Frame Apply } {
       set Param(Intervals$l) {}
       frame $Data(Frame).lev.lev$l
          entry $Data(Frame).lev.lev$l.lst -textvariable FSTD::Param(Intervals$l) -bd 1 -width 12 -bg $GDefs(ColorLight)
+         bind $Data(Frame).lev.lev$l.lst <Any-KeyRelease> "FSTD::ParamSet"
          IcoMenu::CreateDef $Data(Frame).lev.lev$l.st $GDefs(Dir)/share/bitmap \
             { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
             FSTD::Param(Dash$l) "FSTD::ParamSet" 0 -relief groove -bd 2
