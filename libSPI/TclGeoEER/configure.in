@@ -1,4 +1,5 @@
 #!/bin/bash -norc
+
 dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which is run during Tcl installation
 dnl	to configure the system for the local environment.
@@ -19,7 +20,8 @@ dnl	to configure the system for the local environment.
 # this case) so that we create the export library with the dll.
 #-----------------------------------------------------------------------
 
-AC_INIT([TclGeoEER], [8.0.0])
+. ../../SPI/VERSION
+AC_INIT([TclGeoEER],m4_esyscmd_s(echo $SPI_VERSION))
 PKG_CFLAGS="-D_GNU_SOURCE -D_DEFAULT_SOURCE"
 
 # ---------------------------------------------------------------------------
