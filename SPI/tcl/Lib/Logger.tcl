@@ -713,21 +713,20 @@ proc Log::Mail { Subject File { Address { } } } {
    global env
    variable Param
 
-   set address $Param(MailTo)
    set err 0
 
-   if { [llength $Address] } {
-      set address $Address
+   if { ![llength $Address] } {
+      set Address $Param(MailTo)
    }
 
-   if { [llength $address] } {
+   if { [llength $Address] } {
       if { ![file exists $File] || ![file readable $File] } {
-         set err [catch { eval exec echo -e \$File | mail -s \"$Param(MailTitle) - ${Subject} ($Param(JobId))\" $address } msg]
+         set err [catch { exec -ignorestderr echo -e $File | mail -s "$Param(MailTitle) - ${Subject} ($Param(JobId))" {*}$Address } msg]
       } else {
-         set err [catch { eval exec mail -s \"$Param(MailTitle) - ${Subject} ($Param(JobId))\" $address < $File } msg]
+         set err [catch { exec -ignorestderr mail -s "$Param(MailTitle) - ${Subject} ($Param(JobId))" {*}$Address < $File } msg]
       }
       if { $err } {
-         Log::Print ERROR "Problems while mailing info to $address:\n\n\t$msg"
+         Log::Print ERROR "Problems while mailing info to $Address:\n\n\t$msg"
       }
    }
 }
@@ -748,8 +747,8 @@ proc Log::Mail { Subject File { Address { } } } {
 proc Log::Pager { } {
    variable Param
 
-   if { $Param(Pager)!="" } {
-      set err [catch { eval exec echo -e \$Param(JobId) | mail -s \"$Param(MailTitle) ($Param(PagerInfo))\" $Param(Pager) } msg]
+   if { [llength $Param(Pager)] } {
+      set err [catch { exec -ignorestderr echo -e $Param(JobId) | mail -s "$Param(MailTitle) ($Param(PagerInfo))" {*}$Param(Pager) } msg]
       if { $err } {
          Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
       }
