@@ -25,7 +25,8 @@
 #
 # Parametres :
 #
-# Remarques :
+# Remarques : Ajoute un test pour savoir si cette fenêtre a été ouverte à partir de la composition de message pour les FVs.
+#             Si oui, on associe la fenêtre locator à la fenêtre writer. (LP, 20191218)
 #
 #-------------------------------------------------------------------------------
 
@@ -43,7 +44,11 @@ proc Locator::Window { args } {
       eval wm geometry .locator $Param(Geom)
       wm protocol      .locator WM_DELETE_WINDOW { Locator::Close }
 
-      if { $SPI::Param(Window) } { wm transient .locator . }
+      if { [winfo exists .writer] } {
+         wm transient .locator .writer
+      } elseif { $SPI::Param(Window) } {
+         wm transient .locator .
+      }
 
       Locator::WinDef
 
