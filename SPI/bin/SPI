@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 export SPI_PATH=$(readlink -f $(dirname $(readlink -f $0))/..)
 . ${SPI_PATH}/.profile_spi
 

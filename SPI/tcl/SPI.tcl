@@ -189,7 +189,6 @@ proc SPI::CommandLine { { Args {} }} {
 }
 
 #----- Parcourir la liste des parametres pre-launch
-
 for { set i 0 } { $i < $argc } { incr i } {
    switch -glob [string trimleft [lindex $argv $i] "-"] {
       "valgrind"  { }

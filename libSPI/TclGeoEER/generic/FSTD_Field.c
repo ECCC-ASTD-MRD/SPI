@@ -1225,7 +1225,8 @@ int FSTD_FieldTimeInterpolate(Tcl_Interp *Interp,int Stamp,char *Name,TData *Fie
 
    memcpy(field->Head,head0,sizeof(TRPNHeader));
    field->Spec->Map=Field0->Spec->Map;
-
+   CMap_Incr(Field0->Spec->Map);
+   
    /*Modifier les parametres de dates*/
    head0=(TRPNHeader*)field->Head;
    head0->DATEV=Stamp;

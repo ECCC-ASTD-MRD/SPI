@@ -17,6 +17,9 @@ proc Macro::HelloWorld::Execute { } {
    #----- Display a message box
 
    Macro::Info { "Bonjour le monde" "Hello world" }
+   
+   PrintBox::Image $Page::Data(Frame) png HelloWorld
+   SPI::Quit
 }
 
 proc Macro::HelloWorld::Clean { } {
