@@ -865,7 +865,11 @@ int GeoPos_Free(TGeoPos *GPos) {
    if (GPos && !GeoPos_Decr(GPos)) {
       // Free reference components
       ZRef_Free(GPos->ZRef);
-      GeoRef_Free(GPos->GRef);
+      if (GPos->GRef->Name) {
+          GeoRef_Destroy(NULL,GPos->GRef->Name);
+      } else {
+          GeoRef_Free(GPos->GRef);
+      }
       
       // Free grid positions
       while(GPos->Pos[n]!=(Vect3d*)SYS_PTR_END) {
