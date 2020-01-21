@@ -481,9 +481,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
-      close $Param(Out)
-   }
+   flush $Param(Out)
 
    if { $Param(JobClass)=="REPORT" } {
       if { $Param(Error)>0 } {
@@ -501,6 +499,10 @@ proc Log::End { { Status 0 } { Exit True } } {
    } else {
       Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
       Log::Pager
+   }
+
+   if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
+      close $Param(Out)
    }
 
    if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
