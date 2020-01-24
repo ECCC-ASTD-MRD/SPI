@@ -15,7 +15,13 @@ type vglrun >/dev/null 2>&1 && vg=vglrun
 #----- Parse the flags fo batch token
 for flag in $@
 do
-   if [[ $flag = "-batch" ]]
+   if [[ $flag = "-xvfb" ]]
+   then
+      XVFB=-1
+      [[ -n $vg ]] || SOFT=1
+   fi
+
+   if [[ $flag = "-batch" || $flag = "-xorg" ]]
    then
       XVFB=1
       [[ -n $vg ]] || SOFT=1
@@ -66,9 +72,9 @@ fi
 #xset fp+ ${SPI_PATH}/share/font
 
 #----- Let's start up the software
-if [[ $XVFB -eq 1 ]]
+if [[ $XVFB -ne 0 ]]
 then
-   if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so ]]; then
+   if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so && $XVFB -eq 1 ]]; then
       exec ${SPI_PATH}/bin/xorg-run -n $XSVR -a -l $TMPDIR/xorg-spi$$.log -s "-config ${SPI_PATH}/share/xorg/xorg.conf" ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
    else 
       #----- Otherwise use the old Xvfb

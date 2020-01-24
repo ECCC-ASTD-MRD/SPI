@@ -917,7 +917,7 @@ proc Mapper::GDAL::CurveSelect { Canvas Object Band { MinMax True } } {
       }
       set Data(Curve) [colormap configure $map -curve $Band]
       if { ![glrender -shaderavailable] } { gdalband clean $Object }
-
+      
       Mapper::GDAL::Curve $Canvas $Object $Band
    }
 }
@@ -952,7 +952,7 @@ proc Mapper::GDAL::CurveRange { Canvas Object Band Side X } {
             colormap configure $map -max $band $Data(CurveValue)
          }
       }
-      if { ![glrender -shaderavailable] } { gdalband clean $Object}
+      if { ![glrender -shaderavailable] } { gdalband clean $Object }
       Mapper::GDAL::Curve $Canvas $Object $band
    }
 }

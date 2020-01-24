@@ -154,7 +154,8 @@ proc SPI::CommandLine { { Args {} }} {
    -soft                             : Force software OpenGL mode
    -hard                             : Force hardware OpenGL mode
    -nothreads                        : Don't use multithreading
-   -batch                            : Launch in batch mode (No screen rendering)
+   -batch / xorg                     : Launch in batch mode using Xorg (No screen rendering)
+   -xvfb                             : Launch in batch mode using Xvfb (No screen rendering)
    -setup                            : Force initial setup (~/.spi)
    -default ... ...                  : Use the file specified as the default parameter definition
    -lang 0|1                         : Select language (0 Francais, 1 English)
@@ -199,6 +200,8 @@ for { set i 0 } { $i < $argc } { incr i } {
       "setup"     { SPI::Setup True; catch { source $env(HOME)/.spi/SPI } }
       "nothreads" { set SPI::Param(Threads) False }
       "batch"     { set SPI::Param(Batch) True }
+      "xorg"      { set SPI::Param(Batch) True }
+      "xvfb"      { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
       "nosplash"  { set SPI::Param(Splash) False }
@@ -2487,6 +2490,8 @@ for { set i 0 } { $i < $argc } { incr i } {
       "help"      { set SPI::Param(Help) True }
       "setup"     { }
       "batch"     { set SPI::Param(Batch) True }
+      "xorg"      { set SPI::Param(Batch) True }
+      "xvfb"      { set SPI::Param(Batch) True }
       "model"     { set SPI::Param(Exp) True }
       "nowindow"  { set SPI::Param(Window) False }
       "nosplash"  { set SPI::Param(Splash) False }
