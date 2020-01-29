@@ -154,7 +154,7 @@ proc SPI::CommandLine { { Args {} }} {
    -soft                             : Force software OpenGL mode
    -hard                             : Force hardware OpenGL mode
    -nothreads                        : Don't use multithreading
-   -batch / xorg                     : Launch in batch mode using Xorg (No screen rendering)
+   -batch / -xorg                    : Launch in batch mode using Xorg (No screen rendering)
    -xvfb                             : Launch in batch mode using Xvfb (No screen rendering)
    -setup                            : Force initial setup (~/.spi)
    -default ... ...                  : Use the file specified as the default parameter definition
