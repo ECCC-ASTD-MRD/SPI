@@ -1380,6 +1380,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
 
    OGRSpatialReferenceH ref;
    int    err,opt=0;
+   long   version;
    size_t len=64;
    char   gridType[64],buf[256];
    double lat,lon,lat1,lon1,lats,lons,rot,scale,scale2;
@@ -1413,7 +1414,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
    }
 
    ref=OSRNewSpatialReference(NULL);
-
+   
    switch(opt) {
       case ROTATED_LL :             
          if (grib_get_double(Handle,"angleOfRotationInDegrees",&rot)!=GRIB_SUCCESS) {
@@ -1505,10 +1506,20 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
 
       case POLAR_STEREOGRAPHIC :
          // Equirectangular spherical (EPSG:9823) or elliptical (EPSG:9842)
-         if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
-            Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
-            return(NULL);
+         if (gribVer==1) {
+            // Version 1 use 60 or -60 based on grid latitude
+            if (grib_get_double(Handle,"latitudeOfFirstGridPointInDegrees",&lat)!=GRIB_SUCCESS) {
+               Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get latitudeOfFirstGridPointInDegrees",(char*)NULL);
+               return(NULL);
+            }
+            lat=lat<0.0?-60.0:60.0;
+         } else {
+            if (grib_get_double(Handle,"LaDInDegrees",&lat)!=GRIB_SUCCESS) {
+               Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get LaDInDegrees",(char*)NULL);
+               return(NULL);
+            }
          }
+        
          if (grib_get_double(Handle,"orientationOfTheGridInDegrees",&lon)!=GRIB_SUCCESS) {
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get orientationOfTheGridInDegrees",(char*)NULL);
             return(NULL);
