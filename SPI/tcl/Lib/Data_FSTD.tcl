@@ -989,13 +989,8 @@ proc FSTD::ParamSet { { Spec "" } } {
    set inter $Param(Intervals)
    set label {}
    
-   if { $Param(Intervals)=="" } {
-      set min ""
-      set max ""
-   } else {
-      set min   [dataspec configure $Spec -min]
-      set max   [dataspec configure $Spec -max]
-   }
+   set min ""
+   set max ""
 
    #----- Verifier pour un range plutot que des niveaux
 
