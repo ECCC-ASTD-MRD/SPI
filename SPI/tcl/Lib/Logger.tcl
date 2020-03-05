@@ -750,6 +750,7 @@ proc Log::Pager { } {
    variable Param
 
    if { [llength $Param(Pager)] } {
+      Log::Print INFO "Sending page to the following addresses : $Param(Pager)"
       set err [catch { exec -ignorestderr echo -e $Param(JobId) | mail -s "$Param(MailTitle) ($Param(PagerInfo))" {*}$Param(Pager) } msg]
       if { $err } {
          Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
