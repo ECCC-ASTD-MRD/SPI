@@ -73,7 +73,8 @@ namespace eval Log { } {
    set Param(Process)     ""                    ;#Process number
    set Param(SPI)         ""                    ;#SPI version requirement
    set Param(Vanish)      False                 ;#Disappear without leaving any trace (only applied if no error nor warning was encountered)
-   set Param(Retry)       0                     ;#Retry number
+   set Param(Retry)       0                     ;#Number of retry attempts
+   set Param(RetryNo)     0                     ;#Retry number
 
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
@@ -501,12 +502,9 @@ proc Log::End { { Status 0 } { Exit True } } {
       Log::Pager
    }
 
-   if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
-      close $Param(Out)
-   }
-
    if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
       if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
+         close $Param(Out)
          file delete -force -- $Param(OutFile)
       }
       Log::CyclopeDelete
@@ -515,6 +513,10 @@ proc Log::End { { Status 0 } { Exit True } } {
       Log::CyclopeEnd $Status
       Log::CyclopeSysInfo
       Log::CyclopeProcInfo
+
+      if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
+         close $Param(Out)
+      }
    }
 
    if { $Exit } {
@@ -750,10 +752,14 @@ proc Log::Pager { } {
    variable Param
 
    if { [llength $Param(Pager)] } {
-      Log::Print INFO "Sending page to the following addresses : $Param(Pager)"
-      set err [catch { exec -ignorestderr echo -e $Param(JobId) | mail -s "$Param(MailTitle) ($Param(PagerInfo))" {*}$Param(Pager) } msg]
-      if { $err } {
-         Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
+      if { $Param(Retry)>$Param(RetryNo) } {
+         Log::Print INFO "A retry will be attempted, no page will be sent for now"
+      } else {
+         Log::Print INFO "Sending page to the following addresses : $Param(Pager)"
+         set err [catch { exec -ignorestderr echo -e $Param(JobId) | mail -s "$Param(MailTitle) ($Param(PagerInfo))" {*}$Param(Pager) } msg]
+         if { $err } {
+            Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
+         }
       }
    }
 }
@@ -824,6 +830,16 @@ proc Log::CyclopeStart { } {
    variable Param
 
    if { $Param(Cyclope) } {
+      #----- Handle RetryNo parameter
+      if { $Param(Retry) } {
+         if { [info exists env(CYCLOPE_RETRY_NO)] } {
+            set Param(RetryNo) $env(CYCLOPE_RETRY_NO)
+         }
+         if { $Param(RetryNo) } {
+            Log::Print INFO "This job has been automatically resubmitted. Retry number : $Param(RetryNo)/$Param(Retry)"
+         }
+      }
+
       set path $Param(CyclopePath)/jobs/$Param(JobId)
 
       #----- Setup process info
@@ -841,7 +857,7 @@ proc Log::CyclopeStart { } {
          puts $f "Kill      : ssh $env(USER)@$host kill [pid]"
          puts $f "ID        : PID/$host/[pid]"
       }
-      puts $f "Retry     : $Param(Retry)\nPath      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
+      puts $f "Retry     : $Param(RetryNo)\nPath      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
 
       close $f
       file attributes $path/info.txt  -permissions 00644
@@ -864,8 +880,66 @@ proc Log::CyclopeStart { } {
 
 proc Log::CyclopeEnd { Status } {
    variable Param
+   global env
 
    if { $Param(Cyclope) } {
+      set retry 0
+
+      #----- Resubmit job if needed
+      if { $Status && $Param(Retry)>$Param(RetryNo) } {
+         set retry [expr $Param(RetryNo)+1]
+
+         if { [info exists env(SelfJobResubmit)] } {
+            if { [catch {
+               #----- Get the PBS batch file that we want to resubmit
+               if { ![file readable [set f [lindex $env(SelfJobResubmit) end]]] } {
+                  throw ERROR "File \[$f\] can't be read. SelfJobResubmit is \[$env(SelfJobResubmit)\]"
+               }
+               set fr $f.retry$retry
+
+               #----- Make sure we don't already have a retry file with that retry number
+               #----- This prevents retries when the job is relaunched manually (if a retry occured already, that is)
+               #----- and also acts as a safeguard to prevent an execution/error/resubmit loop
+               if { [file exists $fr] } {
+                  throw ERROR "Retry file \[$fr\] already exists, will not proceed further"
+               }
+
+               #----- Get the file content
+               set fd [open $f r]
+               set str [read $fd]
+               close $fd
+
+               #----- Add our CYCLOPE_RETRY_NO env variable next to it and make sure it is there to prenvent an endless resubmit loop
+               if { ![regsub -line {^( *export SelfJobResubmit=.*)$} $str "\\1\nexport CYCLOPE_RETRY_NO=$retry" str] } {
+                  throw ERROR "No replacement made for job file \[$f\]. SelfJobResubmit not present?"
+               }
+
+               #----- Write the file
+               set fd [open $fr w]
+               puts $fd $str
+               close $fd
+
+               #----- Update the command
+               set cmd [lreplace $env(SelfJobResubmit) end end $fr]
+            } err] } {
+               Log::Print ERROR "Could not setup job retry; job won't be resubmitted.\n\t$err"
+               set retry 0
+            }
+         } else {
+            set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
+            set cmd "ssh $env(USER)@$host '. ~/.profile >/dev/null 2>&1; export CYCLOPE_RETRY_NO=$retry; [info script] [join $argv]'"
+         }
+
+         if { $retry } {
+            Log::Print INFO "Relaunching job (retry attempt $retry/$Param(Retry)) with command \[$cmd\]"
+            if { [catch {exec -ignorestderr sh -c $cmd} err] } {
+               Log::Print ERROR "An error occured while relaunching job :\n\t$err"
+               set retry 0
+            }
+         }
+      }
+
+      #----- Update info file
       set f [open $Param(CyclopePath)/jobs/$Param(JobId)/info.txt a]
 
       #----- Close process info
@@ -873,6 +947,9 @@ proc Log::CyclopeEnd { Status } {
 
       if { $Status } {
          puts $f "Status    : Error ($Status) ($Param(Error))"
+         if { $retry } {
+            puts $f "Cyclope   : Retry"
+         }
       } elseif { $Param(Warning) } {
          puts $f "Status    : Warning ($Param(Warning))"
       } else {
