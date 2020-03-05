@@ -511,6 +511,7 @@ proc Page::UpdateItems { { Frame "" } } {
    SPI::IcoDraw        $Frame
    Graph::UpdateItems  $Frame
    Export::UpdateItems $Frame
+   LimitBox::UpdateItems $Frame
 
    if { [set vp [lindex [Page::Registered $Frame Viewport] 0]]!="" } {
 

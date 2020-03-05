@@ -26,7 +26,7 @@ Here are the addons from a regular canvas.
       .canvas create image [x] [y] -image CANVASMAGNIFIER
 
  * A global glrender command allows control over the OpenGL rendering engine. It is not mandatory to
-   use this command to use the OpenGL canvas, defulat vaules are enforced.
+   use this command to use the OpenGL canvas, default values are enforced.
  
       glrender
          -init         Force gl initialisation (not used, only for testing)
@@ -43,6 +43,11 @@ Here are the addons from a regular canvas.
          -time         Get rendering time of last refresh
          -xbatch       Enable/Disable batch mode (only renders when outputing, not used by default canvas items)
          -debug        Enable/Disable debug mode (not used by default canvas items)
+         -lightambiant       Change value of ambiant light in lighting parameter
+         -lightdiffuse       Change value of diffuse light in lighting parameter
+         -lightspecular      Change value of specular light in lighting parameter
+         -materialspecular   Change value of specular reflection of material in lighting parameter
+         -materialshininess  Change value of shininess of material in lighting parameter
    
 BUILDING AND INSTALLING THE WIDGET
 

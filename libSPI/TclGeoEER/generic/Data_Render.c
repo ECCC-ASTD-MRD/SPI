@@ -164,7 +164,7 @@ int Data_Grid3D(TData *Field,Projection* Proj) {
 int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj,GLuint GLMode,int Mode) {
 
    int nras=0,u,u0,u1,udef;
-     
+
    // Verifier l'existence du champs
    if (!Field || !Field->GRef || !Field->Spec || !Field->Def->Data[0]) {
       return(0);
@@ -249,11 +249,18 @@ int Data_Render(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,ClientData Proj
                }
             }
 
-            if (Field->Spec->RenderVol) {
+            if (Field->Spec->RenderVol==1) {
                if (Field->GRef->Grid[0]!='V') {
                   /*Recuperer les niveaux disponibles*/
                   if (Data_Grid3D(Field,Proj)) {
                      nras+=Data_RenderVolume(Field,VP,(Projection*)Proj);
+                  }
+               }
+            }else if (Field->Spec->RenderVol==2) {
+               if (Field->GRef->Grid[0]!='V') {
+                  /*Recuperer les niveaux disponibles*/
+                  if (Data_Grid3D(Field,Proj)) {
+                      nras+=Data_RenderShaderRayCasting(Field,VP,(Projection*)Proj);
                   }
                }
             }
@@ -1557,7 +1564,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    int          ox=0,base=0,dp;
    int          depth,mask;
    double       v0,v1,v2,v3;
-   Vect3d       g0,g1,g2,g3,dim,*pos;
+   Vect3d       g0,g1,g2,g3,dim,*pos,normal,v[2];
    unsigned int dx,dy;
 
    if (GLRender->Resolution>2) {
@@ -1629,16 +1636,17 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    c0=c1=c2=c3=0;
    v0=v1=v2=v3=0.0;
    mask=Field->Spec->Mask && Field->Def->Mask;
-  
-   // Render as line to fill the imprecision gaps (only when no transparency)
-   if (GLRender->TRCon && Proj->Ref!=Field->GRef && !Field->Spec->Map->Alpha && !(Field->Spec->Alpha<100)) {
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
+   /*Render as line to fill the imprecision gaps (only when no transparency)*/
+   if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+      for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
          glBegin(GL_QUADS);
 
-         for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+         for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-            if (i!=0) {
+            if (i!=Field->Def->Limits[0][0]) {
                idx1=idx0;
                idx2=idx3;
                v1=v0;
@@ -1666,8 +1674,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             VAL2COL(c0,Field->Spec,v0);
             VAL2COL(c3,Field->Spec,v3);
 
-            // Is the cell valid ??? 
-            if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+            /* Is the cell valid ??? */
+            if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
  
                // Check for mask value
                if (mask && (1 || !Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
@@ -1681,7 +1689,14 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
                Vect_Assign(g2,pos[idx2]);
                Vect_Assign(g3,pos[idx3]);
 
-               // Is the cell visible ??? 
+               for(int i=0;i<3;i++){
+                  v[0][i]=pos[((idx1+1)%Field->Def->NI==0)?idx1:idx1+1][i] - pos[(idx1%Field->Def->NI==0)?idx1:idx1-1][i];
+                  v[1][i]=pos[(idx1%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx1:idx1+Field->Def->NI][i] - pos[(idx1%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx1:idx1-Field->Def->NI][i];
+               }
+               Vect_CrossProduct(normal,v[0],v[1]);
+               glNormal3dv(normal);
+
+               /* Is the cell visible ??? */
                if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                   if (Field->Spec->InterpDegree[0]=='N') {
                      FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
@@ -1714,15 +1729,16 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    } else {
       glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
    }
-   
-   // Render the polygons over the lines
-   for(j=0;j<Field->Def->NJ-dp;j+=dp) {
+
+   idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
+   /*Render the polygons over the lines*/
+   for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
 
       glBegin(GL_QUADS);
 
-      for(i=0;i<(Field->Def->NI+dp);i+=dp) {
+      for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
 
-         if (i!=0) {
+         if (i!=Field->Def->Limits[0][0]) {
             idx1=idx0;
             idx2=idx3;
             v1=v0;
@@ -1755,8 +1771,8 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             if (!Field->Def->Mask[idx3]) c3=-1;
          }
 
-         // Is the cell valid ??? 
-         if (i && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
+         /* Is the cell valid ??? */
+         if (i!=Field->Def->Limits[0][0] && (c0>-1 || c1>-1 || c2>-1 || c3>-1)) {
 
             // Check for mask value
             if (Field->Spec->InterpDegree[0]!='N' && mask && (!Field->Def->Mask[idx0] || !Field->Def->Mask[idx1] || !Field->Def->Mask[idx2] || !Field->Def->Mask[idx3])) {
@@ -1770,7 +1786,14 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
             Vect_Assign(g2,pos[idx2]);
             Vect_Assign(g3,pos[idx3]);
 
-            // Is the cell visible ??? 
+            for(int i=0;i<3;i++){
+               v[0][i]=pos[((idx1+1)%Field->Def->NI==0)?idx1:idx1+1][i] - pos[(idx1%Field->Def->NI==0)?idx1:idx1-1][i];
+               v[1][i]=pos[(idx1%(Field->Def->NI*Field->Def->NJ)>Field->Def->NI*(Field->Def->NJ-1))?idx1:idx1+Field->Def->NI][i] - pos[(idx1%(Field->Def->NI*Field->Def->NJ)<Field->Def->NI)?idx1:idx1-Field->Def->NI][i];
+            }
+            Vect_CrossProduct(normal,v[0],v[1]);
+            glNormal3dv(normal);
+
+            /* Is the cell visible ??? */
             if (FFCellProcess(VP,Proj,g0,g1,g2,g3,dim)) {
                if (Field->Spec->InterpDegree[0]=='N') {
                   FFCellQuadNearest(Field->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
@@ -1927,8 +1950,10 @@ void Data_RenderValue(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projectio
             if (VIN(pos[0],1,Proj->VP->Width) && VIN(pos[1],1,Proj->VP->Height) && VIN(pos[2],0,1)) {
                DataSpec_Format(Field->Spec,VAL2SPEC(Field->Spec,zm),lbl);
                if (high && DisplayHighs) {
+                  if(ip>Field->Def->Limits[0][0]&&ip<Field->Def->Limits[0][1]&&jp>Field->Def->Limits[1][0]&&jp<Field->Def->Limits[1][1])
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"H",lbl);
                } else if (DisplayLows) {
+                  if(ip>Field->Def->Limits[0][0]&&ip<Field->Def->Limits[0][1]&&jp>Field->Def->Limits[1][0]&&jp<Field->Def->Limits[1][1])
                   Data_RenderMark(Interp,Field->Spec,VP,(int)pos[0],(int)pos[1],"L",lbl);
                }
             }
@@ -2121,8 +2146,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
                }
             }
          } else {
-            for (j0=0;j0<Field->Def->NJ;j0+=Field->Spec->Sample) {
-               for (i0=0;i0<Field->Def->NI;i0+=Field->Spec->Sample) {
+            for (j0=Field->Def->Limits[1][0];j0<Field->Def->Limits[1][1];j0+=Field->Spec->Sample) {
+               for (i0=Field->Def->Limits[0][0];i0<Field->Def->Limits[0][1];i0+=Field->Spec->Sample) {
 
                   if (Field->GRef->Project(Field->GRef,i0,j0,&coo.Lat,&coo.Lon,1,1)) {
                   
@@ -2180,7 +2205,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             
             dz=0;i=0;
             while (dz<n) {
-               if (xy[dz]<=Field->Def->NI && xy[n+dz]<=Field->Def->NJ && xy[dz]>=1 && xy[n+dz]>=1) {
+               if (xy[dz]<=Field->Def->Limits[0][1] && xy[n+dz]<=Field->Def->Limits[1][1] && xy[dz]>=Field->Def->Limits[0][0] && xy[n+dz]>=Field->Def->Limits[1][0]) {
                   if (!mask || Field->Def->Mask[FIDX2D(Field->Def,(int)xy[dz],(int)xy[n+dz])]) {
                      ll[i]=ll[dz];
                      ll[mem+i]=ll[mem+dz];
@@ -2203,8 +2228,8 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
 
             n=0;
-            for(j=0;j<Field->Def->NJ;j+=Field->Spec->Sample) {
-               for(i=0;i<Field->Def->NI;i+=Field->Spec->Sample) {
+            for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1];j+=Field->Spec->Sample) {
+               for(i=Field->Def->Limits[0][0];i<Field->Def->Limits[0][1];i+=Field->Spec->Sample) {
                   dn=FIDX2D(Field->Def,i,j);
                   dz=dn*Field->Def->Level;
                   Def_Get(Field->Def,0,dn,u);

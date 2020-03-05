@@ -1493,6 +1493,7 @@ proc FieldBox::Select { } {
       $Page::Data(Canvas) config -cursor left_ptr
    }
    . config -cursor left_ptr
+   LimitBox::ChangeField
 }
 
 #----------------------------------------------------------------------------

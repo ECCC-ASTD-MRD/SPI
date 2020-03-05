@@ -1748,10 +1748,16 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
    GLdouble p2[4]={ -1.0,  0.0, 0.0, 1.0001 };
    GLdouble p3[4]={  1.0,  0.0, 0.0, 1.0001 };
 
-   GLfloat ref[2][4]  = { { 0.75, 0.75, 0.75, 1.0 },{ 1.0, 1.0, 1.0, 1.0 } };
-   GLfloat amb[2][4]  = { { 0.75, 0.75, 0.75, 1.0 },{ 0.1, 0.1, 0.1, 1.0 } };
-   GLfloat spec[2][4] = { { 0.6, 0.6, 0.6, 1.0 },{ 0.6, 0.6, 0.6, 1.0 } };
-   GLfloat diff[2][4] = { { 1.0, 1.0, 1.0, 1.0 },{ 1.5, 1.5, 1.5, 1.0 } };
+   GLfloat r = (GLRender->GLLighting!=NULL)? GLRender->GLLighting->GLMaterialSpecular:1.0;
+   GLfloat a = (GLRender->GLLighting!=NULL)? GLRender->GLLighting->GLLightAmbiant:0.1;
+   GLfloat s = (GLRender->GLLighting!=NULL)? GLRender->GLLighting->GLLightSpecular:0.6;
+   GLfloat di = (GLRender->GLLighting!=NULL)? GLRender->GLLighting->GLLightDiffuse:1.5;
+   GLuint shininess = (GLRender->GLLighting!=NULL)?GLRender->GLLighting->GLMaterialShininess:64;
+
+   GLfloat ref[1][4]  = { r, r, r, 1.0 };
+   GLfloat amb[1][4]  = { a, a, a, 1.0 };
+   GLfloat spec[1][4] = { s, s, s, 1.0 };
+   GLfloat diff[1][4] = { di, di, di, 1.0 };
 
    double d;
    long   sec;
@@ -1842,7 +1848,7 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
       glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,GL_FALSE);
       glLightModelfv(GL_LIGHT_MODEL_AMBIENT,amb[1]);
       glColorMaterial(GL_FRONT,GL_AMBIENT_AND_DIFFUSE);
-      glMateriali(GL_FRONT,GL_SHININESS,64);
+      glMateriali(GL_FRONT,GL_SHININESS,shininess);
 
       /*Get the sun*/
       if (Proj->Sun) {
@@ -1859,10 +1865,10 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
 //         Proj->LightPos[0]=pc[0]*0.001;Proj->LightPos[1]=pc[1]*0.001;Proj->LightPos[2]=pc[2]*0.001;
       }
       Vect_Init(Proj->Nr,0.0,1.0,0.0);
-      glLightfv(GL_LIGHT0,GL_AMBIENT,amb[Proj->Sun?1:0]);
-      glLightfv(GL_LIGHT0,GL_SPECULAR,spec[Proj->Sun?1:0]);
-      glLightfv(GL_LIGHT0,GL_DIFFUSE,diff[Proj->Sun?1:0]);
-      glMaterialfv(GL_FRONT,GL_SPECULAR,ref[Proj->Sun?1:0]);
+      glLightfv(GL_LIGHT0,GL_AMBIENT,amb);
+      glLightfv(GL_LIGHT0,GL_SPECULAR,spec);
+      glLightfv(GL_LIGHT0,GL_DIFFUSE,diff);
+      glMaterialfv(GL_FRONT,GL_SPECULAR,ref);
       glLightfv(GL_LIGHT0,GL_POSITION,Proj->LightPos);
    }
 

@@ -8,13 +8,14 @@ uniform   int       Bi;
 uniform   int       Bellow;
 uniform   int       Above;
 uniform   int       IsMask;
+uniform   int       Sun;
 uniform   sampler1D Colormap;
 uniform   sampler2DRect Interval;
 uniform   sampler2DRect Data;
 uniform   sampler2DRect Mask;
 
-//varying   vec3          LightDir;
-//varying   vec3          Normal;
+varying   vec3          LightDir;
+varying   vec3          Normal;
 
 vec4 texture2DRectBi(sampler2DRect Tex,vec2 ST) {
 
@@ -54,7 +55,7 @@ void main() {
 
    float idx;
    int   n;
-   vec4  inter,frg,mask;
+   vec4  inter,frg=vec4(0.5),mask,color=vec4(0.5);
    float dd,sz,factor;
 
    mask.a=1.0;
@@ -108,7 +109,7 @@ void main() {
       frg=vec4(texture1D(Colormap,idx));
 
       frg.a*=gl_Color.a;
-      gl_FragColor=frg;
+      color = frg;
    }
 
 //   normal = normalize(Normal);
@@ -116,4 +117,32 @@ void main() {
 
 //   cf=intensity;
 //   gl_FragColor = vec4(gl_FragColor.rgb*cf,gl_FragColor.a*gl_FrontMaterial.diffuse.a);
+
+
+   if(Sun!=0){
+      vec4  ambient, diffuse;
+      color=gl_LightModel.ambient*gl_FrontMaterial.ambient*frg;
+      float NdotL,NdotHV;
+      float att,dist;
+      vec3  halfV;
+
+      /* compute the dot product between normal and normalized lightdir */
+      NdotL=(length(gl_LightSource[0].position)<1.0)?
+            max(0.0,dot(Normal,vec3(gl_LightSource[0].position))):
+            max(0.0,dot(Normal,vec3(gl_LightSource[0].position)))*0.5;
+      halfV=normalize(gl_LightSource[0].halfVector.xyz);
+
+      /* The ambient terms have been separated since one of them */
+      /* suffers attenuation */
+      ambient=frg*gl_LightSource[0].ambient;
+      diffuse=frg*gl_LightSource[0].diffuse;
+
+      dist = length(LightDir);
+      att=1.0/(gl_LightSource[0].constantAttenuation+gl_LightSource[0].linearAttenuation*dist+gl_LightSource[0].quadraticAttenuation*dist*dist)*.75;
+      color+=att*(diffuse*NdotL+ambient);
+      NdotHV= max(dot(Normal,halfV),0.0);
+      color +=att*gl_FrontMaterial.specular*gl_LightSource[0].specular*pow(NdotHV,gl_FrontMaterial.shininess);
+   }
+   gl_FragColor=color;
+
 }

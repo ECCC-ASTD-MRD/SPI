@@ -94,6 +94,15 @@
    }\
 }
 
+//structure pour les parametres d'illumination
+typedef struct GLLightingParams{
+    GLfloat GLLightAmbiant;
+    GLfloat GLLightDiffuse;
+    GLfloat GLLightSpecular;
+    GLfloat GLMaterialSpecular;
+    int GLMaterialShininess;
+} GLLightingParams;
+
 enum GLExtToken { ARB_multisample, ARB_texture_compression, ARB_vertex_buffer_object };
 enum GLVendor   { NVIDIA=0, ATI=1, VIRTUALGL=2, MESA=3 };
 
@@ -162,7 +171,8 @@ typedef struct GLParams  {
    int            ShaderNb;             // Number of shaders
    int            Vendor;               // Graphic driver vendor
 
-   double MagScale,MagX,MagY,MagD;      // Magnifying paameters
+   double MagScale,MagX,MagY,MagD;      // Magnifying parameters
+   GLLightingParams     *GLLighting;     //Parametre pour l'illumination
 } GLParams;
 
 typedef struct T_glBitmap {
@@ -234,6 +244,7 @@ GLint       GLShader_UniformGet(const GLhandleARB Prog,const GLcharARB *Name);
 GLint       GLShader_AttribGet(const GLhandleARB Prog,const GLcharARB *Name);
 GLhandleARB GLShader_Load(const GLcharARB *Path,const GLcharARB *Name);
 GLhandleARB GLShader_Install(const GLcharARB *VertSrc,const GLcharARB *FragSrc);
+GLhandleARB GLShader_InstallGeom(const GLcharARB *VertSrc,const GLcharARB *FragSrc,const GLcharARB *GeomSrc);
 void        GLShader_UnInstall(GLhandleARB Prog);
 
 void        trPostscriptBuffer(Tcl_Interp *Interp,int Buffer,int X0,int Y0,int Width,int Height,TRcontext *TR);

@@ -242,8 +242,8 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    int      idx;
    Tcl_Obj *obj;
 
-   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-wait","-usethreads",NULL };
-   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,WAIT,USETHREADS };
+   static CONST char *sopt[] = { "-init","-shutdown","-shaderpath","-shaders","-resolution","-aliasing","-fsaa","-dithering","-shading","-filtering","-zbuffer","-time","-xexpose","-xbatch","-debug","-direct","-shaderavailable","-info","-delay","-wait","-usethreads","-lightambiant","-lightdiffuse","-lightspecular","-materialspecular","-materialshininess",NULL };
+   enum                opt { INIT,SHUTDOWN,SHADERPATH,SHADERS,RESOLUTION,ALIASING,FSAA,DITHERING,SHADING,FILTERING,ZBUFFER,TIME,XEXPOSE,XBATCH,DEBUG,DIRECT,SHADERAVAILABLE,INFO,DELAY,WAIT,USETHREADS,LIGHTAMBIANT,LIGHTDIFFUSE,LIGHTSPECULAR,MATERIALSPECULAR,MATERAILSHININESS };
 
    Tcl_ResetResult(Interp);
 
@@ -439,10 +439,105 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_GetBooleanFromObj(Interp,Objv[++i],&GLRender->GLDebug);
             }
             break;
+         case LIGHTAMBIANT:
+         {
+            if(GLRender->GLLighting == NULL) {
+                initialisationGLLightingParams();
+            }
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightAmbiant));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightAmbiant = (float)x;
+            }
+            break;
+         }
+         case LIGHTDIFFUSE:
+         {
+            if(GLRender->GLLighting == NULL) {
+                initialisationGLLightingParams();
+            }
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightDiffuse));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightDiffuse = (float)x;
+            }
+            break;
+         }
+         case LIGHTSPECULAR:
+         {
+            if(GLRender->GLLighting == NULL) {
+                initialisationGLLightingParams();
+            }
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLLightSpecular));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLLightSpecular = (float)x;
+            }
+            break;
+         }
+         case MATERIALSPECULAR:
+         {
+            if(GLRender->GLLighting == NULL) {
+                initialisationGLLightingParams();
+            }
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewDoubleObj((double)GLRender->GLLighting->GLMaterialSpecular));
+            } else {
+               double x=0;
+               Tcl_GetDoubleFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLMaterialSpecular = (float)x;
+            }
+            break;
+         }
+         case MATERAILSHININESS:
+         {
+            if(GLRender->GLLighting == NULL) {
+                initialisationGLLightingParams();
+            }
+            if (Objc==2) {
+               Tcl_SetObjResult(Interp,Tcl_NewIntObj(GLRender->GLLighting->GLMaterialShininess));
+            } else {
+               int x=0;
+               Tcl_GetIntFromObj(Interp,Objv[++i],&x);
+               GLRender->GLLighting->GLMaterialShininess = x;
+            }
+            break;
+         }
       }
    }
    return TCL_OK;
 }
+
+/*----------------------------------------------------------------------------
+ * Nom      : <initialisationGLLightingParams>
+ * Creation : Mai 2019 A. Germain
+ *
+ * But      : Initialiser les parametres qui sont utilises pour
+ *              l'illumination avec des valeurs par defaut
+ *
+ * Parametres :
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void initialisationGLLightingParams(){
+    GLRender->GLLighting = malloc(sizeof(GLLightingParams));
+    GLRender->GLLighting->GLLightAmbiant = 0.1;
+    GLRender->GLLighting->GLLightDiffuse = 1.5;
+    GLRender->GLLighting->GLLightSpecular = 0.6;
+    GLRender->GLLighting->GLMaterialSpecular = 1.0;
+    GLRender->GLLighting->GLMaterialShininess = 64;
+}
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <trRasterPos2i>
@@ -2047,6 +2142,7 @@ void glInit(Tcl_Interp *Interp) {
    GLRender->Shaders         = NULL;
    GLRender->ShaderPath      = NULL;
    GLRender->ShaderNb        = 0;
+   GLRender->GLLighting      = NULL;
 
    memset(GLRender->Ext,0x0,sizeof(GLboolean));
 
