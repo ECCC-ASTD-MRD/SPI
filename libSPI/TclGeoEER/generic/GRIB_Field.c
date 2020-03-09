@@ -562,7 +562,7 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
          case 110: lval2=LVL_HYBRID; break;
          case 113: lval2=LVL_THETA; break;
          case 114: lval2=LVL_THETA; lvl=475.0-lvl;  break;
-         case 119: lval2=LVL_ETA;  lvl/=1000.0; break;
+         case 119: lval2=LVL_ETA;  lvl/=10000.0; break;
          case 120: lval2=LVL_ETA;  lvl/=100.0; break;
          default: lval2=LVL_UNDEF;
       }
