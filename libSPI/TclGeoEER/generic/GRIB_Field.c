@@ -1287,7 +1287,9 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
                   case LVL_MAGL  : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
                   case LVL_HYBRID: sprintf(strend(buf)," %8.6f %-2s",lvl,units[lvtyp]); break;
                   case LVL_THETA : sprintf(strend(buf)," %8.4f %-2s",lvl,units[lvtyp]); break;
+                  case LVL_ETA   : sprintf(strend(buf)," %8.4f %-2s",lvl,units[lvtyp]); break;
                   case LVL_HOUR  : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
+                  default        : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
                }
                sprintf(strend(buf)," %8i %-2s %8i %-2s GRIB%-8i %08i%04i %s %i %i %i %i gribfield",0,units[LVL_HOUR],0,units[LVL_UNDEF],head.Version,idate,itime/100,File->Id,nb,head.IP1,0,0);
                Tcl_SetStringObj(obj,buf,-1);
