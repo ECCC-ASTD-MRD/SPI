@@ -1045,8 +1045,9 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    TRPNHeader  *rhead=(TRPNHeader*)RPN->Head;
    TCoord co;
    float  xg[4];
-   int    yyyy,mm,dd,h,m,s,tmp;
+   int    yyyy,mm,dd,h,m,s,ltype;
    size_t len;
+   double lvl;
 
    // Copy data
    Def_Free(Field->Def);
@@ -1062,25 +1063,44 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    grib_set_long(head->Handle,"endStep",rhead->IP2);
    grib_set_long(head->Handle,"timeRangeIndicator",10); 
 
-   // Define vertical parameters   
+   // Define level type
    switch(RPN->ZRef->Type) {
-      case LVL_MASL:         tmp=103; break;  //  Meters above sea level
-      case LVL_SIGMA:        tmp=107; break;  //  P/Ps
-      case LVL_PRES:         tmp=100; break;  //  Pressure mb
-      case LVL_MAGL:         tmp=105; break;  //  Meters above ground level
-      case LVL_HYBRID:       tmp=109; break;  //  Hybrid levels
-      case LVL_THETA:        tmp=113; break;  //  ?
-      case LVL_ETA:          tmp=119; break;  //  (Pt-P)/(Pt-Ps) -not in convip
-      case LVL_GALCHEN:      tmp=105; break;  //  Original Gal-Chen -not in convip (JP Defined)
+      case LVL_MASL:         ltype=103; break;  //  Meters above sea level
+      case LVL_SIGMA:        ltype=107; break;  //  P/Ps
+      case LVL_PRES:         ltype=100; break;  //  Pressure mb
+      case LVL_MAGL:         ltype=105; break;  //  Meters above ground level
+      case LVL_HYBRID:       ltype=109; break;  //  Hybrid levels
+      case LVL_THETA:        ltype=113; break;  //  ?
+      case LVL_ETA:          ltype=119; break;  //  (Pt-P)/(Pt-Ps) -not in convip
+      case LVL_GALCHEN:      ltype=105; break;  //  Original Gal-Chen -not in convip (JP Defined)
           
-      case LVL_UNDEF:        tmp=255; break;  //  units are user defined
-      case LVL_ANGLE:        tmp=255; break;  //  Radar angles (JP defined)
-      case LVL_MPRES:        tmp=255; break;  //  Metres-pression   
-      default:               tmp=255; break;
+      case LVL_UNDEF:        ltype=255; break;  //  units are user defined
+      case LVL_ANGLE:        ltype=255; break;  //  Radar angles (JP defined)
+      case LVL_MPRES:        ltype=255; break;  //  Metres-pression
+      default:               ltype=255; break;
    }
-   
-   grib_set_long(head->Handle,"indicatorOfTypeOfLevel",tmp); 
-   grib_set_double(head->Handle,"level",Field->ZRef->Levels[Field->Def->Level]); 
+   grib_set_long(head->Handle,"indicatorOfTypeOfLevel",ltype);
+
+   // Define level
+   lvl = RPN->ZRef->Levels[Field->Def->Level];
+   if (head->Version==1) {
+      // Grib 1 has some strange scaling stuff going on
+      switch(ltype) {
+         case 125: lvl*=100.0;            break;
+         case 111:
+         case 112: lvl=-lvl*100.0;        break;
+         case 121: lvl-=1100.0;           break;
+         case 210: lvl/=100.0;            break;
+         case 160: lvl=-lvl;              break;
+         case 107: lvl*=10000.0;          break;
+         case 108: lvl*=100.0;            break;
+         case 128: lvl=(1.1-lvl)*1000.0;  break;
+         case 114: lvl=475.0-lvl;         break;
+         case 119: lvl*=10000.0;          break;
+         case 120: lvl*=100.0;            break;
+      }
+   }
+   grib_set_double(head->Handle,"level",lvl);
    
    // Define grid parameters
    grib_set_long(head->Handle,"Ni",RPN->Def->NI);
