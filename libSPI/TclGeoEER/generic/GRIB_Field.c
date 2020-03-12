@@ -1052,6 +1052,14 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    // Copy data
    Def_Free(Field->Def);
    Field->Def=Def_Copy(RPN->Def);
+
+   // TODO : Copy ZRef, GPos, GRef ?
+
+   // Define some field metadata parameter
+   strncpy(head->NOMVAR,rhead->NOMVAR,4); head->NOMVAR[5]='\0';
+   head->IP1 = rhead->IP1;
+   head->DATEO = rhead->DATEO;
+   head->DATEV = rhead->DATEV;
   
    // Define time parameters   
    System_StampDecode(rhead->DATEO,&yyyy,&mm,&dd,&h,&m,&s);
