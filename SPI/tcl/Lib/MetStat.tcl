@@ -681,8 +681,8 @@ proc MetStat::Calculate { X Y { Factor -1 } } {
 }
 
 #----- Load RPN dictionnary
-if { [info exists env(AFSISIO)] } {
-   set path $env(AFSISIO)/datafiles/constants
+if { [info exists env(CMCCONST)] } {
+   set path $env(CMCCONST)/opdict
 } else {
    set path $env(SPI_LIB)/share/rmn
 }

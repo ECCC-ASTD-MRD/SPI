@@ -54,8 +54,8 @@ namespace eval Obs {
    if { [llength [info command metobs]] } {
       #----- Lecture des tables BUFR
       set code [ catch {
-         if { [info exists env(AFSISIO)] } {
-            set path $env(AFSISIO)/datafiles/constants
+         if { [info exists env(CMCCONST)] } {
+            set path $env(CMCCONST)
          } else {
             set path $env(SPI_LIB)/share/rmn
          }
