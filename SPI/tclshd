@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 #----- This script use a respawn on sub tcl process if it dies with error code !=0
 #----- To kill whole tree, use -[parent pid] ex:
 #----- if parent pid is 51234, kill -9 -51234 
