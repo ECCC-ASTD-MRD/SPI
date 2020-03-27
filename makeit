@@ -138,6 +138,6 @@ if [[ $SRC -eq 1 ]]; then
    mkdir "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
    cp -fr "$CMCCONST"/table_[bd]_bufr{,_[ef]} "$CMCCONST"/opdict/* "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
    
-   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
+   cd ${SSM_DEV}; tar -zcf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
 fi
 
