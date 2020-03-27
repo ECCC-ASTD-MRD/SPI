@@ -114,15 +114,18 @@ if [[ $SRC -eq 1 ]]; then
 
    printf -- "\n----- Building source package : ${SSM_DEV}/src/SPI-${SPI_VERSION}  -----\n"
 
+   spiroot="$(cd "$(dirname "$0")" && pwd -P)"
+
    cd ../libeerUtils
    ./makeit -src
 
    cd ../GenPhysX
    ./makeit -src
    
-   cd ../SPI/libSPI
+   cd "$spiroot/libSPI"
    ./makeit -clear
-   cd ..
+
+   cd "$spiroot"
 
    rm -f -r ${SSM_DEV}/src/SPI* ${SSM_DEV}/src/libSPI* ${SSM_DEV}/src/INSTALL.txt ${SSM_DEV}/src/makeit
    cp -r libSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
