@@ -55,6 +55,8 @@ if [[ $BLD -eq 1 ]]; then
    
    printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
    mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
+
+   set -e
    
    cd ${SSM_DEV}/src/eerUtils-${EER_VERSION}
    ./makeit -build -ssm
@@ -69,6 +71,8 @@ if [[ $BLD -eq 1 ]]; then
    ./makeit -reconf -build -ssm
    
    cd ${SSM_DEV}/src/
+
+   set +e
 fi
 
 if [[ $INS -eq 1 ]]; then
