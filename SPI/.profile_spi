@@ -18,7 +18,7 @@ export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
 export APP_VERBOSE=INFO
 
 #----- Dependencies (within CMC)
-if [[ -n \${ORDENV_VERSION} ]]; then
+if [[ -n ${ORDENV_VERSION} ]]; then
    if [ `domainname -d` = "science.gc.ca" ]; then
       [[ ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]]                          || . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
       [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
