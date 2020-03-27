@@ -135,9 +135,8 @@ if [[ $SRC -eq 1 ]]; then
    find ${SSM_DEV}/src/libSPI-${SPI_VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    
    #-----Copy constant files
-   mkdir ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
-   cd $AFSISIO/datafiles/constants/
-   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   mkdir "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
+   cp -fr "$CMCCONST"/table_[bd]_bufr{,_[ef]} "$CMCCONST"/opdict/* "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
    
    cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
 fi
