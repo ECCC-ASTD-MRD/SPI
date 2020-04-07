@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 export SPI_PATH=${0%/tclsh}
 . ${SPI_PATH}/.profile_spi

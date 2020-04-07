@@ -55,6 +55,8 @@ if [[ $BLD -eq 1 ]]; then
    
    printf -- "\n----- Building packages in : ${SSM_DEV}/build  -----\n"
    mkdir ${SSM_DEV}/build ${SSM_DEV}/package ${SSM_DEV}/workspace 
+
+   set -e
    
    cd ${SSM_DEV}/src/eerUtils-${EER_VERSION}
    ./makeit -build -ssm
@@ -69,6 +71,8 @@ if [[ $BLD -eq 1 ]]; then
    ./makeit -reconf -build -ssm
    
    cd ${SSM_DEV}/src/
+
+   set +e
 fi
 
 if [[ $INS -eq 1 ]]; then
@@ -110,15 +114,18 @@ if [[ $SRC -eq 1 ]]; then
 
    printf -- "\n----- Building source package : ${SSM_DEV}/src/SPI-${SPI_VERSION}  -----\n"
 
+   spiroot="$(cd "$(dirname "$0")" && pwd -P)"
+
    cd ../libeerUtils
    ./makeit -src
 
    cd ../GenPhysX
    ./makeit -src
    
-   cd ../SPI/libSPI
+   cd "$spiroot/libSPI"
    ./makeit -clear
-   cd ..
+
+   cd "$spiroot"
 
    rm -f -r ${SSM_DEV}/src/SPI* ${SSM_DEV}/src/libSPI* ${SSM_DEV}/src/INSTALL.txt ${SSM_DEV}/src/makeit
    cp -r libSPI ${SSM_DEV}/src/libSPI-${SPI_VERSION}
@@ -128,10 +135,9 @@ if [[ $SRC -eq 1 ]]; then
    find ${SSM_DEV}/src/libSPI-${SPI_VERSION} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
    
    #-----Copy constant files
-   mkdir ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
-   cd $AFSISIO/datafiles/constants/
-   cp -frd table_{b,d}_bufr table_{b,d}_bufr_{e,f} ops.variable_dictionary.xml dict-2.2.dtd iso-lat1.ent ${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn
+   mkdir "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
+   cp -fr "$CMCCONST"/table_[bd]_bufr{,_[ef]} "$CMCCONST"/opdict/* "${SSM_DEV}/src/libSPI-${SPI_VERSION}/share/rmn"
    
-   cd ${SSM_DEV}; tar -zcvf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
+   cd ${SSM_DEV}; tar -zcf ${SSM_DEV}/package/SPI_${SPI_VERSION}-src.tgz src
 fi
 

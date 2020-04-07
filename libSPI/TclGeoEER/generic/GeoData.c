@@ -40,7 +40,7 @@
 #include "App.h"
 #include "GeoData.h"
 #include "Projection.h"
-#include "gdal.h"
+#include "gdal_safe.h"
 #include "stars.h"
 
 static GDB_Geo  *GeoPtr;
