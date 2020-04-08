@@ -1204,7 +1204,7 @@ tephi$Id\$date($Id,'[lindex $graph(Dates) $graph(DateIdx)]',$graph(PTop),showWin
 #
 #----------------------------------------------------------------------------
 proc RGraph::Tephi::RemoveBind { C Id Event } {
-    catch {$C bin $Id $Event [regsub -all {(^|\n)[^\n]+;\#Tephi(\n|$)} [$C bin $Id $Event] ""]}
+    catch {$C bind $Id $Event [regsub -all {(^|\n)[^\n]+;\#Tephi(\n|$)} [$C bind $Id $Event] ""]}
 }
 proc RGraph::Tephi::RemoveTrace { Type Name } {
     foreach t [trace info $Type $Name] {
