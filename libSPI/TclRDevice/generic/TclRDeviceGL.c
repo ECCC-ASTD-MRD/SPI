@@ -42,7 +42,6 @@ typedef struct TCtx {
     Tk_Font         TkFont;             // Current font
     int             Alias;              // Whether we use anti-aliasing or not
     double          InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
-    GLint           VP[4];              // Viewport to restore after drawing
     int             Mode;               // Mode in which we are (0=idle, 1=drawing)
 } TCtx;
 
@@ -203,7 +202,7 @@ void TclRDeviceGL_SetFont(void *GE,Tk_Font Font) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclRDeviceGL_GetFramebuffer>
+ * Nom          : <TclRDeviceGL_SetAlias>
  * Creation     : Décembre 2018 - E. Legault-Ouellet
  *
  * But          : Set whether we use anti-aliasing or not
@@ -1052,25 +1051,21 @@ static void TclRDeviceGL_Mode(int Mode,pDevDesc Dev) {
             glMatrixMode(GL_MODELVIEW);
             glPopMatrix();
 
-            // Restore viewport
-            glViewport(ctx->VP[0],ctx->VP[1],ctx->VP[2],ctx->VP[3]);
+            // Restore attributes
+            glPopAttrib();
 
             // Set back the rendering target to the screen
             glBindFramebuffer(GL_FRAMEBUFFER,0);
             glDrawBuffer(GL_BACK);
-
-            // Turn off some modes we might have enabled
-            glDisable(GL_LINE_STIPPLE);
-            glDisable(GL_BLEND);
-            glDisable(GL_SCISSOR_TEST);
             
             // Signal a refresh
             RDeviceItem_SignalRedraw(ctx->Item);
 
             break;
         case 1: // Device starts drawing
-            // Save viewport state
-            glGetIntegerv(GL_VIEWPORT,ctx->VP);
+            // Save all attribs that we could change to restore them later (including the viewport)
+            glPushAttrib(GL_ACCUM_BUFFER_BIT|GL_CURRENT_BIT|GL_ENABLE_BIT|GL_LINE_BIT|GL_MULTISAMPLE_BIT|
+                    GL_POINT_BIT|GL_POLYGON_BIT|GL_POLYGON_STIPPLE_BIT|GL_SCISSOR_BIT|GL_STENCIL_BUFFER_BIT|GL_VIEWPORT_BIT);
 
             // Set the rendering target
             glBindFramebuffer(GL_FRAMEBUFFER,ctx->FBuf);
