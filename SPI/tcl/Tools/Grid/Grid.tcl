@@ -333,7 +333,7 @@ proc Grid::SettingsBuild { Params { C False } } {
   Grdc_dx     = %.6f, Grdc_dy     = %.6f,
   Grdc_lonr   = %9.4f, Grdc_latr  = %8.4f,
   Grdc_maxcfl = %i, Grdc_nbits  = 32, Grdc_nfe    = CASC_NESDT\n" \
-         $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
+         $param(NI) $param(NJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(MaxCFL)]
                    } else {      
                       return [format "&grid
   Grd_typ_S  = 'LU',
@@ -343,7 +343,7 @@ proc Grid::SettingsBuild { Params { C False } } {
   Grd_xlon1  = %9.4f, Grd_xlat1 = %8.4f,
   Grd_xlon2  = %9.4f, Grd_xlat2 = %8.4f,
   Grd_maxcfl = %i\n" \
-         $param(RNI) $param(RNJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
+         $param(NI) $param(NJ) $param(ResLLX) $param(ResLLY) $param(LonR) $param(LatR) $param(XLon1) $param(XLat1) $param(XLon2) $param(XLat2) $param(MaxCFL)]
                    }
                  }
          default { return $param(PGSM) }
