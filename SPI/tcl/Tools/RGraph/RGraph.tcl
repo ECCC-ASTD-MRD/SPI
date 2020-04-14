@@ -71,7 +71,7 @@ proc RGraph::Init { } {
         set Data(GraphTypes)    {}
 
         #----- Load all the different graphs
-        foreach f [glob -nocomplain $::env(HOME)/.spi/RGraph/*.tcl $Data(Home)/types/*.tcl] {
+        foreach f [glob -nocomplain $::env(HOME)/.spi/RGraph/*.tcl $Data(Home)/Types/*.tcl] {
             uplevel #0 source $f
         }
 
@@ -607,6 +607,11 @@ proc RGraph::CreateBatch { Lat Lon Type DataSrc args } {
 
     Init
 
+    #----- Make sure the type is in the list of valid types
+    if { $Type ni $Data(GraphTypes) } {
+        return ""
+    }
+
     #----- Create a new RGraph
     set id [NewId 0]
     if { ![SPI::ObjectAdd RGraph "" 2] } {
@@ -628,6 +633,7 @@ proc RGraph::CreateBatch { Lat Lon Type DataSrc args } {
 
     #----- Update the graph
     if { [catch {UpdateGraph $id}] || !$Data(DataValid$id) } {
+        Close $id
         return ""
     }
 
