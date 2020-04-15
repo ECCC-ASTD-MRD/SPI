@@ -11,6 +11,6 @@ void TclRDeviceGL_Redraw(void *GE);
 void TclRDeviceGL_Resize(void *GE,int W,int H);
 void TclRDeviceGL_SetFont(void *GE,Tk_Font Font);
 void TclRDeviceGL_SetAlias(void *GE,int Alias);
-GLuint TclRDeviceGL_GetFramebuffer(void *GE);
+int TclRDeviceGL_CopyBuffer(void *GE,int BufX,int BufY,int W,int H,int DrawX,int DrawY);
 
 #endif //TCLRDEVICEGL_H

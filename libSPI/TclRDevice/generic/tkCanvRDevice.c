@@ -527,7 +527,6 @@ static void RDeviceDisplay(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Draw
 static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Drawable Drawable,int X,int Y,int Width,int Height) {
     RDeviceItem     *rdv = (RDeviceItem*)ItemPtr;
     int             x,y,w,h,drawX,drawY;
-    GLuint          fbuf;
 
     // This canvas doesn't deal with updates the same way and rely mostly on GL's clipping.
     // We'll therefore ignore the area to update and just overwrite the values with the whole visible part
@@ -551,25 +550,14 @@ static void RDeviceDisplayGL(Tk_Canvas Canv,Tk_Item *ItemPtr,Display *Display,Dr
     //Tk_CanvasDrawableCoords(Canv,rdv->Header.x1+x,rdv->Header.y2-y,&drawX,&drawY);
     drawX = rdv->Header.x1 + x - X;
     drawY = rdv->Header.y2 - y - Y;
+
+    // Window coordinates and canvas coordinates are reversed
+    drawY = Height-drawY;
+
     DBGPRINTF("Coords: orig=%d %d drawable=%d %d (Canvas dim : %d %d)\n",rdv->Header.x1+x,rdv->Header.y2-y,drawX,drawY,Width,Height);
     DBGPRINTF("x(%d) y(%d) w(%d) h(%d)\n",x,y,w,h);
 
-    // Blit (copy) the RDevice's framebuffer into the screen framebuffer
-    if( !rdv->Blank && (fbuf=TclRDeviceGL_GetFramebuffer(rdv->RDev)) ) {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER,fbuf);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glDrawBuffer(GL_BACK);
-
-        drawY = Height-drawY;
-        DBGPRINTF("Blit: %d,%d -> %d,%d @ %d,%d -> %d,%d\n",x,y,x+w,y+h,drawX,drawY,drawX+w,drawY+h);
-        glBlitFramebuffer(x,y,x+w,y+h,drawX,drawY,drawX+w,drawY+h,GL_COLOR_BUFFER_BIT,GL_NEAREST);
-
-        glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
-    } else {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
-        glDrawBuffer(GL_BACK);
-
+    if( rdv->Blank || !TclRDeviceGL_CopyBuffer(rdv->RDev,x,y,w,h,drawX,drawY) ) {
         glColor4ub(255,255,255,255);
         glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
         glBegin(GL_QUADS);
