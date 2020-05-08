@@ -24,11 +24,25 @@
 
 #define MM2INCH     0.0393701
 
+// Offscreen buffer
+typedef enum OffBufferType {OBUF_NONE,OBUF_FBO,OBUF_GLX} OffBufferType;
+typedef union TOffBuffer {
+    struct TFBO {
+        GLuint      FBuf,RBuf;          // Framebuffer and renderbuffer for offscreen rendering
+    } FBO;
+    struct TGLX {
+        GLXContext  GLCtx;              // OpenGL Context for the pbuffer
+        GLXFBConfig *GLConfig;          // OpenGL config
+        GLXPbuffer  PBuf;               // OpenGL pbuffer for offscreen rendering
+    } GLX;
+} TOffBuffer;
+
 typedef struct TCtx {
     Tcl_Obj         *PS;                // PostScript buffer (MUST be first to use the PS functionality)
     Tk_Window       TkWin;              // TkWindow (MUST be second for PS functionality)
     Display         *Display;           // Connection to the X server
-    GLuint          FBuf,RBuf;          // Framebuffer and renderbuffer for offscreen rendering
+    OffBufferType   OBufType;           // Offscreen buffer type
+    TOffBuffer      OBuf;               // Offscreen buffer rendering info
     GLUtesselator   *Tess;              // Tesselator to draw polygons
     double          *TessBuf;           // Pointer to the tesselator extra point buffer
     void            *Item;              // RDeviceItem (needs to be passed to signal a redraw)
@@ -42,7 +56,6 @@ typedef struct TCtx {
     Tk_Font         TkFont;             // Current font
     int             Alias;              // Whether we use anti-aliasing or not
     double          InPxX,InPxY;        // Inch per Pixel conversion factor in X and Y
-    GLint           VP[4];              // Viewport to restore after drawing
     int             Mode;               // Mode in which we are (0=idle, 1=drawing)
 } TCtx;
 
@@ -144,10 +157,10 @@ void TclRDeviceGL_Resize(void *GE,int W,int H) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclRDeviceGL_GetFramebuffer>
+ * Nom          : <TclRDeviceGL_CopyBuffer>
  * Creation     : Décembre 2018 - E. Legault-Ouellet
  *
- * But          : Return the framebuffer associated with the canvas item's opaque pointer
+ * But          : Copy the offline buffer that we use onto the current drawable
  *
  * Parametres   :
  *  <GE>        : Graphics Engine description pointer
@@ -158,12 +171,52 @@ void TclRDeviceGL_Resize(void *GE,int W,int H) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-GLuint TclRDeviceGL_GetFramebuffer(void* GE) {
+int TclRDeviceGL_CopyBuffer(void *GE,int BufX,int BufY,int W,int H,int DrawX,int DrawY) {
     if( GE ) {
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
-        return ctx->FBuf;
+
+        switch( ctx->OBufType ) {
+            case OBUF_NONE:
+                break;
+            case OBUF_FBO:
+                //glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+                glBindFramebuffer(GL_READ_FRAMEBUFFER,ctx->OBuf.FBO.FBuf);
+                glReadBuffer(GL_COLOR_ATTACHMENT0);
+                //glDrawBuffer(GL_BACK);
+
+                DBGPRINTF("Blit: %d,%d -> %d,%d @ %d,%d -> %d,%d\n",BufX,BufY,BufX+W,BufY+H,DrawX,DrawY,DrawX+W,DrawY+H);
+                glBlitFramebuffer(BufX,BufY,BufX+W,BufY+H,DrawX,DrawY,DrawX+W,DrawY+H,GL_COLOR_BUFFER_BIT,GL_NEAREST);
+
+                glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+                return 1;
+
+            case OBUF_GLX:
+                {
+                    GLXDrawable gldraw = glXGetCurrentDrawable();
+                    GLXContext glctx = glXGetCurrentContext();
+
+                    if( glXMakeContextCurrent(ctx->Display,gldraw,ctx->OBuf.GLX.PBuf,ctx->OBuf.GLX.GLCtx) ) {
+                        // We need to import in our context the viewport, matrix and scissor info so that the pixels we copy land correctly on the destination
+                        glPushAttrib(GL_CURRENT_BIT|GL_TRANSFORM_BIT|GL_VIEWPORT_BIT|GL_SCISSOR_BIT);
+                        glXCopyContext(ctx->Display,glctx,ctx->OBuf.GLX.GLCtx,GL_TRANSFORM_BIT|GL_VIEWPORT_BIT|GL_SCISSOR_BIT);
+
+                        // Set the raster position and make the copy from the pbuffer to the back buffer
+                        DBGPRINTF("CopyPixels: %dx%d pixels from %d,%d to %d,%d\n",W,H,BufX,BufY,DrawX,DrawY);
+                        glWindowPos2i(DrawX,DrawY);
+                        glCopyPixels(BufX,BufY,W,H,GL_COLOR);
+
+                        // Restore the attributes of the current context and restore the old context/buffer for both read and write
+                        glPopAttrib();
+                        glXMakeCurrent(ctx->Display,gldraw,glctx);
+
+                        return 1;
+                    }
+                }
+                break;
+        }
     }
-    return None;
+
+    return 0;
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -203,7 +256,7 @@ void TclRDeviceGL_SetFont(void *GE,Tk_Font Font) {
 }
 
 /*--------------------------------------------------------------------------------------------------------------
- * Nom          : <TclRDeviceGL_GetFramebuffer>
+ * Nom          : <TclRDeviceGL_SetAlias>
  * Creation     : Décembre 2018 - E. Legault-Ouellet
  *
  * But          : Set whether we use anti-aliasing or not
@@ -232,6 +285,28 @@ void TclRDeviceGL_SetAlias(void* GE,int Alias) {
 
 // Helper functions
 
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_GetGLVersion>
+ * Creation     : Février 2020 - E. Legault-Ouellet
+ *
+ * But          : Return (and cache) the GL_VERSION string in a numeric form (only major.minor format version)
+ *
+ * Parametres   :
+ *
+ * Retour       : The GL_VERSION version number in a double (major.minor only)
+ *
+ * Remarque     :
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static double TclRDeviceGL_GetGLVersion() {
+    static double v=-1.0;
+
+    if( v < 0.0 ) {
+        v = atof((const char*)glGetString(GL_VERSION));
+    }
+
+    return v;
+}
 
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDeviceGL_BufCheck>
@@ -275,10 +350,25 @@ static void* TclRDeviceGL_BufCheck(TCtx *restrict Ctx,size_t Size) {
 static void TclRDeviceGL_CtxFree(TCtx *Ctx) {
     if( Ctx ) {
         // Free OpenGL resources
-        if( Ctx->FBuf )
-            glDeleteFramebuffers(1,&Ctx->FBuf);
-        if( Ctx->RBuf )
-            glDeleteRenderbuffers(1,&Ctx->RBuf);
+        switch( Ctx->OBufType ) {
+            case OBUF_NONE:
+                break;
+            case OBUF_FBO:
+                if( Ctx->OBuf.FBO.FBuf )
+                    glDeleteFramebuffers(1,&Ctx->OBuf.FBO.FBuf);
+                if( Ctx->OBuf.FBO.RBuf )
+                    glDeleteRenderbuffers(1,&Ctx->OBuf.FBO.RBuf);
+                break;
+            case OBUF_GLX:
+                glXMakeCurrent(Ctx->Display,None,NULL);
+                if( Ctx->OBuf.GLX.PBuf != None )
+                    glXDestroyPbuffer(Ctx->Display,Ctx->OBuf.GLX.PBuf);
+                if( Ctx->OBuf.GLX.GLCtx )
+                    glXDestroyContext(Ctx->Display,Ctx->OBuf.GLX.GLCtx);
+                if( Ctx->OBuf.GLX.GLConfig )
+                    XFree(Ctx->OBuf.GLX.GLConfig);
+                break;
+        }
         if( Ctx->Tess )
             gluDeleteTess(Ctx->Tess);
 
@@ -316,47 +406,135 @@ static void TclRDeviceGL_CtxFree(TCtx *Ctx) {
  *---------------------------------------------------------------------------------------------------------------
 */
 static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Alias) {
+    int update=0;
+
+    // Alias<0 means use current setting
     if( Alias < 0 )
         Alias = Ctx->Alias;
 
+    switch( Ctx->OBufType ) {
+        case OBUF_NONE:
+            // If the type of buffer is uninitialized, set it here
+            Ctx->OBufType = TclRDeviceGL_GetGLVersion()>=3.0 ? OBUF_FBO : OBUF_GLX;
+
+            switch( Ctx->OBufType ) {
+                case OBUF_NONE:
+                    break;
+                case OBUF_FBO:
+                    Ctx->OBuf.FBO.FBuf      = 0;
+                    Ctx->OBuf.FBO.RBuf      = 0;
+                    break;
+                case OBUF_GLX:
+                    Ctx->OBuf.GLX.GLCtx     = NULL;
+                    Ctx->OBuf.GLX.GLConfig  = NULL;
+                    Ctx->OBuf.GLX.PBuf      = None;
+                    break;
+            }
+
+            update = 2;
+            break;
+
+        case OBUF_FBO:
+            update = !Ctx->OBuf.FBO.FBuf || !Ctx->OBuf.FBO.RBuf;
+            break;
+
+        case OBUF_GLX:
+            update = Ctx->OBuf.GLX.PBuf==None;
+            break;
+    }
+
     // Check if we need to do something
-    if( !Ctx->FBuf || !Ctx->RBuf || Ctx->PxW<W || Ctx->PxH<H || Ctx->Alias!=Alias ) {
-        // Free the old framebuffer object
-        if( Ctx->FBuf ) {
-            glDeleteFramebuffers(1,&Ctx->FBuf);
-            Ctx->FBuf = 0;
+    if( update || Ctx->PxW<W || Ctx->PxH<H || Ctx->Alias!=Alias ) {
+        switch( Ctx->OBufType ) {
+            case OBUF_NONE:
+                return 0;
+                break;
+            case OBUF_FBO:
+                // Free the old framebuffer object
+                if( Ctx->OBuf.FBO.FBuf ) {
+                    glDeleteFramebuffers(1,&Ctx->OBuf.FBO.FBuf);
+                    Ctx->OBuf.FBO.FBuf = 0;
+                }
+
+                // Free the renderbuffer
+                if( Ctx->OBuf.FBO.RBuf ) {
+                    glDeleteRenderbuffers(1,&Ctx->OBuf.FBO.RBuf);
+                    Ctx->OBuf.FBO.RBuf = 0;
+                }
+
+                // Create the framebuffer for offline rendering
+                glGenFramebuffers(1,&Ctx->OBuf.FBO.FBuf);
+                glBindFramebuffer(GL_FRAMEBUFFER,Ctx->OBuf.FBO.FBuf);
+
+                // Create the renderbuffer
+                glGenRenderbuffers(1,&Ctx->OBuf.FBO.RBuf);
+                glBindRenderbuffer(GL_RENDERBUFFER,Ctx->OBuf.FBO.RBuf);
+                if( Alias ) {
+                    //printf("Max samples : %d\n",GL_MAX_INTEGER_SAMPLES);
+                    glRenderbufferStorageMultisample(GL_RENDERBUFFER,4,GL_RGBA8,W,H);
+                    glEnable(GL_MULTISAMPLE);
+                } else {
+                    glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,W,H);
+                }
+
+                // Link the renderbuffer to the framebuffer
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,Ctx->OBuf.FBO.RBuf);
+
+                // Check for errors
+                if( glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE ) {
+                    break;
+                } else if( update == 2 ) {
+                    // It was our first time to create an FBO, it's probably not supported. we'll fall through here
+                    Ctx->OBufType = OBUF_GLX;
+
+                    Ctx->OBuf.GLX.GLCtx     = NULL;
+                    Ctx->OBuf.GLX.GLConfig  = NULL;
+                    Ctx->OBuf.GLX.PBuf      = None;
+
+                    // NO BREAK, we will fall through
+                } else {
+                    return 0;
+                }
+
+                // FALL THROUGH (no break)
+
+            case OBUF_GLX:
+                // Free old pbuffer resources
+                glXMakeCurrent(Ctx->Display,None,NULL);
+                if( Ctx->OBuf.GLX.PBuf != None )
+                    glXDestroyPbuffer(Ctx->Display,Ctx->OBuf.GLX.PBuf);
+
+                // Get the config if we don't already have it
+                if( !Ctx->OBuf.GLX.GLConfig ) {
+                    int attrs[]={GLX_RENDER_TYPE,GLX_RGBA_BIT, GLX_DOUBLEBUFFER,1, GLX_DRAWABLE_TYPE,GLX_PBUFFER_BIT,
+                        GLX_RED_SIZE,1, GLX_GREEN_SIZE,1, GLX_BLUE_SIZE,1, GLX_ALPHA_SIZE,1,
+                        GLX_DEPTH_SIZE,0, GLX_STENCIL_SIZE,1, GLX_X_RENDERABLE,1, None};//GLX_SAMPLE_BUFFERS,0, GLX_SAMPLES,Alias,0, None };
+                    int n=0;
+
+                    // Get a matching configuration
+                    if( !(Ctx->OBuf.GLX.GLConfig=glXChooseFBConfig(Ctx->Display,Tk_ScreenNumber(Ctx->TkWin),attrs,&n)) || !n ) {
+                        return 0;
+                    }
+                }
+
+                // Create the context if it doesn't already exist
+                if( !Ctx->OBuf.GLX.GLCtx ) {
+                    // Create the GL Context
+                    if( !(Ctx->OBuf.GLX.GLCtx=glXCreateNewContext(Ctx->Display,Ctx->OBuf.GLX.GLConfig[0],GLX_RGBA_TYPE,NULL,False)) ) {
+                        return 0;
+                    }
+                }
+
+                // Create the pbuffer
+                int pattrs[]={ GLX_PBUFFER_WIDTH,W, GLX_PBUFFER_HEIGHT,H, GLX_LARGEST_PBUFFER,0, GLX_PRESERVED_CONTENTS,0, None };
+                if( (Ctx->OBuf.GLX.PBuf=glXCreatePbuffer(Ctx->Display,Ctx->OBuf.GLX.GLConfig[0],pattrs)) == None ) {
+                    return 0;
+                }
         }
-
-        // Free the renderbuffer
-        if( Ctx->RBuf ) {
-            glDeleteRenderbuffers(1,&Ctx->RBuf);
-            Ctx->RBuf = 0;
-        }
-
-        // Create the framebuffer for offline rendering
-        glGenFramebuffers(1,&Ctx->FBuf);
-        glBindFramebuffer(GL_FRAMEBUFFER,Ctx->FBuf);
-
-        // Create the renderbuffer
-        glGenRenderbuffers(1,&Ctx->RBuf);
-        glBindRenderbuffer(GL_RENDERBUFFER,Ctx->RBuf);
-        if( Alias ) {
-            //printf("Max samples : %d\n",GL_MAX_INTEGER_SAMPLES);
-            glRenderbufferStorageMultisample(GL_RENDERBUFFER,4,GL_RGBA8,W,H);
-            glEnable(GL_MULTISAMPLE);
-        } else {
-            glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8,W,H);
-        }
-
-        // Link the renderbuffer to the framebuffer
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,Ctx->RBuf);
 
         Ctx->PxW = W;
         Ctx->PxH = H;
         Ctx->Alias = Alias;
-
-        // Check for errors
-        return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
     }
 
     return 1;
@@ -1052,29 +1230,51 @@ static void TclRDeviceGL_Mode(int Mode,pDevDesc Dev) {
             glMatrixMode(GL_MODELVIEW);
             glPopMatrix();
 
-            // Restore viewport
-            glViewport(ctx->VP[0],ctx->VP[1],ctx->VP[2],ctx->VP[3]);
+            // Restore attributes
+            glPopAttrib();
 
             // Set back the rendering target to the screen
-            glBindFramebuffer(GL_FRAMEBUFFER,0);
-            glDrawBuffer(GL_BACK);
+            switch( ctx->OBufType ) {
+                case OBUF_NONE:
+                    break;
+                case OBUF_FBO:
+                    glBindFramebuffer(GL_FRAMEBUFFER,0);
+                    glDrawBuffer(GL_BACK);
+                    break;
+                case OBUF_GLX:
+                    //glXMakeCurrent(ctx->Display,Tk_WindowId(ctx->TkWin),GLRender->GLCon);
+                    glXMakeCurrent(ctx->Display,None,NULL);
+                    break;
+            }
 
-            // Turn off some modes we might have enabled
-            glDisable(GL_LINE_STIPPLE);
-            glDisable(GL_BLEND);
-            glDisable(GL_SCISSOR_TEST);
-            
             // Signal a refresh
             RDeviceItem_SignalRedraw(ctx->Item);
 
             break;
         case 1: // Device starts drawing
-            // Save viewport state
-            glGetIntegerv(GL_VIEWPORT,ctx->VP);
+            // Save all attribs that we could change to restore them later (including the viewport)
+            glPushAttrib(GL_ACCUM_BUFFER_BIT|GL_CURRENT_BIT|GL_ENABLE_BIT|GL_LINE_BIT|GL_MULTISAMPLE_BIT|
+                    GL_POINT_BIT|GL_POLYGON_BIT|GL_POLYGON_STIPPLE_BIT|GL_SCISSOR_BIT|GL_STENCIL_BUFFER_BIT|GL_VIEWPORT_BIT);
 
             // Set the rendering target
-            glBindFramebuffer(GL_FRAMEBUFFER,ctx->FBuf);
-            glDrawBuffer(GL_COLOR_ATTACHMENT0);
+            switch( ctx->OBufType ) {
+                case OBUF_NONE:
+                    break;
+                case OBUF_FBO:
+                    glBindFramebuffer(GL_FRAMEBUFFER,ctx->OBuf.FBO.FBuf);
+                    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+                    break;
+                case OBUF_GLX:
+                    glXMakeCurrent(ctx->Display,ctx->OBuf.GLX.PBuf,ctx->OBuf.GLX.GLCtx);
+
+                    // Enable/disable anti-aliasing
+                    if( ctx->Alias ) {
+                        glEnable(GL_MULTISAMPLE);
+                    } else {
+                        glDisable(GL_MULTISAMPLE);
+                    }
+                    break;
+            }
 
             // Save and reset matrix states
             glMatrixMode(GL_MODELVIEW);
@@ -1126,8 +1326,17 @@ static void TclRDeviceGL_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     DBGPRINTF("CLEAR\n");
 
     // Set the rendering target to our framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER,ctx->FBuf);
-    glDrawBuffer(GL_COLOR_ATTACHMENT0);
+    switch( ctx->OBufType ) {
+        case OBUF_NONE:
+            break;
+        case OBUF_FBO:
+            glBindFramebuffer(GL_FRAMEBUFFER,ctx->OBuf.FBO.FBuf);
+            glDrawBuffer(GL_COLOR_ATTACHMENT0);
+            break;
+        case OBUF_GLX:
+            glXMakeCurrent(ctx->Display,ctx->OBuf.GLX.PBuf,ctx->OBuf.GLX.GLCtx);
+            break;
+    }
 
     // Reset clipping
     TclRDeviceGL_Clip(Dev->left,Dev->right,Dev->bottom,Dev->top,Dev);
@@ -1137,8 +1346,17 @@ static void TclRDeviceGL_NewPage(const pGEcontext restrict GEC,pDevDesc Dev) {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Set back the rendering target to the screen
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
-    glDrawBuffer(GL_BACK);
+    switch( ctx->OBufType ) {
+        case OBUF_NONE:
+            break;
+        case OBUF_FBO:
+            glBindFramebuffer(GL_FRAMEBUFFER,0);
+            glDrawBuffer(GL_BACK);
+            break;
+        case OBUF_GLX:
+            glXMakeCurrent(ctx->Display,None,NULL);
+            break;
+    }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1835,8 +2053,7 @@ void* TclRDeviceGL_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fo
     ctx->PxH        = 0;
     ctx->Display    = Tk_Display(TkWin);
     ctx->TkWin      = TkWin;
-    ctx->FBuf       = 0;
-    ctx->RBuf       = 0;
+    ctx->OBufType   = OBUF_NONE;
     ctx->Tess       = NULL;
     ctx->Buf        = NULL;
     ctx->BufSize    = 0;
@@ -1851,7 +2068,7 @@ void* TclRDeviceGL_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fo
 
     // Allocate the framebuffer
     if( !TclRDeviceGL_ResizeFramebuffer(ctx,W,H,-1) ) {
-        Tcl_AppendResult(Interp,"Could not create GL framebuffer",NULL);
+        Tcl_AppendResult(Interp,"Could not create offscreen rendering buffer",NULL);
         goto err;
     }
 

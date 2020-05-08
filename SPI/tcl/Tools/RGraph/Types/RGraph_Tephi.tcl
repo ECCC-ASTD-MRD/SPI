@@ -8,6 +8,7 @@ namespace eval RGraph::Tephi {
 
     variable Lbl
 
+    set Lbl(Cache)          {"Utiliser la cache " "Enable cache  "}
     set Lbl(Winds)          {"Barbules de vent  " "Wind barbs    "}
     set Lbl(Temp)           {"Température       " "Temperature   "}
     set Lbl(Dewpt)          {"Point de rosée    " "Dew point     "}
@@ -704,6 +705,8 @@ proc RGraph::Tephi::New { Id Var } {
     set graph(Info)         [lindex $Param(Title) $GDefs(Lang)]
     set graph(PTop)         200
     set graph(PTopData)     200
+    set graph(Cache)        0
+    set graph(CacheData)    {}
 
     font create RGraph${Id}Iso      -family courier -size 12 -weight bold
     font create RGraph${Id}Pres     -family courier -size 15 -weight bold
@@ -764,12 +767,20 @@ proc RGraph::Tephi::ParamsWindow { Id W Var } {
     global GDefs
     variable Lbl
 
+    #----- Cache
+    frame [set f $W.cache]
+        label $f.l -text [lindex $Lbl(Cache) $GDefs(Lang)] -anchor w
+        checkbutton $f.b -indicatoron 1 -variable ${Var}(Cache) -onvalue 1 -offvalue 0 -command "if { ! \$${Var}(Cache) } { RGraph::Tephi::CacheClear $Var }"
+        pack $f.l $f.b -side left
+    pack $f -side top -fill x
+    $f.b toggle
+
     #----- Winds toggle
     frame [set f $W.winds]
         label $f.l -text [lindex $Lbl(Winds) $GDefs(Lang)] -anchor w
         checkbutton $f.b -indicatoron 1 -variable ${Var}(Winds) -command [list RGraph::UpdateGraph $Id 1] -onvalue TRUE -offvalue FALSE
         pack $f.l $f.b -side left
-    pack $W.winds -side top -anchor w
+    pack $f -side top -anchor w
 
     #----- Colors + Font
     foreach key {Date Info Loc DateSeq Iso Pres RS Theta} {
@@ -983,7 +994,61 @@ proc RGraph::Tephi::GetData { Id Var DataSrc } {
             set graph(DateIdx)  0
             set graph(PTopData) [R exec -get "min($Id\$pres)"]
         }
+        Cache {
+            set lat $RGraph::Data(Lat$Id)
+            set lon $RGraph::Data(Lon$Id)
+
+            set data {}
+            foreach fldbase $graph(CacheData) {
+                set row [list [lindex [split $fldbase _] end-1]]
+                lappend row [fstdfield stats ${fldbase}_temp -coordvalue $lat $lon]
+                lappend row [fstdfield stats ${fldbase}_pres -coordvalue $lat $lon]
+                lappend row [fstdfield stats ${fldbase}_spread -coordvalue $lat $lon]
+                lappend row {*}[fstdfield stats ${fldbase}_wind -coordvalue $lat $lon]
+                lappend row [fstdfield stats ${fldbase}_elev -coordvalue $lat $lon]
+
+                if { "-" ni $row } {
+                    lappend data $row
+                }
+            }
+
+            #----- Transfer the data into the R world
+            if { [llength $data] } {
+                R tcllst2rdf [list $cols $data] $Id $colsfmt
+                R exec "$Id\$date <- as.POSIXct($Id\$date,tz=\"GMT\",format=\"%Y%m%d%H%M\")"
+                R exec "$Id\$elev <- $Id\$elev*10"
+                R exec "$Id <- $Id\[order($Id\$date,$Id\$pres,decreasing=TRUE),\]"
+                R exec "rownames($Id) <- seq(1,length($Id\$date))"
+                R exec "attributes($Id)\$lat <- $lat"
+                R exec "attributes($Id)\$lon <- $lon"
+            } else {
+                return -code error "No data available for the selected field at that coordinate"
+            }
+
+            set graph(Dates)    [lsort -unique -ascii [lmap row $data {lindex $row 0}]]
+            set graph(DateIdx)  0
+            set graph(Loc)      [format "%.5f %.5f" $lat $lon]
+        }
         default {
+            #----- Check if we have any cached fields
+            if { $graph(Cache) && [llength $graph(CacheData)] } {
+                lassign $graph(CacheKey) ctype cargs cxtra
+                if { ($srctype==$ctype || $srctype==""&&$ctype=="FieldBox")
+                     && $graph(PTop) >= $graph(PTopData)
+                     && (
+                         $ctype=="FstdFiles" && $cargs==[lsort $srcargs]
+                         || $srctype=="FieldBox" && $cargs==$srcargs && $cxtra==[lsort [lmap m [FieldBox::GetContent $cargs] {expr {[lindex $m end]=="fstdfield" ? $m : [continue]}}]]
+                         || $srctype=="" && [FieldBox::Exist $cargs] && [llength [FieldBox::GetSelected $cargs]]
+                         && $cxtra==[lsort [lmap m [FieldBox::GetContent $cargs] {expr {[lindex $m end]=="fstdfield" ? $m : [continue]}}]]
+                     ) } {
+                    #----- Use the cache
+                    return [GetData $Id $Var Cache]
+                } else {
+                    #----- Cache key doesn't match, clear the cache, we'll fill it back up
+                    CacheClear graph
+                }
+            }
+
             set msg "([lindex $Param(Title) $GDefs(Lang)]) [lindex $RGraph::Msg(ReadingFld) $GDefs(Lang)]"
             SPI::Progress 0 $msg
 
@@ -1011,14 +1076,21 @@ proc RGraph::Tephi::GetData { Id Var DataSrc } {
                         if { !$nb } {
                             return -code error "No valid fields found in specified files"
                         }
+                        if { $graph(Cache) } {
+                            set graph(CacheKey) [list $srctype [lsort $srcargs]]
+                        }
                     }
                     FieldBox {
                         if { ![FieldBox::Exist $srcargs] } {
                             return -code error "\"$srcargs\" is not a valid FieldBox id"
                         }
-                        set nb [ProcessFieldList [FieldBox::GetContent $srcargs] ip1s keys]
+                        set flds [FieldBox::GetContent $srcargs]
+                        set nb [ProcessFieldList $flds ip1s keys]
                         if { !$nb } {
                             return -code error "No valid fields found in specified fieldbox"
+                        }
+                        if { $graph(Cache) } {
+                            set graph(CacheKey) [list $srctype $srcargs [lsort $flds]]
                         }
                     }
                     default {
@@ -1026,8 +1098,9 @@ proc RGraph::Tephi::GetData { Id Var DataSrc } {
                         set nb 0
                         foreach box [FieldBox::Get] {
                             #----- If something is selected in that box
-                            if { [llength [set fld [lindex [FieldBox::GetSelected $box] 0]]] } {
-                                set nb [ProcessFieldList [FieldBox::GetContent $box] ip1s keys]
+                            if { [llength [lindex [FieldBox::GetSelected $box] 0]] } {
+                                set flds [lmap m [FieldBox::GetContent $box] {expr {[lindex $m end]=="fstdfield" ? $m : [continue]}}]
+                                set nb [ProcessFieldList $flds ip1s keys]
 
                                 #----- Check if we have valid dates
                                 if { $nb } {
@@ -1038,8 +1111,12 @@ proc RGraph::Tephi::GetData { Id Var DataSrc } {
                         if { !$nb } {
                             return -code error "No valid fields found in selected fieldboxes, no data will be shown"
                         }
+                        if { $graph(Cache) } {
+                            set graph(CacheKey) [list FieldBox $box [lsort $flds]]
+                        }
                     }
                 }
+                unset -nocomplain flds
                 SPI::Progress 5 $msg
 
                 set lat $RGraph::Data(Lat$Id)
@@ -1061,54 +1138,87 @@ proc RGraph::Tephi::GetData { Id Var DataSrc } {
                     foreach ip1 $ip1s($date) {
                         try {
                             set row [list $date]
+                            set fldbase [expr {$graph(Cache) ? "RGRAPHCACHE${Id}_${date}_${ip1}" : "RGRAPHFLD$Id"}]
 
                             #----- Get the temperature
-                            fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_TT)
-                            lappend row [fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
+                            set fld [expr {$graph(Cache) ? "${fldbase}_temp" : $fldbase}]
+                            fstdfield read $fld {*}$keys(${date}_${ip1}_TT)
+                            lappend row [fstdfield stats $fld -coordvalue $lat $lon]
 
                             #----- Calculate the pressure field
-                            fstdgrid pressure RGRAPHFLD$Id RGRAPHP0$Id
-                            lappend row [fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
+                            if { $graph(Cache) } {
+                                set fld ${fldbase}_pres
+                                fstdfield copy $fld ${fldbase}_temp
+                            } else {
+                                set fld $fldbase
+                            }
+                            fstdgrid pressure $fld RGRAPHP0$Id
+                            lappend row [fstdfield stats $fld -coordvalue $lat $lon]
                             #----- The ip1s are in order from ground to sky, so all the following pressure values should be below our threshold
                             if { [lindex $row end]<$graph(PTop) } {
                                 SPI::Progress +[expr $perc*([llength $ip1s($date)]-$nb-1)] $msg
+                                if { $graph(Cache) } {
+                                    fstdfield free ${fldbase}_temp ${fldbase}_pres
+                                }
                                 break
                             }
 
                             #----- Read what we'll use for the dew point
+                            set fld [expr {$graph(Cache) ? "${fldbase}_spread" : $fldbase}]
                             if { [info exists keys(${date}_${ip1}_ES)] } {
-                                fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_ES)
-                                lappend row [fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
+                                fstdfield read $fld {*}$keys(${date}_${ip1}_ES)
+                                lappend row [fstdfield stats $fld -coordvalue $lat $lon]
                             } elseif { [info exists keys(${date}_${ip1}_TD)] } {
-                                fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_TD)
-                                lappend row [expr {[lindex $row 1]-[fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]}]
+                                fstdfield read $fld {*}$keys(${date}_${ip1}_TD)
+                                if { $graph(Cache) } {
+                                    vexpr $fld ${fldbase}_temp - $fld
+                                    lappend row [fstdfield stats $fld -coordvalue $lat $lon]
+                                } else {
+                                    lappend row [expr {[lindex $row 1]-[fstdfield stats $fld -coordvalue $lat $lon]}]
+                                }
                             } else {
-                                fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_HR)
-                                set hr [fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
-                                set tt [lindex $row 1]
-                                #----- The procedure was found here : https://iridl.ldeo.columbia.edu/dochelp/QA/Basic/dewpoint.html
-                                #----- RH = 100% * (E/Es)
-                                #----- E = E0 * exp[(L/Rv)*{(1/T0)-(1/Td)}]
-                                #----- Es = E0 * exp[(L/Rv)*{(1/T0)-(1/T)}]
-                                #----- Where E0=0.611 kPa, (L/RV)=5423K, T0=273K
-                                #----- Ergo: Td = 1/( (1/T) - ln(RH/100)/(L/Rv) )
-                                lappend row [expr {$tt-(1./((1./($tt+273.15))-log($hr)/5423) - 273.15)}]
+                                fstdfield read $fld {*}$keys(${date}_${ip1}_HR)
+                                if { $graph(Cache) } {
+                                    set hr $fld
+                                    set tt ${fldbase}_temp
+                                    vexpr $fld $tt-(1./((1./($tt+273.15))-log($hr)/5423) - 273.15) - $fld
+                                    lappend row [fstdfield stats $fld -coordvalue $lat $lon]
+                                } else {
+                                    set hr [fstdfield stats $fld -coordvalue $lat $lon]
+                                    set tt [lindex $row 1]
+                                    #----- The procedure was found here : https://iridl.ldeo.columbia.edu/dochelp/QA/Basic/dewpoint.html
+                                    #----- RH = 100% * (E/Es)
+                                    #----- E = E0 * exp[(L/Rv)*{(1/T0)-(1/Td)}]
+                                    #----- Es = E0 * exp[(L/Rv)*{(1/T0)-(1/T)}]
+                                    #----- Where E0=0.611 kPa, (L/RV)=5423K, T0=273K
+                                    #----- Ergo: Td = 1/( (1/T) - ln(RH/100)/(L/Rv) )
+                                    lappend row [expr {$tt-(1./((1./($tt+273.15))-log($hr)/5423) - 273.15)}]
+                                }
                             }
 
                             #----- Read the winds
-                            fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_UU)
-                            lappend row {*}[fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
+                            set fld [expr {$graph(Cache) ? "${fldbase}_wind" : $fldbase}]
+                            fstdfield read $fld {*}$keys(${date}_${ip1}_UU)
+                            lappend row {*}[fstdfield stats $fld -coordvalue $lat $lon]
 
                             #----- Read the elevation
-                            fstdfield read RGRAPHFLD$Id {*}$keys(${date}_${ip1}_GZ)
-                            lappend row {*}[fstdfield stats RGRAPHFLD$Id -coordvalue $lat $lon]
+                            set fld [expr {$graph(Cache) ? "${fldbase}_elev" : $fldbase}]
+                            fstdfield read $fld {*}$keys(${date}_${ip1}_GZ)
+                            lappend row [fstdfield stats $fld -coordvalue $lat $lon]
 
                             #----- Add to the data pool
                             if { "-" ni $row } {
                                 lappend data $row
                                 incr nb
                             }
-                        } on error {} {
+
+                            #----- Whether we are in or out of the grid, the cached data stays valid
+                            if { $graph(Cache) } {
+                                lappend graph(CacheData) $fldbase
+                            }
+                        } on error {err} {
+                            fstdfield free ${fldbase}_temp ${fldbase}_pres ${fldbase}_spread ${fldbase}_wind ${fldbase}_elev
+                            Log::Print WARNING "An error occured while processing some fields, they will be skipped. (err: $err)"
                             continue
                         } finally {
                             SPI::Progress +$perc $msg
@@ -1235,6 +1345,9 @@ proc RGraph::Tephi::CleanUp { Id Var } {
 
     #----- Remove the highlighting event we put in
     RemoveBind $c $Id <Leave>
+
+    #----- Clear the cache
+    CacheClear $Var
 }
 
 #----------------------------------------------------------------------------
@@ -1425,5 +1538,17 @@ proc RGraph::Tephi::DateIdx { Id Var Idx } {
             set graph(DateIdx) $Idx
             RGraph::UpdateGraph $Id 1
         }
+    }
+}
+
+proc RGraph::Tephi::CacheClear { Var } {
+    upvar $Var graph
+
+    if { $graph(Cache) } {
+        set graph(CacheKey) ""
+        foreach fb $graph(CacheData) {
+            fstdfield free ${fb}_temp ${fb}_pres ${fb}_spread ${fb}_wind ${fb}_elev
+        }
+        set graph(CacheData) {}
     }
 }
