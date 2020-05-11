@@ -48,6 +48,8 @@
 #define T_BAND  4
 #define T_LAYER 5
 
+void Calc_RaiseError(const char *Error);
+int  Calc_InError();
 int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TDef_Type Type,char* Expr);
 int  Calc_Validate(Tcl_Interp* Interp);
 int  vexpr_parse(void);
