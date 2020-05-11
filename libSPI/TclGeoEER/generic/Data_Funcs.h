@@ -95,6 +95,11 @@ double tcount(TDef *Res,TDef *Table,TDef *MB);
 double tbin(TDef *Res,TDef *Table,TDef *MB);
 double flipy(TDef *Res,TDef *MA);
 
+// Matrix creation/manipulation functions
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step);
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK);
+double repeat(TDef *Res,TDef *Fld,TDef *N);
+
 // Matrix reduction operations
 double stat_all(TDef *MA,TDef *MB);   // All stats 
 double stat_na(TDef *MA,TDef *MB);    // Number of rejected values 
