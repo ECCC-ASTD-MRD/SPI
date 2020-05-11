@@ -34,6 +34,7 @@
 #include "App.h"
 #include "RPN.h"
 #include "Data_Matrix.h"
+#include "Data_Calc.h"
 
 extern Tcl_Interp *GInterp;
 extern TData      *GField,*GFieldP;
@@ -41,75 +42,54 @@ extern TDef   *GData[256];
 extern TDef_Type GType;
 extern int        GDataN;
 
-void Calc_Iterate1(TDef *R,TDef *A,TFunc1 *Func) {
-
-   unsigned long i,sa;
-   int           n=0;
-   double        a=0;
-
-   sa=FSIZE3D(A);
-
-   while (A->Data[n]) {
-      for(i=0;i<sa;i++) {
-         Def_Get(A,n,i,a);
-         a=Func(a);
-         Def_Set(R,n,i,a);
-      }
-      n++;
+static double Calc_CallFunc(TFunc *Func,const int NFlds,TDef *Flds[]) {
+   switch( NFlds ) {
+      case 0:  return Func();
+      case 1:  return Func(Flds[0]);
+      case 2:  return Func(Flds[0],Flds[1]);
+      case 3:  return Func(Flds[0],Flds[1],Flds[2]);
+      case 4:  return Func(Flds[0],Flds[1],Flds[2],Flds[3]);
+      case 5:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4]);
+      case 6:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5]);
+      case 7:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6]);
+      case 8:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7]);
+      case 9:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8]);
+      case 10: return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8],Flds[9]);
+      default: Calc_RaiseError("(Calc_CallFunc) Too many arguments to function\n"); return 0.0;
    }
 }
 
-void Calc_Iterate2(TDef *R,TDef *A,TDef *B,TFunc2 *Func) {
+static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
+   size_t idx,n,msk[NFlds],nc;
+   double v[NFlds];
+   int f;
 
-   unsigned long i,sa,sb;
-   int           n=0,t=0;
-   double        a=0,b=0;
-
-   sa=FSIZE3D(A);
-   sb=FSIZE3D(B);
-
-   if (sa==1) t|=0x10;
-   if (sb==1) t|=0x01;
-
-   sa=sa>sb?sa:sb;
-   while (A->Data[n] || B->Data[n]) {
-      for(i=0;i<sa;i++) {
-         Def_Get(A,(A->Data[n]?n:0),(t&0x10?0:i),a);
-         Def_Get(B,(B->Data[n]?n:0),(t&0x01?0:i),b);
-            
-         a=Func(a,b);
-         Def_Set(R,n,i,a);
-      }
-      n++;
+   // Initialize the meta info for the fields
+   for(f=0; f<NFlds; ++f) {
+      msk[f] = FSIZE3D(Flds[f])==1 ? 0 : SIZE_MAX;
    }
-}
 
-void Calc_Iterate3(TDef *R,TDef *A,TDef *B,TDef *C,TFunc3 *Func) {
-
-   unsigned long i,sa,sb,sc;
-   int           n=0,t=0;
-   double        a=0,b=0,c=0;
-
-   sa=FSIZE3D(A);
-   sb=FSIZE3D(B);
-   sc=FSIZE3D(C);
-
-   if (sa==1) t|=0x0100;
-   if (sb==1) t|=0x0010;
-   if (sc==1) t|=0x0001;
-
-   sa=sa>sb?sa:sb;
-   sa=sa>sc?sa:sc;
-
-   while (A->Data[n] || B->Data[n] || C->Data[n]) {
-      for(i=0;i<sa;i++) {
-         Def_Get(A,(A->Data[n]?n:0),(t&0x0100?0:i),a);
-         Def_Get(B,(B->Data[n]?n:0),(t&0x0010?0:i),b);
-         Def_Get(C,(C->Data[n]?n:0),(t&0x0001?0:i),c);
-         a=Func(a,b,c);
-         Def_Set(R,n,i,a);
+   n=FSIZE3D(R);
+   for(nc=0; nc<R->NC; ++nc) {
+      for(idx=0; idx<n; ++idx) {
+         for(f=0; f<NFlds; ++f) {
+            Def_Get(Flds[f],nc&msk[f],idx&msk[f],v[f]);
+         }
+         switch (NFlds) {
+            case 1:  v[0]=Func(v[0]);                                                  break;
+            case 2:  v[0]=Func(v[0],v[1]);                                             break;
+            case 3:  v[0]=Func(v[0],v[1],v[2]);                                        break;
+            case 4:  v[0]=Func(v[0],v[1],v[2],v[3]);                                   break;
+            case 5:  v[0]=Func(v[0],v[1],v[2],v[3],v[4]);                              break;
+            case 6:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5]);                         break;
+            case 7:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6]);                    break;
+            case 8:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7]);               break;
+            case 9:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8]);          break;
+            case 10: v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]);     break;
+            default: Calc_RaiseError("(Calc_Iterate) Too many arguments to function\n"); return;
+         }
+         Def_Set(R,nc,idx,v[0]);
       }
-      n++;
    }
 }
 
@@ -120,9 +100,6 @@ void Calc_Iterate3(TDef *R,TDef *A,TDef *B,TDef *C,TFunc3 *Func) {
  * @param B Some other matrix
  *
  * @return Code de retour TCL
- *
- * This call is grossly inneficient with its use of copy between buffers, but
- * this is C-based, so what did you expect?
  *
  */
 TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
@@ -152,16 +129,9 @@ TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
       }
 
       /* Check that both have vectorial data, or neither do */
-      if (Vect) {
-         if ((A->Data[1] && !B->Data[1]) || (!A->Data[1] && B->Data[1])) {
-            Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
-            return(NULL);
-         }
-
-         if(Vect && ((A->Data[2] && !B->Data[2]) || (!A->Data[2] && B->Data[2]))) {
-            Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
-            return(NULL);
-         }
+      if (Vect && ((A->Data[1]==NULL)^(B->Data[1]==NULL) || (A->Data[2]==NULL)^(B->Data[2]==NULL))) {
+         Tcl_AppendResult(Interp,"Calc_Compat: Trying to manipulate vectorial and scalar field",(char*)NULL);
+         return(NULL);
       }
    }
    return(FSIZE3D(A)>FSIZE3D(B)?A:B);
@@ -377,7 +347,7 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
 TDef* Calc_Slice(TDef* A,int N,int D) {
 
    unsigned int  n,i,j,k,idx;
-   void  *p;
+   //void  *p;
    double v=0.0;
 
 #ifdef DEBUG
@@ -520,7 +490,7 @@ TDef* Calc_Length(TDef* A) {
    unsigned long i;
    double        v[3]= { 0.0, 0.0, 0.0 };
 #ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Calc_Length(A:%p,Func:%p)\n",(void*)A);
+   fprintf(stdout,"(DEBUG) Calc_Length(A:%p)\n",(void*)A);
 #endif
 
    GDataN++;
@@ -551,7 +521,7 @@ TDef* Calc_Dir(TDef* A) {
    void        *p,*p0,*p1;
 
 #ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Calc_Dir(A:%p,Func:%p)\n",(void*)A);
+   fprintf(stdout,"(DEBUG) Calc_Dir(A:%p)\n",(void*)A);
 #endif
 
 #ifdef HAVE_RMN
@@ -610,121 +580,63 @@ TDef* Calc_Dir(TDef* A) {
  * @param func Float to float function to apply
  * @return New TDef* containing the results
  */
-TDef* Calc_Matrix1(TDef* A,TFunc1 *Func,int Iterate,int Matrix,TDef_Type Type) {
+TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]) {
+   int i;
 
-   double v;
 #ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Called Calc_Matrix1(A:%p,Func:%p)\n",(void*)A,(void*)Func);
+   fprintf(stdout,"(DEBUG) Called Calc_Matrix(Func:%p,Iterate:%d,Matrix:%d,Type:%d,NFlds:%d",Func,Iterate,Matrix,Type,NFlds);
+   // Get the list of fields
+   for(i=0; i<NFlds; ++i) {
+      fprintf(stdout,",%c:%p",'A'+i,Flds[i]);
+   }
+   fprintf(stdout,")\n");
 #endif
 
-   GDataN++;
-
-   if (Iterate) {
-      GData[GDataN]=Def_CopyPromote(A,(GType?GType:(Type?Type:DEFSIGNEDTYPE(A))));
-      Calc_Iterate1(GData[GDataN],A,Func);
-   } else {
-      if (Matrix) {
-         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
-         ((TFunc*)Func)(GData[GDataN],A);
-      } else {
-         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
-         v=((TFunc*)Func)(A);
-         Def_Set(GData[GDataN],0,0,v);
+   if( Iterate ) {
+      TDef *m,*t;
+      if( NFlds <= 0 )
+         return(NULL);
+      // Select the field that will be used for master (m) and type (t)
+      m=t=Flds[0];
+      for(i=1; i<NFlds; ++i) {
+         m=Calc_Compat(GInterp,m,Flds[i],3,(Func!=(TFunc*)ifelse)?1:0);
+         t=DEFSELECTTYPE(t,Flds[i]);
       }
+      if( !t || !m )
+         return(NULL);
+
+      // Make the new field
+      ++GDataN;
+      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
+      Calc_Iterate(GData[GDataN],Func,NFlds,Flds);
+   } else if( Matrix ) {
+      TDef *flds[NFlds+1];
+      if( NFlds <= 0 )
+         return(NULL);
+      ++GDataN;
+      GData[GDataN]=Def_CopyPromote(Flds[0],(GType?GType:Flds[0]->Type));
+      flds[0]=GData[GDataN];
+      memcpy(flds+1,Flds,NFlds*sizeof(*Flds));
+      Calc_CallFunc(Func,NFlds+1,flds);
+   } else {
+      ++GDataN;
+      GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
+      Def_Set(GData[GDataN],0,0,Calc_CallFunc(Func,NFlds,Flds));
    }
 
-   return(GData[GDataN]);
+   return(Calc_InError() ? NULL : GData[GDataN]);
 }
 
-/**
- * @author Jean-Philippe Gauthier
- * @brief Processes two matrices, element to element
- * @param A First TDef to iterate over
- * @param B Second TDef to iterate over
- * @param Func (Float, float) function to apply
- * @return New TDef containing the results
- *
- * <strong>Note:</strong> Non-commutative operations are handle a (op) b. So a
- * division is a / b.
- */
-TDef* Calc_Matrix2(TDef* A,TDef* B,TFunc2 *Func,int Iterate,int Matrix,TDef_Type Type) {
+TDef* Calc_Matrixv(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...) {
+   TDef *flds[NFlds];
+   va_list v;
+   int i;
 
-   double    v;
-   TDef *m,*t;
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Called Calc_Matrix2(A:%p,B:%p,Func:%p)\n",(void*)A,(void*)B,(void*)Func);
-#endif
-   m=Calc_Compat(GInterp,A,B,3,1);
-
-   if (Iterate && !m)
-      return(NULL);
-
-   GDataN++;
-
-   if (Iterate) {
-      t=DEFSELECTTYPE(A,B);
-      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
-      Calc_Iterate2(GData[GDataN],A,B,Func);
-   } else {
-      if (Matrix) {
-         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
-         ((TFunc*)Func)(GData[GDataN],A,B);
-      } else {
-         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
-         v=((TFunc*)Func)(A,B);
-         Def_Set(GData[GDataN],0,0,v);
-      }
+   va_start(v,NFlds);
+   for(i=0; i<NFlds; ++i) {
+      flds[i]=va_arg(v,TDef*);
    }
-   return(GData[GDataN]);
-}
+   va_end(v);
 
-/**
- * @author Jean-Philippe Gauthier
- * @brief Processes three matrices, element to element
- * @param A First TDef to iterate over
- * @param B Second TDef to iterate over
- * @param C Third TDef to iterate over
- * @param Func (float,float,float) function to apply
- * @return New TDef containing the results
- */
-TDef* Calc_Matrix3(TDef* A,TDef* B,TDef* C,TFunc3 *Func,int Iterate,int Matrix,TDef_Type Type) {
-
-   double    v;
-   TDef *m,*t;
-
-#ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Called Calc_Matrix3(A:%p,B:%p,C:%p,Func:%p)\n",(void*)A,(void*)B,(void*)C,(void*)Func);
-#endif
-
-/*   if (Iterate && ((Func!=((TFunc3*)ifelse) && !(m=Calc_Compat(GInterp,A,B,3))) || !(m=Calc_Compat(GInterp,B,C,3))))
-      return(NULL);
-*/
-
-   if ((Func==((TFunc3*)ifelse))) {
-      m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3,1),3,0);
-   } else {
-      m=Calc_Compat(GInterp,A,Calc_Compat(GInterp,B,C,3,1),3,1);
-   }
-
-   if (Iterate && !m)
-      return(NULL);
-
-   GDataN++;
-
-   if (Iterate) {
-      t=DEFSELECTTYPE(B,C);
-      t=DEFSELECTTYPE(A,t);
-      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
-      Calc_Iterate3(GData[GDataN],A,B,C,Func);
-   } else {
-      if (Matrix) {
-         GData[GDataN]=Def_CopyPromote(A,(GType?GType:A->Type));
-         ((TFunc*)Func)(GData[GDataN],A,B,C);
-      } else {
-         GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
-         v=((TFunc*)Func)(A,B,C);
-         Def_Set(GData[GDataN],0,0,v);
-      }
-   }
-   return(GData[GDataN]);
+   return Calc_Matrix(Func,Iterate,Matrix,Type,NFlds,flds);
 }

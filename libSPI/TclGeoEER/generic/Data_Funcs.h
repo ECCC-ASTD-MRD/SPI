@@ -49,9 +49,6 @@
 #define DTCURVE   9
 
 typedef double (TFunc)();
-typedef double (TFunc1)(double);
-typedef double (TFunc2)(double,double);
-typedef double (TFunc3)(double,double,double);
 
 typedef struct TFuncDef {
   char      *Name;     // Function Name
