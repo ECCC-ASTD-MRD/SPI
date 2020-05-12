@@ -466,7 +466,7 @@ exp:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Function call (F) : %s(%d args)\n",$1->Name,StackN);
 #endif
-      // Special case for chaed values of stats functions
+      // Special case for cached values of stats functions
       if( !StackN ) {
          while( StackN < $1->Args ) {
             Stack[StackN++] = NULL;

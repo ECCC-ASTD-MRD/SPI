@@ -175,6 +175,8 @@ TFuncDef FuncF[] = {
   { "safp"  , stat_afp    , 2 , TD_Float64 },
   { "sax"   , stat_ax     , 2 , TD_Float64 },
   { "say"   , stat_ay     , 2 , TD_Float64 },
+
+  { "irand" , initrand    , 1 , TD_Float64 },
   { NULL    , NULL        , 0 , TD_Unknown }
 };
 
@@ -2076,6 +2078,19 @@ double stat_avg(TDef *M) {
       }
    }
    return sum/n;
+}
+
+double initrand(TDef *M) {
+   unsigned int seed;
+
+   if( M ) {
+      Def_Get(M,0,0,seed);
+   } else {
+      seed = time(NULL);
+   }
+
+   srand(seed);
+   return(seed);
 }
 
 double add(double a,double b) {

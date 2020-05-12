@@ -183,6 +183,8 @@ double stat_afp(TDef *MA,TDef *MB);   // False positive area
 double stat_ax(TDef *MA,TDef *MB);    // Area X 
 double stat_ay(TDef *MA,TDef *MB);    // Area Y 
 
+double initrand(TDef *M);             // Calls srand (initialize the seed for the rand function (frand here) to something else than 1)
+
 // Base operators
 double add(double a,double b);
 double sub(double a,double b);
