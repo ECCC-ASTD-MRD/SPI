@@ -320,7 +320,7 @@ proc Grid::WindowSet { Frame } {
    $Frame.mid.xlat1  configure -state disabled 
    $Frame.mid.xlon1  configure -state disabled
 #   $Frame.mid.lock  configure -state disabled
-   $Frame.rot.angle  configure -state disabled
+#   $Frame.rot.angle  configure -state disabled
    $Frame.ref.latr   configure -state disabled 
    $Frame.ref.lonr   configure -state disabled 
    $Frame.maxcfl.val configure -state disabled  

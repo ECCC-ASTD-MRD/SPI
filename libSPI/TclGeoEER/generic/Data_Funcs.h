@@ -49,9 +49,6 @@
 #define DTCURVE   9
 
 typedef double (TFunc)();
-typedef double (TFunc1)(double);
-typedef double (TFunc2)(double,double);
-typedef double (TFunc3)(double,double,double);
 
 typedef struct TFuncDef {
   char      *Name;     // Function Name
@@ -97,6 +94,11 @@ double fpeel(TDef *Res,TDef *MA);
 double tcount(TDef *Res,TDef *Table,TDef *MB);
 double tbin(TDef *Res,TDef *Table,TDef *MB);
 double flipy(TDef *Res,TDef *MA);
+
+// Matrix creation/manipulation functions
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step);
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK);
+double repeat(TDef *Res,TDef *Fld,TDef *N);
 
 // Matrix reduction operations
 double stat_all(TDef *MA,TDef *MB);   // All stats 
@@ -180,6 +182,8 @@ double stat_afn(TDef *MA,TDef *MB);   // False negative area
 double stat_afp(TDef *MA,TDef *MB);   // False positive area 
 double stat_ax(TDef *MA,TDef *MB);    // Area X 
 double stat_ay(TDef *MA,TDef *MB);    // Area Y 
+
+double initrand(TDef *M);             // Calls srand (initialize the seed for the rand function (frand here) to something else than 1)
 
 // Base operators
 double add(double a,double b);

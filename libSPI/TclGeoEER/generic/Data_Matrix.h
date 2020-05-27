@@ -36,10 +36,6 @@
 
 #include "Data_Funcs.h"
 
-void Calc_Iterate1(TDef *R,TDef *A,TFunc1 *Func);
-void Calc_Iterate2(TDef *R,TDef *A,TDef *B,TFunc2 *Func);
-void Calc_Iterate3(TDef *R,TDef *A,TDef *B,TDef *C,TFunc3 *Func);
-
 TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect);
 TDef* Calc_Length(TDef* A);
 TDef* Calc_Dir(TDef* A);
@@ -50,9 +46,8 @@ TDef* Calc_Slice(TDef* A,int N,int D);
 TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1);
 TDef* Calc_MatrixInt(long Val);
 TDef* Calc_MatrixFloat(double Val);
-TDef* Calc_Matrix1(TDef* A,TFunc1 *Func,int Iterate,int Matrix,TDef_Type Type);
-TDef* Calc_Matrix2(TDef* A,TDef* B,TFunc2 *Func,int Iterate,int Matrix,TDef_Type Type);
-TDef* Calc_Matrix3(TDef* A,TDef* B,TDef* C,TFunc3 *Func,int Iterate,int Matrix,TDef_Type Type);
+TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]);
+TDef* Calc_Matrixv(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...);
 TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree);
 
 #endif

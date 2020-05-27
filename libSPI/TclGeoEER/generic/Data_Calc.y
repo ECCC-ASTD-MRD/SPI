@@ -17,6 +17,10 @@ extern int         GDataN;
 extern int         GError;
 extern int         GMode;
 
+#define STACK_MAX 10
+static TDef *Stack[STACK_MAX];
+static int  StackN;
+
 int vexpr_error(char* s);
 %}
 
@@ -72,6 +76,12 @@ int vexpr_error(char* s);
 %token <Num>       T_FIELD_FUNC
 %token <Val>       T_ERROR            /* The lexer found something wicked */
 
+%token T_OPEN_PAR  "("
+%token T_CLOSE_PAR ")"
+%token T_OPEN_BRA  "["
+%token T_CLOSE_BRA "]"
+%token T_COMMA     ","
+
 %type  <Val>       exp
 %type  <Operator>  T_ADD T_SUB T_MUL T_DIV T_EXP T_INTERP2 T_INTERP3 T_ASSIGN
 %type  <Operator>  T_EQU T_NEQ T_GRQ T_GRE T_SMQ T_SMA
@@ -108,6 +118,39 @@ line:
    }
 ;
 
+farg:
+   %empty {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Empty function argument list\n");
+#endif
+      StackN=0;
+   }
+   | exp {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Making argument list from exp\n");
+#endif
+      StackN=1;
+      Stack[0]=$1;
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Stack[%d]=%p\n",StackN-1,Stack[StackN-1]);
+#endif
+   }
+   | farg "," exp {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Appending to argument list\n",StackN);
+#endif
+      if( StackN < STACK_MAX ) {
+         Stack[StackN++]=$3;
+      } else {
+         vexpr_error("STACK_MAX reached, too many function arguments: Critical!");
+         YYERROR;
+      }
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Stack[%d]=%p\n",StackN-1,Stack[StackN-1]);
+#endif
+   }
+;
+
 exp:
    T_ERROR {
       vexpr_error("Invalid function or data id in expression");
@@ -115,6 +158,9 @@ exp:
    }
 
    | T_INT {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) INT (%ld)\n",(long)$1);
+#endif
       $$=Calc_MatrixInt((long)$1);
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_INT): Critical!");
@@ -123,6 +169,9 @@ exp:
    }
 
    | T_FLOAT {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) FLOAT (%g)\n",$1);
+#endif
       $$=Calc_MatrixFloat($1);
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FLOAT): Critical!");
@@ -130,7 +179,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_BRA T_INT T_CLOSE_BRA {
+   | exp "[" T_INT "]" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Component Indexing\n");
 #endif
@@ -147,7 +196,7 @@ exp:
       }
    }
 
-   | T_OPEN_BRA exp T_CLOSE_BRA {
+   | "[" exp "]" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Vector Length\n");
 #endif
@@ -171,7 +220,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR {
+   | exp "(" T_INT ")" "(" ")" "(" ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slicing over I\n");
 #endif
@@ -188,7 +237,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" T_INT ")" "(" ")" "(" ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slice setting over I\n");
 #endif
@@ -205,7 +254,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR {
+   | exp "(" ")" "(" T_INT ")" "(" ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slicing over J\n");
 #endif
@@ -222,7 +271,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" ")" "(" T_INT ")" "(" ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slice setting over J\n");
 #endif
@@ -239,7 +288,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR {
+   | exp "(" ")" "(" ")" "(" T_INT ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slicing over K\n");
 #endif
@@ -256,7 +305,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_CLOSE_PAR T_OPEN_PAR T_INT T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" ")" "(" ")" "(" T_INT ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Slice setting over K\n");
 #endif
@@ -273,7 +322,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR {
+   | exp "(" T_INT "," T_INT ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
@@ -290,7 +339,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" T_INT "," T_INT ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
@@ -307,7 +356,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_COMMA T_INT T_COMMA T_INT T_CLOSE_PAR {
+   | exp "(" T_INT "," T_INT "," T_INT ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Value Indexing\n");
 #endif
@@ -324,7 +373,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_INT T_COMMA T_INT T_COMMA T_INT T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" T_INT "," T_INT "," T_INT ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Value Setting\n");
 #endif
@@ -341,7 +390,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR {
+   | exp "(" "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Range Indexing\n");
 #endif
@@ -358,7 +407,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Range Setting\n");
 #endif
@@ -375,7 +424,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR {
+   | exp "(" "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" ")" {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Range Indexing\n");
 #endif
@@ -394,7 +443,7 @@ exp:
       }
    }
 
-   | exp T_OPEN_PAR T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_COMMA T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR T_CLOSE_PAR T_ASSIGN exp {
+   | exp "(" "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" "," "(" T_INT "," T_INT ")" ")" T_ASSIGN exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Range Setting\n");
 #endif
@@ -413,155 +462,62 @@ exp:
       }
    }
 
-   | T_FNCT_F T_OPEN_PAR T_CLOSE_PAR {
+   | T_FNCT_F "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call (F) : %s(%d args)\n",$1->Name,StackN);
 #endif
-      $$=Calc_Matrix1(NULL,(TFunc1*)$1->Func,0,0,$1->Type);
-
-      if (!$$) {
-         vexpr_error("Calc_Matrix1 failed (T_FNCT_F): Critical!");
-         YYERROR;
+      // Special case for cached values of stats functions
+      if( !StackN ) {
+         while( StackN < $1->Args ) {
+            Stack[StackN++] = NULL;
+         }
       }
-   }
 
-   | T_FNCT_F T_OPEN_PAR exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
-#endif
-      if ($1->Args!=1) {
+      if ($1->Args!=StackN) {
          vexpr_error("(T_FNCT_F): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix1($3,(TFunc1*)$1->Func,0,0,$1->Type);
-
+         $$=Calc_Matrix($1->Func,0,0,$1->Type,StackN,Stack);
          if (!$$) {
-            vexpr_error("Calc_Matrix1 failed (T_FNCT_F): Critical!");
+            vexpr_error("Calc_Matrix failed (T_FNCT_F): Critical!");
             YYERROR;
          }
       }
    }
 
-   | T_FNCT_F T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
+   | T_FNCT_M "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
+      fprintf(stdout,"(DEBUG) Function call (M) : %s(%d args)\n",$1->Name,StackN);
 #endif
-      if ($1->Args!=2) {
-         vexpr_error("(T_FNCT_F): Invalid number of arguments");
-         YYERROR;
-      } else {
-         $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,0,0,$1->Type);
-
-         if (!$$) {
-            vexpr_error("Calc_Matrix2 failed (T_FNCT_F): Critical!");
-            YYERROR;
-         }
-      }
-   }
-
-   | T_FNCT_M T_OPEN_PAR exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
-#endif
-      if ($1->Args!=1) {
+      if ($1->Args!=StackN) {
          vexpr_error("(T_FNCT_M): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix1($3,(TFunc1*)$1->Func,1,0,$1->Type);
-
+         $$=Calc_Matrix($1->Func,1,0,$1->Type,StackN,Stack);
          if (!$$) {
-            vexpr_error("Calc_Matrix1 failed (T_FNCT_M): Critical!");
+            vexpr_error("Calc_Matrix failed (T_FNCT_M): Critical!");
             YYERROR;
          }
       }
    }
 
-   | T_FNCT_M T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
+   | T_FNCT_D "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
+      fprintf(stdout,"(DEBUG) Function call (D) : %s(%d args)\n",$1->Name,StackN);
 #endif
-      if ($1->Args!=2) {
-         vexpr_error("(T_FNCT_M): Invalid number of arguments");
-         YYERROR;
-      } else {
-         $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,1,0,$1->Type);
-
-         if (!$$) {
-            vexpr_error("Calc_Matrix2 failed (T_FNCT_M): Critical!");
-            YYERROR;
-         }
-      }
-   }
-
-   | T_FNCT_M T_OPEN_PAR exp T_COMMA exp T_COMMA exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
-#endif
-      if ($1->Args!=3) {
-         vexpr_error("(T_FNCT_M): Invalid number of arguments");
-         YYERROR;
-      } else {
-         $$=Calc_Matrix3($3,$5,$7,(TFunc3*)$1->Func,1,0,$1->Type);
-
-         if (!$$) {
-            vexpr_error("Calc_Matrix3 failed (T_FNCT_M): Critical!");
-            YYERROR;
-         }
-      }
-   }
-
-   | T_FNCT_D T_OPEN_PAR exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call: %s\n",$1->Name);
-#endif
-      if ($1->Args!=1) {
+      if ($1->Args!=StackN) {
          vexpr_error("(T_FNCT_D): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix1($3,(TFunc1*)$1->Func,0,1,$1->Type);
-
+         $$=Calc_Matrix($1->Func,0,1,$1->Type,StackN,Stack);
          if (!$$) {
-            vexpr_error("Calc_Matrix1 failed (T_FNCT_D): Critical!");
+            vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");
             YYERROR;
          }
       }
    }
 
-   | T_FNCT_D T_OPEN_PAR exp T_COMMA exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout, "(DEBUG) Function (2) call: %s\n", $1->Name);
-#endif
-      if ($1->Args!=2) {
-         vexpr_error("(T_FNCT_D): Invalid number of arguments");
-         YYERROR;
-      } else {
-         $$=Calc_Matrix2($3,$5,(TFunc2*)$1->Func,0,1,$1->Type);
-
-         if (!$$) {
-            vexpr_error("Calc_Matrix2 failed (T_FNCT_D): Critical!");
-            YYERROR;
-         }
-      }
-   }
-
-   | T_FNCT_D T_OPEN_PAR exp T_COMMA exp T_COMMA exp T_CLOSE_PAR {
-#ifdef DEBUG
-      fprintf(stdout, "(DEBUG) Function (3) call: \n", $1->Name);
-#endif
-      if ($1->Args!=3) {
-         vexpr_error("(T_FNCT_D): Invalid number of arguments");
-         YYERROR;
-      } else {
-         $$=Calc_Matrix3($3,$5,$7,(TFunc3*)$1->Func,0,1,$1->Type);
-
-         if (!$$) {
-            vexpr_error("Calc_Matrix3 failed (T_FNCT_D): Critical!");
-            YYERROR;
-         }
-      }
-   }
-
-   | T_FIELD_FUNC T_OPEN_PAR T_INT T_COMMA T_INT T_CLOSE_PAR {
+   | T_FIELD_FUNC "(" T_INT "," T_INT ")" {
       $$ = 0;
 #ifdef HAVE_RMN
       char buf[32];
@@ -599,172 +555,172 @@ exp:
    }
 
    | exp T_EQU exp {
-      $$ = Calc_Matrix2($1, $3,equ,1,0,TD_UByte);
+      $$ = Calc_Matrixv(equ,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_EQU): Critical!");
+         vexpr_error("Calc_Matrix failed (T_EQU): Critical!");
          YYERROR;
       }
    }
 
    | exp T_NEQ exp {
-      $$ = Calc_Matrix2($1, $3,neq,1,0,TD_UByte);
+      $$ = Calc_Matrixv(neq,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_NEQ): Critical!");
+         vexpr_error("Calc_Matrix failed (T_NEQ): Critical!");
          YYERROR;
       }
    }
 
    | exp T_GRQ exp {
-      $$ =Calc_Matrix2($1, $3,grq,1,0,TD_UByte);
+      $$ =Calc_Matrixv(grq,1,0,TD_UByte,2,$1,$3);
 
       if ($$ == 0) {
-         vexpr_error("Calc_Matrix2 failed (T_GRQ): Critical!");
+         vexpr_error("Calc_Matrix failed (T_GRQ): Critical!");
          YYERROR;
       }
    }
 
    | exp T_GRE exp {
-      $$ = Calc_Matrix2($1, $3,gre,1,0,TD_UByte);
+      $$ = Calc_Matrixv(gre,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_GRE): Critical!");
+         vexpr_error("Calc_Matrix failed (T_GRE): Critical!");
          YYERROR;
       }
    }
 
    | exp T_SMQ exp {
-      $$ = Calc_Matrix2($1, $3,smq,1,0,TD_UByte);
+      $$ = Calc_Matrixv(smq,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_SMQ): Critical!");
+         vexpr_error("Calc_Matrix failed (T_SMQ): Critical!");
          YYERROR;
       }
    }
 
    | exp T_SMA exp {
-      $$ = Calc_Matrix2($1, $3,sma,1,0,TD_UByte);
+      $$ = Calc_Matrixv(sma,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_SMA): Critical!");
+         vexpr_error("Calc_Matrix failed (T_SMA): Critical!");
          YYERROR;
       }
    }
 
    | exp T_ADD exp {
-      $$ = Calc_Matrix2($1, $3,add,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(add,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_ADD): Critical!");
+         vexpr_error("Calc_Matrix failed (T_ADD): Critical!");
          YYERROR;
       }
    }
 
    | exp T_SUB exp {
-      $$ = Calc_Matrix2($1, $3,sub,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(sub,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_SUB): Critical!");
+         vexpr_error("Calc_Matrix failed (T_SUB): Critical!");
          YYERROR;
       }
    }
 
    | exp T_MUL exp {
-      $$ = Calc_Matrix2($1, $3,mul,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(mul,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_MUL): Critical!");
+         vexpr_error("Calc_Matrix failed (T_MUL): Critical!");
          YYERROR;
       }
    }
 
    | exp T_DIV exp {
-      $$ = Calc_Matrix2($1, $3,dvd,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(dvd,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_DIV): Critical!");
+         vexpr_error("Calc_Matrix failed (T_DIV): Critical!");
          YYERROR;
       }
    }
 
    | exp T_MOD exp {
-      $$ = Calc_Matrix2($1, $3,fmod,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(fmod,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-        vexpr_error("Calc_Matrix2 failed (T_DIV): Critical!");
+        vexpr_error("Calc_Matrix failed (T_DIV): Critical!");
         YYERROR;
       }
    }
 
    | T_SUB exp %prec T_NEG {
-      $$ = Calc_Matrix1($2,neg,1,0,TD_Unknown);
+      $$ = Calc_Matrix(neg,1,0,TD_Unknown,1,&$2);
 
       if (!$$) {
-        vexpr_error("Calc_Matrix1 failed (T_SUB): Critical!");
+        vexpr_error("Calc_Matrix failed (T_SUB): Critical!");
         YYERROR;
       }
    }
 
    | exp T_EXP exp {
-      $$ = Calc_Matrix2($1, $3,pow,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(pow,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-        vexpr_error("Calc_Matrix2 failed (T_EXP): Critical!");
+        vexpr_error("Calc_Matrix failed (T_EXP): Critical!");
         YYERROR;
       }
    }
 
    |  T_NOT exp {
-      $$ = Calc_Matrix1($2,not,1,0,TD_UByte);
+      $$ = Calc_Matrix(not,1,0,TD_UByte,1,&$2);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix1 failed (T_NOT): Critical!");
+         vexpr_error("Calc_Matrix failed (T_NOT): Critical!");
          YYERROR;
       }
    }
 
    | exp T_AND exp {
-      $$ = Calc_Matrix2($1, $3,and,1,0,TD_UByte);
+      $$ = Calc_Matrixv(and,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_AND): Critical!");
+         vexpr_error("Calc_Matrix failed (T_AND): Critical!");
          YYERROR;
       }
    }
 
    | exp T_OR exp {
-      $$ = Calc_Matrix2($1, $3,or,1,0,TD_UByte);
+      $$ = Calc_Matrixv(or,1,0,TD_UByte,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_OR): Critical!");
+         vexpr_error("Calc_Matrix failed (T_OR): Critical!");
          YYERROR;
       }
    }
 
    |  T_BNOT exp {
-      $$ = Calc_Matrix1($2,bnot,1,0,TD_Unknown);
+      $$ = Calc_Matrix(bnot,1,0,TD_Unknown,1,&$2);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix1 failed (T_BNOT): Critical!");
+         vexpr_error("Calc_Matrix failed (T_BNOT): Critical!");
          YYERROR;
       }
    }
 
    | exp T_BND exp {
-      $$ = Calc_Matrix2($1, $3,band,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(band,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_BND): Critical!");
+         vexpr_error("Calc_Matrix failed (T_BND): Critical!");
          YYERROR;
       }
    }
 
    | exp T_BOR exp {
-      $$ = Calc_Matrix2($1, $3,bor,1,0,TD_Unknown);
+      $$ = Calc_Matrixv(bor,1,0,TD_Unknown,2,$1,$3);
 
       if (!$$) {
-         vexpr_error("Calc_Matrix2 failed (T_BOR): Critical!");
+         vexpr_error("Calc_Matrix failed (T_BOR): Critical!");
          YYERROR;
       }
    }
@@ -787,7 +743,7 @@ exp:
       }
    }
 
-   | T_OPEN_PAR exp T_CLOSE_PAR {
+   | "(" exp ")" {
       $$ = $2;
    }
 ;

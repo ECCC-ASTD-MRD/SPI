@@ -84,6 +84,11 @@ TFuncDef FuncD[] = {
 
   { "tcount"    , tcount    , 2 , TD_Int32 },
   { "flipy"     , flipy     , 1 , TD_Unknown },
+
+  { "seq"       , seq       , 3 , TD_Float64 },
+  { "reshape"   , reshape   , 4 , TD_Unknown },
+  { "repeat"    , repeat    , 2 , TD_Unknown },
+
   { NULL        , NULL      , 0 , TD_Unknown }
 };
 
@@ -170,6 +175,8 @@ TFuncDef FuncF[] = {
   { "safp"  , stat_afp    , 2 , TD_Float64 },
   { "sax"   , stat_ax     , 2 , TD_Float64 },
   { "say"   , stat_ay     , 2 , TD_Float64 },
+
+  { "irand" , initrand    , 1 , TD_Float64 },
   { NULL    , NULL        , 0 , TD_Unknown }
 };
 
@@ -235,6 +242,120 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   }
 
   return(NULL);
+}
+
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
+   double from,to,step;
+   int i,n;
+
+   // Make sure we got scalars for the dimensions
+   if( FSIZE3D(From)!=1 )  Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
+   if( FSIZE3D(To)!=1 )    Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
+   if( FSIZE3D(Step)!=1 )  Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
+
+   if( Calc_InError() )
+      return(0.0);
+
+   // Get the values from the fields
+   Def_Get(From,0,0,from);
+   Def_Get(To,0,0,to);
+   Def_Get(Step,0,0,step);
+
+   if( !step ) {
+      Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
+      return(0.0);
+   }
+
+   // Coherence check
+   if( ((to-from)<0.0) ^ (step<0.0) ) {
+      Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+      return(0.0);
+   }
+
+   // Get the number of values we'll generate
+   n = (int)((to-from)/step)+1;
+
+   // Resize the result field to hold the values we'll generate
+   if( !Def_Resize(Res,n,1,1) ) {
+      Calc_RaiseError("seq: An error occured when resizing.\n");
+      return(0.0);
+   }
+
+   // Generate the sequence
+   for(i=0; i<n; ++i) {
+      Def_Set(Res,0,i,from+i*step);
+   }
+
+   return(n);
+}
+
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK) {
+   int ni,nj,nk;
+
+   if( FSIZE3D(NI)!=1 )    Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
+   if( FSIZE3D(NJ)!=1 )    Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
+   if( FSIZE3D(NK)!=1 )    Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
+   if( FSIZE3D(Res)==0 )   Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
+
+   if( !Calc_InError() ) {
+      Def_Get(NI,0,0,ni);
+      Def_Get(NJ,0,0,nj);
+      Def_Get(NK,0,0,nk);
+
+      if( FSIZE3D(Fld) == ni*nj*nk ) {
+         if( !Def_Resize(Res,ni,nj,nk) ) {
+            Calc_RaiseError("reshape: An error occured when resizing.\n");
+         }
+         memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*Res->NC*ni*nj*nk);
+      } else {
+         Calc_RaiseError("reshape: The new dimensions are invalid. They must match the current dimensions of the field.\n");
+      }
+   }
+
+   return(0.0);
+}
+
+double repeat(TDef *Res,TDef *Fld,TDef *N) {
+   size_t size;
+   int n,c,r,dim[3]={1,1,1},d=0;
+
+   if( FSIZE3D(N)!=1 )     Calc_RaiseError("repeat: The repeat number should be a scalar\n");
+   if( FSIZE3D(Fld)==0 )   Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
+
+   if( Calc_InError() )
+      return(0.0);
+
+   // Get the number of times we'll repeat the sequence
+   Def_Get(N,0,0,n);
+   if( n < 0 ) {
+      Calc_RaiseError("repeat: Can't repeat a sequence a negative number of time\n");
+      return(0.0);
+   } else if( !n ) {
+      Calc_RaiseError("repeat: Can't repeat a sequence a nul amount of time, the result would be empty\n");
+      return(0.0);
+   }
+
+   // Check in which dimension we'll expand
+   if( Fld->NI>1 )   dim[d++]=Fld->NI;
+   if( Fld->NJ>1 )   dim[d++]=Fld->NJ;
+   if( Fld->NK>1 )   dim[d++]=Fld->NK;
+
+   // Resize the result field to hold the values we'll generate
+   dim[d>2?2:d] *= n;
+   if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+      Calc_RaiseError("seq: An error occured when resizing.\n");
+      return(0.0);
+   }
+
+   // Set the values
+   size = (size_t)FSIZE3D(Fld)*(size_t)TDef_Size[Res->Type];
+   for(c=0; c<Res->NC; ++c) {
+      for(r=0; r<n; ++r) {
+         memcpy(Res->Data[c]+r*size,Fld->Data[c],size);
+      }
+   }
+
+   return(FSIZE3D(Res));
 }
 
 double flipy(TDef *Res,TDef *MA) {
@@ -598,7 +719,6 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    LUTentry      *table, **ptrtable, lute, *ptr, **pptr;
    int            szptr;
    int            szMA;
-   int            tid;
 
    va=vb=vc=0.0;
    i=FSIZE2D(MB);
@@ -620,7 +740,7 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    qsort( ptrtable, m, szptr, compare_lutE );
 
 #pragma omp parallel shared(Res,ptrtable,table,MA,szMA,MB,szptr,m) \
-   private(i,last_va,va,lute,ptr,pptr,tid)
+   private(i,last_va,va,lute,ptr,pptr)
    {
    ptr = NULL;
    last_va = NAN;
@@ -698,7 +818,7 @@ double dtangcurve(TDef *Res,TDef *Def) {
 
 double darea(TDef *Res,TDef *Def,int Mode) {
 
-   unsigned long i,j,idx;
+   unsigned long idx;
    unsigned int  nid;
    float        *a=NULL;
    TGeoRef      *gref=NULL;
@@ -1958,6 +2078,19 @@ double stat_avg(TDef *M) {
       }
    }
    return sum/n;
+}
+
+double initrand(TDef *M) {
+   unsigned int seed;
+
+   if( M ) {
+      Def_Get(M,0,0,seed);
+   } else {
+      seed = time(NULL);
+   }
+
+   srand(seed);
+   return(seed);
 }
 
 double add(double a,double b) {
