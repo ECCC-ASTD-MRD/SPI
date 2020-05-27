@@ -17,9 +17,25 @@ extern int         GDataN;
 extern int         GError;
 extern int         GMode;
 
-#define STACK_MAX 10
-static TDef *Stack[STACK_MAX];
-static int  StackN;
+#define STACK_MAX    128
+#define STACKP_MAX   16
+static TDef *STACK[STACK_MAX];
+static int  STACKN=0;
+static int  STACKP[STACKP_MAX];
+static int  STACKPN=0;
+#define STACK_NB        (STACKN-STACKP[STACKPN-1])
+#define STACK_PTR       (STACK+STACKP[STACKPN-1])
+#define PASTE2(A,B)     A##B
+#define QUOTE(A)        #A
+#ifdef DEBUG
+#define STACK_DEBUG     if(STACKN>0)fprintf(stdout,"(DEBUG) STACK[%d]=%p\n",STACKN-1,STACK[STACKN-1]);
+#define STACKP_DEBUG    if(STACKPN>0)fprintf(stdout,"(DEBUG) STACKP[%d]=%d\n",STACKPN-1,STACKP[STACKPN-1]);
+#else // DEBUG
+#define STACK_DEBUG
+#define STACKP_DEBUG
+#endif // DEBUG
+#define STACK_PUSH(S,I) if(S##N<PASTE2(S,_MAX)) {S[S##N++]=(I);PASTE2(S,_DEBUG);} else {vexpr_error(QUOTE(PASTE2(S,_MAX))" reached, too many function arguments: Critical!");YYERROR;}
+#define STACK_POP       {STACKN-=STACK_NB; --STACKPN;}
 
 int vexpr_error(char* s);
 %}
@@ -123,31 +139,20 @@ farg:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Empty function argument list\n");
 #endif
-      StackN=0;
+      STACK_PUSH(STACKP,STACKN);
    }
    | exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Making argument list from exp\n");
 #endif
-      StackN=1;
-      Stack[0]=$1;
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Stack[%d]=%p\n",StackN-1,Stack[StackN-1]);
-#endif
+      STACK_PUSH(STACKP,STACKN);
+      STACK_PUSH(STACK,$1);
    }
    | farg "," exp {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Appending to argument list\n",StackN);
+      fprintf(stdout,"(DEBUG) Appending to argument list\n");
 #endif
-      if( StackN < STACK_MAX ) {
-         Stack[StackN++]=$3;
-      } else {
-         vexpr_error("STACK_MAX reached, too many function arguments: Critical!");
-         YYERROR;
-      }
-#ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Stack[%d]=%p\n",StackN-1,Stack[StackN-1]);
-#endif
+      STACK_PUSH(STACK,$3);
    }
 ;
 
@@ -464,20 +469,21 @@ exp:
 
    | T_FNCT_F "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call (F) : %s(%d args)\n",$1->Name,StackN);
+      fprintf(stdout,"(DEBUG) Function call (F) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
       // Special case for cached values of stats functions
-      if( !StackN ) {
-         while( StackN < $1->Args ) {
-            Stack[StackN++] = NULL;
+      if( STACK_NB == 0 ) {
+         while( STACK_NB < $1->Args ) {
+            STACK_PUSH(STACK,NULL);
          }
       }
 
-      if ($1->Args!=StackN) {
+      if ($1->Args!=STACK_NB) {
          vexpr_error("(T_FNCT_F): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix($1->Func,0,0,$1->Type,StackN,Stack);
+         $$=Calc_Matrix($1->Func,0,0,$1->Type,STACK_NB,STACK_PTR);
+         STACK_POP;
          if (!$$) {
             vexpr_error("Calc_Matrix failed (T_FNCT_F): Critical!");
             YYERROR;
@@ -487,13 +493,14 @@ exp:
 
    | T_FNCT_M "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call (M) : %s(%d args)\n",$1->Name,StackN);
+      fprintf(stdout,"(DEBUG) Function call (M) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
-      if ($1->Args!=StackN) {
+      if ($1->Args!=STACK_NB) {
          vexpr_error("(T_FNCT_M): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix($1->Func,1,0,$1->Type,StackN,Stack);
+         $$=Calc_Matrix($1->Func,1,0,$1->Type,STACK_NB,STACK_PTR);
+         STACK_POP;
          if (!$$) {
             vexpr_error("Calc_Matrix failed (T_FNCT_M): Critical!");
             YYERROR;
@@ -503,13 +510,14 @@ exp:
 
    | T_FNCT_D "(" farg ")" {
 #ifdef DEBUG
-      fprintf(stdout,"(DEBUG) Function call (D) : %s(%d args)\n",$1->Name,StackN);
+      fprintf(stdout,"(DEBUG) Function call (D) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
-      if ($1->Args!=StackN) {
+      if ($1->Args!=STACK_NB) {
          vexpr_error("(T_FNCT_D): Invalid number of arguments");
          YYERROR;
       } else {
-         $$=Calc_Matrix($1->Func,0,1,$1->Type,StackN,Stack);
+         $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,STACK_PTR);
+         STACK_POP;
          if (!$$) {
             vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");
             YYERROR;
