@@ -582,15 +582,15 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
    if { $Param(LockCenter) } {
       Grid::Center $Param(XLat1) $Param(XLon1) False
    }
-   if { [string match "PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
+   if { [string match "*PS*" [lindex $Param(Type) 0]] || ($Param(Lat0)!=$Param(Lat1) && $Param(Lon0)!=$Param(Lon1)) } {
 
       switch $Param(Type) {
-         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
+         "PS"    { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $Param(Angle) $ID }
          "PS_S"  -
-         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
+         "PS_N"  { Grid::CreatePS  $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $Param(Angle) $ID }
          "LL"    { Grid::CreateL   $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
-         "ZPS"   { Grid::CreateZPS $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $ID }
-         "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
+         "ZPS"   { Grid::CreateZPS $Param(Lat0) $Param(Lon0) $Param(ResMX) $Param(NI) $Param(NJ) $Param(Angle) $ID }
+         "ZL"    { Grid::CreateZL  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $Param(Angle) $ID }
          "ZE"    { Grid::CreateZE  $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(LatR) $Param(LonR) $Param(ResLLX) $Param(ResLLY) $Param(Angle) $ID }
          "UTM"   { Grid::CreateUTM $Param(Lat0) $Param(Lon0) $Param(Lat1) $Param(Lon1) $Param(ResLLX) $Param(ResLLY) $ID }
       }
@@ -620,6 +620,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
 #   <Res>    : Resolution en metres
 #   <NI>     : Nombre de point de grille en I
 #   <NJ>     : Nombre de point de grille en J
+#   <Angle>  : Angle de rotation
 #   <ID>     : Identificateur du champs qui sera cree
 #
 # Retour:
@@ -630,7 +631,7 @@ proc Grid::Create { { ID MODELGRID } { GridInfo {} } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
+proc Grid::CreatePS { Lat Lon Res NI NJ Angle { ID MODELGRID } } {
    variable Param
    variable Data
 
@@ -652,7 +653,8 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
    }
 
    set dd60 1.0
-   set xy [fstdgrid xyfll $lat $lon $dd60 $xg4 $nhem]
+   set xg4 [expr $xg4+$Angle]
+   set xy  [fstdgrid xyfll $lat $lon $dd60 $xg4 $nhem]
    set xg1 [expr ((($NI-1.0)/2.0) * $xg3 - [lindex $xy 0]) / $xg3 + 1.0]
    set xg2 [expr ((($NJ-1.0)/2.0) * $xg3 - [lindex $xy 1]) / $xg3 + 1.0]
 
@@ -677,6 +679,7 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 #   <Res>    : Resolution en metres
 #   <NI>     : Nombre de point de grille en I
 #   <NJ>     : Nombre de point de grille en J
+#   <Angle>  : Angle de rotation
 #   <ID>     : Identificateur du champs qui sera cree
 #
 # Retour:
@@ -687,7 +690,7 @@ proc Grid::CreatePS { Lat Lon Res NI NJ { ID MODELGRID } } {
 #
 #----------------------------------------------------------------------------
 
-proc Grid::CreateZPS { Lat Lon Res NI NJ { ID MODELGRID } } {
+proc Grid::CreateZPS { Lat Lon Res NI NJ Angle { ID MODELGRID } } {
    variable Param
    variable Data
 
@@ -707,7 +710,8 @@ proc Grid::CreateZPS { Lat Lon Res NI NJ { ID MODELGRID } } {
    }
    
    set dd60 1.0
-   set xy [fstdgrid xyfll $lat $lon $dd60 $dgrw $nhem]
+   set dgrw [expr $dgrw+$Angle]
+   set xy  [fstdgrid xyfll $lat $lon $dd60 $dgrw $nhem]
    set xg1 [expr ((($NI-1.0)/2.0) * $Res - [lindex $xy 0]) / $Res + 1.0]
    set xg2 [expr ((($NJ-1.0)/2.0) * $Res - [lindex $xy 1]) / $Res + 1.0]
 
@@ -733,7 +737,7 @@ proc Grid::CreateZPS { Lat Lon Res NI NJ { ID MODELGRID } } {
    fstdfield create ${ID} $NI $NJ 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z$grtyp
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
-
+puts stderr sdmnfsdfdsfhsjk
    set Param(PGSM) ""
 
    return ${ID}
@@ -790,6 +794,7 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 ResX ResY  { ID MODELGRID } } {
 #   <Lon1>   : Longitude du deuxieme coin
 #   <ResX>   : Resolution en degree
 #   <ResY>   : Resolution en degree
+#   <Angle>  : Angle de rotation
 #   <ID>     : Identificateur du champs qui sera cree
 #
 # Retour:
@@ -799,10 +804,10 @@ proc Grid::CreateL { Lat0 Lon0 Lat1 Lon1 ResX ResY  { ID MODELGRID } } {
 #    Aucune.
 #
 #----------------------------------------------------------------------------
-proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
-   Grid::CreateZL $Lat0 $Lon0 $Lat1 $Lon1 $ResX $ResY $ID
+proc Grid::CreateLZ { Lat0 Lon0 Lat1 Lon1 ResX ResY Angle { ID MODELGRID } } {
+   Grid::CreateZL $Lat0 $Lon0 $Lat1 $Lon1 $ResX $ResY Angle $ID
 }
-proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
+proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY Angle { ID MODELGRID } } {
    variable Param
    variable Data
 
@@ -840,7 +845,7 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
    return ${ID}
 }
 
-proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY { ID MODELGRID } } {
+proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY Angle { ID MODELGRID } } {
    variable Param
    variable Data
 

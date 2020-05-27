@@ -413,32 +413,39 @@ proc Grid::ProjectSave { Path } {
    foreach grid $Data(GridParams) {
       array set param $grid
    
-      #----- Figure out the extension in km (ex: 1p0 2p5 0p25)
-      set resk [format "%.2f" [expr $param(ResMX)/1000.0]]
-      if { [expr $resk-floor($resk)]==0 } {
-         set res [expr int(floor($resk))]p0
-      } else {
-         set res [string trimright [string map { . p } $resk] 0]
-      }
-      set path ${Path}/Casc_${grdn}_${res}
-      if { [file exists $path] } {
-         if { [Dialog::Default . 300 WARNING $Msg(PathExist) "\n\n\t$path" 0 $Lbl(Yes) $Lbl(No)] } {
-            incr no
-            incr grdn -1
-            continue
+      if { [llength $Data(GridParams)]>1 } {
+         #----- Figure out the extension in km (ex: 1p0 2p5 0p25)
+         set resk [format "%.2f" [expr $param(ResMX)/1000.0]]
+         if { [expr $resk-floor($resk)]==0 } {
+            set res [expr int(floor($resk))]p0
          } else {
-            file delete -force $path
+            set res [string trimright [string map { . p } $resk] 0]
          }
+         set path ${Path}/Casc_${grdn}_${res}
+         
+         if { [file exists $path] } {
+            if { [Dialog::Default . 300 WARNING $Msg(PathExist) "\n\n\t$path" 0 $Lbl(Yes) $Lbl(No)] } {
+               incr no
+               incr grdn -1
+               continue
+            } else {
+               file delete -force $path
+            }
+         }
+         
+         file mkdir $path
+         
+         #----- Write namelist grid and gridc
+         exec echo [Grid::SettingsBuild $grid] > ${path}/gem_settings.nml
+         if { [llength $gridc] } {
+            exec echo [Grid::SettingsBuild $gridc True] >> ${path}/gem_settings.nml     
+         }
+         set gridc $grid
+
+      } else {
+         set path ${Path}
       }
       
-      file mkdir $path
-      
-      #----- Write namelist grid and gridc
-      exec echo [Grid::SettingsBuild $grid] > ${path}/gem_settings.nml
-      if { [llength $gridc] } {
-         exec echo [Grid::SettingsBuild $gridc True] >> ${path}/gem_settings.nml     
-      }
-      set gridc $grid
       
       #----- Write RPN grid file
       file delete -force ${path}/grid.fstd 

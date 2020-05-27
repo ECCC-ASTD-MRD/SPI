@@ -216,7 +216,7 @@ proc Grid::Frame { Frame { Multi False } } {
          label $Frame.grid.rot.lbl -text [lindex $Lbl(RotLL) $GDefs(Lang)]
          entry $Frame.grid.rot.xlat2 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLat2) -width 8 -state disabled
          entry $Frame.grid.rot.xlon2 -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(XLon2) -width 9 -state disabled
-         spinbox $Frame.grid.rot.angle -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Angle) -width 3 -from 0 -to 180 -increment 1 -command { Grid::Apply }
+         spinbox $Frame.grid.rot.angle -relief sunken -bd 1 -bg $GDefs(ColorLight) -textvariable Grid::Param(Angle) -width 3 -from -180 -to 180 -increment 1 -command { Grid::Apply }
          pack $Frame.grid.rot.lbl $Frame.grid.rot.xlat2 $Frame.grid.rot.xlon2 $Frame.grid.rot.angle -side left
 
    pack $Frame.grid.ll $Frame.grid.ll0 $Frame.grid.ll1 $Frame.grid.mid $Frame.grid.rot $Frame.grid.ref -side top -fill x
@@ -330,8 +330,10 @@ proc Grid::WindowSet { Frame } {
    switch $Param(Type) {
       "PS"   - 
       "PS_N" -
-      "PS_S" { $Frame.ll1.lat configure -state disabled 
-               $Frame.ll1.lon configure -state disabled 
+      "PS_S" -
+      "ZPS"  { $Frame.ll1.lat   configure -state disabled 
+               $Frame.ll1.lon   configure -state disabled 
+               $Frame.rot.angle configure -state normal
              }  
       "ZE"   { if { $Data(GridNo)==0 } { 
                   $Frame.rot.angle configure -state normal
