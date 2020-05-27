@@ -1077,11 +1077,11 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          ezfrom=0;
       }
 
-      if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='X' || FieldFrom->GRef->Grid[0]=='M') {
+      if (FieldFrom->GRef->Grid[0]=='R' || FieldFrom->GRef->Grid[0]=='W' || FieldFrom->GRef->Grid[0]=='X' || FieldFrom->GRef->Grid[0]=='O' || FieldFrom->GRef->Grid[0]=='M') {
          ezfrom=0;
       }
 
-      if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='Y' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
+      if (FieldTo->GRef->Grid[0]=='R' || FieldTo->GRef->Grid[0]=='W' || FieldTo->GRef->Grid[0]=='X' || FieldTo->GRef->Grid[0]=='Y' || FieldFrom->GRef->Grid[0]=='O' || FieldTo->GRef->Grid[0]=='M' || FieldTo->GRef->Hgt) {
          ezto=0;
       }
 
@@ -2949,7 +2949,6 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
          }
       }
    } else if (Field->GRef->Grid[0]=='V') {
-      fprintf(stderr,"sdlkhfjksdhjfsd %p %p %p\n",Field->GRef->AX,Field->GRef->AY,Field->ZRef->Levels);
       if (!Field->GRef->AX || !Field->GRef->AY || !Field->ZRef->Levels) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
          return(TCL_ERROR); 
