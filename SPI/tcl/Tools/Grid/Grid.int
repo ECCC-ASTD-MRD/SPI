@@ -281,16 +281,20 @@ proc Grid::WindowSave { } {
          ComboBox::Create .gridmakersave.physx.target.sel Grid::GenPhysX(Target) noedit sorted nodouble -1 $GenPhysX(Targets) 18 5 {}
          pack .gridmakersave.physx.target.lbl -side left 
          pack .gridmakersave.physx.target.sel -side left -fill x -expand True
-      if { $Grid::GenPhysX(On) } {
-         pack .gridmakersave.physx.host  .gridmakersave.physx.target -side top -fill x 
-         .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm
-      }
+      pack .gridmakersave.physx.host  .gridmakersave.physx.target -side top -fill x 
+ 
    frame .gridmakersave.cmd -relief sunken -bd 1
       button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { if { [Grid::ProjectSave $Grid::Data(SavePath)] } { destroy .gridmakersave } }
       button .gridmakersave.cmd.cancel -bd 1 -text [lindex $Lbl(Cancel) $GDefs(Lang)] -command { destroy .gridmakersave }
       pack .gridmakersave.cmd.go .gridmakersave.cmd.cancel -side left -fill x -expand True
       
    pack .gridmakersave.path .gridmakersave.physx .gridmakersave.cmd -padx 5 -pady 5 -side top -fill x
+   update idletasks
+         
+   if { !$Grid::GenPhysX(On) } {
+      pack forget .gridmakersave.physx.host .gridmakersave.physx.target
+      .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm 
+   }
 }
 
 #----------------------------------------------------------------------------
