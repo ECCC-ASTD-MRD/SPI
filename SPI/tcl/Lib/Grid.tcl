@@ -737,7 +737,6 @@ proc Grid::CreateZPS { Lat Lon Res NI NJ Angle { ID MODELGRID } } {
    fstdfield create ${ID} $NI $NJ 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z$grtyp
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
-puts stderr sdmnfsdfdsfhsjk
    set Param(PGSM) ""
 
    return ${ID}
