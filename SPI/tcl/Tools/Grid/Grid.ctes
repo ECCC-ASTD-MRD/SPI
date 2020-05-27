@@ -57,5 +57,5 @@ namespace eval Grid {
    set GenPhysX(Time)    10800
    set GenPhysX(Memory)  100G
    set GenPhysX(CPU)     1
-   set GenPhysX(On)      True
+   set GenPhysX(On)      False
 }
