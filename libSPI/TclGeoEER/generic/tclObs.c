@@ -1851,6 +1851,10 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
 
    Obs_PreInit(Obs);
 
+   if ((Obs->Spec->Map && Obs->Spec->Map->Alpha) || Obs->Spec->Alpha<100) {
+      glEnable(GL_BLEND);
+   }
+
    if (Obs->Spec->Style)
       Obs_RenderPath(Interp,Obs,VP,Proj);
 
@@ -1888,6 +1892,8 @@ int Obs_Render(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj,GL
    if (Obs->Spec->Font && (Obs->Spec->RenderValue || Obs->Spec->RenderLabel || Obs->Spec->RenderCoord))
       Obs_RenderInfo(Interp,Obs,VP,Proj);
 
+   glDisable(GL_BLEND);
+
    return(1);
 }
 
@@ -1899,12 +1905,9 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
    glLineWidth(Obs->Spec->Width+1);
    glEnable(GL_DEPTH_TEST);
-   if (Obs->Spec->Map && Obs->Spec->Map->Alpha) {
-      glEnable(GL_BLEND);
-   }
 
    // Height markers
-   glColor3us(0x00,0x00,0x00);
+   glColor3us(0x00,0x00,0x00,Obs->Spec->Alpha*655.35);
    if (Obs->Spec->Style==2 || Obs->Spec->Style==4) {
       glBegin(GL_LINES);
       for (i=0;i<Obs->Loc->Nb;i++) {
@@ -1973,7 +1976,6 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    }
    glEnd();
 
-   glDisable(GL_BLEND);
    if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
 }
 
@@ -1992,9 +1994,9 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
       Tcl_AppendResult(Interp,"1.0 setlinewidth 1 setlinecap 1 setlinejoin\n",(char*)NULL);
    } else {
       if (Obs->Spec->Outline) {
-         glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
+         glColor4us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue,Obs->Spec->Alpha*655.35);
       } else {
-         glColor3us(0,0,0);
+         glColor4us(0,0,0,Obs->Spec->Alpha*655.35);
       }
    }
 
@@ -2005,10 +2007,6 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
 
    glEnableClientState(GL_VERTEX_ARRAY);
    glVertexPointer(2,GL_DOUBLE,0,IconList[Obs->Spec->Icon].Co);
-
-   if (Obs->Spec->Map && Obs->Spec->Map->Alpha) {
-      glEnable(GL_BLEND);
-   }
 
    // Outline mode
    sz=(Obs->Spec->Flat?VP->Ratio:1.0)*(Obs->Spec->Size*0.5+Obs->Spec->Width);
@@ -2087,7 +2085,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
                if (Interp) {
                   CMap_PostscriptColor(Interp,Obs->Spec->Map,idx);
                } else {
-                  glColor4ubv(Obs->Spec->Map->Color[idx]);
+                  glColor4ub(Obs->Spec->Map->Color[idx][0],Obs->Spec->Map->Color[idx][1],Obs->Spec->Map->Color[idx][2],Obs->Spec->Map->Color[idx][3]*Obs->Spec->Alpha*0.01);
                }
             }
          } else {
@@ -2095,7 +2093,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             if (Interp) {
                Tk_CanvasPsColor(Interp,VP->canvas,Obs->Spec->Outline);
             } else {
-               glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
+               glColor4us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue,Obs->Spec->Alpha*655.35);
             }
          }
 
@@ -2153,12 +2151,10 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
    if (!GLRender->GLZBuf) glDisable(GL_DEPTH_TEST);
 
    glEnable(GL_CULL_FACE);
-   glDisable(GL_BLEND);
    glDisableClientState(GL_VERTEX_ARRAY);
 
    return(1);
 }
-
 
 /*----------------------------------------------------------------------------
  * Nom      : <Obs_RenderVector>
@@ -2197,9 +2193,9 @@ void Obs_RenderVector(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *
    glPushName(PICK_OBS);
 
    if (Obs->Spec->Outline) {
-      glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
+      glColor4us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue,Obs->Spec->Alpha*655.35);
    } else {
-      glColor3us(0,0,0);
+      glColor4us(0,0,0,Obs->Spec->Alpha*655.35);
    }
 
    if (Interp) {
@@ -2317,7 +2313,7 @@ void Obs_RenderInfo(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
             if (Interp) {
                Tk_CanvasPsColor(Interp,VP->canvas,Obs->Spec->Outline);
             } else {
-               glColor3us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue);
+               glColor4us(Obs->Spec->Outline->red,Obs->Spec->Outline->green,Obs->Spec->Outline->blue,Obs->Spec->Alpha*655.35);
             }
 
             if (Obs->Spec->RenderValue && OBSVALID(val)) {
