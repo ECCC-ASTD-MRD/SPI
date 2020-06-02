@@ -1907,7 +1907,7 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
    glEnable(GL_DEPTH_TEST);
 
    // Height markers
-   glColor3us(0x00,0x00,0x00,Obs->Spec->Alpha*655.35);
+   glColor4us(0x00,0x00,0x00,Obs->Spec->Alpha*655.35);
    if (Obs->Spec->Style==2 || Obs->Spec->Style==4) {
       glBegin(GL_LINES);
       for (i=0;i<Obs->Loc->Nb;i++) {

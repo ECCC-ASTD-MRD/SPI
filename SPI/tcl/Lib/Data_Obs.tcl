@@ -112,6 +112,7 @@ namespace eval Obs {
    set Param(Vector)        NONE                                   ;#Rendue vectoriel
    set Param(Topo)          ""                                     ;#Var 3D
    set Param(Color)         #000000                                ;#Couleur
+   set Param(Alpha)         256                                    ;#Global transparency
    set Param(Factor)        1.0                                    ;#Facteur appliques aux donnees
    set Param(Delta)         0.0                                    ;#Facteur appliques aux donnees
    set Param(Texture)       1                                      ;#Utilise la palette
@@ -390,7 +391,7 @@ proc Obs::ParamFrame { Frame Apply } {
                IcoMenu::CreateDef $Data(Frame).def.r.disp.p.ico $GDefs(Dir)/share/bitmap \
                  { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm slight.xbm sx.xbm s+.xbm } \
                  $Param(Icons) Obs::Param(Icon) Obs::ParamSet 0 -relief groove -bd 2
-               ColorBox::CreateSel $Data(Frame).def.r.disp.p.col Obs::Param(Color) Obs::ParamSet
+               ColorBox::CreateSel $Data(Frame).def.r.disp.p.col { Obs::Param(Color) Obs::Param(Alpha) } Obs::ParamSet
                IcoMenu::Create $Data(Frame).def.r.disp.p.width $GDefs(Dir)/share/bitmap \
                   "zeroth.xbm width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "0 1 2 3 4 5" \
                   Obs::Param(Width) "Obs::ParamSet" 0 -relief groove -bd 2
@@ -583,6 +584,7 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Icon)      [dataspec configure $Spec -icon]
    set Param(Style)     [dataspec configure $Spec -style]
    set Param(Color)     [dataspec configure $Spec -color]
+   set Param(Alpha)     [dataspec configure $Spec -transparency]
    set Param(Vector)    [dataspec configure $Spec -rendervector]
    set Param(Topo)      [dataspec configure $Spec -topography]
    set Param(Texture)   [dataspec configure $Spec -rendertexture]
@@ -595,6 +597,8 @@ proc Obs::ParamGet { { Spec "" } } {
    set Param(Min)       [dataspec configure $Spec -min]
    set Param(Max)       [dataspec configure $Spec -max]
    set Param(Width)     [dataspec configure $Spec -width]
+
+   set Param(Alpha)      [format %02x [expr int($Param(Alpha)/100.0*255.0)]]
 
    set Param(Inters) $Param(Intervals)
    set Param(Labels) {}
@@ -676,10 +680,13 @@ proc Obs::ParamSet { { Spec "" } } {
       }
    }
 
+   set alpha [expr int(0x$Param(Alpha)/255.0*100.0)]
+
    dataspec configure $Spec -factor $Param(Factor) -delta $Param(Delta) -value $Param(Order) $Param(Mantisse) -size $Param(Size) -width $Param(Width) -font $Param(Font) -colormap $Param(Map) \
       -style $Param(Style) -icon $Param(Icon) -color $Param(Color) -unit $Param(Unit) -desc $Param(Desc) -rendervector $Param(Vector) -rendertexture $Param(Texture) \
       -rendervolume $Param(Volume) -flat $Param(Flat) -rendercoord $Param(Coord) -rendervalue $Param(Value) -renderlabel $Param(Label) -mapall $Param(MapAll) -topography $Param(Topo) \
-      -min $min -max $max -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam)
+      -min $min -max $max -mapabove $Param(MapAbove) -mapbelow $Param(MapBelow) -intervals $Param(Inters) -interlabels $Param(Labels) -intervalmode $Param(IntervalMode) $Param(IntervalParam) \
+      -transparency $alpha
 
    catch { $Data(ApplyButton) configure -state normal }
 }
