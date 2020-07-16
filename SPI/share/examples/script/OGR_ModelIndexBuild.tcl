@@ -16,9 +16,9 @@ exec $SPI_PATH/tclsh "$0" "$@"
 #
 # Retour:
 #
-# Remarques  : Modifier la provenance des fichiers d'input. Ils se trouvent dorénavant dans le répertoire "DataInForModelIndexBuild" avec seul les champs nécessaires
-#              pour créer les shapefiles. Pour les modèles "shop" et "glsoce (grands Lacs)", nous avons un contenu texte qui correspond aux lat/lon du shapefile.
-#              besoind de la variable d'env WEBTIDE_DATA (export WEBTIDE_DATA=/ssm/net/cmoe/eer/master/WebTide_0.7.1_all/share)
+# Remarques  : Il faut setter les varibles d'environnement CI_DATA_IN et CI_DATA_OUT pour exécuter ce script.
+#              export CI_DATA_IN=<pathto_eerenv_code>/data/SourceFilesForModelDomain
+#              Nous également de la varibalbe d'env WEBTIDE_DATA (export WEBTIDE_DATA=/ssm/net/cmoe/eer/master/WebTide_0.7.1_all/share)
 #============================================================================
 
 package require TclData
@@ -27,12 +27,12 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-#                 0             1           2               3               4                5            6            7             8          9
-set names  {     "RDPS"        "HRDPS"      "Caps"          "CAPSOCE"       "CIOPS_WEST"     "GLSOCE"     "GSL"        "RIOPS"       "SHOP"     "WEBTIDE"}
-set vars   {      P0            P0          P0              GL              GL               GL           GL           GL            TM         M2       }
-#                 0             1           2               3               4                5            6            7             8          9          10       11     12      13   14
-set subs   {      { "" }        { "" }      { "" }          { "" }          { "" }           { "" }       { "" }       { "" }        { "" }     { arctic9  ne_pac4  nwatl  sshelf  h3o  stle400 } }
-set models [list  rdps.fstd     hrdps.fstd  caps_eta.fstd   caps_oce.fstd   ciops_west.fstd  glsoce.txt   gsloce.fstd  riops.fstd    shop.txt   $env(WEBTIDE_DATA)]
+#                 0             1           2               3               4                5                6            7            8             9          10
+set names  {     "RDPS"        "HRDPS"      "Caps"          "CAPSOCE"       "CIOPS_EAST"     "CIOPS_WEST"     "GLSOCE"     "GSL"        "RIOPS"       "SHOP"     "WEBTIDE"}
+set vars   {      P0            P0          P0              GL              GL               GL               GL           GL           GL            TM         M2       }
+#                 0             1           2               3               4                5                6            7            8             9          10         11       12     13      14   15
+set subs   {      { "" }        { "" }      { "" }          { "" }          { "" }           { "" }           { "" }       { "" }       { "" }        { "" }     { arctic9  ne_pac4  nwatl  sshelf  h3o  stle400 } }
+set models [list  rdps.fstd     hrdps.fstd  caps_eta.fstd   caps_oce.fstd   ciops_east.fstd  ciops_west.fstd  glsoce.txt   gsloce.fstd  riops.fstd    shop.txt   $env(WEBTIDE_DATA)]
 
 set nb 0
 foreach s $subs { incr nb [llength $s] }
