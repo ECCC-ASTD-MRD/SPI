@@ -771,7 +771,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             Tcl_AppendResult(Interp,"invalid field :",Tcl_GetString(Objv[2]),(char*)NULL);
             return(TCL_ERROR);
          }
-         if (field0->GRef && field0->GRef->Type|GRID_SPARSE)
+         if (field0->GRef && field0->GRef->Type&GRID_SPARSE)
             FSTD_FieldReadMesh(field0);
 
          // Process each sub grids independently
@@ -790,7 +790,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                   }
                }
 
-               if (field1->GRef && field1->GRef->Type|GRID_SPARSE) {
+               if (field1->GRef && field1->GRef->Type&GRID_SPARSE) {
                   FSTD_FieldReadMesh(field1);
                }
 
