@@ -53,7 +53,8 @@ typedef double (TFunc)();
 typedef struct TFuncDef {
   char      *Name;     // Function Name
   TFunc     *Func;     // Function Pointer
-  char       Args;     // Number of Arguments
+  char       Args;     // Number of Arguments (total)
+  char       Opts;     // Number of optional arguments
   TDef_Type  Type;     // Result data type
 } TFuncDef;
 

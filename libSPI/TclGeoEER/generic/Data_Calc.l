@@ -78,6 +78,10 @@ EXTCHAR [A-Za-z0-9_.:#]
    return T_FLOAT;
 }
 
+"NULL" {
+    return T_NULL_ARG;
+}
+
 {DIGIT}+ {
    vexpr_lval.Num = atof(yytext);
    return T_INT;

@@ -36,11 +36,17 @@ static int  STACKPN=0;
 #endif // DEBUG
 #define STACK_PUSH(S,I) if(S##N<PASTE2(S,_MAX)) {S[S##N++]=(I);PASTE2(S,_DEBUG);} else {vexpr_error(QUOTE(PASTE2(S,_MAX))" reached, too many function arguments: Critical!");YYERROR;}
 #define STACK_POP       {STACKN-=STACK_NB; --STACKPN;}
+#define STACK_PAD(A,O)  {int a=(A),o=(O),nb=STACK_NB; if(o && nb<a && (a-nb)<=o) {while(STACK_NB<a){STACK_PUSH(STACK,NULL);}}}
+// Some tests for the stack
+#define STACK_ERROR(Err)            {vexpr_error(Err); STACK_POP; YYERROR;}
+#define STACK_ASSERT_NARGS(N,Err)   if( (N)!=STACK_NB ) STACK_ERROR(Err);
+#define STACK_ASSERT_NOTNULL(N,Err) {int i,n=(N); for(i=0; i<n; ++i) if( !STACK_PTR[i] ) STACK_ERROR(Err);}
 
 int vexpr_error(char* s);
 %}
 
 %union {
+  TDef   **Args;              /*!< For returning multiple arguments */
   TDef   *Val;            /*!< For returning numbers. */
   double     Num;
   TDef   *Data;           /*!< If we found a data */
@@ -92,12 +98,15 @@ int vexpr_error(char* s);
 %token <Num>       T_FIELD_FUNC
 %token <Val>       T_ERROR            /* The lexer found something wicked */
 
+%token T_NULL_ARG
+
 %token T_OPEN_PAR  "("
 %token T_CLOSE_PAR ")"
 %token T_OPEN_BRA  "["
 %token T_CLOSE_BRA "]"
 %token T_COMMA     ","
 
+%type  <Args>      farg
 %type  <Val>       exp
 %type  <Operator>  T_ADD T_SUB T_MUL T_DIV T_EXP T_INTERP2 T_INTERP3 T_ASSIGN
 %type  <Operator>  T_EQU T_NEQ T_GRQ T_GRE T_SMQ T_SMA
@@ -140,6 +149,7 @@ farg:
       fprintf(stdout,"(DEBUG) Empty function argument list\n");
 #endif
       STACK_PUSH(STACKP,STACKN);
+      $$=STACK_PTR;
    }
    | exp {
 #ifdef DEBUG
@@ -147,12 +157,29 @@ farg:
 #endif
       STACK_PUSH(STACKP,STACKN);
       STACK_PUSH(STACK,$1);
+      $$=STACK_PTR;
    }
    | farg "," exp {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Appending to argument list\n");
 #endif
       STACK_PUSH(STACK,$3);
+      $$=STACK_PTR;
+   }
+   | T_NULL_ARG {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Making argument list from NULL\n");
+#endif
+      STACK_PUSH(STACKP,STACKN);
+      STACK_PUSH(STACK,NULL);
+      $$=STACK_PTR;
+   }
+   | farg "," T_NULL_ARG {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Appending NULL to argument list\n");
+#endif
+      STACK_PUSH(STACK,NULL);
+      $$=STACK_PTR;
    }
 ;
 
@@ -471,23 +498,21 @@ exp:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Function call (F) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
-      // Special case for cached values of stats functions
-      if( STACK_NB == 0 ) {
-         while( STACK_NB < $1->Args ) {
-            STACK_PUSH(STACK,NULL);
-         }
-      }
+      // Fill optional arguments with NULL values if needed
+      STACK_PAD($1->Args,$1->Opts);
 
-      if ($1->Args!=STACK_NB) {
-         vexpr_error("(T_FNCT_F): Invalid number of arguments");
+      // Make sure we have the right number of arguments
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_F): Invalid number of arguments");
+
+      // Make sure the mandatory arguments are not NULL
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
+
+      // Make the function call
+      $$=Calc_Matrix($1->Func,0,0,$1->Type,STACK_NB,$3);
+      STACK_POP;
+      if (!$$) {
+         vexpr_error("Calc_Matrix failed (T_FNCT_F): Critical!");
          YYERROR;
-      } else {
-         $$=Calc_Matrix($1->Func,0,0,$1->Type,STACK_NB,STACK_PTR);
-         STACK_POP;
-         if (!$$) {
-            vexpr_error("Calc_Matrix failed (T_FNCT_F): Critical!");
-            YYERROR;
-         }
       }
    }
 
@@ -495,16 +520,20 @@ exp:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Function call (M) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
-      if ($1->Args!=STACK_NB) {
-         vexpr_error("(T_FNCT_M): Invalid number of arguments");
+      // Fill optional arguments with NULL values if needed
+      STACK_PAD($1->Args,$1->Opts);
+
+      // Make sure we have the right number of arguments
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_F): Invalid number of arguments");
+
+      // Make sure the mandatory arguments are not NULL
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
+
+      $$=Calc_Matrix($1->Func,1,0,$1->Type,STACK_NB,$3);
+      STACK_POP;
+      if (!$$) {
+         vexpr_error("Calc_Matrix failed (T_FNCT_M): Critical!");
          YYERROR;
-      } else {
-         $$=Calc_Matrix($1->Func,1,0,$1->Type,STACK_NB,STACK_PTR);
-         STACK_POP;
-         if (!$$) {
-            vexpr_error("Calc_Matrix failed (T_FNCT_M): Critical!");
-            YYERROR;
-         }
       }
    }
 
@@ -512,16 +541,20 @@ exp:
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Function call (D) : %s(%d args)\n",$1->Name,STACK_NB);
 #endif
-      if ($1->Args!=STACK_NB) {
-         vexpr_error("(T_FNCT_D): Invalid number of arguments");
+      // Fill optional arguments with NULL values if needed
+      STACK_PAD($1->Args,$1->Opts);
+
+      // Make sure we have the right number of arguments
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_F): Invalid number of arguments");
+
+      // Make sure the mandatory arguments are not NULL
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
+
+      $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,STACK_PTR);
+      STACK_POP;
+      if (!$$) {
+         vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");
          YYERROR;
-      } else {
-         $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,STACK_PTR);
-         STACK_POP;
-         if (!$$) {
-            vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");
-            YYERROR;
-         }
       }
    }
 
