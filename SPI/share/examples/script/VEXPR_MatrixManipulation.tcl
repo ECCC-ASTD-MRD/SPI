@@ -64,6 +64,12 @@ if { [TestCatch 0 vexpr SEQ CTX+seq(1,10,2)] && [TestDim SEQ 5 1 1] && [TestVal 
 if { [TestCatch 0 vexpr SEQ CTX+seq(-0.2,-1.2,-.2)] && [TestDim SEQ 6 1 1] && [TestVal 1e-7 SEQ -0.2 -0.4 -0.6 -0.8 -1.0 -1.2] } {
     Log::Print INFO "==> TEST PASSED : sequence from -0.2 to -1.2 step -.2"
 }
+if { [TestCatch 0 vexpr SEQ CTX+seq(1,4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ 1 2 3 4] } {
+    Log::Print INFO "==> TEST PASSED : sequence from 1 to 4 with default step 1"
+}
+if { [TestCatch 0 vexpr SEQ CTX+seq(-1,-4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ -1 -2 -3 -4] } {
+    Log::Print INFO "==> TEST PASSED : sequence from -1 to -4 with default step -1"
+}
 #if { [TestCatch 0 vexpr SEQ CTX+seq(2,10,15)] && [TestDim SEQ 1 1 1] && [TestVal 0 SEQ 2] } {
 #    Log::Print INFO "==> TEST PASSED : sequence from 2 to 10 step 15"
 #}

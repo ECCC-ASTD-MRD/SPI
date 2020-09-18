@@ -85,7 +85,7 @@ TFuncDef FuncD[] = {
   { "tcount"    , tcount    , 2, 0, TD_Int32 },
   { "flipy"     , flipy     , 1, 0, TD_Unknown },
 
-  { "seq"       , seq       , 3, 0, TD_Float64 },
+  { "seq"       , seq       , 3, 1, TD_Float64 },
   { "reshape"   , reshape   , 4, 0, TD_Unknown },
   { "repeat"    , repeat    , 2, 0, TD_Unknown },
 
@@ -250,9 +250,9 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
    int i,n;
 
    // Make sure we got scalars for the dimensions
-   if( FSIZE3D(From)!=1 )  Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
-   if( FSIZE3D(To)!=1 )    Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
-   if( FSIZE3D(Step)!=1 )  Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
+   if( FSIZE3D(From)!=1 )           Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
+   if( FSIZE3D(To)!=1 )             Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
+   if( Step && FSIZE3D(Step)!=1 )   Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
 
    if( Calc_InError() )
       return(0.0);
@@ -260,7 +260,11 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
    // Get the values from the fields
    Def_Get(From,0,0,from);
    Def_Get(To,0,0,to);
-   Def_Get(Step,0,0,step);
+   if( Step ) {
+       Def_Get(Step,0,0,step);
+   } else {
+       step = from<=to ? 1.0 : -1.0;
+   }
 
    if( !step ) {
       Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
