@@ -614,7 +614,7 @@ TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TD
       if( NFlds <= 0 )
          return(NULL);
       ++GDataN;
-      GData[GDataN]=Def_CopyPromote(Flds[0],(GType?GType:Flds[0]->Type));
+      GData[GDataN]=Def_CopyPromote(Flds[0],(GType?GType:(Type?Type:Flds[0]->Type)));
       flds[0]=GData[GDataN];
       memcpy(flds+1,Flds,NFlds*sizeof(*Flds));
       Calc_CallFunc(Func,NFlds+1,flds);
