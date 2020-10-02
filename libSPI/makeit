@@ -296,7 +296,8 @@ if [[ $BLD -eq 1 ]]; then
       --with-sqlite3 \
       --with-eccodes=${LIB_EXT} \
       --with-flt=${LIB_EXT} \
-      --with-urp=${LIB_EXT}
+      --with-urp=${LIB_EXT} \
+      --with-DistanceMetrics=opt --enable-DistanceMetrics-static
    fi
    make install || exit 1
 

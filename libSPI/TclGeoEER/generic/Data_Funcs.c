@@ -40,6 +40,10 @@
 #include "Data_Funcs.h"
 #include "Data_Calc.h"
 
+#ifdef HAVE_DISTANCEMETRICS
+#include "DistanceMetrics.h"
+#endif //HAVE_DISTANCEMETRICS
+
 /**
  * @internal Implementation detail
  * @ref func_init_table
@@ -88,6 +92,10 @@ TFuncDef FuncD[] = {
   { "seq"       , seq       , 3, 1, TD_Float64 },
   { "reshape"   , reshape   , 4, 0, TD_Unknown },
   { "repeat"    , repeat    , 2, 0, TD_Unknown },
+
+  // Distance metrics
+  { "dt"    , (TFunc*)dt    , 1, 0, TD_Float64 },
+  { "gdt"   , (TFunc*)gdt   , 2, 1, TD_Float64 },
 
   { NULL        , NULL      , 0, 0, TD_Unknown }
 };
@@ -177,6 +185,13 @@ TFuncDef FuncF[] = {
   { "say"   , stat_ay     , 2, 2, TD_Float64 },
 
   { "irand" , initrand    , 1, 1, TD_Float64 },
+
+  // Distance metrics
+  { "dmnp"  , dmnp        , 1, 0, TD_Float64 },
+  { "haus"  , hausdorff   , 3, 1, TD_Float64 },
+  { "badd"  , baddeley    , 3, 1, TD_Float64 },
+  { "gdm"   , gdm         , 4, 2, TD_Float64 },
+
   { NULL    , NULL        , 0, 0, TD_Unknown }
 };
 
@@ -2198,4 +2213,323 @@ double ifelse(double a,double b,double c) {
 
 double frand(double a,double b,double c) {
    return(b+((c-b)*(rand()/(RAND_MAX+1.0))));
+}
+
+static void ddxy(TDef *restrict Fld,double **restrict DX,double **restrict DY) {
+   unsigned long i,j;
+   double        *dx,*dy;
+   TGeoRef      *gref=NULL;
+
+   extern TData     *GField;
+   extern GDAL_Band *GBand;
+   extern int        GMode;
+
+   *DX = *DY = NULL;
+
+   switch (GMode) {
+      case T_BAND: gref=GBand->GRef; break;
+      case T_FLD : gref=GField->GRef; break;
+   }
+
+   if (!gref) {
+      return;
+   }
+
+   dx = malloc(Fld->NI*sizeof(*dx));
+   dy = malloc(Fld->NJ*sizeof(*dy));
+   if( !dx || !dy ) {
+      Calc_RaiseError("ddxy: Could not allocate memory\n");
+      free(dx);
+      free(dy);
+      return;
+   }
+
+   // Note: We don't calculate the distance between [0] and [j] directly to reduce the chance of lat/lon wrapping occuring
+   dy[0] = 0.0;
+   for(j=1,i=Fld->NI>>1; j<Fld->NJ; ++j) {
+      dy[j] = dy[j-1] + gref->Distance(gref,i,j-1,i,j);
+   }
+
+   // Note: We don't calculate the distance between [0] and [i] directly to reduce the chance of lon wrapping occuring
+   dx[0] = 0.0;
+   for(i=1,j=Fld->NJ>>1; i<Fld->NI; ++i) {
+      dx[i] = dx[i-1] + gref->Distance(gref,i-1,j,i,j);
+   }
+
+   *DX = dx;
+   *DY = dy;
+}
+
+static int* toint(TDef *restrict Fld) {
+   int      *a;
+   size_t   idx,n=FSIZE2D(Fld);
+   double   v;
+
+   // Only allocate memory if we can't coerce the field into an int field (size mismatch)
+   // Note that even though IEEE754 floats agree that 0 is all zeroes, negative 0 also exists and needs to be covered
+   if( Fld->Type!=TD_Int32 && Fld->Type!=TD_UInt32 ) {
+      if( !(a=malloc(n*sizeof(*a))) ) {
+         Calc_RaiseError("toint: Could not allocate memory\n");
+         return NULL;
+      }
+
+      // Get the source field into a boolean field
+      for(idx=0; idx<n; ++idx) {
+         Def_Get(Fld,0,idx,v);
+         a[idx] = v!=0.0;
+      }
+
+      return a;
+   } else {
+      return (int*)Fld->Data[0];
+   }
+}
+
+double dt(TDef *restrict Res,TDef *restrict Fld) {
+#ifdef HAVE_DISTANCEMETRICS
+   double n=-1.0,*dx,*dy;
+   int *a;
+
+   if( Res->Type!=TD_Float64 )   Calc_RaiseError("dt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
+   if( Fld->NK!=1 )              Calc_RaiseError("dt: Field's NK should be 1\n");
+
+   if( Calc_InError() ) return -1.0;
+
+   // Get the relative distance of points w.r.t eachother
+   ddxy(Fld,&dx,&dy);
+
+   // Make sure we have int-compatible values
+   a = toint(Fld);
+
+   if( Calc_InError() ) {
+      goto end;
+   }
+
+   if( !(n=DM_DT_Meijster(a,dx,dy,Fld->NI,Fld->NJ,(double*)Res->Data[0],DM_DT_EDT)) ) {
+      Calc_RaiseError("dt: Could not calculate any distance as there is no non-null values in the field\n");
+   }
+
+end:
+   free(dx);
+   free(dy);
+   if(a!=(int*)Fld->Data[0])
+      free(a);
+
+   return n;
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("dt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
+}
+
+double gdt(TDef *restrict Res,TDef *restrict Fld,TDef *restrict Q) {
+#ifdef HAVE_DISTANCEMETRICS
+   double   *dx,*dy;
+   int      *a;
+   double   n=-1.0,q=-2.0;
+
+   // Error check
+   if( Res->Type!=TD_Float64 )   Calc_RaiseError("gdt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
+   if( Q && FSIZE3D(Q)!=1 )      Calc_RaiseError("gdt: Q should be a scalar\n");
+   if( Fld->NK!=1 )              Calc_RaiseError("gdt: Field's NK should be 1\n");
+
+   if( Calc_InError() ) return -1.0;
+
+   // Get the relative distance of points w.r.t eachother
+   ddxy(Fld,&dx,&dy);
+
+   // Make sure we have int-compatible values
+   a = toint(Fld);
+
+   if( Calc_InError() ) {
+      goto end;
+   }
+
+   /// Default value for Q
+   if( Q ) Def_Get(Q,0,0,q);
+
+   if( !(n=DM_GDT(a,dx,dy,Fld->NI,Fld->NJ,(double*)Res->Data[0],q)) ) {
+      Calc_RaiseError("gdt: Could not calculate any distance as there is no non-null values in the field\n");
+   }
+
+end:
+   free(dx);
+   free(dy);
+   if(a!=(int*)Fld->Data[0])
+      free(a);
+
+   return n;
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("gdt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
+}
+
+double dmnp(TDef *N) {
+#ifdef HAVE_DISTANCEMETRICS
+#ifdef _OPENMP
+   double n;
+
+   // Error check
+   if( FSIZE3D(N)!=1 )     Calc_RaiseError("dmnp: The number of threads should be a scalar\n");
+
+   if( Calc_InError() )
+      return -1.0;
+
+   Def_Get(N,0,0,n);
+   DM_SetNumThreads((int)n);
+
+   return n;
+#else //_OPENMP
+    Calc_RaiseError("dmnp: vexpr was not compiled with thread support, this function is unavailable\n");
+    return -1.0;
+#endif //_OPENMP
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("dmnp: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
+}
+
+double hausdorff(TDef *restrict A,TDef *restrict B,TDef *restrict Algo) {
+#ifdef HAVE_DISTANCEMETRICS
+   double   *dx=NULL,*dy=NULL;
+   int      *a=NULL,*b=NULL;
+   double   r=-1.0;
+   int      algo=0;
+
+   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError("hausdorff: Algo should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("hausdorff: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("hausdorff: Both fields should have the same dimensions\n");
+
+   if( Calc_InError() ) return -1.0;
+
+   // Get the relative distance of points w.r.t eachother
+   ddxy(A,&dx,&dy);
+
+   // Make sure we have int-compatible values
+   a = toint(A);
+   b = toint(B);
+
+   if( Calc_InError() ) goto end;
+
+   // Apply parameters
+   if( Algo ) Def_Get(Algo,0,0,algo);
+
+   // Make the actual calculations
+   switch( algo ) {
+      case 0:  r=DM_Hausdorff_optimized(a,b,dx,dy,A->NI,B->NJ);  break;
+      case 1:  r=DM_Hausdorff_DT(a,b,dx,dy,A->NI,B->NJ);  break;
+      case 2:  r=DM_Hausdorff_naive(a,b,dx,dy,A->NI,B->NJ);  break;
+      default: Calc_RaiseError("hausdorff: Invalid algorithm selected. Can be 0 for 'optimized' (default), 1 for 'DT' or 2 for 'naive'.\n"); goto end;
+   }
+
+   if( r < 0.0 ) {
+      Calc_RaiseError("hausdorff: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+   }
+
+end:
+   free(dx);
+   free(dy);
+   if(a!=(int*)A->Data[0])
+      free(a);
+   if(b!=(int*)B->Data[0])
+      free(b);
+
+   return r;
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("hausdorff: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
+}
+
+double baddeley(TDef *restrict A,TDef *restrict B,TDef *restrict P) {
+#ifdef HAVE_DISTANCEMETRICS
+   double   *dx=NULL,*dy=NULL;
+   int      *a=NULL,*b=NULL;
+   double   p=2.0,r=-1.0;
+
+   // Error check
+   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError("baddeley: P should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("baddeley: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("baddeley: Both fields should have the same dimensions\n");
+
+   if( Calc_InError() ) return -1.0;
+
+   // Get the relative distance of points w.r.t eachother
+   ddxy(A,&dx,&dy);
+
+   // Make sure we have int-compatible values
+   a = toint(A);
+   b = toint(B);
+
+   if( Calc_InError() ) goto end;
+
+   // Apply parameters
+   if( P ) Def_Get(P,0,0,p);
+
+   // Make the actual calculations
+   if( (r=DM_Baddeley(a,b,dx,dy,A->NI,B->NJ,p)) == -DBL_MAX ) {
+      Calc_RaiseError("baddeley: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+   }
+
+end:
+   free(dx);
+   free(dy);
+   if(a!=(int*)A->Data[0])
+      free(a);
+   if(b!=(int*)B->Data[0])
+      free(b);
+
+   return r;
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("baddeley: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
+}
+
+double gdm(TDef *restrict A,TDef *restrict B,TDef *restrict P,TDef *restrict Q) {
+#ifdef HAVE_DISTANCEMETRICS
+   double   *dx=NULL,*dy=NULL;
+   int      *a=NULL,*b=NULL;
+   double   p=2.0,q=-2.0,r=-1.0;
+
+   // Error check
+   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError("gdm: P should be a scalar\n");
+   if( Q && FSIZE3D(Q)!=1 )            Calc_RaiseError("gdm: Q should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("gdm: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("gdm: Both fields should have the same dimensions\n");
+
+   if( Calc_InError() ) return -1.0;
+
+   // Get the relative distance of points w.r.t eachother
+   ddxy(A,&dx,&dy);
+
+   // Make sure we have int-compatible values
+   a = toint(A);
+   b = toint(B);
+
+   if( Calc_InError() ) goto end;
+
+   // Apply parameters
+   if( P ) Def_Get(P,0,0,p);
+   if( Q ) Def_Get(Q,0,0,q);
+
+   // Make the actual calculations
+   if( (r=DM_GDM(a,b,dx,dy,A->NI,B->NJ,p,q)) == -DBL_MAX ) {
+      Calc_RaiseError("baddeley: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+   }
+
+end:
+   free(dx);
+   free(dy);
+   if(a!=(int*)A->Data[0])
+      free(a);
+   if(b!=(int*)B->Data[0])
+      free(b);
+
+   return r;
+#else // HAVE_DISTANCEMETRICS
+    Calc_RaiseError("gdm: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    return -1.0;
+#endif // HAVE_DISTANCEMETRICS
 }

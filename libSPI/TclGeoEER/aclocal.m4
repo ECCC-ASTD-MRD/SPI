@@ -9,6 +9,7 @@ builtin(include,tclconfig/tcl.m4)
 #
 
 m4_include([../m4/ax_lib_eer.m4])
+m4_include([../m4/ax_lib_DistanceMetrics.m4])
 m4_include([../m4/ax_lib_gdal.m4])
 m4_include([../m4/ax_lib_gdb.m4])
 m4_include([../m4/ax_lib_rmn.m4])

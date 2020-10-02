@@ -90,6 +90,8 @@ double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC);
 double fkernel(TDef *Res,TDef *MA,TDef *MB);
 double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC);
 double fpeel(TDef *Res,TDef *MA);
+double dt(TDef *restrict Res,TDef *restrict Fld);
+double gdt(TDef *restrict Res,TDef *restrict Fld,TDef *restrict Q);
 
 // Table operators
 double tcount(TDef *Res,TDef *Table,TDef *MB);
@@ -185,6 +187,11 @@ double stat_ax(TDef *MA,TDef *MB);    // Area X
 double stat_ay(TDef *MA,TDef *MB);    // Area Y 
 
 double initrand(TDef *M);             // Calls srand (initialize the seed for the rand function (frand here) to something else than 1)
+
+double dmnp(TDef *N);                                                               // Number of threads to use for DistanceMetrics calculations
+double hausdorff(TDef *restrict A,TDef *restrict B,TDef *restrict Algo);            // Hausdorff distance
+double baddeley(TDef *restrict A,TDef *restrict B,TDef *restrict P);                // Baddeley's distance metric
+double gdm(TDef *restrict A,TDef *restrict B,TDef *restrict P,TDef *restrict Q);    // Generalized Distance Metric
 
 // Base operators
 double add(double a,double b);

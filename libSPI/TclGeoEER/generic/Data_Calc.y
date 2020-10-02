@@ -550,7 +550,7 @@ exp:
       // Make sure the mandatory arguments are not NULL
       STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
 
-      $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,STACK_PTR);
+      $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,$3);
       STACK_POP;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");

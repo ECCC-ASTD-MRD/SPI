@@ -29,7 +29,7 @@ PKG_CFLAGS="-D_GNU_SOURCE -D_DEFAULT_SOURCE"
 # ---------------------------------------- -----------------------------------
 
 AX_LIB_RMN()
- 
+
 if test "$HAVE_RMN" = "yes"; then
    PKG_LIBS="$PKG_LIBS $RMN_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_RMN $RMN_CFLAGS"
@@ -40,7 +40,7 @@ fi
 # ---------------------------------------------------------------------------
 
 AX_LIB_GDB()
- 
+
 if test "$HAVE_GDB" = "yes"; then
    PKG_LIBS="$PKG_LIBS $GDB_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDB $GDB_CFLAGS"
@@ -51,7 +51,7 @@ fi
 # ---------------------------------------- -----------------------------------
 
 AX_LIB_ECCODES()
- 
+
 if test "$HAVE_ECCODES" = "yes"; then
    PKG_LIBS="$PKG_LIBS $ECCODES_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_ECCODES $ECCODES_CFLAGS"
@@ -62,7 +62,7 @@ fi
 # ---------------------------------------- -----------------------------------
 
 AX_LIB_ECBUFR()
- 
+
 if test "$HAVE_ECBUFR" = "yes"; then
    PKG_LIBS="$PKG_LIBS $ECBUFR_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_ECBUFR $ECBUFR_CFLAGS"
@@ -73,7 +73,7 @@ fi
 # ---------------------------------------------------------------------------
 
 AX_LIB_FLT()
- 
+
 if test "$HAVE_FLT" = "yes"; then
    PKG_LIBS="$PKG_LIBS $FLT_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_FLT $FLT_CFLAGS"
@@ -84,7 +84,7 @@ fi
 # ---------------------------------------------------------------------------
 
 AX_LIB_URP()
- 
+
 if test "$HAVE_URP" = "yes"; then
    PKG_LIBS="$PKG_LIBS $URP_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_URP $URP_CFLAGS"
@@ -94,7 +94,7 @@ fi
 # Check for GDAL/OGR
 # ---------------------------------------------------------------------------
 
-GDAL_INIT(1.9.0) 
+GDAL_INIT(1.9.0)
 if test "$HAVE_GDAL" = "yes"; then
    PKG_LIBS="$PKG_LIBS $GDAL_LIBS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_GDAL $GDAL_CFLAGS"
@@ -105,7 +105,7 @@ fi
 # ---------------------------------------------------------------------------
 
 AX_LIB_EER()
- 
+
 if test "$HAVE_EER" = "yes"; then
    PKG_LIBS="$PKG_LIBS $EER_LDFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_EER $EER_CFLAGS"
@@ -124,6 +124,17 @@ AX_OPENMP([
    PKG_LIBS="$PKG_LIBS $OPENMP_CFLAGS"
    PKG_CFLAGS="$PKG_CFLAGS -DHAVE_OPENMP $OPENMP_CFLAGS"
 ])
+
+# ---------------------------------------------------------------------------
+# Check for DistanceMetrics
+# ---------------------------------------------------------------------------
+
+AX_LIB_DISTANCEMETRICS()
+
+if test "$HAVE_DM" = "yes"; then
+   PKG_LIBS="$PKG_LIBS $DM_LDFLAGS"
+   PKG_CFLAGS="$PKG_CFLAGS -DHAVE_DISTANCEMETRICS $DM_CFLAGS"
+fi
 
 #--------------------------------------------------------------------
 # Call TEA_INIT as the first TEA_ macro to set up initial vars.
