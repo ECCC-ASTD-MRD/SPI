@@ -2215,7 +2215,7 @@ double frand(double a,double b,double c) {
    return(b+((c-b)*(rand()/(RAND_MAX+1.0))));
 }
 
-static void ddxy(TDef *restrict Fld,double **restrict DX,double **restrict DY) {
+static void ddxy(TDef *Fld,double **restrict DX,double **restrict DY) {
    unsigned long i,j;
    double        *dx,*dy;
    TGeoRef      *gref=NULL;
@@ -2260,7 +2260,7 @@ static void ddxy(TDef *restrict Fld,double **restrict DX,double **restrict DY) {
    *DY = dy;
 }
 
-static int* toint(TDef *restrict Fld) {
+static int* toint(TDef *Fld) {
    int      *a;
    size_t   idx,n=FSIZE2D(Fld);
    double   v;
@@ -2285,7 +2285,7 @@ static int* toint(TDef *restrict Fld) {
    }
 }
 
-double dt(TDef *restrict Res,TDef *restrict Fld) {
+double dt(TDef *Res,TDef *Fld) {
 #ifdef HAVE_DISTANCEMETRICS
    double n=-1.0,*dx,*dy;
    int *a;
@@ -2322,7 +2322,7 @@ end:
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double gdt(TDef *restrict Res,TDef *restrict Fld,TDef *restrict Q) {
+double gdt(TDef *Res,TDef *Fld,TDef *Q) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx,*dy;
    int      *a;
@@ -2390,7 +2390,7 @@ double dmnp(TDef *N) {
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double hausdorff(TDef *restrict A,TDef *restrict B,TDef *restrict Algo) {
+double hausdorff(TDef *A,TDef *B,TDef *Algo) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
@@ -2442,7 +2442,7 @@ end:
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double baddeley(TDef *restrict A,TDef *restrict B,TDef *restrict P) {
+double baddeley(TDef *A,TDef *B,TDef *P) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
@@ -2487,7 +2487,7 @@ end:
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double gdm(TDef *restrict A,TDef *restrict B,TDef *restrict P,TDef *restrict Q) {
+double gdm(TDef *A,TDef *B,TDef *P,TDef *Q) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
