@@ -1420,7 +1420,28 @@ if { ![catch {set r [vexpr - gdm(REF,CASE5)]} msg] } {
 } else {
    Log::Print ERROR "==> TEST FAILED : gdm returned an error : $msg"
 }
+#----- Make sure the block version, the fast version and the exact version gives the same answer for block size = grid size
+Log::Print INFO "Testing gdm(af)..."
+if { ![catch {set rf [vexpr - gdm(REF,CASE5,NULL,NULL,1,101,1000)]} msg] } {
+   if { abs($r-$rf) < 1e-6 } {
+      Log::Print INFO "==> TEST PASSED : gdm(af) on non-georeferenced grid"
+   } else {
+      Log::Print ERROR "==> TEST FAILED : $r != $rf with Tol=1e-6"
+   }
+} else {
+   Log::Print ERROR "==> TEST FAILED : gdm(af) returned an error : $msg"
+}
+Log::Print INFO "Testing gdm(ak)..."
+if { ![catch {set rk [vexpr - gdm(REF,CASE5,NULL,NULL,2,101,1000)]} msg] } {
+   if { abs($r-$rk) < 1e-6 } {
+      Log::Print INFO "==> TEST PASSED : gdm(ak) on non-georeferenced grid"
+   } else {
+      Log::Print ERROR "==> TEST FAILED : $r != $rk with Tol=1e-6"
+   }
+} else {
+   Log::Print ERROR "==> TEST FAILED : gdm(ak) returned an error : $msg"
+}
 
-fstdfield free FLD RES
+fstdfield free FLD RES REF CASE5 GEO1 GEO2
 
 Log::End -1

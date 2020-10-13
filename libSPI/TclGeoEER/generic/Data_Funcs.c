@@ -190,7 +190,7 @@ TFuncDef FuncF[] = {
   { "dmnp"  , dmnp        , 1, 0, TD_Float64 },
   { "haus"  , hausdorff   , 3, 1, TD_Float64 },
   { "badd"  , baddeley    , 3, 1, TD_Float64 },
-  { "gdm"   , gdm         , 4, 2, TD_Float64 },
+  { "gdm"   , gdm         , 7, 5, TD_Float64 },
 
   { NULL    , NULL        , 0, 0, TD_Unknown }
 };
@@ -2487,15 +2487,19 @@ end:
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double gdm(TDef *A,TDef *B,TDef *P,TDef *Q) {
+double gdm(TDef *A,TDef *B,TDef *P,TDef *Q,TDef *Algo,TDef *BS,TDef *C) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
-   double   p=2.0,q=-2.0,r=-1.0;
+   int      algo=0,bs=100;
+   double   p=2.0,q=-2.0,c=0.0,r=-1.0;
 
    // Error check
    if( P && FSIZE3D(P)!=1 )            Calc_RaiseError("gdm: P should be a scalar\n");
    if( Q && FSIZE3D(Q)!=1 )            Calc_RaiseError("gdm: Q should be a scalar\n");
+   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError("gdm: Algo should be a scalar\n");
+   if( BS && FSIZE3D(BS)!=1 )          Calc_RaiseError("gdm: BS should be a scalar\n");
+   if( C && FSIZE3D(C)!=1 )            Calc_RaiseError("gdm: C should be a scalar\n");
    if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("gdm: NK should be 1 for both fields\n");
    if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("gdm: Both fields should have the same dimensions\n");
 
@@ -2511,12 +2515,22 @@ double gdm(TDef *A,TDef *B,TDef *P,TDef *Q) {
    if( Calc_InError() ) goto end;
 
    // Apply parameters
-   if( P ) Def_Get(P,0,0,p);
-   if( Q ) Def_Get(Q,0,0,q);
+   if( P )     Def_Get(P,0,0,p);
+   if( Q )     Def_Get(Q,0,0,q);
+   if( Algo )  Def_Get(Algo,0,0,algo);
+   if( BS )    Def_Get(BS,0,0,bs);
+   if( C )     Def_Get(C,0,0,c);
 
    // Make the actual calculations
-   if( (r=DM_GDM(a,b,dx,dy,A->NI,B->NJ,p,q)) == -DBL_MAX ) {
-      Calc_RaiseError("baddeley: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+   switch( algo ) {
+      case 0:  r=DM_GDM(a,b,dx,dy,A->NI,B->NJ,p,q);         break;
+      case 1:  r=DM_GDMaf(a,b,dx,dy,A->NI,B->NJ,p,q,bs,c);  break;
+      case 2:  r=DM_GDMak(a,b,dx,dy,A->NI,B->NJ,p,q,bs,c);  break;
+      default: Calc_RaiseError("gdm: Invalid algorithm selected. Can be 0 for 'exact' (default), 1 for 'approx fast' or 2 for 'approx kernel'.\n"); goto end;
+   }
+
+   if( r == -DBL_MAX ) {
+      Calc_RaiseError("gdm: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
    }
 
 end:
