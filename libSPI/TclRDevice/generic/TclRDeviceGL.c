@@ -484,7 +484,12 @@ static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Ali
                 if( glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE ) {
                     break;
                 } else if( update == 2 ) {
-                    // It was our first time to create an FBO, it's probably not supported. we'll fall through here
+                    if( Ctx->OBuf.FBO.FBuf )
+                        glDeleteFramebuffers(1,&Ctx->OBuf.FBO.FBuf);
+                    if( Ctx->OBuf.FBO.RBuf )
+                        glDeleteRenderbuffers(1,&Ctx->OBuf.FBO.RBuf);
+
+                    // It was our first time to create an FBO, it's probably not supported. we'll fall through to the next option
                     Ctx->OBufType = OBUF_GLX;
 
                     Ctx->OBuf.GLX.GLCtx     = NULL;
