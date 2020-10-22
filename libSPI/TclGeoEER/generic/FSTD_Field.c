@@ -2957,7 +2957,7 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
       if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
          ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
             head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
-         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
+         ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NJ,1,1,
             head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          ok=c_fstecr(Field->ZRef->Levels,NULL,-32,file->Id,head->DATEO,0,0,Field->ZRef->LevelNb,1,1,
             head->IG1,head->IG2,head->IG3,"X ","^>",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
