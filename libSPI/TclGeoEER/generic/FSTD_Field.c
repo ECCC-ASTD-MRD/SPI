@@ -2906,79 +2906,87 @@ int FSTD_FieldWrite(Tcl_Interp *Interp,char *Id,TData *Field,int NPack,int Rewri
 }
 
 int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
-   
+
    TRPNFile   *file;
    TRPNHeader *head=(TRPNHeader*)Field->Head;
    float       tmp[6];
    char        *e,etiket[13]="GRID        ";
-   int         ok,i,ni,nj,nk;
-   
+   int         ok=0,i,ni,nj,nk;
+
    // Verifier l'existence du champs
    if (!Field) {
       Tcl_AppendResult(Interp,"FSTD_FieldWrite: Invalid field",(char*)NULL);
       return(TCL_ERROR);
    }
-   
+
    file=FSTD_FileGet(Interp,Id);
    if (FSTD_FileSet(Interp,file)<0)
       return(TCL_ERROR);
-  
+
    e=Eticket?Eticket:etiket;
    if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z') {
       if (!Field->GRef->AX || !Field->GRef->AY) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
-         return(TCL_ERROR);       
+         return(TCL_ERROR);
       }
       // If they're not already written
       if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
-         if (Field->GRef->Grid[0]=='Y') {         
+         if (Field->GRef->Grid[0]=='Y') {
             ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
-               head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+               head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
             ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
                head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
-         } else if (Field->GRef->Grid[0]=='W') {
+         } else if (Field->GRef->Grid[0]=='W' || Field->GRef->Grid[1]=='W') {
             ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
-               head->IG1,head->IG2,head->IG3,"X ",">>",e,Field->GRef->Grid[0],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+               head->IG1,head->IG2,head->IG3,"X ",">>",e,"W",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
             ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,Field->Def->NJ,1,
-               head->IG1,head->IG2,head->IG3,"X ","^^",e,Field->GRef->Grid[0],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+               head->IG1,head->IG2,head->IG3,"X ","^^",e,"W",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          } else {
             ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
-               head->IG1,head->IG2,head->IG3,"X ",">>",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+               head->IG1,head->IG2,head->IG3,"X ",">>",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
             ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,1,Field->Def->NJ,1,
-               head->IG1,head->IG2,head->IG3,"X ","^^",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+               head->IG1,head->IG2,head->IG3,"X ","^^",e,&Field->GRef->Grid[1],Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          }
       }
    } else if (Field->GRef->Grid[0]=='V') {
       if (!Field->GRef->AX || !Field->GRef->AY || !Field->ZRef->Levels) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
-         return(TCL_ERROR); 
+         return(TCL_ERROR);
       }
       // If they're not already written
       if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X",">>"))<=0) {
          ok=c_fstecr(Field->GRef->AX,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
-            head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+            head->IG1,head->IG2,head->IG3,"X ",">>",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          ok=c_fstecr(Field->GRef->AY,NULL,-32,file->Id,head->DATEO,0,0,Field->Def->NI,1,1,
-            head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+            head->IG1,head->IG2,head->IG3,"X ","^^",e,"L",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          ok=c_fstecr(Field->ZRef->Levels,NULL,-32,file->Id,head->DATEO,0,0,Field->ZRef->LevelNb,1,1,
-            head->IG1,head->IG2,head->IG3,"X ","^>",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);                  
+            head->IG1,head->IG2,head->IG3,"X ","^>",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
      }
-   } else if (Field->GRef->Grid[0]=='W') { 
+   }
+
+   if (Field->GRef->Grid[0]=='W' || Field->GRef->Grid[1]=='W') {
       if (!Field->GRef->Transform || !Field->GRef->String) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid transform and/or WKT definition not defined",(char*)NULL);
-         return(TCL_ERROR);       
+         return(TCL_ERROR);
       }
       // If they're not already written
       if ((cs_fstinf(file->Id,&ni,&nj,&nk,head->DATEO,e,head->IG1,head->IG2,head->IG3,"X","PROJ"))<=0) {
+         int ip1,ip2,ip3;
          for(i=0;i<6;i++) {
             tmp[i]=Field->GRef->Transform[i];
          }
+         if( Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z' ) {
+            ip1=Field->GRef->IG1; ip2=Field->GRef->IG2; ip3=Field->GRef->IG3;
+         } else {
+            ip1=head->IG1; ip2=head->IG2; ip3=head->IG3;
+         }
          ok=c_fstecr(tmp,NULL,-32,file->Id,head->DATEO,0,0,6,1,1,
-            head->IG1,head->IG2,head->IG3,"X ","MTRX",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1); 
+            ip1,ip2,ip3,"X ","MTRX",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,5,1);
          c_fst_data_length(TDef_Size[2]);
          ok=c_fstecr(Field->GRef->String,NULL,-8,file->Id,head->DATEO,0,0,strlen(Field->GRef->String),1,1,
-            head->IG1,head->IG2,head->IG3,"X ","PROJ",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,2,1);
+            ip1,ip2,ip3,"X ","PROJ",e,"X",Field->GRef->IG1,Field->GRef->IG2,Field->GRef->IG3,Field->GRef->IG4,2,1);
       }
-   } 
+   }
    return(ok>=0?TCL_OK:TCL_ERROR);
 }
 
