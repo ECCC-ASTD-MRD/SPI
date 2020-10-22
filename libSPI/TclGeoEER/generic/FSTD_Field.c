@@ -191,7 +191,7 @@ int FSTD_FieldSubBuild(TData *Field) {
 
 int FSTD_FieldSubSelect(TData *Field,int N) {
 
-   int ni,nj,ig;
+   int ig;
    char grtyp[2];
    
    // If the subgrid index is different from the current
