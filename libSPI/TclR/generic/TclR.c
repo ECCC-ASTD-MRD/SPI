@@ -105,7 +105,7 @@ typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,T
 */
 static void TclR_RInit() {
     //static char *argv[] = {"TclR","--no-save","--no-environ","--no-restore","--no-init-file","--quiet","--slave"};
-    static char *argv[] = {"TclR","--vanilla","--quiet","--slave"};
+    static char *argv[] = {"TclR","--no-save","--no-restore","--quiet","--slave"};
 
     // This doesn't override a value if one is already given. This is a last resort effort : R won't start without a R_HOME variable
     setenv("R_HOME",R_DEFAULT_RHOME,0);
