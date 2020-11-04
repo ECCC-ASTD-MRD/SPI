@@ -74,7 +74,8 @@ typedef struct TclR_Context {
 
 // Tcl defines
 
-#define TCL_ASRT(x) if( (x)!=TCL_OK ) return(TCL_ERROR)
+#define TCL_ASRT(x)         if( (x)!=TCL_OK ) return(TCL_ERROR)
+#define TclIsEmptyStr(x)    ((x)->bytes && !(x)->length)
 
 typedef enum TclY_TType     { TCLY_BOOLEAN,TCLY_INT,TCLY_DOUBLE,TCLY_STRING,TCLY_LIST,TCLY_DICT,TCLY_BIGNUM,TCLY_UNKNOWN } TclY_TType;
 typedef enum TclR_TListType { TCLR_LIST_BOOLEAN,TCLR_LIST_INT,TCLR_LIST_DOUBLE,TCLR_LIST_COMPLEX,TCLR_LIST_STRING,TCLR_LIST_MIXED,TCLR_LIST_UNKNOWN } TclR_TListType;
@@ -782,7 +783,7 @@ static TclR_TListType TclR_GetListObjType(Tcl_Interp *Interp,Tcl_Obj *Lst) {
             case TCLY_DICT:
                 return TCLR_LIST_MIXED;
             default:
-                if( elems[i]->length ) {
+                if( !TclIsEmptyStr(elems[i]) ) {
                     // Check with the list type we have so far what are our options
                     switch( ltype ) {
                         case TCLR_LIST_UNKNOWN:
@@ -904,7 +905,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(INTSXP,len) );
                 iptr = INTEGER(rvar);
                 while( len-- ) {
-                    if( !(*tclvals)->length ) {
+                    if( TclIsEmptyStr(*tclvals) ) {
                         *iptr++ = R_NaInt;
                         tclvals++;
                     } else if( Tcl_GetIntFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
@@ -918,7 +919,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(REALSXP,len) );
                 dptr = REAL(rvar);
                 while( len-- ) {
-                    if( !(*tclvals)->length ) {
+                    if( TclIsEmptyStr(*tclvals) ) {
                         *dptr++ = R_NaReal;
                         tclvals++;
                     } else if( Tcl_GetDoubleFromObj(Interp,*tclvals++,dptr++) != TCL_OK ) {
@@ -932,7 +933,7 @@ static SEXP TclR_Tcl2R(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *TclVar,
                 R_PROTECT( rvar=allocVector(LGLSXP,len) );
                 iptr = LOGICAL(rvar);
                 while( len-- ) {
-                    if( !(*tclvals)->length ) {
+                    if( TclIsEmptyStr(*tclvals) ) {
                         *iptr++ = R_NaInt;
                         tclvals++;
                     } else if( Tcl_GetBooleanFromObj(Interp,*tclvals++,iptr++) != TCL_OK ) {
@@ -1294,7 +1295,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
         for(j=0; j<ncols; ++j) {
             switch( ttypes[j] ) {
                 case TT_INT:
-                    if( members[j]->length ) {
+                    if( !TclIsEmptyStr(members[j]) ) {
                         CHKTCL( Tcl_GetIntFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(int*)rptrs[j] = R_NaInt;
@@ -1302,7 +1303,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     rptrs[j] = (int*)rptrs[j]+1;
                     break;
                 case TT_DOUBLE:
-                    if( members[j]->length ) {
+                    if( !TclIsEmptyStr(members[j]) ) {
                         CHKTCL( Tcl_GetDoubleFromObj(Interp,members[j],(double*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(double*)rptrs[j] = R_NaReal;
@@ -1310,7 +1311,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     rptrs[j] = (double*)rptrs[j]+1;
                     break;
                 case TT_BOOLEAN:
-                    if( members[j]->length ) {
+                    if( !TclIsEmptyStr(members[j]) ) {
                         CHKTCL( Tcl_GetBooleanFromObj(Interp,members[j],(int*)rptrs[j]),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
                     } else {
                         *(int*)rptrs[j] = R_NaInt;
@@ -1321,7 +1322,7 @@ static int TclR_TclLst2RDF(Tcl_Interp *Interp,TclR_Context *Context,Tcl_Obj *Tcl
                     SET_STRING_ELT(rcontent[j],i,Rf_mkChar(Tcl_GetString(members[j])));
                     break;
                 case TT_COMPLEX:
-                    if( members[j]->length ) {
+                    if( !TclIsEmptyStr(members[j]) ) {
                         Tcl_Obj **cmplx;
                         int     ncmplx;
                         CHKTCL( Tcl_ListObjGetElements(Interp,members[j],&ncmplx,&cmplx),Pattern?"The value doesn't respect the pattern\n":"The pattern might have been wrongly inferred\n" );
