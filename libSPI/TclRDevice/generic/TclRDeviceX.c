@@ -545,11 +545,16 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
     XRectangle clip;
 
-    clip.width = (unsigned short)abs((int)X1-(int)X0)-1;
-    clip.height = (unsigned short)abs((int)Y1-(int)Y0)-1;
+    Dev->clipLeft   = floor(fmin(X0,X1));
+    Dev->clipRight  = ceil(fmax(X0,X1));
+    Dev->clipBottom = floor(fmin(Y0,Y1));
+    Dev->clipTop    = ceil(fmax(Y0,Y1));
 
-    clip.x = (short)(X0<=X1 ? X0 : X1) + 1;
-    clip.y = ctx->H - (short)(Y0<=Y1 ? Y0 : Y1) - clip.height;
+    clip.width = (unsigned short)(Dev->clipRight-Dev->clipLeft);
+    clip.height = (unsigned short)(Dev->clipTop-Dev->clipBottom);
+
+    clip.x = (short)Dev->clipLeft;
+    clip.y = (short)(ctx->H - (int)Dev->clipBottom - (int)clip.height + 1);
 
     XDBGPRINTF("Clip to [%.4f,%.4f] [%.4f,%.4f]\n",X0,Y0,X1,Y1);
     XSetClipRectangles(ctx->Display,ctx->GC,0,0,&clip,1,Unsorted);
