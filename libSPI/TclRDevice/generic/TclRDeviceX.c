@@ -795,11 +795,13 @@ static void TclRDeviceX_Polygon(int N,double *X,double *Y,const pGEcontext restr
     if( N && (xp=ToXPoint(ctx,N,X,Y)) ) {
         // Check if we need to fill the polygon
         if( GEC->fill != NA_INTEGER ) {
+            XDBGPRINTF("Polygon (fill)\n");
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
             XFillPolygon(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,Convex,CoordModeOrigin);
         }
         // Check if we need to draw the borders
         if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
+            XDBGPRINTF("Polygon (contour)\n");
             TclRDeviceX_GCLine(ctx,GEC);
             TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
             XDrawLines(ctx->Display,ctx->Pixmap,ctx->GC,xp,N,CoordModeOrigin);
@@ -900,11 +902,13 @@ static void TclRDeviceX_Rect(double X0,double Y0,double X1,double Y1,const pGEco
 
     // Check if we need to fill the rectangle
     if( GEC->fill != NA_INTEGER ) {
+        XDBGPRINTF("Rect (fill)\n");
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->fill);
         XFillRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);
     }
     // Check if we need to draw the borders
     if( GEC->col!=NA_INTEGER && (GEC->fill==NA_INTEGER||GEC->fill!=GEC->col) ) {
+        XDBGPRINTF("Rect (contour)\n");
         TclRDeviceX_GCLine(ctx,GEC);
         TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
         XDrawRectangle(ctx->Display,ctx->Pixmap,ctx->GC,x,y,w,h);

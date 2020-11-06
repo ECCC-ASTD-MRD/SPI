@@ -750,8 +750,11 @@ void RDeviceItem_SignalRedraw(void *Item) {
             RDeviceResize(rdv);
     }
 
-    if( rdv->tkredraw )
+    if( rdv->tkredraw ) {
         rdv->tkredraw(rdv->Canv,rdv->Header.x1,rdv->Header.y1,rdv->Header.x2,rdv->Header.y2);
+        //while(Tcl_DoOneEvent(TCL_WINDOW_EVENTS|TCL_IDLE_EVENTS|TCL_DONT_WAIT));
+        //sleep(2);
+    }
 }
 
 /*--------------------------------------------------------------------------------------------------------------
