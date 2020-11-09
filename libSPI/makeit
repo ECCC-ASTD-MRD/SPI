@@ -71,7 +71,7 @@ PROC=`uname -m | tr _ -`
 SRC_PATH=`pwd`
 TMP_PATH=${SSM_DEV}/build/${ORDENV_PLAT}                                         #----- Temporary directory where the external libraries will be compiled
 LIB_PATH=${SSM_DEV}/workspace/${SSM_NAME}                                        #----- Where to install libraries
-LIB_EER=${SSM_DEV}/workspace/eerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
+LIB_EER=${SSM_DEV}/workspace/libeerUtils_${EER_VERSION}${SSM_COMP}_${ORDENV_PLAT}   #----- Location of eer library
 LIB_EXT=${CMD_EXT_PATH}/${ORDENV_PLAT}                                           #----- External libraries
 
 export LD_LIBRARY_PATH=${LIB_PATH}/lib:$LD_LIBRARY_PATH
@@ -219,141 +219,93 @@ fi
 
 if [[ $CLR -eq 1 ]]; then
    cd $DEF_PWD
-
-   printf -- "\n----- Cleaning TclSystem Library -----\n"
-   cd TclSystem
-   make distclean
-
-   printf -- "\n----- Cleaning TkglCanvas Library -----\n"
-   cd ../TkglCanvas
-   make distclean
-
-   printf -- "\n----- Cleaning TclGeoEER Library -----\n"
-   cd ../TclGeoEER
-   make distclean
-
+   rm -f -r build
    cd ..
 fi
 
 if [[ $BLD -eq 1 ]]; then
    cd $DEF_PWD
 
-   type -P autoconf2.50 && autoconf=autoconf2.50 || autoconf=autoconf
-   export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
-   
    #----- System with no OpenGL
    ldconfig -p | grep -q 'libGL\.so' || { export LDFLAGS="-L$LIB_PATH/GL/lib export"; export CFLAGS="$CFLAGS -I$LIB_PATH/GL/include"; }
 
-   printf -- "\n----- Making TclSystem Library  -----\n"
-   cd TclSystem
+   export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
+   export EC_CMAKE_MODULE_PATH="/home/nil000/Projects/eerSPI/libSPI/modules"
+   export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
+   export EER_ROOT=${LIB_EER}
+   export TCL_ROOT=${DESTDIR}/TCL
+   export GDB_ROOT=${LIB_PATH}
+   export ECBUFR_ROOT=${LIB_EXT}
+
+   #----- Source Tcl/Tk local config
+   export $(grep -v '^#' $TCL_ROOT/lib/tclConfig.sh | xargs) 2>/dev/null
+   export $(grep -v '^#' $TCL_ROOT/lib/tkConfig.sh | xargs) 2>/dev/null
+
    if [[ $REC -eq 1 ]]; then
-      make distclean
-      if [[ $AUT -eq 1 ]]; then $autoconf; fi
-      ./configure \
-      --prefix=${LIB_PATH}/TCL \
-      --exec-prefix=${LIB_PATH}/TCL \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-eer=${LIB_EER}
+      rm -f -r build 
+      mkdir -p build/TclSystem build/TkglCanvas build/TclGeoEER build/TclR build/TclRDevice
    fi
+
+   printf -- "\n----- Making TclSystem Library  -----\n"
+   cd build/TclSystem
+   if [[ $REC -eq 1 ]]; then
+      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclSystem
+   fi
+   make -j
    make install || exit 1
 
    printf -- "\n----- Making TkglCanvas Library -----\n"
-
    cd ../TkglCanvas
    if [[ $REC -eq 1 ]]; then
-      make distclean
-      if [[ $AUT -eq 1 ]]; then $autoconf; fi
-      ./configure \
-      --prefix=${LIB_PATH}/TCL/ \
-      --exec-prefix=${LIB_PATH}/TCL/ \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-tk=${LIB_PATH}/TCL/lib
+      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TkglCanvas
    fi
+   make -j
    make install || exit 1
 
    printf -- "\n----- Making TclGeoEER Library -----\n"
-
    cd ../TclGeoEER
    if [[ $REC -eq 1 ]]; then
-      make distclean
-      if [[ $AUT -eq 1 ]]; then $autoconf; fi
-      ./configure \
-      --prefix=${LIB_PATH}/TCL/ \
-      --exec-prefix=${LIB_PATH}/TCL \
-      --enable-threads \
-      --enable-64bit \
-      --with-tcl=${LIB_PATH}/TCL/lib \
-      --with-tk=${LIB_PATH}/TCL/lib \
-      --with-gdb=${LIB_PATH} \
-      --with-eer=${LIB_EER} \
-      --with-rmn=${LIB_EER} \
-      --with-gdal=`which gdal-config` \
-      --with-ecbufr=${LIB_EXT} \
-      --with-sqlite3 \
-      --with-eccodes=${LIB_EXT} \
-      --with-flt=${LIB_EXT} \
-      --with-urp=${LIB_EXT}
+      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclGeoEER
    fi
+   make -j 
    make install || exit 1
 
    if [[ "$ORDENV_DIST" != "sles" ]]; then
-       printf -- "\n----- Making TclR Library -----\n"
+      printf -- "\n----- Making TclR Library -----\n"
+      cd ../TclR
+      if [[ $REC -eq 1 ]]; then
+         cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclR
+      fi
+      make -j
+      make install || exit 1
 
-       cd ../TclR
-       if [[ $REC -eq 1 ]]; then
-          make distclean
-          [[ $AUT -eq 1 ]] && $autoconf
-          ./configure \
-          --prefix=${LIB_PATH}/TCL/ \
-          --exec-prefix=${LIB_PATH}/TCL \
-          --enable-threads \
-          --enable-64bit \
-          --with-tcl=${LIB_PATH}/TCL/lib \
-          --with-tk=${LIB_PATH}/TCL/lib \
-          --with-R=$(R RHOME)
-       fi
-       make install || exit 1
+      printf -- "\n----- Making TclRDevice Library -----\n"
 
-       printf -- "\n----- Making TclRDevice Library -----\n"
-
-       cd ../TclRDevice
-       if [[ $REC -eq 1 ]]; then
-          make distclean
-          [[ $AUT -eq 1 ]] && $autoconf
-          ./configure \
-          --prefix=${LIB_PATH}/TCL/ \
-          --exec-prefix=${LIB_PATH}/TCL \
-          --enable-threads \
-          --enable-64bit \
-          --with-tcl=${LIB_PATH}/TCL/lib \
-          --with-tk=${LIB_PATH}/TCL/lib \
-          --with-R=$(R RHOME)
-       fi
-       make install || exit 1
-   fi
+      cd ../TclRDevice
+      if [[ $REC -eq 1 ]]; then
+         cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclRDevice
+      fi
+      make -j
+      make install || exit 1
+  fi
 
    cd ${LIB_PATH}/lib
-   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER${VERSION}.so libTclGeoEER${VERSION}.so
-   ln -fs libTclGeoEER${VERSION}.so libTclGeoEER.so
+   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER.so.${VERSION} libTclGeoEER.so.${VERSION}
+   ln -fs libTclGeoEER.so.${VERSION} libTclGeoEER.so
 
-   ln -fs ../TCL/lib/TkglCanvas8.6/libTkglCanvas8.6.so libTkglCanvas8.6.so
-   ln -fs libTkglCanvas8.6.so libTkglCanvas.so
+   ln -fs ../TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so.8.6.0 libTkglCanvas.so.8.6.0
+   ln -fs libTkglCanvas.so.8.6.0 libTkglCanvas.so
 
-   ln -fs ../TCL/lib/TclSystem1.2/libTclSystem1.2.so libTclSystem1.2.so
-   ln -fs libTclSystem1.2.so libTclSystem.so
+   ln -fs ../TCL/lib/TclSystem1.2.0/libTclSystem.so.1.2.0 libTclSystem.so.1.2.0
+   ln -fs libTclSystem.so.1.2.0 libTclSystem.so
 
-   ln -fs ../TCL/lib/TclR1.0/libTclR1.0.so
-   ln -fs libTclR1.0.so libTclR.so
+   ln -fs ../TCL/lib/TclR1.0.0/libTclR.s0.1.0.0
+   ln -fs libTclR.so.1.0.0 libTclR.so
 
-   ln -fs ../TCL/lib/TclRDevice1.0/libTclRDevice1.0.so
-   ln -fs libTclRDevice1.0.so libTclRDevice.so
+   ln -fs ../TCL/lib/TclRDevice1.0.0/libTclRDevice.so.1.0.0
+   ln -fs libTclRDevice.so.1.0.0 libTclRDevice.so
 
    cd ${SRC_PATH}
-
 fi
 
 if [[ $SSM -eq 1 ]]; then

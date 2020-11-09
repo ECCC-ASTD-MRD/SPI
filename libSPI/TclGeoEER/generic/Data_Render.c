@@ -57,6 +57,7 @@ int   Data_RenderRange(TData *Field,ViewportItem *VP,Projection *Proj);
 void  Data_MapColor(TData *Field,int Idx);
 int   Data_Grid3D(TData *Field,Projection* Proj);
 
+extern int Data_RenderShaderRayCasting(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderParticle(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj);
 extern int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj);

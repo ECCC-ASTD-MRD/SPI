@@ -1,0 +1,9 @@
+NAME       : TkglCanvas
+VERSION    : 8.6.0
+BUILD      : Release
+DESCRIPTION: Tk canvas OpenGL extension
+SUMMARY    : New glcanvas for TK allowing GPU accelerated use of opengl and new viewport item for 3D geographic renderings
+MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
+
+TCL >= 8.6.0
+EER >= 3.4.1
