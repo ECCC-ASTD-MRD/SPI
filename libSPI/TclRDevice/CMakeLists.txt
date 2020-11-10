@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
+
 #----- Append EC specific module path
 list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
 include(ec_utils)
+ec_parse_manifest() # Parse MANIFEST file
+ec_build_info()     # Generate build include file
 
-ec_parse_version()
-ec_build_include()
+#set(DOXYGEN_FOUND True)
+# include(doxygen)    # Doxygen target_link_libraries
+
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
 set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
@@ -41,7 +45,7 @@ add_compile_definitions(PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 set_target_properties(${NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 set_target_properties(${NAME} PROPERTIES PUBLIC_HEADER "${PROJECT_INCLUDE_FILES}")
 
-add_dependencies(${NAME} timestamp)
+add_dependencies(${NAME} build_info)
 
 target_link_libraries(${NAME} ${TCL_LIBRARIES} ${R_LIBRARIES})
 

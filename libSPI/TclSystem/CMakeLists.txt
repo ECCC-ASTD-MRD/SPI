@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
+
 #----- Append EC specific module path
 list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
-include(ec_utils)
 
-ec_parse_version()
-ec_build_include()
+include(ec_utils)
+ec_parse_manifest() # Parse MANIFEST file
+ec_build_info()     # Generate build include file
+
+#set(DOXYGEN_FOUND True)
+# include(doxygen)    # Doxygen target
+
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
 set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
@@ -19,7 +24,7 @@ message(STATUS "Generating libTclSystem librairie")
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
 
-add_library(TclSystem SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_SOURCE_FILES})
+add_library(${NAME} SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_SOURCE_FILES})
 
 find_package(TCL REQUIRED)
 add_compile_definitions(HAVE_TCL)
@@ -38,15 +43,15 @@ endif()
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ TCL_THREADS _GNU_SOURCE)
 add_compile_definitions(PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 
-set_target_properties(TclSystem PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(TclSystem PROPERTIES PUBLIC_HEADER "${PROJECT_INCLUDE_FILES}")
+set_target_properties(${NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+set_target_properties(${NAME} PROPERTIES PUBLIC_HEADER "${PROJECT_INCLUDE_FILES}")
 
-add_dependencies(TclSystem timestamp)
+add_dependencies(${NAME} build_info)
 
-target_link_libraries(TclSystem ${EER_LIBRARIES})
-target_link_libraries(TclSystem ${TCL_LIBRARIES})
+target_link_libraries(${NAME} ${EER_LIBRARIES})
+target_link_libraries(${NAME} ${TCL_LIBRARIES})
 
-install(TARGETS TclSystem
+install(TARGETS ${NAME}
    LIBRARY DESTINATION TCL/lib/${NAME}${VERSION}
    PUBLIC_HEADER DESTINATION TCL/include)
 
