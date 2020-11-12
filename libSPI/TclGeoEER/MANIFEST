@@ -1,0 +1,17 @@
+NAME       : TclGeoEER
+VERSION    : 8.1.0
+BUILD      : Release
+DESCRIPTION: Tcl extensions to manage geospatial data
+SUMMARY    : Tcl extensions to manage geospatial data
+MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
+
+TCL >= 8.6.0
+GDAL >= 2.1.0
+ECCODE > 1
+ECBUFR = 0.8.7
+FLT > 1 
+URP > 1 
+GDB > 1
+EER >= 3.4.1
+RMN ~>= 19.6.0
+VGRID ~= 6.5.0

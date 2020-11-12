@@ -10,12 +10,12 @@
 
 extern Tcl_Interp *GInterp;
 
-extern TData      *GField,*GFieldP;
+extern TData  *GField,*GFieldP;
 extern TDef   *GResult;
 extern TDef   *GData[1024];
-extern int         GDataN;
-extern int         GError;
-extern int         GMode;
+extern int     GDataN;
+extern int     GError;
+extern int     GMode;
 
 #define STACK_MAX    128
 #define STACKP_MAX   16

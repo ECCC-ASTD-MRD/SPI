@@ -218,6 +218,30 @@ GLboolean glCheckExtension(char *ExtName) {
 }
 
 /*----------------------------------------------------------------------------
+ * Nom      : <initialisationGLLightingParams>
+ * Creation : Mai 2019 A. Germain
+ *
+ * But      : Initialiser les parametres qui sont utilises pour
+ *              l'illumination avec des valeurs par defaut
+ *
+ * Parametres :
+ *
+ * Retour:
+ *
+ * Remarques :
+ *
+ *----------------------------------------------------------------------------
+*/
+void initialisationGLLightingParams(){
+    GLRender->GLLighting = malloc(sizeof(GLLightingParams));
+    GLRender->GLLighting->GLLightAmbiant = 0.1;
+    GLRender->GLLighting->GLLightDiffuse = 1.5;
+    GLRender->GLLighting->GLLightSpecular = 0.6;
+    GLRender->GLLighting->GLMaterialSpecular = 1.0;
+    GLRender->GLLighting->GLMaterialShininess = 64;
+}
+
+/*----------------------------------------------------------------------------
  * Nom      : <glRender_Cmd>
  * Creation : Juillet 2000 - J.P. Gauthier - CMC/CMOE
  *
@@ -513,31 +537,6 @@ static int  glRender_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
    }
    return TCL_OK;
 }
-
-/*----------------------------------------------------------------------------
- * Nom      : <initialisationGLLightingParams>
- * Creation : Mai 2019 A. Germain
- *
- * But      : Initialiser les parametres qui sont utilises pour
- *              l'illumination avec des valeurs par defaut
- *
- * Parametres :
- *
- * Retour:
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-void initialisationGLLightingParams(){
-    GLRender->GLLighting = malloc(sizeof(GLLightingParams));
-    GLRender->GLLighting->GLLightAmbiant = 0.1;
-    GLRender->GLLighting->GLLightDiffuse = 1.5;
-    GLRender->GLLighting->GLLightSpecular = 0.6;
-    GLRender->GLLighting->GLMaterialSpecular = 1.0;
-    GLRender->GLLighting->GLMaterialShininess = 64;
-}
-
 
 /*----------------------------------------------------------------------------
  * Nom      : <trRasterPos2i>

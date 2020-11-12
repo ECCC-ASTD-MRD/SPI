@@ -1,0 +1,8 @@
+NAME       : TclRDevice
+VERSION    : 1.0.0
+BUILD      : Release
+DESCRIPTION: ECCC-SMC-CCMEP Tcl R device connector
+SUMMARY    : R device connector callable from Tcl
+MAINTAINER : Eric Legault-Ouellet - Eric.Legault-Ouellet@canada.ca
+
+TCL >= 8.6.0
