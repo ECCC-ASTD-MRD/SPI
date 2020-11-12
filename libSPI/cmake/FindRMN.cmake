@@ -17,16 +17,16 @@ if("shared" IN_LIST RMN_FIND_COMPONENTS)
     if("threaded" IN_LIST RMN_FIND_COMPONENTS)
         find_library(RMN_LIBRARY
            NAMES rmnsharedPTHRD
-           PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+           PATHS ${EC_LD_LIBRARY_PATH})
     else()
        find_library(RMN_LIBRARY
            NAMES rmnshared
-           PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+           PATHS ${EC_LD_LIBRARY_PATH})
     endif()
 else()
     find_library(RMN_LIBRARY
         NAMES rmn
-        PATHS ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+        PATHS ${EC_LD_LIBRARY_PATH})
 endif()
 
 string(REGEX MATCH ".*/libs/([0-9]+\\.[0-9]+)(\\.[0-9])?(-[a,b][0-9]*)?.*/" null ${RMN_LIBRARY})

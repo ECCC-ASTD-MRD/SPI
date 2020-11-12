@@ -6,7 +6,7 @@
 #  LANGUAGES : List of language to enable for the project.  Usually C and Fotran
 
 # TODO: Change this once debugging is done
-option(USE_ECCC_ENV_IF_AVAIL "Use ECCC's custom build envronement" FALSE)
+option(USE_ECCC_ENV_IF_AVAIL "Use ECCC's custom build envronement" TRUE)
 
 if(USE_ECCC_ENV_IF_AVAIL)
    if(DEFINED ENV{EC_ARCH})

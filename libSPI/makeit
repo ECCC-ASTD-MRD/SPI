@@ -230,7 +230,7 @@ if [[ $BLD -eq 1 ]]; then
    ldconfig -p | grep -q 'libGL\.so' || { export LDFLAGS="-L$LIB_PATH/GL/lib export"; export CFLAGS="$CFLAGS -I$LIB_PATH/GL/include"; }
 
    export CFLAGS="-std=c99 -D_TK_SOURCE -Winline"   
-   export EC_CMAKE_MODULE_PATH="${DEF_PWD}/cmake"
+   export EC_CMAKE_MODULE_PATH="${DEF_PWD}/cmake;$EC_CMAKE_MODULE_PATH"
    export DESTDIR=${SSM_DEV}/workspace/${SSM_NAME}
    export EER_ROOT=${LIB_EER}
    export TCL_ROOT=${DESTDIR}/TCL
@@ -238,15 +238,15 @@ if [[ $BLD -eq 1 ]]; then
    export ECBUFR_ROOT=${LIB_EXT}
 
    #----- Source Tcl/Tk local config
-   export $(grep -v '^#' $TCL_ROOT/lib/tclConfig.sh | xargs) 2>/dev/null
-   export $(grep -v '^#' $TCL_ROOT/lib/tkConfig.sh | xargs) 2>/dev/null
+   export $(grep -v '^#' ${TCL_ROOT}/lib/tclConfig.sh | xargs) 2>/dev/null
+   export $(grep -v '^#' ${TCL_ROOT}/lib/tkConfig.sh | xargs) 2>/dev/null
 
    if [[ $REC -eq 1 ]]; then
       rm -f -r build 
       mkdir -p build/TclSystem build/TkglCanvas build/TclGeoEER build/TclR build/TclRDevice
    fi
 
-   printf -- "\n----- Making TclSystem Library  -----\n"
+   #----- Making TclSystem Library
    cd build/TclSystem
    if [[ $REC -eq 1 ]]; then
       cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclSystem
@@ -254,7 +254,7 @@ if [[ $BLD -eq 1 ]]; then
    make -j
    make install || exit 1
 
-   printf -- "\n----- Making TkglCanvas Library -----\n"
+   #----- Making TkglCanvas Library
    cd ../TkglCanvas
    if [[ $REC -eq 1 ]]; then
       cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TkglCanvas
@@ -262,7 +262,7 @@ if [[ $BLD -eq 1 ]]; then
    make -j
    make install || exit 1
 
-   printf -- "\n----- Making TclGeoEER Library -----\n"
+   #----- Making TclGeoEER Library
    cd ../TclGeoEER
    if [[ $REC -eq 1 ]]; then
       cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclGeoEER
@@ -271,7 +271,7 @@ if [[ $BLD -eq 1 ]]; then
    make install || exit 1
 
    if [[ "$ORDENV_DIST" != "sles" ]]; then
-      printf -- "\n----- Making TclR Library -----\n"
+      #----- Making TclR Library
       cd ../TclR
       if [[ $REC -eq 1 ]]; then
          cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclR
@@ -279,8 +279,7 @@ if [[ $BLD -eq 1 ]]; then
       make -j
       make install || exit 1
 
-      printf -- "\n----- Making TclRDevice Library -----\n"
-
+      #----- Making TclRDevice Library
       cd ../TclRDevice
       if [[ $REC -eq 1 ]]; then
          cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclRDevice
