@@ -1237,7 +1237,7 @@ static void TclRDeviceX_Text(double X,double Y,const char *Str,double Rot,double
     XDBGPRINTF("Text @[%.4f,%.4f] rotated[%.2f] hadj(%.4f) : (%s)\n",X,Y,Rot,HAdj,Str);
     TclRDeviceX_GCColor(ctx,(rcolor)GEC->col);
     TclRDeviceX_GCFont(ctx,GEC,Dev);
-    TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)X,ctx->H-(int)Y,Rot);
+    TkDrawAngledChars(ctx->Display,ctx->Pixmap,ctx->GC,ctx->TkFont,Str,strlen(Str),(int)X,ctx->H-(int)Y,Rot>=0?Rot:Rot+360.);
 }
 
 //static void (*onExit)(pDevDesc Dev);
