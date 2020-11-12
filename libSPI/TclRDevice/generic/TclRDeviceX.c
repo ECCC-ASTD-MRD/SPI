@@ -548,9 +548,9 @@ static void TclRDeviceX_Clip(double X0,double X1,double Y0,double Y1,pDevDesc De
     XRectangle clip;
 
     Dev->clipLeft   = floor(fmin(X0,X1));
-    Dev->clipRight  = ceil(fmax(X0,X1));
+    Dev->clipRight  = ceil(fmax(X0,X1))+1.0;
     Dev->clipBottom = floor(fmin(Y0,Y1));
-    Dev->clipTop    = ceil(fmax(Y0,Y1));
+    Dev->clipTop    = ceil(fmax(Y0,Y1))+1.0;
 
     clip.width = (unsigned short)(Dev->clipRight-Dev->clipLeft);
     clip.height = (unsigned short)(Dev->clipTop-Dev->clipBottom);
