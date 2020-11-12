@@ -23,6 +23,7 @@ message(STATUS "Generating libTclSystem librairie")
 
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
 add_library(${NAME} SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_SOURCE_FILES})
 

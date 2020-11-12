@@ -23,6 +23,7 @@ message(STATUS "Generating libTclGeoEER librairie")
 
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
