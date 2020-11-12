@@ -6,4 +6,3 @@ SUMMARY    : New glcanvas for TK allowing GPU accelerated use of opengl and new 
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
 
 TCL >= 8.6.0
-EER >= 3.4.1

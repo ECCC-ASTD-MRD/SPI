@@ -26,7 +26,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
 add_library(${NAME} SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_SOURCE_FILES})
 
-find_package(TCL REQUIRED)
+find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
 add_compile_definitions(HAVE_TCL)
 include_directories(${TCL_INCLUDE_PATH})
 
