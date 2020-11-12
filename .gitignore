@@ -23,6 +23,7 @@
 /libSPI/*/config.status
 /libSPI/*/configure
 /libSPI/*/pkgIndex.tcl
+/libSPI/build
 
 #----- To run the tests
 /SPI/share/examples/script/DataIn
