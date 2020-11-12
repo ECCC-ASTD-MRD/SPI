@@ -4,6 +4,8 @@
 #-----    Check for new versions of dict and bufr in $CMCCONST
 . ../SPI*/VERSION
 
+shopt -s extglob
+
 NAME="libSPI"
 DESCRIPTION="SPI libraries"
 SUMMARY="SPI compiled libraries and dependencies (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
@@ -42,13 +44,11 @@ EXT=0
 SSM=0
 REC=0
 CLR=0
-AUT=0
 
 #----- Get arguments
 while [ $# -gt 0 ]; do
     case "$1" in
         -clear)   CLR=1;;
-        -auto)    AUT=1;;
         -reconf)  REC=1;;
         -build)   BLD=1;;
         -ext)     EXT=1;;
@@ -241,9 +241,12 @@ if [[ $BLD -eq 1 ]]; then
    export $(grep -v '^#' ${TCL_ROOT}/lib/tclConfig.sh | xargs) 2>/dev/null
    export $(grep -v '^#' ${TCL_ROOT}/lib/tkConfig.sh | xargs) 2>/dev/null
 
-   if [[ $REC -eq 1 ]]; then
+   if [[ $REC -eq 1 || $CLR -eq 1 ]]; then
       rm -f -r build 
       mkdir -p build/TclSystem build/TkglCanvas build/TclGeoEER build/TclR build/TclRDevice
+
+      rm -f -r "$TCL_ROOT"/lib/{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}+([0-9])+(.+([0-9]))
+      rm -f "$DESTDIR"/lib/lib{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}.so*(.+([0-9]))
    fi
 
    #----- Making TclSystem Library
@@ -290,20 +293,12 @@ if [[ $BLD -eq 1 ]]; then
   fi
 
    cd ${LIB_PATH}/lib
-   ln -fs ../TCL/lib/TclGeoEER${VERSION}/libTclGeoEER.so.${VERSION} libTclGeoEER.so.${VERSION}
-   ln -fs libTclGeoEER.so.${VERSION} libTclGeoEER.so
-
-   ln -fs ../TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so.8.6.0 libTkglCanvas.so.8.6.0
-   ln -fs libTkglCanvas.so.8.6.0 libTkglCanvas.so
-
-   ln -fs ../TCL/lib/TclSystem1.2.0/libTclSystem.so.1.2.0 libTclSystem.so.1.2.0
-   ln -fs libTclSystem.so.1.2.0 libTclSystem.so
-
-   ln -fs ../TCL/lib/TclR1.0.0/libTclR.s0.1.0.0
-   ln -fs libTclR.so.1.0.0 libTclR.so
-
-   ln -fs ../TCL/lib/TclRDevice1.0.0/libTclRDevice.so.1.0.0
-   ln -fs libTclRDevice.so.1.0.0 libTclRDevice.so
+   for l in ../TCL/lib/{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}+([0-9])+(.+([0-9]))/lib*.so*(.+([0-9])); do
+       ln -nfs "$l"
+       #n="${l##*/}"
+       #ln -nfs "$l" "$n"
+       #ln -nfs "$n" "${n%%.[0-9]*}"
+   done
 
    cd ${SRC_PATH}
 fi
