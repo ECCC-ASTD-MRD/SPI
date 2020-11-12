@@ -1,5 +1,5 @@
 NAME       : TclR
-VERSION    : 1.0.0
+VERSION    : 1.0.1
 BUILD      : Release
 DESCRIPTION: ECCC-SMC-CCMEP Tcl R function extensions
 SUMMARY    : R related functions extensions callable from Tcl
