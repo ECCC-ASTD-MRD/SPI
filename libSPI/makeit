@@ -1,6 +1,5 @@
 #!/bin/bash
 #----- On version change:
-#-----    Change version in TclGeoEER/configure.in
 #-----    Check for new versions of dict and bufr in $CMCCONST
 . ../SPI*/VERSION
 
@@ -11,7 +10,6 @@ DESCRIPTION="SPI libraries"
 SUMMARY="SPI compiled libraries and dependencies (https:\/\/gitlab.science.gc.ca\/ECCC_CMOE_APPS\/eerspi)"
 MAINTAINER="Jean-Philippe.Gauthier@canada.ca"
 export VERSION=$SPI_VERSION
-export BUILDINFO=`[ -z "\${ORDENV_SETUP}" ] || git describe --always`
 
 if [[ (-z $SSM_DEV) ]]; then
    echo "(ERROR) Variables SSM_DEV not defined."
@@ -307,7 +305,16 @@ if [[ $SSM -eq 1 ]]; then
    cp .ssm.d/post-install ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d
    
    find ${SSM_DEV}/workspace/${SSM_NAME} \( -name "*~" -o -name ".*.sw?" -o -name ".nfs*" \) -exec rm -f {} \+
-   sed -e "s/NAME/${NAME}/" -e "s/VERSION/${SSM_VERSION}/" -e "s/PLATFORM/${ORDENV_PLAT}/" -e "s/MAINTAINER/${MAINTAINER}/" -e "s/BUILDINFO/${BUILDINFO}/" -e "s/DESCRIPTION/${DESCRIPTION}/" -e "s/SUMMARY/${SUMMARY}/" .ssm.d/control.json > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control.json
+   echo "{
+   \"name\": \"${NAME}\",
+   \"version\": \"${VERSION}\",
+   \"platform\": \"${ORDENV_PLAT}\",
+   \"maintainer\": \"${MAINTAINER}\",
+   \"summary\": \"${SUMMARY}\",
+   \"description\": \"${DESCRIPTION}\",
+   \"requires\": \"\",
+   \"x-buildinfo\": \"`[ -z "\${ORDENV_SETUP}" ] || git describe --always`\"
+}" > ${SSM_DEV}/workspace/${SSM_NAME}/.ssm.d/control.json
    cd ${SSM_DEV}/workspace; tar --exclude=.nfs* -zcvf ${SSM_DEV}/package/${SSM_NAME}.ssm ${SSM_NAME}
 #   rm -f -r ${SSM_DEV}/workspace/${SSM_NAME}
 
