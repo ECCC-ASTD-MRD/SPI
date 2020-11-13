@@ -2,7 +2,7 @@
 macro(ec_parse_manifest)
    file(STRINGS MANIFEST dependencies)
    foreach(line ${dependencies})
-      string(REGEX MATCH "[#]|([A-Z,a-z]+)[ ]*([<,>,=,~,:]+)[ ]*(.*)" res ${line})
+      string(REGEX MATCH "[#]|([A-Z,a-z,_]+)[ ]*([<,>,=,~,:]+)[ ]*(.*)" res ${line})
 #      message("..${CMAKE_MATCH_1}..${CMAKE_MATCH_2}..${CMAKE_MATCH_3}..")
       set(LBL1 ${CMAKE_MATCH_1})
       set(LBL2 ${CMAKE_MATCH_2})

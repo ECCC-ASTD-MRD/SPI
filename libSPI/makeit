@@ -29,7 +29,6 @@ SSM_NAME=${NAME}_${SSM_VERSION}_${ORDENV_PLAT}
 
 HELP="Arguments must be:\n\n   Information parameters:
 \t-help        : This information
-\t-version     : Version
 
    Commands:
 \t-build       : Compile package
@@ -56,7 +55,6 @@ while [ $# -gt 0 ]; do
         -all)     EXT=1;BLD=1;SSM=1;REC=1;;
 
         -h|-help)     printf -- "$HELP\n"; exit 0;;
-        -v|-version)  printf -- "$VERSION\n"; exit 0;;
         --)        shift; break;;
         *)         printf -- "Invalid argument $1.\n\n$HELP"; exit 1;;
     esac

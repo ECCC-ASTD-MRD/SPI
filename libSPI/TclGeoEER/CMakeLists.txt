@@ -38,7 +38,10 @@ add_compile_definitions(HAVE_TCL)
 include_directories(${TCL_INCLUDE_PATH} ${TK_INCLUDE_PATH})
 include_directories($ENV{TCL_SRC_DIR}/unix $ENV{TCL_SRC_DIR}/generic)
 include_directories($ENV{TK_SRC_DIR}/unix $ENV{TK_SRC_DIR}/generic)
-target_link_libraries(${NAME} ${TCL_LIBRARIES})
+target_link_libraries(${NAME} ${TCL_LIBRARY} ${TK_LIBRARY})
+
+#----- Need to add glCanvas librariesfor dependencies not to fail down the line
+target_link_libraries(${NAME} $ENV{TCL_ROOT}/lib/TkglCanvas8.6.0/libTkglCanvas.so.8.6.0)
 
 find_package(RMN ${RMN_REQ_VERSION} COMPONENTS beta shared OPTIONAL)
 if (RMN_FOUND) 

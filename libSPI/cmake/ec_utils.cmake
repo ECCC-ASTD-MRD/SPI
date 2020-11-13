@@ -1,4 +1,4 @@
- #----- Compiler selection
+#----- Compiler selection
 if(NOT DEFINED COMPILER_SUITE)
    if(DEFINED ENV{CRAYPE_VERSION})
  #     set(MPI_C_COMPILER "cc")
