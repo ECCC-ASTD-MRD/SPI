@@ -15,3 +15,4 @@ GDB    >= 1.0.0
 EER    >= 3.4.1
 RMN   ~>= 19.6.0
 VGRID  ~= 6.5.0
+DistanceMetrics ~>= 1.0.0

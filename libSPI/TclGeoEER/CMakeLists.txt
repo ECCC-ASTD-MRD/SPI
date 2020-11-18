@@ -113,6 +113,13 @@ if (URP_FOUND)
    target_link_libraries(${NAME} ${URP_LIBRARIES})
 endif()
 
+find_package(DistanceMetrics ${DISTANCEMETRICS_REQ_VERSION} CONFIG COMPONENTS static)
+if (DistanceMetrics_FOUND)
+   add_compile_definitions(HAVE_DISTANCEMETRICS)
+   include_directories(${DistanceMetrics_INCLUDE_DIRS})
+   target_link_libraries(${NAME} ${DistanceMetrics_LIBRARIES})
+endif()
+
 find_package(OpenGL REQUIRED)
 if (OpenGL_FOUND)
    include_directories(${OpenGL_INCLUDE_DIR})
