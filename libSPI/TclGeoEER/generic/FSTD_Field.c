@@ -408,6 +408,7 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'X':
+         case 'O':
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
             if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
             GeoRef_BuildIndex(Field->GRef);          
@@ -2430,7 +2431,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    // Creer une grille comme definie dans l'enregistrement
-   if (grtyp[0]=='W' || grtyp[0]=='Y' || grtyp[0]=='X' || grtyp[0]=='Z') {
+   if (grtyp[0]=='W' || grtyp[0]=='Y' || grtyp[0]=='X' || grtyp[0]=='O' || grtyp[0]=='Z') {
       float tmpv[6];
       double mtx[6],inv[6],*tm=NULL,*im=NULL;
       char   t='\0';

@@ -1625,7 +1625,7 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
       if (Field->Spec->InterNb) 
          dp>>=2;
    
-      dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
+      dp=(dp<1 || Field->GRef->Grid[0]=='V' || Field->GRef->Grid[0]=='X' || Field->GRef->Grid[0]=='O' || (Proj->Ref && Proj->Ref->Type&GRID_PSEUDO))?1:dp;
 
       // Grille avec loop sur la longitude
       if (Field->GRef->Type&GRID_WRAP && Proj->Type->Def!=PROJPLANE) {
@@ -2121,6 +2121,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          }
          break;
 
+      case 'O':
       case 'X':
       case 'W':
          if (Field->Spec->SampleType=='P') {

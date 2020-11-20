@@ -6,17 +6,17 @@
 set(EER_VERSION ${EER_FIND_VERSION})
 find_path(EER_INCLUDE_DIR
    NAMES eerUtils.h
-   PATHS $ENV{EER_ROOT}/include ${EC_INCLUDE_PATH} NO_DEFAULT_PATH)
+   PATHS $ENV{EER_ROOT}/include ${EC_INCLUDE_PATH})
        
 # [[DOC]] for find_library https://cmake.org/cmake/help/latest/command/find_library.html
 if("OMPI" IN_LIST EER_FIND_COMPONENTS)
    find_library(EER_LIBRARY
       NAMES eerUtils-ompi
-      PATHS $ENV{EER_ROOT}/lib ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+      PATHS $ENV{EER_ROOT}/lib ${EC_LD_LIBRARY_PATH})
 else()
    find_library(EER_LIBRARY
       NAMES eerUtils
-      PATHS $ENV{EER_ROOT}/lib ${EC_LD_LIBRARY_PATH} NO_DEFAULT_PATH)
+      PATHS $ENV{EER_ROOT}/lib ${EC_LD_LIBRARY_PATH})
 endif()
 
 include(FindPackageHandleStandardArgs)

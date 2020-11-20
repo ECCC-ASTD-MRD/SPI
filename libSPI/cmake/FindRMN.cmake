@@ -7,10 +7,10 @@
 
 #find_path(RMN_INCLUDE_DIR
 #   NAMES rpnmacros.h
-#   PATHS ENV CPATH NO_DEFAULT_PATH)
+#   PATHS ENV CPATH)
 find_path(RMN_INCLUDE_DIR
    NAMES rpn_macros_arch.h
-   PATHS ${EC_INCLUDE_PATH} NO_DEFAULT_PATH)
+   PATHS ${EC_INCLUDE_PATH})
 
 # [[DOC]] for find_library https://cmake.org/cmake/help/latest/command/find_library.html
 if("shared" IN_LIST RMN_FIND_COMPONENTS)
