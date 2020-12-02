@@ -46,6 +46,13 @@ if(RMN_FOUND)
    set(RMN_LIBRARIES ${RMN_LIBRARY})
 
    mark_as_advanced(RMN_INCLUDE_DIR RMN_LIBRARY)
+
+   add_library(RMN::RMN SHARED IMPORTED)
+   set_target_properties(RMN::RMN PROPERTIES
+      IMPORTED_LOCATION             ${RMN_LIBRARY}
+      INTERFACE_INCLUDE_DIRECTORIES ${RMN_INCLUDE_DIR}
+      INTERFACE_COMPILE_DEFINITIONS HAVE_RMN
+   )
 endif()
 
 if("rpnpy" IN_LIST RMN_FIND_COMPONENTS)
@@ -58,4 +65,3 @@ if("rpnpy" IN_LIST RMN_FIND_COMPONENTS)
         message("Could not find component rpnpy")
     endif()
 endif()
-    

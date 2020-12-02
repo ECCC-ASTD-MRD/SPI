@@ -88,9 +88,18 @@ else()
 endif()
 
 # Note: R_LIBRARY_BASE is added to R_LIBRARIES twice; this may be due to circular linking dependencies; needs further investigation
-set(R_LIBRARIES ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LIBRARY_BASE})
-if(R_LIBRARY_READLINE)
-  set(R_LIBRARIES ${R_LIBRARIES} ${R_LIBRARY_READLINE})
+if(R_FOUND)
+   set(R_LIBRARIES ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LIBRARY_BASE})
+   if(R_LIBRARY_READLINE)
+      set(R_LIBRARIES ${R_LIBRARIES} ${R_LIBRARY_READLINE})
+   endif()
+
+   add_library(R::R SHARED IMPORTED)
+   set_target_properties(R::R PROPERTIES
+      IMPORTED_LOCATION             ${R_LIBRARIES}
+      INTERFACE_INCLUDE_DIRECTORIES ${R_INCLUDE_DIR}
+      INTERFACE_COMPILE_DEFINITIONS HAVE_R
+   )
 endif()
 
 
