@@ -31,8 +31,8 @@ add_compile_definitions(HAVE_TCL)
 include_directories(${TCL_INCLUDE_PATH})
 
 find_package(R REQUIRED)
-include_directories(${R_INCLUDE_DIR})
-add_compile_definitions(R_DEFAULT_RHOME=\"${R_HOME}\")
+target_compile_definitions(R::R INTERFACE R_DEFAULT_RHOME=\"${R_HOME}\")
+target_link_libraries(${NAME} R::R)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
    add_compile_options(-fPIC -DSTDC_HEADERS)

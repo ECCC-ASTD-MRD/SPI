@@ -31,11 +31,8 @@ find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
 add_compile_definitions(HAVE_TCL)
 include_directories(${TCL_INCLUDE_PATH})
 
-find_package(EER ${EER_REQ_VERSION} REQUIRED)
-if (EER_FOUND) 
-   add_compile_definitions(HAVE_EER)
-   include_directories(${EER_INCLUDE_DIR})
-endif()
+find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
+target_link_libraries(${NAME} eerUtils::eerUtils)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
    add_compile_options(-fPIC -DSTDC_HEADERS)

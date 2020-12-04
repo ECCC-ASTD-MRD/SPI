@@ -34,6 +34,7 @@ include_directories($ENV{TCL_SRC_DIR}/unix $ENV{TCL_SRC_DIR}/generic)
 include_directories($ENV{TK_SRC_DIR}/unix $ENV{TK_SRC_DIR}/generic)
 
 find_package(OpenGL REQUIRED)
+target_link_libraries(${NAME} OpenGL::GL)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
    add_compile_options(-fPIC -DSTDC_HEADERS)

@@ -33,8 +33,8 @@ include_directories($ENV{TCL_SRC_DIR}/unix $ENV{TCL_SRC_DIR}/generic)
 include_directories($ENV{TK_SRC_DIR}/unix $ENV{TK_SRC_DIR}/generic)
 
 find_package(R REQUIRED)
-include_directories(${R_INCLUDE_DIR})
-add_compile_definitions(R_DEFAULT_RHOME=\"${R_HOME}\")
+target_compile_definitions(R::R INTERFACE R_DEFAULT_RHOME=\"${R_HOME}\")
+target_link_libraries(${NAME} R::R)
 
 if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
    add_compile_options(-fPIC -DSTDC_HEADERS)
