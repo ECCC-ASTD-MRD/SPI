@@ -27,23 +27,23 @@ find_library(BZ2_LIBRARY
    PATHS $ENV{URP_ROOT}/lib ENV LIBRARY_PATH)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(URP DEFAULT_MSG URP_LIBRARY URP_INCLUDE_DIR)
+find_package_handle_standard_args(URP DEFAULT_MSG URP_LIBRARY URP_INCLUDE_DIR MUT_LIBRARY DRP_LIBRARY DSP_LIBRARY)
 mark_as_advanced(URP_INCLUDE_DIR URP_LIBRARY MUT_LIBRARY DRP_LIBRARY DSP_LIBRARY)
 
 if(URP_FOUND)
    set(URP_INCLUDE_DIRS ${URP_INCLUDE_DIR})
    set(URP_LIBRARIES ${MUT_LIBRARY} ${DRP_LIBRARY} ${URP_LIBRARY} ${DSP_LIBRARY} ${BZ2_LIBRARY})
 
-   add_library(URP::LibURP SHARED IMPORTED)
+   add_library(URP::LibURP STATIC IMPORTED)
    set_target_properties(URP::LibURP PROPERTIES IMPORTED_LOCATION ${URP_LIBRARY})
 
-   add_library(URP::LibMUT SHARED IMPORTED)
+   add_library(URP::LibMUT STATIC IMPORTED)
    set_target_properties(URP::LibMUT PROPERTIES IMPORTED_LOCATION ${MUT_LIBRARY})
 
-   add_library(URP::LibDRP SHARED IMPORTED)
+   add_library(URP::LibDRP STATIC IMPORTED)
    set_target_properties(URP::LibDRP PROPERTIES IMPORTED_LOCATION ${DRP_LIBRARY})
 
-   add_library(URP::LibDSP SHARED IMPORTED)
+   add_library(URP::LibDSP STATIC IMPORTED)
    set_target_properties(URP::LibDSP PROPERTIES IMPORTED_LOCATION ${DSP_LIBRARY})
 
    add_library(URP::LibBZ2 SHARED IMPORTED)
@@ -51,7 +51,7 @@ if(URP_FOUND)
 
    #----- Add the target that includes all libraries
    add_library(URP::URP INTERFACE IMPORTED)
-   target_link_libraries(URP::URP INTERFACE URP::LibURP URP::LibMUT URP::LibDRP URP::LibDSP URP::LibBZ2)
+   target_link_libraries(URP::URP INTERFACE URP::LibMUT URP::LibDRP URP::LibURP URP::LibDSP URP::LibBZ2)
    set_target_properties(URP::URP PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES ${URP_INCLUDE_DIR}
       INTERFACE_COMPILE_DEFINITIONS HAVE_URP
