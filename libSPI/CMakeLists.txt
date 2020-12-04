@@ -5,7 +5,6 @@ list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
 
 include(ec_utils)
 ec_parse_manifest() # Parse MANIFEST file
-ec_build_info()     # Generate build include file
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 

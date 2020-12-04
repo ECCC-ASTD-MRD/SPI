@@ -26,8 +26,6 @@ target_link_libraries(${NAME} eerUtils::eerUtils)
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
-add_dependencies(${NAME} build_info)
-
 install(TARGETS ${NAME}
    LIBRARY        DESTINATION TCL/lib/${NAME}${VERSION}
    PUBLIC_HEADER  DESTINATION TCL/include
