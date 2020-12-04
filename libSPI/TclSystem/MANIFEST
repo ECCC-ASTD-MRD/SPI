@@ -6,5 +6,5 @@ SUMMARY    : System related functions extensions callable from Tcl
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
 
 TCL >= 8.6.0
-EER >= 3.4.1
+EER >= 4.0.0
 
