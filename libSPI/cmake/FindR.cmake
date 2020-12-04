@@ -112,7 +112,7 @@ if(R_FOUND)
    endif()
 
    add_library(R::R INTERFACE IMPORTED)
-   target_link_libraries(R::R INTERFACE R::BASE R::BLAS R::LAPACK R::READLINE)
+   target_link_libraries(R::R INTERFACE R::BASE R::BLAS R::LAPACK)
    set_target_properties(R::R PROPERTIES
       INTERFACE_INCLUDE_DIRECTORIES ${R_INCLUDE_DIR}
       INTERFACE_COMPILE_DEFINITIONS HAVE_R
