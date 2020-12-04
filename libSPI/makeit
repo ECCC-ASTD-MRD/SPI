@@ -241,43 +241,17 @@ if [[ $BLD -eq 1 ]]; then
 
    if [[ $REC -eq 1 || $CLR -eq 1 ]]; then
       rm -f -r build
-      mkdir -p build/TclSystem build/TkglCanvas build/TclGeoEER build/TclR build/TclRDevice
 
       rm -f -r "$TCL_ROOT"/lib/{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}+([0-9])+(.+([0-9]))
       rm -f "$DESTDIR"/lib/lib{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}.so*(.+([0-9]))
    fi
 
-   #----- Making TclSystem Library
-   cd build/TclSystem
+   mkdir -p build
+   cd build
+
    if [[ $REC -eq 1 ]]; then
-      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclSystem
+      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../
    fi && make -j ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
-
-   #----- Making TkglCanvas Library
-   cd ../TkglCanvas
-   if [[ $REC -eq 1 ]]; then
-      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TkglCanvas
-   fi && make -j ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
-
-   #----- Making TclGeoEER Library
-   cd ../TclGeoEER
-   if [[ $REC -eq 1 ]]; then
-      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclGeoEER
-   fi && make -j ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
-
-   if [[ "$ORDENV_DIST" != "sles" ]]; then
-      #----- Making TclR Library
-      cd ../TclR
-      if [[ $REC -eq 1 ]]; then
-         cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclR
-      fi && make -j ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
-
-      #----- Making TclRDevice Library
-      cd ../TclRDevice
-      if [[ $REC -eq 1 ]]; then
-         cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../../TclRDevice
-      fi && make -j ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
-  fi
 
    cd ${LIB_PATH}/lib
    for l in ../TCL/lib/{TclSystem,TkglCanvas,TclGeoEER,TclR,TclRDevice}+([0-9])+(.+([0-9]))/lib*.so*(.+([0-9])); do

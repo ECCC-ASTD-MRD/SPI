@@ -1,41 +1,16 @@
-cmake_minimum_required(VERSION 3.16)
-
-#----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
-
-include(ec_utils)
 ec_parse_manifest() # Parse MANIFEST file
-ec_build_info()     # Generate build include file
 
 #set(DOXYGEN_FOUND True)
 # include(doxygen)    # Doxygen target
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
-set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-
-include(compiler_rules)
-
-message(STATUS "Generating libTclSystem librairie")
+message(STATUS "Generating ${NAME} library")
 
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
 add_library(${NAME} SHARED ${PROJECT_INCLUDE_FILES} ${PROJECT_SOURCE_FILES})
-
-find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
-add_compile_definitions(HAVE_TCL)
-include_directories(${TCL_INCLUDE_PATH})
-
-find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
-target_link_libraries(${NAME} eerUtils::eerUtils)
-
-add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ TCL_THREADS _GNU_SOURCE STDC_HEADERS)
-add_compile_definitions(PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 
 set_target_properties(${NAME} PROPERTIES
    VERSION                    ${PROJECT_VERSION}
@@ -43,13 +18,19 @@ set_target_properties(${NAME} PROPERTIES
    POSITION_INDEPENDENT_CODE  ON
 )
 
+#----- Required libs
+target_link_libraries(${NAME} TCL::TCL)
+target_link_libraries(${NAME} eerUtils::eerUtils)
+
+#----- Compilation  stuff
+target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
+target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/generic)
+
 add_dependencies(${NAME} build_info)
 
-target_link_libraries(${NAME} ${EER_LIBRARIES})
-target_link_libraries(${NAME} ${TCL_LIBRARIES})
-
 install(TARGETS ${NAME}
-   LIBRARY DESTINATION TCL/lib/${NAME}${VERSION}
-   PUBLIC_HEADER DESTINATION TCL/include)
+   LIBRARY        DESTINATION TCL/lib/${NAME}${VERSION}
+   PUBLIC_HEADER  DESTINATION TCL/include
+)
 
 include(ec_build_tcl_pkgindex)
