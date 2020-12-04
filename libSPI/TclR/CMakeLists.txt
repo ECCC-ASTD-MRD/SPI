@@ -34,15 +34,14 @@ find_package(R REQUIRED)
 target_compile_definitions(R::R INTERFACE R_DEFAULT_RHOME=\"${R_HOME}\")
 target_link_libraries(${NAME} R::R)
 
-if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-   add_compile_options(-fPIC -DSTDC_HEADERS)
-endif()
-
-add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ TCL_THREADS _GNU_SOURCE)
+add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ TCL_THREADS _GNU_SOURCE STDC_HEADERS)
 add_compile_definitions(PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 
-set_target_properties(${NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${NAME} PROPERTIES PUBLIC_HEADER "${PROJECT_INCLUDE_FILES}")
+set_target_properties(${NAME} PROPERTIES
+   VERSION                    ${PROJECT_VERSION}
+   PUBLIC_HEADER              "${PROJECT_INCLUDE_FILES}"
+   POSITION_INDEPENDENT_CODE  ON
+)
 
 add_dependencies(${NAME} build_info)
 
