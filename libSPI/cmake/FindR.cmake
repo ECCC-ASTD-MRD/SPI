@@ -87,10 +87,36 @@ else()
   message(SEND_ERROR "FindR.cmake requires the following variables to be set: R_COMMAND")
 endif()
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(R DEFAULT_MSG R_HOME R_INCLUDE_DIR R_LIBRARY_BASE R_LIBRARY_BLAS R_LIBRARY_LAPACK)
+
 # Note: R_LIBRARY_BASE is added to R_LIBRARIES twice; this may be due to circular linking dependencies; needs further investigation
-set(R_LIBRARIES ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LIBRARY_BASE})
-if(R_LIBRARY_READLINE)
-  set(R_LIBRARIES ${R_LIBRARIES} ${R_LIBRARY_READLINE})
+if(R_FOUND)
+   set(R_LIBRARIES ${R_LIBRARY_BASE} ${R_LIBRARY_BLAS} ${R_LIBRARY_LAPACK} ${R_LIBRARY_BASE})
+   if(R_LIBRARY_READLINE)
+      set(R_LIBRARIES ${R_LIBRARIES} ${R_LIBRARY_READLINE})
+   endif()
+
+   add_library(R::BASE SHARED IMPORTED)
+   set_target_properties(R::BASE PROPERTIES IMPORTED_LOCATION ${R_LIBRARY_BASE})
+
+   add_library(R::BLAS SHARED IMPORTED)
+   set_target_properties(R::BLAS PROPERTIES IMPORTED_LOCATION ${R_LIBRARY_BLAS})
+
+   add_library(R::LAPACK SHARED IMPORTED)
+   set_target_properties(R::LAPACK PROPERTIES IMPORTED_LOCATION ${R_LIBRARY_LAPACK})
+
+   add_library(R::READLINE SHARED IMPORTED)
+   if(R_LIBRARY_READLINE)
+      set_target_properties(R::READLINE PROPERTIES IMPORTED_LOCATION ${R_LIBRARY_READLINE})
+   endif()
+
+   add_library(R::R INTERFACE IMPORTED)
+   target_link_libraries(R::R INTERFACE R::BASE R::BLAS R::LAPACK)
+   set_target_properties(R::R PROPERTIES
+      INTERFACE_INCLUDE_DIRECTORIES ${R_INCLUDE_DIR}
+      INTERFACE_COMPILE_DEFINITIONS HAVE_R
+   )
 endif()
 
 

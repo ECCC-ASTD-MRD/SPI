@@ -11,12 +11,21 @@ find_path(GDB_INCLUDE_DIR
        
 # [[DOC]] for find_library https://cmake.org/cmake/help/latest/command/find_library.html
 find_library(GDB_LIBRARY
-      NAMES gdb
-      PATHS $ENV{GDB_ROOT}/lib ENV LIBRARY_PATH)
+   NAMES gdb
+   PATHS $ENV{GDB_ROOT}/lib ENV LIBRARY_PATH)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GDB DEFAULT_MSG GDB_LIBRARY GDB_INCLUDE_DIR)
 mark_as_advanced(GDB_INCLUDE_DIR GDB_LIBRARY)
 
-set(GDB_INCLUDE_DIRS ${GDB_INCLUDE_DIR})
-set(GDB_LIBRARIES ${GDB_LIBRARY})
+if(GDB_FOUND)
+   set(GDB_INCLUDE_DIRS ${GDB_INCLUDE_DIR})
+   set(GDB_LIBRARIES ${GDB_LIBRARY})
+
+   add_library(GDB::GDB SHARED IMPORTED)
+   set_target_properties(GDB::GDB PROPERTIES
+      IMPORTED_LOCATION             ${GDB_LIBRARY}
+      INTERFACE_INCLUDE_DIRECTORIES ${GDB_INCLUDE_DIR}
+      INTERFACE_COMPILE_DEFINITIONS HAVE_GDB
+   )
+endif()
