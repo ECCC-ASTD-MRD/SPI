@@ -1,0 +1,4 @@
+[submodule "libSPI/cmake"]
+	path = libSPI/cmake
+	url = https://gitlab.science.gc.ca/RPN-SI/cmake_shared
+	branch = jp

@@ -34,7 +34,8 @@ HELP="Arguments must be:\n\n   Information parameters:
 \t-reconf      : Reconfigure package
 \t-ssm         : Build SSM package
 \t-ext         : Build external dependencies
-\t-all         : Build and packages everything\n"
+\t-all         : Build and packages everything
+\t-verbose     : Enable verbose on build step\n"
 
 BLD=0
 EXT=0
