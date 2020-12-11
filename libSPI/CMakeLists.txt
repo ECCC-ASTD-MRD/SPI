@@ -8,9 +8,6 @@ ec_parse_manifest() # Parse MANIFEST file
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
-set(CMAKE_INSTALL_PREFIX "" CACHE PATH "..." FORCE)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
 include(compiler_rules)
@@ -18,18 +15,23 @@ include(compiler_rules)
 #----- Add some common compiling options
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE STDC_HEADERS)
 
+#----- Add intel library dir to RPATH if needed
+if(DEFINED ENV{INTELCOMP_HOME})
+   list(APPEND CMAKE_INSTALL_RPATH "$ENV{INTELCOMP_HOME}/lib/intel64_lin")
+endif()
+
 #----- Required packages
 find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
 if(TCL_FOUND)
    add_library(TCL::TCL SHARED IMPORTED)
-   set_target_properties(TCL::TCL PROPERTIES IMPORTED_LOCATION ${TCL_LIBRARY})
+   set_target_properties(TCL::TCL PROPERTIES IMPORTED_LOCATION ${TCL_LIBRARY} IMPORTED_NO_SONAME TRUE)
    target_include_directories(TCL::TCL INTERFACE ${TCL_INCLUDE_PATH})
    target_include_directories(TCL::TCL INTERFACE $ENV{TCL_SRC_DIR}/unix $ENV{TCL_SRC_DIR}/generic)
    target_compile_definitions(TCL::TCL INTERFACE HAVE_TCL TCL_THREADS)
 endif()
 if(TK_FOUND)
    add_library(TCL::TK SHARED IMPORTED)
-   set_target_properties(TCL::TK PROPERTIES IMPORTED_LOCATION ${TK_LIBRARY})
+   set_target_properties(TCL::TK PROPERTIES IMPORTED_LOCATION ${TK_LIBRARY} IMPORTED_NO_SONAME TRUE)
    target_include_directories(TCL::TK INTERFACE ${TK_INCLUDE_PATH})
    target_include_directories(TCL::TK INTERFACE $ENV{TK_SRC_DIR}/unix $ENV{TK_SRC_DIR}/generic)
    target_compile_definitions(TCL::TK INTERFACE HAVE_TK _TK_SOURCE)

@@ -24,16 +24,12 @@ if [[ -n \${ORDENV_VERSION} ]]; then
          #----- On the SCIENCE side
          [[ ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]]                          || . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
          [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
-         [[ ${LD_LIBRARY_PATH} =~ mrd/rpn/vgrid/${VGRID_VERSION}]]          || export LD_LIBRARY_PATH=/fs/ssm/eccc/mrd/rpn/vgrid/${VGRID_VERSION}/ubuntu-18.04-amd64-64/lib/Linux_x86-64/intel-19.0.3.199:$LD_LIBRARY_PATH
-         [[ ${LD_LIBRARY_PATH} =~ mrd/rpn/libs/${RMN_VERSION} ]]            || export LD_LIBRARY_PATH=/fs/ssm/eccc/mrd/rpn/libs/${RMN_VERSION}/ubuntu-18.04-amd64-64/lib/Linux_x86-64/intel-19.0.3.199:$LD_LIBRARY_PATH
          [[ -d ${GDB_PATH} ]]                                               || export GDB_PATH=/home/ords/cmod/cmoe/ops/smco600/geo/DBGeo/data
          ;;
       *ec.gc.ca)
          #----- On the EC side
          [[ ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]]                || . ssmuse-sh -d comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -d hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
          [[ ${LD_LIBRARY_PATH} =~ cmds/ext/${CMDS_EXT_VERSION} ]] || . ssmuse-sh -d cmds/ext/${CMDS_EXT_VERSION}
-         [[ ${LD_LIBRARY_PATH} =~ mrd/rpn/vgrid/${VGRID_VERSION}]]          || export LD_LIBRARY_PATH=/ssm/net/rpn/vgrid/${VGRID_VERSION}/ubuntu-18.04-amd64-64/lib/Linux_x86-64/intel-19.0.3.199:$LD_LIBRARY_PATH
-         [[ ${LD_LIBRARY_PATH} =~ mrd/rpn/libs/${RMN_VERSION} ]]            || export LD_LIBRARY_PATH=/ssm/net/rpn/libs/${RMN_VERSION}/ubuntu-18.04-amd64-64/lib/Linux_x86-64/intel-19.0.3.199:$LD_LIBRARY_PATH
          [[ -d ${GDB_PATH} ]]                                     || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
          ;;
       *)

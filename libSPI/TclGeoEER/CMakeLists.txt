@@ -22,6 +22,7 @@ set_target_properties(${NAME} PROPERTIES
    VERSION                    ${PROJECT_VERSION}
    PUBLIC_HEADER              "${PROJECT_INCLUDE_FILES}"
    POSITION_INDEPENDENT_CODE  ON
+   EC_LIB_INSTALL_PATH        TCL/lib/${NAME}${VERSION}
 )
 
 #----- Required libs
@@ -42,6 +43,9 @@ ec_target_link_library_if(${NAME} FLT_FOUND              FLT::FLT)
 ec_target_link_library_if(${NAME} URP_FOUND              URP::URP)
 ec_target_link_library_if(${NAME} OpenMP_FOUND           OpenMP::OpenMP_C)
 ec_target_link_library_if(${NAME} DistanceMetrics_FOUND  DistanceMetrics::DistanceMetrics)
+
+#----- RPATH handling
+ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")

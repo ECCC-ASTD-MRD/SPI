@@ -16,11 +16,15 @@ set_target_properties(${NAME} PROPERTIES
    VERSION                    ${PROJECT_VERSION}
    PUBLIC_HEADER              "${PROJECT_INCLUDE_FILES}"
    POSITION_INDEPENDENT_CODE  ON
+   EC_LIB_INSTALL_PATH        TCL/lib/${NAME}${VERSION}
 )
 
 #----- Required libs
 target_link_libraries(${NAME} TCL::TCL)
 target_link_libraries(${NAME} eerUtils::eerUtils)
+
+#----- RPATH handling
+ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
