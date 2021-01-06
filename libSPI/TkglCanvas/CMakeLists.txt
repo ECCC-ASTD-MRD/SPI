@@ -28,7 +28,7 @@ ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
-target_include_directories(${NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/generic)
+target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/generic)
 
 install(TARGETS ${NAME}
    LIBRARY        DESTINATION TCL/lib/${NAME}${VERSION}
