@@ -792,6 +792,11 @@ proc Trajectory::GraphPlot { Frame TrajId } {
       set date1 [lindex [trajectory define $t -PARCEL end] 0]
       set datea [trajectory define $t -DATEAP]
       set inter [trajectory configure $t -intervals]
+      
+      #----- If no interval is specified, draw all icons
+      if { $inter==0 } {
+         set inter 1e32
+      }
       set mark  [trajectory configure $t -mark]
 
       if { ![vector is TRAJGRAPH$t] } {
