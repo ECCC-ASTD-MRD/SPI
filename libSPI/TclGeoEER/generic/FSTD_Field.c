@@ -2240,6 +2240,33 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          FSTD_FileUnset(Interp,file);
          return(TCL_ERROR);
       }
+
+      // If we're searching for any nomvar, make sure we don't get a descriptor
+      // Likewise, if we're searching for any typvar, make sure we don't get a mask
+      if( NomVar[0]=='\0' || TypVar[0]=='\0' ) {
+         int firstmatch = Key;
+
+         do {
+            strcpy(h.NOMVAR,"    ");
+            strcpy(h.TYPVAR,"  ");
+            cs_fstprm(Key,&h.DATEO,&h.DEET,&h.NPAS,&h.NI,&h.NJ,&h.NK,&h.NBITS,&h.DATYP,&h.IP1,&h.IP2,&h.IP3,h.TYPVAR,h.NOMVAR,h.ETIKET,
+                  h.GRTYP,&h.IG1,&h.IG2,&h.IG3,&h.IG4,&h.SWA,&h.LNG,&h.DLTF,&h.UBC,&h.EX1,&h.EX2,&h.EX3);
+
+            // Break if we found a suitable field
+            if( (NomVar[0]!='\0'||!RPN_IsDesc(h.NOMVAR)) && (TypVar[0]!='\0'||h.TYPVAR[0]!='@'||h.TYPVAR[1]!='@') )
+               break;
+
+            // Read in next field that matched our search criterias
+            Key=cs_fstsui(file->Id,&ni,&nj,&nk);
+
+            // If we are at the end of the search and still haven't found anything with those keys that is not a mask or a descriptor,
+            // then we just return the initial result of the search
+            if( Key<0 ) {
+               Key=firstmatch;
+               break;
+            }
+         } while(1);
+      }
    }
 
    grtyp[0]=grtyp[1]=grtyp[2]='\0';
