@@ -336,6 +336,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             level=ZRef_IP2Level(ip,&kind);
             switch(kind) {
                case LVL_MASL  : sprintf(buf,"%.1f  m (Meter above sea level)",level); break;
+               case LVL_MBSL  : sprintf(buf,"%.1f  m (Meter below sea level)",level); break;
                case LVL_SIGMA : sprintf(buf,"%.4f sg (Sigma)",level); break;
                case LVL_PRES  : sprintf(buf,"%.1f mb (Pressure)",level); break;
                case LVL_UNDEF : sprintf(buf,"%.1f  - (Undefined)",level); break;

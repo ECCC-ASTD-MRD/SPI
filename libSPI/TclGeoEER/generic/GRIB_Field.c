@@ -554,7 +554,7 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
          case 102:
          case 103:
          case 104: lval2=LVL_MASL; break;
-         case 160: lval2=LVL_MASL; lvl=-lvl; break;
+         case 160: lval2=LVL_MBSL; break;
          case 107: lval2=LVL_SIGMA; lvl/=10000.0; break;
          case 108: lval2=LVL_SIGMA; lvl/=100.0;   break;
          case 128: lval2=LVL_SIGMA; lvl=1.1-lvl/1000.0;   break;
@@ -578,8 +578,8 @@ int GRIB_GetLevel(TGRIBHeader *Head,float *Level,int *LevelType){
          case 100:
          case 108: lval2=LVL_PRES; break;
          case 101:
-         case 102:
-         case 160: lval2=LVL_MASL; break;
+         case 102: lval2=LVL_MASL; break;
+         case 160: lval2=LVL_MBSL; break;
          case 104: lval2=LVL_SIGMA; break;
          case 105: lval2=LVL_HYBRID; break;
          case 107: lval2=LVL_THETA; break;
@@ -1073,13 +1073,14 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
 
    // Define level type
    switch(RPN->ZRef->Type) {
-      case LVL_MASL:         ltype=103; break;  //  Meters above sea level
-      case LVL_SIGMA:        ltype=107; break;  //  P/Ps
+      case LVL_MASL:         ltype=102; break;  //  Meters above sea level
+      case LVL_MBSL:         ltype=160; break;  //  Meters above sea level
+      case LVL_SIGMA:        ltype=104; break;  //  P/Ps
       case LVL_PRES:         ltype=100; break;  //  Pressure mb
-      case LVL_MAGL:         ltype=105; break;  //  Meters above ground level
-      case LVL_HYBRID:       ltype=109; break;  //  Hybrid levels
+      case LVL_MAGL:         ltype=103; break;  //  Meters above ground level
+      case LVL_HYBRID:       ltype=105; break;  //  Hybrid levels
       case LVL_THETA:        ltype=113; break;  //  ?
-      case LVL_ETA:          ltype=119; break;  //  (Pt-P)/(Pt-Ps) -not in convip
+      case LVL_ETA:          ltype=111; break;  //  (Pt-P)/(Pt-Ps) -not in convip
       case LVL_GALCHEN:      ltype=105; break;  //  Original Gal-Chen -not in convip (JP Defined)
           
       case LVL_UNDEF:        ltype=255; break;  //  units are user defined
@@ -1309,6 +1310,7 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
                sprintf(buf,"%-4s %-2c  ",head.NOMVAR,(char)type);
                switch(lvtyp) {
                   case LVL_MASL  : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
+                  case LVL_MBSL  : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
                   case LVL_SIGMA : sprintf(strend(buf)," %8.4f %-2s",lvl,units[lvtyp]); break;
                   case LVL_PRES  : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;
                   case LVL_UNDEF : sprintf(strend(buf)," %8.1f %-2s",lvl,units[lvtyp]); break;

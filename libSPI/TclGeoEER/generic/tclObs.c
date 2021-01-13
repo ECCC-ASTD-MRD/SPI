@@ -2467,6 +2467,7 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             if (Objc==1) {
                switch(obs->LevelType) {
                   case LVL_MASL   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("MASL",-1)); break;
+                  case LVL_MBSL   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("MBSL",-1)); break;
                   case LVL_SIGMA  : Tcl_SetObjResult(Interp,Tcl_NewStringObj("SIGMA",-1)); break;
                   case LVL_PRES   : Tcl_SetObjResult(Interp,Tcl_NewStringObj("PRESSURE",-1)); break;
                   case LVL_UNDEF  : Tcl_SetObjResult(Interp,Tcl_NewStringObj("UNDEFINED",-1)); break;
@@ -2480,6 +2481,8 @@ static int Obs_Stat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                i++;
                if (strcmp(Tcl_GetString(Objv[i]),"MASL")==0) {
                   obs->LevelType=LVL_MASL;
+               } else if (strcmp(Tcl_GetString(Objv[i]),"MBSL")==0) {
+                  obs->LevelType=LVL_MBSL;
                } else if (strcmp(Tcl_GetString(Objv[i]),"SIGMA")==0) {
                   obs->LevelType=LVL_SIGMA;
                } else if (strcmp(Tcl_GetString(Objv[i]),"PRESSURE")==0) {
