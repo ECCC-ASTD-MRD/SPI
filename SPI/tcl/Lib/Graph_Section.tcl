@@ -873,7 +873,7 @@ proc Graph::Section::Data { GR Data } {
 
          if { $grtyp=="V" && [fstdfield define $field -NI]>1 } {
             lappend fields $field
-         } elseif { $grtyp!="V" && $grtyp!="X"  && $grtyp!="Y" } {
+         } elseif { $grtyp!="V" && $grtyp!="Y" } {
             if { $Graph::Data(IP3) } {
                fstdfield readcube $field
             } else {

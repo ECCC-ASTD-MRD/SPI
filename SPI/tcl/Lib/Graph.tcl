@@ -3002,7 +3002,7 @@ proc Graph::VertexAdd { Frame VP X Y } {
 
    #----- Si la grille et le vertex est valide on l'ajoute a la liste
    set grtyp [fstdfield define $data(Field) -GRTYP]
-   if { $grtyp!="V" && $grtyp!="X" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
+   if { $grtyp!="V" && $grtyp!="Y" && $Viewport::Map(LatCursor)>-999 && $Viewport::Map(LonCursor)>-999 } {
 
       Graph::VertexResolution $Graph::Data(Type) $Graph::Data(Graph) False
       lappend data(Coords) $Viewport::Map(LatCursor) $Viewport::Map(LonCursor)
