@@ -545,6 +545,7 @@ namespace eval NowCaster::Obs { } {
 
    set Error(File)  { "Fichier d'observation invalide." "Invalid observation file." }
    set Error(Elems) { "Il n'y a aucun élément dans ce fichier." "No element found in this file." }
+   set Error(Find)  { "Cette station n'existe pas." "This station does not exist." }
 
    set Bubble(Find)       { "Rechercher un station et centrer la vue sur celle-ci" "Find a station and locate the viewport on it" }
    set Bubble(Mode)       { "Activer le mode de sélection des observations\n\nBouton gauche: Sélection\nBouton centre: Déplacer une localisation" "Activate observation selection mode\n\nLeft button  : Select location\nMiddle button: Move location" }
@@ -2114,6 +2115,7 @@ proc NowCaster::Obs::Graph { } {
 
 proc NowCaster::Obs::Find { Obs { Id "" } } {
    variable Data
+   variable Error
 
    if { $Id!="" } {
       set Data(Id) $Id
@@ -2127,8 +2129,11 @@ proc NowCaster::Obs::Find { Obs { Id "" } } {
       NowCaster::Obs::Info $Data(InfoObs) $Data(InfoId) $Data(InfoTag) $Data(InfoAll)
    }
 
-   set coord [metobs define $Obs -COORD $Data(Id)]
-   Viewport::GoTo $Page::Data(Frame) [lindex $coord 0] [lindex $coord 1]
+   if { [catch { set coord [metobs define $Obs -COORD $Data(Id)] }] } {
+      Dialog::Error .nowcaster $Error(Find) \n\n\t$Data(Id)
+   } else {
+      Viewport::GoTo $Page::Data(Frame) [lindex $coord 0] [lindex $coord 1]
+   }
 }
 
 #-------------------------------------------------------------------------------

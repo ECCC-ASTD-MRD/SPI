@@ -1497,10 +1497,9 @@ TMetLoc *TMetLoc_Find(TMetObs *Obs,TMetLoc *From,char *Id,int Type) {
    return(loc);
 }
 
-static int hash_loc_coord(double Lat, double Lon, double Elev, char *Key)
-{
-   snprintf(Key, 64, "%d,%d,%d", (int)Lat, (int)Lon, (int)Elev);
-   return TCL_OK;
+static inline int hash_loc_coord(double Lat, double Lon, double Elev, char *Key) {
+   snprintf(Key, 64, "%.6f,%.6f,%.6f",Lat,Lon,Elev);
+   return(TCL_OK);
 }
 
 TMetLoc *TMetLoc_FindWithCoordIndex(TMetObs *Obs,TMetLoc *From,char *Id,double Lat,double Lon,double Elev,int Type,char *Multi) {
