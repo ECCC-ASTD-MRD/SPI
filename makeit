@@ -92,7 +92,7 @@ if [[ $INS -eq 1 ]]; then
    tar -C ${INSTALL_PATH} -zxvf ${SSM_DEV}/package/GenPhysX_${GENPHYSX_VERSION}${COMP}_${ORDENV_PLAT}.ssm
 
    printf -- "
-Add theses variables to you environment:
+Add theses variables to your environment:
    sh/ksh/bash shell:
       export GDB_PATH=\[path where you uncompress DBGeo.tgz\]/data
       export SPI_LIB=${INSTALL_PATH}/libSPI_${SPI_VERSION}${COMP}_${ORDENV_PLAT}
