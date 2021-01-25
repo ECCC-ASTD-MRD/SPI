@@ -1236,7 +1236,7 @@ double dcore(TDef *Res,TDef *Def,int Mode) {
 }
 
 // For the given value, return the associated probability in the Empirically-calculated Cumulative Distribution Function
-inline double ecdf(double val, double* vals, unsigned int* cums, unsigned long n) {
+static inline double ecdf(double val, double* vals, unsigned int* cums, unsigned long n) {
    unsigned long i, min=0, max=n;
 
    // Limit cases
