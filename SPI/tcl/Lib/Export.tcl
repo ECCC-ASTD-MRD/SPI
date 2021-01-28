@@ -441,6 +441,7 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
 #  <Format>  : Format du fichier
 #  <Fields>  : Champs a exporter
 #  <Options> : Driver specific creation options
+#  <Combine> : Combine everything in a single layer
 #
 # Retour:
 #
@@ -449,8 +450,9 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Vector::Export { Path Format Fields { Options "" } } {
+proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } {
    global env
+   global GDefs
    variable Msg
 
    if { ![llength $Fields] } {
@@ -461,6 +463,7 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
    set ext  [file extension $Path]
 
    if { $Format=="KMZ" } {
+      set Combine False
       set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
       set f [open $kmzname.kml w]
       puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
@@ -490,14 +493,18 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
       set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
       set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
 
-      #----- Create filename 
+      #----- Create filename
       set name   [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
 
       if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
          set name $name.[incr nb]
       }
-      
-      Dialog::Wait .export $Export::Msg(Export) $desc
+
+      if { $Combine } {
+          Dialog::Wait .export $Export::Msg(Export) "[llength $Fields] [lindex $Export::Lbl(RPN) $GDefs(Lang)] ($Format)"
+      } else {
+          Dialog::Wait .export $Export::Msg(Export) "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype ($Format)"
+      }
 
       switch $Format {
          "PostgreSQL" {
@@ -546,11 +553,20 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
             ogrfile open FILE write $name${ext} $Format
          }
       }
-  
+
       ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ $Options
-      ogrlayer import LAYER $field
+      if { $Combine } {
+         ogrlayer import LAYER $Fields
+      } else {
+         ogrlayer import LAYER $field
+      }
       ogrfile close FILE
       ogrlayer free LAYER
+
+      #----- If we combined everything into
+      if { $Combine } {
+         break
+      }
    }
 
    if { $Format=="KMZ" } {
