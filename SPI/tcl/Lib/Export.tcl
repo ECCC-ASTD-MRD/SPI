@@ -254,8 +254,8 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
       set bg $BGColor
    }
 
-   set params [concat -size ${Width}x${Height} xc:$bg -weight bold -pointsize 13 -fill $FontColor \
-      -draw \"image SrcOver $txtpos,5 $cwidth,$cheight '$Path.tmp'\"]
+   set params [list -size ${Width}x${Height} xc:$bg -weight bold -pointsize 13 -fill $FontColor \
+      -draw "image SrcOver $txtpos,5 $cwidth,$cheight '[string map {' \\' \\ \\\\} $Path].tmp'"]
 
    #----- Place the numbers beside the colorbar.
    set lv [llength $vals]
@@ -263,17 +263,18 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
    set offset [expr $Height-5]
    foreach val $vals {
       set xOffset [expr $txtpos-3 - ([string length $val] * 7)]
-      set params  [concat $params -draw \"text $xOffset,$offset '$val'\"]
+      lappend params -draw "text $xOffset,$offset '[string map {' \\' \\ \\\\} $val]'"
       set offset  [expr $offset-$offsetText]
    }
 
    #----- If a layer was passed, add info from the layer definition, otherwise use style
    set desc "[fstdfield configure $Field -desc] ([fstdfield configure $Field -unit])"
-   set params [concat $params -rotate \"90\" -gravity \"South\" -draw \"text 0,0 '$desc'\" -rotate \"-90\" ]
+   lappend params -rotate 90 -gravity South -draw "text 0,0 '[string map {' \\' \\ \\\\} $desc]'" -rotate "-90"
 
    #----- Use ImageMagick to add the labels
-   if { [catch { eval exec convert -depth 8 $params $Path } msg] } {
+   if { [catch { exec convert -depth 8 {*}$params $Path } msg] } {
       Dialog::Error .export $Error(Legend)
+      puts $msg
    }
    file delete $Path.tmp
 }
