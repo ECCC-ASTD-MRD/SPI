@@ -96,6 +96,12 @@ namespace eval Animator {
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
    set Play(Mail)         ""              ;#Mail to adress for link info
 
+   set Play(Formats)      {shp gpkg kml}  ;#Supported export formats
+   set Play(FmtImg)       1               ;#Wether we generate images or not when PlayFile is true
+   set Play(Fmtshp)       0               ;#Wether we generate shapefiles or not when PlayFile is true
+   set Play(Fmtgpkg)      0               ;#Wether we generate geopackages  or not when PlayFile is true
+   set Play(Fmtkml)       0               ;#Wether we generate kml/kmz or not when PlayFile is true
+
    set Fly(Speed)         0.01            ;#Vitesse du vol
    set Fly(List)          {}              ;#Liste des pointrs de controles
    set Fly(Frame)         0
@@ -136,8 +142,9 @@ namespace eval Animator {
    set Bubble(Rewind)      { "Retour au debut" "Rewind to the beginning" }
    set Bubble(Forwind)     { "Retour a la fin" "Go to end" }
    set Bubble(PlayBack)    { "Jouer vers l'arriere" "Play backward" }
-   set Bubble(PlayFile)    { "Enregistrer les images" "Save the frames to file" }
-   set Bubble(PlayWeb)     { "Enregistrer les images sur une page web" "Save the frames to file on a web page" }
+   set Bubble(PlayFile)    { "Exporter sous forme de fichier" "Save the frames to file" }
+   set Bubble(PlayWeb)     { "Exporter sur un serveur web" "Save the frames to a web server" }
+   set Bubble(FmtPick)     { "Choisir les formats d'export" "Pick export formats" }
    set Bubble(StepBack)    { "Une image vers l'arriere" "Step on frame backward" }
    set Bubble(Stop)        { "Stop" "Stop" }
    set Bubble(StepForward) { "Une image vers l'avant" "Step one frame forward" }
@@ -168,6 +175,7 @@ namespace eval Animator {
    set Error(WebAnimMake)  { "Une erreur est survenue lors de la génération de l'animation web." "An error occured while generating web animation." }
    set Error(WebAnimZip)   { "Une erreur est survenue lors de la création du fichier zip, le zip ne sera pas transféré." "An error occured while generating the zipped animation. The zipped animation will not be transfered." }
    set Error(WebAnimXfer)  { "Une erreur est survenue lors du transfert de l'animation web." "An error occured during web animation transmission." }
+   set Error(ExportFields) { "Une erreur est survenue lors de l'export des champs" "An error occured while exporting fields" }
 }
 
 proc Animator::Close { } {
@@ -214,7 +222,6 @@ proc Animator::Window { { Parent .} } {
    eval wm geom .anim $Param(Geom)
    wm protocol  .anim WM_DELETE_WINDOW Animator::Close
 
-#   bind .anim.tab  <<NotebookTabChanged>> {puts stderr [.anim.tab index current] }
    TabFrame::Create .anim.tab 1 {}
    pack .anim.tab -side top -fill both -expand true -padx 2 -pady 2
 
@@ -326,7 +333,7 @@ proc Animator::Window { { Parent .} } {
       checkbutton .anim.comm.cycle -image VCRCYCLE -bd 1 -variable Animator::Play(Cycle) -indicatoron False -selectcolor ""
       button .anim.comm.rewind -image VCRREWIND -bd 1 \
          -command { set Animator::Play(Idx) $Animator::Play(Idx0) ; set Animator::Play(Stop) 1 ; Animator::Play }
-      radiobutton .anim.comm.playback -image VCRPLAYB -bd 1 -variable Animator::Play(Dir) -indicatoron False -value -1 -selectcolor ""\
+      radiobutton .anim.comm.playback -image VCRPLAYB -bd 1 -variable Animator::Play(Dir) -indicatoron False -value -1 -selectcolor "" \
          -command { set Animator::Play(Stop) 0 ; Animator::Play }
       button .anim.comm.stepback -image VCRFRAMEB -bd 1 \
          -command { Animator::Step -1 }
@@ -334,15 +341,15 @@ proc Animator::Window { { Parent .} } {
          -command { set Animator::Play(Stop) 1 }
       button .anim.comm.stepforward -image VCRFRAMEF -bd 1 \
          -command { Animator::Step 1 }
-      radiobutton .anim.comm.playforward -image VCRPLAYF -bd 1 -variable Animator::Play(Dir) -indicatoron False -value 1  -selectcolor ""\
+      radiobutton .anim.comm.playforward -image VCRPLAYF -bd 1 -variable Animator::Play(Dir) -indicatoron False -value 1  -selectcolor "" \
          -command { set Animator::Play(Stop) 0 ; Animator::Play }
       button .anim.comm.forwind -image VCRFORWIND -bd 1 \
          -command { set Animator::Play(Idx) $Animator::Play(Idx1) ; set Animator::Play(Stop) 1 ; Animator::Play }
       radiobutton .anim.comm.playfile  -image VCRSAVE -bd 1 -variable Animator::Play(File) -indicatoron False -value 1  -selectcolor "" \
          -command { Animator::PlayFile }
       pack .anim.comm.off .anim.comm.cache .anim.comm.cycle .anim.comm.playback .anim.comm.stepback .anim.comm.rewind \
-           .anim.comm.stop .anim.comm.forwind .anim.comm.stepforward .anim.comm.playforward .anim.comm.playfile \
-          -side left -fill both -expand true
+         .anim.comm.stop .anim.comm.forwind .anim.comm.stepforward .anim.comm.playforward .anim.comm.playfile \
+         -side left -fill both -expand true
 
       #----- If the web animator script is available
       if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
@@ -351,7 +358,23 @@ proc Animator::Window { { Parent .} } {
          pack .anim.comm.playweb -side left -fill both -expand true
       }
 
+      #----- Add the formats
+      checkbutton .anim.comm.fmtpick  -image TARGET -bd 1 -variable Animator::Play(FmtPick) -indicatoron False -selectcolor "" \
+         -command { if { $Animator::Play(FmtPick) } { pack .anim.fmts -side top -after .anim.comm -fill x -padx 2 -pady 2 } else { pack forget .anim.fmts } }
+      pack .anim.comm.fmtpick -side left -fill both -expand true
+
    pack .anim.comm -side top -fill x -padx 2 -pady 2
+
+   #----- Extra file formats
+   frame .anim.fmts
+      checkbutton .anim.fmts.img -text Image -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
+      checkbutton .anim.fmts.shp -text Shapefile -bd 1 -variable Animator::Play(Fmtshp) -indicatoron False
+      checkbutton .anim.fmts.gpkg -text GeoPackage -bd 1 -variable Animator::Play(Fmtgpkg) -indicatoron False
+      checkbutton .anim.fmts.kml -text KML -bd 1 -variable Animator::Play(Fmtkml) -indicatoron False
+      pack .anim.fmts.img .anim.fmts.shp .anim.fmts.gpkg .anim.fmts.kml -side right -fill both
+   if { $Animator::Play(FmtPick) } {
+      pack .anim.fmts -side top -after .anim.comm -fill x -padx 2 -pady 2
+   }
 
    #----- Creation des bulles d'aides
 
@@ -366,6 +389,7 @@ proc Animator::Window { { Parent .} } {
    Bubble::Create .anim.comm.playforward $Bubble(PlayForward)
    Bubble::Create .anim.comm.playfile    $Bubble(PlayFile)
    Bubble::Create .anim.comm.playweb     $Bubble(PlayWeb)
+   Bubble::Create .anim.comm.fmtpick     $Bubble(FmtPick)
    Bubble::Create .anim.comm.off         $Bubble(Off)
    Bubble::Create .anim.params.lapse     $Bubble(Delai)
    Bubble::Create .anim.params.frame     $Bubble(Scroll)
@@ -770,7 +794,7 @@ proc Animator::GetPlayListField { } {
             set type    [lindex $field end]
 
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
-            update idletask
+            update idletasks
 
             $type read ANI.$f.$no $fid $idx
             $type stats ANI.$f.$no -tag $tags
@@ -1055,7 +1079,7 @@ proc Animator::Play { } {
       set Play(Now) [set info [lindex $Play(Frames) $Play(Frame)]]
 
       #----- If the playlist is a command
-      if { [catch { eval set info \[$info\] }] } {
+      if { [catch { set info [{*}$info] }] } {
          #----- Playlist is a single item, Get related info
          foreach vp $Play(VPs) {
             if { [info exists Play($vp$info)] } {
@@ -1102,7 +1126,7 @@ proc Animator::Play { } {
       set Play(Label) "$label"
 
       #----- Imprimer dans un fichier
-      if { $Play(File) } {
+      if { $Play(File) && $Play(FmtImg) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
             set id [clock format $info -format "%Y%m%d_%H%M%S" -timezone :UTC]_UTC
@@ -1190,14 +1214,28 @@ proc Animator::Play { } {
 
 proc Animator::PlayFile { { Filename "" } } {
    variable Play
+   variable Lbl
+   global GDefs
 
    if { $Filename=="" } {
-      set Play(Filename) [FileBox::Create . "" Save [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)]]
+      set fmts [expr {$Play(FmtImg) ? [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] : {}}]
+      set Play(Filename) [FileBox::Create . "" Save $fmts]
    } else {
       set Play(Filename) $Filename
    }
 
-   if { $Play(Filename)!="" } {
+   #----- No filename, no file
+   if { $Play(Filename) == "" } {
+      set Play(File)      0
+      set Play(Dir)       0
+      set Play(Web)       0
+      set Play(Stop)      1
+      return
+   }
+
+   #----- Export images
+   set web $Play(Web)
+   if { $Play(FmtImg) } {
       set PrintBox::Print(Device) [string trimleft [file extension $Play(Filename)] "."]
       set Play(Filename)  [file rootname $Play(Filename)]
       set Play(Idx)       $Play(Idx0)
@@ -1205,9 +1243,103 @@ proc Animator::PlayFile { { Filename "" } } {
       set Play(Cycle)     0
       set Play(Stop)      0
       Animator::Play
-    } else {
-      set Play(File)      0
-      set Play(Dir)       0
+   } else {
+      #----- Make sure the playlist is loaded (done by Animator::Play otherwise)
+      set Play(Page)    $Page::Data(Frame)
+      set Play(Canvas)  $Page::Data(Canvas)
+      set Play(VPs)     [Page::Registered $Play(Page) Viewport]
+      set Play(Stop)    0
+      if { ![llength $Play(Frames)] } {
+         Animator::GetPlayList
+      }
+      set Play(Stop)    1
+   }
+
+   #----- Export vector formats
+   set fmts [lmap fmt $Play(Formats) {expr {$Play(Fmt$fmt) ? $fmt : [continue]}}]
+   if { [llength $fmts] } {
+      #----- Set back some flags since we are still exporting
+      set Play(Web)  $web
+      set Play(File) 1
+      update idletasks
+
+      set j 0
+      foreach vp $Play(VPs) {
+         incr j
+
+         #----- Compile the list of fields to export
+         set data {}
+         set tofree {}
+         set nbds 0
+         foreach key [lrange $Play(Frames) $Play(Idx0) $Play(Idx1)] {
+            if { [info exists Play($vp$key)] } {
+               set flds [lmap f $Play($vp$key) {expr {[fstdfield is $f] ? $f : [continue]}}]
+
+               #----- Applique la macro de calcul
+               if { [set fld [FieldCalc::Operand $vp $Play($vp$key) ANIC2F$key]] != "" } {
+                  lappend tofree $fld
+                  set flds [list $fld {*}[lmap f $flds {expr {[fstdfield configure $f -active] ? $f : [continue]}}]]
+               }
+
+               #----- Check for persistent data (time=0)
+               if { $key!=0 && [info exists Play(${vp}0)] } {
+                  lappend flds $Play(${vp}0)
+               }
+
+               if { [llength $flds] } {
+                   if { !$nbds } {
+                       set nbds [llength $flds]
+                   }
+                   #----- Check that we have a consistent amount of fields
+                   if { [llength $flds] == $nbds } {
+                      lappend data $flds
+                   } else {
+                      Log::Print ERROR "The amount of fields for key $key is not the same as the amount of fields for the first timestep ([llength [lindex $data 0]] != [llength $flds])"
+                   }
+               }
+            }
+         }
+
+         #----- Export the fields one batch at a time
+         for {set i 0} {$i<$nbds} {incr i} {
+            #----- Get the fields to export
+            set flds [lmap f $data {lindex $f $i}]
+
+            #----- Tag to know what file it is
+            set tag ""
+            if { [llength $Play(VPs)] > 1 }     { append tag _ $vp }
+            if { $nbds > 1 } {
+                append tag "_${i}_%n"
+                if { $Play(Type) != "DATE" }    { append tag "_%d_%tZ" }
+                if { $Play(Type) != "IP1" }     { append tag "_%l%h" }
+            }
+
+            #----- Export the fields
+            foreach fmt $fmts {
+               set fmtname [lindex [lsearch -inline -index {end 0} -exact $Export::Vector::Param(Formats) "*.$fmt"] end-1]
+               set fn      [file dirname $Play(Filename)]/$fmt/[file tail $Play(Filename)]$tag.$fmt
+
+               set Play(Label) "[lindex $Lbl(Convert) $GDefs(Lang)] [file tail $fn] (vp: $j/[llength $Play(VPs)] ds: [expr $i+1]/$nbds)"
+               update idletasks
+
+               file mkdir [file dirname $fn]
+               if { [catch {Export::Vector::Export $fn $fmtname $flds "" True} err] } {
+                  Dialog::Error . $Error(ExportFields) " ($fmtname)\n\t$err"
+               }
+            }
+         }
+
+         if { [llength $tofree] } {
+            fstdfield free {*}$tofree
+         }
+
+         set Play(Label) ""
+      }
+
+      set Play(File) 0
+      set Play(Dir)  0
+      set Play(Stop) 1
+      update idletasks
    }
 }
 
@@ -1277,7 +1409,7 @@ proc Animator::PlayWeb { } {
 
    #----- Generate image files
    set Play(File)   1
-   set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
+   update idletasks
    Animator::PlayFile $path/$filename.$Param(WebExt)
 
    #----- If user cancelled or an error occured
@@ -1289,27 +1421,29 @@ proc Animator::PlayWeb { } {
    set Play(Web) 0
 
    #----- Generate animation files
-   set Play(Label) "[lindex $Lbl(Web) $GDefs(Lang)]"
-   update idletasks
-   set err [catch { exec $env(EER_DIRSCRIPT)/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
-   if { $err } {
-      Dialog::Error . $Error(WebAnimMake) "\n$msg"
-      catch { file delete -force $base }
-      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
-      return
-   }
+   if { $Play(FmtImg) } {
+      set Play(Label) "[lindex $Lbl(Web) $GDefs(Lang)]"
+      update idletasks
+      set err [catch { exec $env(EER_DIRSCRIPT)/e.image_animator -p $path -b $filename -e $Param(WebExt) } msg]
+      if { $err } {
+         Dialog::Error . $Error(WebAnimMake) "\n$msg"
+         catch { file delete -force $base }
+         catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+         return
+      }
 
-   #----- Generate animation zipfile
-   set p [pwd]
-   cd  $base
-   set err [catch { exec zip -r ${filename}/Animation.zip ${filename} 2>@1 } msg]
-   cd $p
-   if { $err } {
-      Dialog::Error . $Error(WebAnimZip) "\n$msg"
+      #----- Generate animation zipfile
+      set p [pwd]
+      cd  $base
+      set err [catch { exec zip -r ${filename}/Animation.zip ${filename} 2>@1 } msg]
+      cd $p
+      if { $err } {
+         Dialog::Error . $Error(WebAnimZip) "\n$msg"
+      }
    }
 
    #----- Set permissions
-   catch { exec chmod 644 {*}[glob $path/*] }
+   catch { exec chmod 644 {*}[glob -types f -directory $path * */*] }
    catch { exec chmod 755 $path }
    catch { exec chmod 751 $base }
 
@@ -1325,6 +1459,7 @@ proc Animator::PlayWeb { } {
    }
 
    #----- Give the user the url path
+   set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
    Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath) $Animator::Play(Mail)
 
    if { !$keep } {
