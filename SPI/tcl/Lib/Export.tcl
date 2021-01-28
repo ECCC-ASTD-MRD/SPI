@@ -123,7 +123,7 @@ namespace eval Export::Raster {
                        {ILWIS Raster Map "ILWIS" {*.mpr *.mpl}}
                        {Intergraph Raster "INGR" {*.ingr}}
                        {USGS Astrogeology ISIS cube (Version 2) "ISIS2" {*.isis}}
-                       {JPEG JFIF "JPEG" {*,jpg}}
+                       {JPEG JFIF "JPEG" {*.jpg}}
                        {Vexcel MFF "MFF" {*.mff}}
                        {Vexcel MFF2 "MFF2" {*.HKV}}
                        {NTv2 Datum Grid Shift "NTv2" {*.nt}}
@@ -159,6 +159,7 @@ namespace eval Export::Vector {
 
    set Param(Modes)   { POINT CELL CONTOUR POLYGON }
    set Param(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+                       {GeoPackage  "GPKG" {*.gpkg}}
                        {GeoJSON  "GeoJSON" {*.json}}
                        {KML "KMZ" {*.kml}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
@@ -167,7 +168,7 @@ namespace eval Export::Vector {
                        {GPS Exchange Format "GPX" {*.gpx}}
                        {GPSTrackMaker "GPSTrackMaker" {*.gtm *.gtz}}
                        {MapInfo Binary "MapInfo File" {*.mif *.mid}}
-                       {SQLite/SpatiaLite "SQLite" {}}
+                       {SQLite/SpatiaLite "SQLite" {*.sqlite *.sqlite3 *.db}}
                        {PostgreSQL "PostgreSQL" {}} }
 }
 
