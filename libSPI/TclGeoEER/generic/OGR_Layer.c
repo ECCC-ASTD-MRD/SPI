@@ -1913,43 +1913,40 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
 OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,int Prec) {
 
    OGRFieldDefnH  field=NULL;
-   char           name[11];
-   
-   if (Field && strlen(Field)) {
-      strncpy(name,Field,10);name[10]='\0';
 
+   if (Field && strlen(Field)) {
       if (strcmp(Type,"Integer")==0) {
-         field=OGR_Fld_Create(name,OFTInteger);
+         field=OGR_Fld_Create(Field,OFTInteger);
       } else if (strcmp(Type,"Real")==0) {
-         field=OGR_Fld_Create(name,OFTReal);
+         field=OGR_Fld_Create(Field,OFTReal);
          if (Prec) OGR_Fld_SetPrecision(field,Prec);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"String")==0) {
-         field=OGR_Fld_Create(name,OFTString);
+         field=OGR_Fld_Create(Field,OFTString);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"WideString")==0) {
-         field=OGR_Fld_Create(name,OFTWideString);
+         field=OGR_Fld_Create(Field,OFTWideString);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"IntegerList")==0) {
-         field=OGR_Fld_Create(name,OFTIntegerList);
+         field=OGR_Fld_Create(Field,OFTIntegerList);
       } else if (strcmp(Type,"RealList")==0) {
-         field=OGR_Fld_Create(name,OFTRealList);
-         if (Width) OGR_Fld_SetPrecision(field,Width);
+         field=OGR_Fld_Create(Field,OFTRealList);
+         if (Prec) OGR_Fld_SetPrecision(field,Width);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"StringList")==0) {
-         field=OGR_Fld_Create(name,OFTStringList);
+         field=OGR_Fld_Create(Field,OFTStringList);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"WideStringList")==0) {
-         field=OGR_Fld_Create(name,OFTWideStringList);
+         field=OGR_Fld_Create(Field,OFTWideStringList);
          if (Width) OGR_Fld_SetWidth(field,Width);
       } else if (strcmp(Type,"DateTime")==0) {
-         field=OGR_Fld_Create(name,OFTDateTime);
+         field=OGR_Fld_Create(Field,OFTDateTime);
       } else if (strcmp(Type,"Date")==0) {
-         field=OGR_Fld_Create(name,OFTDate);
+         field=OGR_Fld_Create(Field,OFTDate);
       } else if (strcmp(Type,"Time")==0) {
-         field=OGR_Fld_Create(name,OFTTime);
+         field=OGR_Fld_Create(Field,OFTTime);
       } else if (strcmp(Type,"Binary")==0) {
-         field=OGR_Fld_Create(name,OFTBinary);
+         field=OGR_Fld_Create(Field,OFTBinary);
       }
    }
 
@@ -1957,12 +1954,13 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,
 
       /*Add the field to the structure*/
       if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
+         OGR_Fld_Destroy(field);
          return(NULL);
       }
 
       Layer->Changed=1;
    }
-    return(field);
+   return(field);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -2355,7 +2353,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid) {
 
-   int       i,j,k,n,idx=0,cidx=-1,df,f,nf,yyyy,mm,dd,h,m,s;
+   int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s;
    double    lat,lon,x,y,spd,dir;
    char      buf[64],*mask=NULL,style[256];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
@@ -2370,9 +2368,11 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       return(TCL_ERROR);
    }
 
+   // Get the number of fields provided
    Tcl_ListObjLength(Interp,Fields,&nf);
    field=(TData**)alloca(nf*sizeof(TData*));
 
+   // Get the fields from their name
    for(f=0;f<nf;f++) {
 
       Tcl_ListObjIndex(Interp,Fields,f,&obj);
@@ -2383,17 +2383,27 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          return(TCL_ERROR);
       }
 
-      if (idx && idx!=FSIZE2D(field[f]->Def)) {
-         Tcl_AppendResult(Interp,"OGR_LayerImport: field size differ",(char*)NULL);
-         return(TCL_ERROR);
+      if (!f) {
+          idx=FSIZE2D(field[0]->Def);
+          spec=field[0]->Spec;
+      } else {
+         // Make sure the size of the field is compatible
+         if (idx!=FSIZE2D(field[f]->Def)) {
+            Tcl_AppendResult(Interp,"OGR_LayerImport: field size differ",(char*)NULL);
+            return(TCL_ERROR);
+         }
+
+         // Make sure the specs are compatible
+         if (spec->RenderContour!=0 ^ field[f]->Spec->RenderContour!=0
+               || spec->RenderParticle!=0 ^ field[f]->Spec->RenderParticle!=0
+               || spec->RenderTexture!=0 ^ field[f]->Spec->RenderTexture!=0
+               || spec->RenderVector!=0 ^ field[f]->Spec->RenderVector!=0
+               || spec->RenderGrid!=0 ^ field[f]->Spec->RenderGrid!=0) {
+            Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import multiple fields in a single layer if their rendering types vary",(char*)NULL);
+            return(TCL_ERROR);
+         }
       }
       Data_PreInit(field[f]);
-   }
-   spec=field[0]->Spec;
-
-   if (spec->RenderContour && nf>1) {
-      Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import multiple field contours",(char*)NULL);
-      return(TCL_ERROR);
    }
 
 #ifdef HAVE_RMN
@@ -2405,13 +2415,29 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
    Layer->Changed=1;
 
    if (spec->RenderContour) {
+      //Check if the contours are compatible between the fields
+      if (nf>1) {
+         for(f=1;f<nf;f++) {
+            // Make sure we have the same number of intervals
+            if (spec->InterNb != field[f]->Spec->InterNb) {
+               Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import multiple field contours in a single layer if the number of intervals vary",(char*)NULL);
+               return(TCL_ERROR);
+            }
+            // Make sure we have the same intervals
+            for(idx=0;idx<spec->InterNb;++idx) {
+               if (spec->Inter[idx] != field[f]->Spec->Inter[idx]) {
+                  Tcl_AppendResult(Interp,"OGR_LayerImport: Cannot import multiple field contours in a single layer if the intervals vary",(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
+         }
+      }
 
       // Check for how many features
       Layer->NFeature=0;
       for(f=0;f<nf;f++) {
-         spec=field[f]->Spec;
-         strtrim(spec->Desc,' ');
-         Layer->NFeature+=spec->InterNb;
+         strtrim(field[f]->Spec->Desc,' ');
+         Layer->NFeature+=field[f]->Spec->InterNb;
       }
       Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH));
 
@@ -2419,31 +2445,30 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       OGR_FieldCreate(Layer,"Interval","Real",32,32);
       OGR_FieldCreate(Layer,"Height","Real",16,16);
       OGR_FieldCreate(Layer,"HeightUnit","String",32,0);
-//TODO:Time does not work with current GDAL      OGR_FieldCreate(Layer,"ValidDate","DateTime",0);
+      OGR_FieldCreate(Layer,"DateTime","DateTime",0,0);
 
-      for(f=0;f<nf;f++) {
-         spec=field[f]->Spec;
+      for(f=0,n=0;f<nf;f++) {
          System_StampDecode(((TRPNHeader*)field[0]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
 
-         for(n=0;n<spec->InterNb;n++) {
+         for(idx=0;idx<spec->InterNb;idx++,++n) {
             Layer->Feature[n]=OGR_F_Create(Layer->Def);
             OGR_F_SetFieldString(Layer->Feature[n],0,spec->Desc);
-            OGR_F_SetFieldDouble(Layer->Feature[n],1,VAL2SPEC(spec,spec->Inter[n]));
+            OGR_F_SetFieldDouble(Layer->Feature[n],1,VAL2SPEC(spec,spec->Inter[idx]));
             OGR_F_SetFieldDouble(Layer->Feature[n],2,field[f]->ZRef->Levels[0]);
             OGR_F_SetFieldString(Layer->Feature[n],3,(char*)ZRef_LevelNames()[field[f]->ZRef->Type]);
-//TODO:Time does not work with current GDAL            OGR_F_SetFieldDateTime(Layer->Feature[n],4,yyyy,mm,dd,h,m,s,100);
+            OGR_F_SetFieldDateTime(Layer->Feature[n],4,yyyy,mm,dd,h,m,s,100);
 
             if (spec->MapAll && spec->Map) {
-               VAL2COL(cidx,spec,spec->Inter[n]);
-               sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
+               VAL2COL(cidx,spec,spec->Inter[idx]);
+               snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Width);
                OGR_F_SetStyleString(Layer->Feature[n],style);
             } else if (spec->Outline) {
-               sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
+               snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->Width);
                OGR_F_SetStyleString(Layer->Feature[n],style);
             }
 
             Data_Clean(field[f],0,0,1);
-            FFContour(Grid?REF_GRID:REF_COOR,field[f]->GPos,field[f]->Def,field[f]->Stat,NULL,1,&spec->Inter[n],3,spec->RenderTexture?1:0);
+            FFContour(Grid?REF_GRID:REF_COOR,field[f]->GPos,field[f]->Def,field[f]->Stat,NULL,1,&spec->Inter[idx],3,spec->RenderTexture?1:0);
             cont=OGR_G_CreateGeometry(spec->RenderTexture?wkbPolygon:wkbMultiLineString);
 
             list=field[f]->Def->Segments;
@@ -2461,27 +2486,124 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
             OGR_F_SetGeometryDirectly(Layer->Feature[n],cont);
             if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
                Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
-               return(TCL_ERROR);  
+               return(TCL_ERROR);
             }
          }
       }
    } else {
-      for(f=0;f<nf;f++) {
-         strtrim(field[f]->Spec->Desc,' ');
-         if (field[f]->Spec->RenderVector) {
-            sprintf(buf,"%s (spd)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",16,16);
-            sprintf(buf,"%s (dir)",field[f]->Spec->Desc);
-            OGR_FieldCreate(Layer,buf,"Real",16,16);
-         } else {
-            OGR_FieldCreate(Layer,field[f]->Spec->Desc,"Real",32,32);
+      int ndates=nf,ndescs=nf;
+      int dates[nf],fldidx[nf];
+      char *descs[nf],*ndpd=NULL;
+
+      // If we have multiple fields
+      if (nf>1) {
+         // Check if we have more than one date or desription
+         for(f=0;f<nf;++f) {
+            dates[f]=((TRPNHeader*)field[f]->Head)->DATEV;
+
+            strtrim(field[f]->Spec->Desc,' ');
+            descs[f]=field[f]->Spec->Desc;
+         }
+
+         // Sort-unique desc and dates to get the real number of unique desc and dates
+         qsort(dates,ndates,sizeof(*dates),QSort_Int);
+         qsort(descs,ndescs,sizeof(*descs),(QSort_Fn)strcmp);
+
+         Unique(dates,&ndates,sizeof(*dates));
+         for(f=1,ndescs=1;f<nf;++f) {
+            if (strcmp(descs[f-1],descs[f])) {
+               if (f!=ndescs) {
+                  descs[ndescs]=descs[f];
+               }
+               ++ndescs;
+            }
+         }
+
+         // Count the number of desc per date to see if we need a tie breaker
+         if (ndescs!=nf && ndates!=nf) {
+            ndpd=calloc(ndescs*ndates,sizeof(*ndpd));
+            for(f=0;f<nf;++f) {
+               // Find the index of desc in the descs array
+               fldidx[f] = d = ndescs==1 ? 0 : (int)((char**)bsearch(&field[f]->Spec->Desc,descs,ndescs,sizeof(*descs),QSort_StrPtr)-(char**)descs);
+               // Check which flag we need to check/adjust (vector or not)
+               i = 1<<(field[f]->Spec->RenderVector!=0 && field[f]->Def->Data[1]!=NULL);
+
+               // Check if we don't already have the flag for dedup set
+                  n = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
+                  if (ndpd[d*ndates+n]&i) {
+                     // Flag this item as needing a level for a tiebreaker for the right vect component
+                     ndpd[d*ndates] |= (i<<2);
+                     // Set the flag for that desc/date/vect combo
+                     ndpd[d*ndates+n] |= i;
+               }
+            }
          }
       }
+
+      //----- Create the feature fields
+
+      // Create the date field if needed
+      if (ndates>1) {
+         OGR_FieldCreate(Layer,"DateTime","DateTime",0,0);
+      }
+
+      // Create the desc fields
+      for(f=0,j=(ndates>1);f<nf;f++) {
+         // Get the vect flag
+         i = (field[f]->Spec->RenderVector!=0 && field[f]->Def->Data[1]!=NULL);
+
+         // Build the field name
+         n = sizeof(buf)-1;
+         idx = snprintf(buf,n,"%s",field[f]->Spec->Desc);
+         // Add the level if that desc is duplicated at any date
+         if (n>idx && ndpd && ndpd[fldidx[f]*ndates]&(1<<(2+i))) {
+            idx += snprintf(buf+idx,n-idx,"_%.4f%s",field[f]->ZRef->Levels[0],ZRef_LevelNames()[field[f]->ZRef->Type]);
+         }
+         // Add to field for the vector components (speed and direction) if needed
+         if (i && n>idx) {
+            idx += snprintf(buf+idx,n-idx," (spd)");
+         }
+         if (idx>n) {
+            Tcl_AppendResult(Interp,"OGR_LayerImport: field name too long: ",buf,(char*)NULL);
+            free(ndpd);
+            return(TCL_ERROR);
+         }
+
+         // Add the field if it doesn't already exists
+         if ((fldidx[f]=OGR_FD_GetFieldIndex(OGR_L_GetLayerDefn(Layer->Layer),buf)) == -1) {
+            // Create the field
+            if (i) {
+               if (!OGR_FieldCreate(Layer,buf,"Real",16,16)) {
+                  Tcl_AppendResult(Interp,"OGR_LayerImport: Couldn't create field ",buf,(char*)NULL);
+                  free(ndpd);
+                  return(TCL_ERROR);
+               }
+               if (n>idx) {
+                  sprintf(buf+(idx-4),"dir)");
+                  if (OGR_FieldCreate(Layer,buf,"Real",16,16)) {
+                     Tcl_AppendResult(Interp,"OGR_LayerImport: Couldn't create field ",buf,(char*)NULL);
+                     free(ndpd);
+                     return(TCL_ERROR);
+                  }
+               }
+            } else {
+               if (!OGR_FieldCreate(Layer,buf,"Real",32,32)) {
+                  Tcl_AppendResult(Interp,"OGR_LayerImport: Couldn't create field ",buf,(char*)NULL);
+                  free(ndpd);
+                  return(TCL_ERROR);
+               }
+            }
+            // Save the field position
+            fldidx[f] = j;
+            j += 1+i;
+         }
+      }
+      free(ndpd);
 
       /*Build a mask of valid cells*/
       if (!(mask=(char*)calloc(FSIZE2D(field[0]->Def),sizeof(char)))) {
          Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate temporary buffer",(char*)NULL);
-         return(TCL_ERROR);   
+         return(TCL_ERROR);
       }
       Layer->NFeature=0;
 
@@ -2495,29 +2617,43 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          }
       }
 
+      // Adjust the number of features based on the amount of date fields that we have
+      Layer->NFeature *= ndates;
+
       if (!(Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH)))) {
          Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate feature buffer",(char*)NULL);
          free(mask);
-         return(TCL_ERROR);   
-      }      
-         
+         return(TCL_ERROR);
+      }
+
       n=0;
       for(i=0;i<field[0]->Def->NI;i++) {
          for(j=0;j<field[0]->Def->NJ;j++) {
             idx=j*field[0]->Def->NI+i;
             if (mask[idx]) {
-               Layer->Feature[n]=OGR_F_Create(Layer->Def);
+               for(d=0;d<ndates;++d)
+                  Layer->Feature[n+d]=OGR_F_Create(Layer->Def);
 
-               df=0;
+               // Set the date for the features
+               if( ndates>1 ) {
+                  for(d=0;d<ndates;++d) {
+                     System_StampDecode(dates[d],&yyyy,&mm,&dd,&h,&m,&s);
+                     OGR_F_SetFieldDateTime(Layer->Feature[n+d],0,yyyy,mm,dd,h,m,s,100);
+                  }
+               }
+
                for(f=0;f<nf;f++) {
+                  // Get the date for the feature
+                  d = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
+
+                  // Add the feature field's value
                   if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
                      field[f]->GRef->Value(field[f]->GRef,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
-                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
-                     df++;
-                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,dir);
+                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f]+1,dir);
                   } else {
                      Def_GetMod(field[f]->Def,idx,spd);
-                     OGR_F_SetFieldDouble(Layer->Feature[n],f+df,VAL2SPEC(field[f]->Spec,spd));
+                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
                   }
                }
 
@@ -2527,22 +2663,22 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
                if (spec->RenderParticle) {
                   if (cidx>-1) {
-                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderParticle);
+                     snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderParticle);
                   } else if (spec->Outline) {
-                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderParticle);
+                     snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderParticle);
                   }
                   OGR_F_SetStyleString(Layer->Feature[n],style);
 
                   geom=OGR_G_CreateGeometry(wkbPoint25D);
                   if (Grid) {
-                     OGR_G_AddPoint(geom,i,j,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0)); 
+                     OGR_G_AddPoint(geom,i,j,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   } else {
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,field[0]->GRef->AY[idx],field[0]->GRef->AX[idx],1,1);
                      OGR_G_AddPoint(geom,x,y,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   }
                } else if (spec->RenderTexture) {
                   if (cidx>-1) {
-                     sprintf(style,"BRUSH(fc:#%02x%02x%02x%02x);PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],1);
+                     snprintf(style,sizeof(style),"BRUSH(fc:#%02x%02x%02x%02x);PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],1);
                      OGR_F_SetStyleString(Layer->Feature[n],style);
                   }
 
@@ -2554,7 +2690,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                      OGR_G_AddPoint_2D(poly,i+0.5,j+0.5);
                      OGR_G_AddPoint_2D(poly,i+0.5,j-0.5);
                      OGR_G_AddPoint_2D(poly,i-0.5,j-0.5);
-                  } else {                     
+                  } else {
                      field[0]->GRef->Project(field[0]->GRef,i-0.5,j-0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
                      OGR_G_AddPoint_2D(poly,x,y);
@@ -2574,9 +2710,9 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
                   if (spec->Map && spec->MapAll && cidx>-1) {
-                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderGrid);
+                     snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Map->Color[cidx][0],spec->Map->Color[cidx][1],spec->Map->Color[cidx][2],spec->Map->Color[cidx][3],spec->RenderGrid);
                   } else if (spec->Outline) {
-                     sprintf(style,"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderGrid);
+                     snprintf(style,sizeof(style),"PEN(c:#%02x%02x%02x%02x,w:%ipx)",spec->Outline->red,spec->Outline->green,spec->Outline->blue,255,spec->RenderGrid);
                   }
                   OGR_F_SetStyleString(Layer->Feature[n],style);
                   geom=OGR_G_CreateGeometry(wkbPoint);
@@ -2589,18 +2725,40 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                      OGR_G_AddPoint_2D(geom,x,y);
                   }
                }
-               OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
-               if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
-                  return(TCL_ERROR);  
+
+               // If we have more than one feature linked to this geom/style
+               if (ndates>1) {
+                  const char *sl=OGR_F_GetStyleString(Layer->Feature[n]);
+
+                  for(d=1;d<ndates;++d) {
+                     // Copy the style
+                     if (sl)
+                        OGR_F_SetStyleString(Layer->Feature[n+d],sl);
+
+                     // Copy the geometry
+                     OGR_F_SetGeometry(Layer->Feature[n+d],geom);
+                  }
                }
-               n++;
+
+               // Add the geometry (and its ownership) to the first feature
+               OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
+
+               // Add the feature to the layer
+               for(d=0;d<ndates;++d) {
+                  if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n+d])!=OGRERR_NONE) {
+                     Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
+                     free(mask);
+                     return(TCL_ERROR);
+                  }
+               }
+
+               n += ndates;
             }
          }
       }
       free(mask);
    }
-   
+
    Layer->Changed=1;
 
    if (!(Layer->Select=malloc(Layer->NFeature*sizeof(char)))) {
@@ -2608,12 +2766,12 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       return(TCL_ERROR);
    }
    memset(Layer->Select,0x1,Layer->NFeature);
-   
+
    if (!(Layer->Loc=(Coord*)malloc(Layer->NFeature*sizeof(Coord)))) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate location buffer",(char*)NULL);
       return(TCL_ERROR);
    }
-      
+
    return(TCL_OK);
 }
 
