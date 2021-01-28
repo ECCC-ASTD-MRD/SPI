@@ -1953,7 +1953,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,
    if (field) {
 
       /*Add the field to the structure*/
-      if (OGR_L_CreateField(Layer->Layer,field,0)!=OGRERR_NONE) {
+      if (OGR_L_CreateField(Layer->Layer,field,1)!=OGRERR_NONE) {
          OGR_Fld_Destroy(field);
          return(NULL);
       }
@@ -2217,7 +2217,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    }
 
    for(f=0;f<OGR_FD_GetFieldCount(layer->Def);f++) {
-      OGR_L_CreateField(olayer,OGR_FD_GetFieldDefn(layer->Def,f),0);
+      OGR_L_CreateField(olayer,OGR_FD_GetFieldDefn(layer->Def,f),1);
    }
 
    for(f=0;f<layer->NFeature;f++) {
