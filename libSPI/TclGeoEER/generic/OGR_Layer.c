@@ -2493,16 +2493,16 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
    } else {
       int ndates=nf,ndescs=nf;
       int dates[nf],fldidx[nf];
-      char *descs[nf],*ndpd=NULL;
+      char *descs[nf],*ndpd=NULL,*desc;
 
       // If we have multiple fields
       if (nf>1) {
          // Check if we have more than one date or desription
          for(f=0;f<nf;++f) {
-            dates[f]=((TRPNHeader*)field[f]->Head)->DATEV;
+            dates[f] = ((TRPNHeader*)field[f]->Head)->DATEV;
 
             strtrim(field[f]->Spec->Desc,' ');
-            descs[f]=field[f]->Spec->Desc;
+            descs[f] = (desc=field[f]->Spec->Desc) ? desc : ((desc=((TRPNHeader*)field[f]->Head)->NOMVAR) ? desc : " ");
          }
 
          // Sort-unique desc and dates to get the real number of unique desc and dates
@@ -2524,17 +2524,18 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
             ndpd=calloc(ndescs*ndates,sizeof(*ndpd));
             for(f=0;f<nf;++f) {
                // Find the index of desc in the descs array
-               fldidx[f] = d = ndescs==1 ? 0 : (int)((char**)bsearch(&field[f]->Spec->Desc,descs,ndescs,sizeof(*descs),QSort_StrPtr)-(char**)descs);
+               desc = (desc=field[f]->Spec->Desc) ? desc : ((desc=((TRPNHeader*)field[f]->Head)->NOMVAR) ? desc : " ");
+               fldidx[f] = d = ndescs==1 ? 0 : (int)((char**)bsearch(&desc,descs,ndescs,sizeof(*descs),QSort_StrPtr)-(char**)descs);
                // Check which flag we need to check/adjust (vector or not)
                i = 1<<(field[f]->Spec->RenderVector!=0 && field[f]->Def->Data[1]!=NULL);
 
                // Check if we don't already have the flag for dedup set
-                  n = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
-                  if (ndpd[d*ndates+n]&i) {
-                     // Flag this item as needing a level for a tiebreaker for the right vect component
-                     ndpd[d*ndates] |= (i<<2);
-                     // Set the flag for that desc/date/vect combo
-                     ndpd[d*ndates+n] |= i;
+               n = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
+               if (ndpd[d*ndates+n]&i) {
+                  // Flag this item as needing a level for a tiebreaker for the right vect component
+                  ndpd[d*ndates] |= (i<<2);
+                  // Set the flag for that desc/date/vect combo
+                  ndpd[d*ndates+n] |= i;
                }
             }
          }
@@ -2554,7 +2555,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
          // Build the field name
          n = sizeof(buf)-1;
-         idx = snprintf(buf,n,"%s",field[f]->Spec->Desc);
+         idx = snprintf(buf,n,"%s",(desc=field[f]->Spec->Desc) ? desc : ((desc=((TRPNHeader*)field[f]->Head)->NOMVAR) ? desc : " "));
          // Add the level if that desc is duplicated at any date
          if (n>idx && ndpd && ndpd[fldidx[f]*ndates]&(1<<(2+i))) {
             idx += snprintf(buf+idx,n-idx,"_%.4f%s",field[f]->ZRef->Levels[0],ZRef_LevelNames()[field[f]->ZRef->Type]);
