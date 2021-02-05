@@ -2189,7 +2189,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
 int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 
    char        **opt=NULL;
-   unsigned int  f;
+   unsigned int  f,trans=0;
 
    OGR_File  *file=NULL;
    OGR_Layer *layer=NULL;
@@ -2220,14 +2220,32 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
       OGR_L_CreateField(olayer,OGR_FD_GetFieldDefn(layer->Def,f),1);
    }
 
+   // Do everything as part of a single transaction (very slow for DB formats that supports transactions otherwise (SQLite, GPKG))
+   if (GDALDatasetTestCapability(file->Data,ODsCTransactions)) {
+      if (GDALDatasetStartTransaction(file->Data,0)==OGRERR_NONE) {
+         trans=1;
+      }
+   }
+
    for(f=0;f<layer->NFeature;f++) {
       if (layer->Feature[f]) {
          feature=OGR_F_Create(defn);
          OGR_F_SetFrom(feature,layer->Feature[f],True);
          if (OGR_L_CreateFeature(olayer,feature)!=OGRERR_NONE) {
             Tcl_AppendResult(Interp,"\n   OGR_LayerWrite: Problems creating feature",(char*)NULL);
-            return(TCL_ERROR);  
+            if (trans && GDALDatasetRollbackTransaction(file->Data)!=OGRERR_NONE) {
+               Tcl_AppendResult(Interp,"\n   OGR_LayerWrite: Could not rollback transaction",(char*)NULL);
+            }
+            return(TCL_ERROR);
          }
+      }
+   }
+
+   // Close the transaction
+   if (trans) {
+      if (GDALDatasetCommitTransaction(file->Data)!=OGRERR_NONE) {
+         Tcl_AppendResult(Interp,"\n   OGR_LayerWrite: Could not commit transaction",(char*)NULL);
+         return(TCL_ERROR);
       }
    }
 
