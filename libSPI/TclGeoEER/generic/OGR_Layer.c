@@ -2502,10 +2502,6 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                list=list->Next;
             }
             OGR_F_SetGeometryDirectly(Layer->Feature[n],cont);
-            if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
-               Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
-               return(TCL_ERROR);
-            }
          }
       }
    } else {
@@ -2762,20 +2758,19 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                // Add the geometry (and its ownership) to the first feature
                OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
 
-               // Add the feature to the layer
-               for(d=0;d<ndates;++d) {
-                  if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n+d])!=OGRERR_NONE) {
-                     Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
-                     free(mask);
-                     return(TCL_ERROR);
-                  }
-               }
-
                n += ndates;
             }
          }
       }
       free(mask);
+   }
+
+   // Add the features to the layer
+   for(n=0; n<Layer->NFeature; ++n) {
+      if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
+         Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
+         return(TCL_ERROR);
+      }
    }
 
    Layer->Changed=1;
