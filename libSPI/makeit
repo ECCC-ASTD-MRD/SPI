@@ -234,7 +234,6 @@ if [[ $BLD -eq 1 ]]; then
    export eerUtils_ROOT=${LIB_EER}
    export TCL_ROOT=${DESTDIR}/TCL
    export GDB_ROOT=${LIB_PATH}
-   export ECBUFR_ROOT=${LIB_EXT}
 
    #----- Source Tcl/Tk local config
    export $(grep -v '^#' ${TCL_ROOT}/lib/tclConfig.sh | xargs) 2>/dev/null

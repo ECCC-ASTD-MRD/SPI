@@ -1696,7 +1696,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
             }
          }
       } else if (meta && 0) {
-//GDALExtractRPCInfo(meta,&rpcinfo)
+         //GDALExtractRPCInfo(meta,&rpcinfo)
          /*Get the transform from RPCInfo*/
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
