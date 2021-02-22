@@ -17,6 +17,9 @@ export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
 #----- Internal logging
 export APP_VERBOSE=INFO
 
+#----- GDAL 3.0+ honors an SRS axis order advertize that inverts coordinates in some cases
+export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
+
 #----- Dependencies (within CMC)
 if [[ -n \${ORDENV_VERSION} ]]; then
    case `domainname -d` in

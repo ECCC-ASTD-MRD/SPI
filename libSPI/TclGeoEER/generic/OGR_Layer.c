@@ -3100,6 +3100,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
          Layer->Extrude=OGR_FD_GetFieldIndex(Layer->Def,spec->Extrude);
       }
    }
+
    /*Read in data in another thread*/
    g=OGR_LayerParse(Layer,Proj,(Mask || GLRender->Wait || GLRender->XBatch || GLRender->TRCon)?0:1);
 
@@ -3108,7 +3109,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
       OGR_LayerParseBuild(Layer,Proj,Layer->CFeature);
       Layer->CFeature=-1;
    }
-   
+  
    glDash(&spec->Dash);
    glEnable(GL_BLEND);
    glEnable(GL_STENCIL_TEST);

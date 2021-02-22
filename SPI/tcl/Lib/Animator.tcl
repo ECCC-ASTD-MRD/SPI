@@ -1214,10 +1214,14 @@ proc Animator::PlayWeb { } {
    }
 
    #----- Get a name from user but default to current experiment if there is any
-   if { $Model::Param(Show) && $Exp::Data(No)!="" && $Exp::Data(Name)!="" } {
+   if { [namespace exists ::Model] && $Model::Param(Show) && $Exp::Data(No)!="" && $Exp::Data(Name)!="" } {
       set Play(Filename) $Exp::Data(No)_$Exp::Data(Name)
+      set base [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/products
+      set keep 1
    } else {
       set Play(Filename) ""
+      set base $env(HOME)/.spi/Tmp
+      set keep 0
    }
    set filename [Dialog::Get . $Lbl(FileNameTitle) $Lbl(FileNameEnter) Animator::Play(Filename)]
    if { $filename=="" } {
@@ -1236,11 +1240,11 @@ proc Animator::PlayWeb { } {
       }
 
       #----- Make sure it does not already exists
-      set base "$env(HOME)/.spi/Tmp/$randstr"
-      if { ![file exists $base] && [catch { exec ssh $Param(WebHost) "mkdir '$Param(WebDest)/$randstr'" }]==0 } {
+      if { ![file exists $base/$randstr] && ![catch {exec ssh $Param(WebHost) "mkdir '$Param(WebDest)/$randstr'"}] } {
          break
       }
    }
+   append base / $randstr
    file mkdir [set path $base/$filename]
 
    #----- Generate image files
@@ -1277,7 +1281,7 @@ proc Animator::PlayWeb { } {
    }
 
    #----- Set permissions
-   catch { eval exec chmod 644 [glob $path/*] }
+   catch { exec chmod 644 {*}[glob $path/*] }
    catch { exec chmod 755 $path }
    catch { exec chmod 751 $base }
 
@@ -1295,7 +1299,9 @@ proc Animator::PlayWeb { } {
    #----- Give the user the url path
    Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath) $Animator::Play(Mail)
 
-   catch { file delete -force $base }
+   if { !$keep } {
+       catch { file delete -force $base }
+   }
    set Play(Label) "[lindex $Lbl(Done) $GDefs(Lang)]"
    update idletasks
 }
