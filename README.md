@@ -27,7 +27,7 @@ There are many dependencies to build SPI
 ```
 External dependencies (GDAL,URP,ECCODES,LIBECBUFR,...). Within the SCIENCE network, a package containing all the dependencies cna be loaded
 ```shell
-export CMD_EXT_PATH=/fs//ssm/eccc/cmd/cmds/ext/20210211; . ssmuse-sh -x $CMD_EXT_PATH
+export CMD_EXT_PATH=/fs/ssm/eccc/cmd/cmds/ext/20210211; . ssmuse-sh -x $CMD_EXT_PATH
 ```
 
 ### Mandatory dependencies
@@ -43,6 +43,7 @@ mkdir -p $SSM_DEV/src $SSM_DEV/package $SSM_DEV/workspace $SSM_DEV/build
 
 ### Launching the build
 ```shell
+cd libSPI
 makeit -ext
 makeit -reconf -build -ssm
 ```
