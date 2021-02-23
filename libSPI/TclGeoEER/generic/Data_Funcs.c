@@ -363,7 +363,7 @@ double repeat(TDef *Res,TDef *Fld,TDef *N) {
    // Resize the result field to hold the values we'll generate
    dim[d>2?2:d] *= n;
    if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
-      Calc_RaiseError("seq: An error occured when resizing.\n");
+      Calc_RaiseError("repeat: An error occured when resizing.\n");
       return(0.0);
    }
 
