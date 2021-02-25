@@ -12,20 +12,31 @@ An exhaustive API described in another document allows for very powerful scripti
 
 
 # Building SPI
+You will need cmake with a version at least 3.16
+```shell
+. ssmuse-sh -x /fs/ssm/main/opt/cmake-3.16.4
+```
 
 ## Dependencies
 There are many dependencies to build SPI
 
-### Optional dependencies
+### Optional dependencies (On ECCC/SCIENCE network)
+[codetools](https://gitlab.science.gc.ca/RPN-SI/code-tools)
+```shell
+. r.load.dot rpn/codetools/1.5.1
+```
+
 [librmn](https://gitlab.science.gc.ca/RPN-SI/librmn)
 ```shell
 . r.load.dot rpn/libs/19.7.0
 ```
+
 [vgrid](https://gitlab.science.gc.ca/RPN-SI/vgrid)
 ```shell
 . r.load.dot rpn/vgrid/6.5.0
 ```
-External dependencies (GDAL,URP,ECCODES,LIBECBUFR,...). Within the SCIENCE network, a package containing all the dependencies cna be loaded
+
+External dependencies (GDAL,URP,ECCODES,LIBECBUFR,...). Within the ECCC/SCIENCE network, a package containing all the dependencies cna be loaded
 ```shell
 export CMD_EXT_PATH=/fs/ssm/eccc/cmd/cmds/ext/20210211; . ssmuse-sh -x $CMD_EXT_PATH
 ```
@@ -44,8 +55,8 @@ mkdir -p $SSM_DEV/src $SSM_DEV/package $SSM_DEV/workspace $SSM_DEV/build
 ### Launching the build
 ```shell
 cd libSPI
-makeit -ext
-makeit -reconf -build -ssm
+./makeit -ext
+./makeit -reconf -build -ssm
 ```
 
 # Building source package for distribution
