@@ -6,63 +6,62 @@ SOFT=0
 HARD=0
 XVFB=0
 XSVR=${XSVR:=9999}
-SPI_DEBUG=""
+SPI_DEBUG=()
 HOST=`hostname`
+PROG=("${SPI_LIB}/TCL/bin/wish${TCL_VERSION}" "${SPI_PATH}/tcl/SPI.tcl")
 
 #----- Check for VirtualGL
 type vglrun >/dev/null 2>&1 && vg=vglrun
 
 #----- Parse the flags fo batch token
-for flag in $@
-do
-   if [[ $flag = "-xvfb" ]]
-   then
-      XVFB=-1
-      [[ -n $vg ]] || SOFT=1
-   fi
+args=()
+while [[ $# -gt 0 ]]; do
+   case "$1" in
+      -xvfb)
+         XVFB=-1
+         [[ -n $vg ]] || SOFT=1
+         ;;
+      -batch|-xorg)
+         XVFB=1
+         [[ -n $vg ]] || SOFT=1
+         ;;
+      -soft)
+         SOFT=1
+         ;;
+      -hard)
+         HARD=1
+         SOFT=0
+         ;;
+      -valgrind)
+         SPI_DEBUG=(valgrind --track-origins=yes --leak-check=full)
+         ;;
+      -gdb)
+         SPI_DEBUG=(gdb)
+         if [[ $2 = *core* && -r $2 ]]; then
+            SPI_DEBUG+=(-c "$2")
+            shift
+         fi
+         SPI_DEBUG+=(--args)
+         shift
+         continue
+         ;;
+      -tclsh)
+         PROG=("${SPI_LIB}/TCL/bin/tclsh${TCL_VERSION}")
+         SOFT=-1
+         ;;
+   esac
 
-   if [[ $flag = "-batch" || $flag = "-xorg" ]]
-   then
-      XVFB=1
-      [[ -n $vg ]] || SOFT=1
-   fi
-
-   if [[ $flag = "-soft" ]]
-   then
-      SOFT=1
-   fi
-
-   if [[ $flag = "-hard" ]]
-   then
-      HARD=1
-      SOFT=0
-   fi
-
-   if [[ $flag = "-valgrind" ]]
-   then
-      SPI_DEBUG="valgrind --track-origins=yes --leak-check=full"
-   fi
-
-   if [[ $flag = "-tclsh" ]]
-   then
-      ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/tclsh${TCL_VERSION} -- $@
-      code=$?
-      exit $code
-   fi
+   args+=("$1")
+   shift
 done
 
 #----- Testing hardware capabilities
-if [ \( $SOFT -eq 0 \) -a \( $HARD -eq 0 \) ]
-then
-   if [[ `$vg glxinfo | grep -c "direct rendering: Yes"` -eq 0 ]]
-   then
-      SOFT=1
-   fi
+if [[ $SOFT -eq 0 && $HARD -eq 0 ]]; then
+  $vg glxinfo | grep -qs "direct rendering: Yes" || SOFT=1
 fi
 
 #----- Check for software mode
-if [[ $SOFT -eq 1 ]]
-then
+if [[ $SOFT -eq 1 ]]; then
    export LD_LIBRARY_PATH=${SPI_LIB}/GL/lib:${LD_LIBRARY_PATH}
    unset vg
 fi
@@ -71,17 +70,18 @@ fi
 #xset fp default
 #xset fp+ ${SPI_PATH}/share/font
 
+#----- Command to execute
+cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" -- "${args[@]}")
+
 #----- Let's start up the software
-if [[ $XVFB -ne 0 ]]
-then
+if [[ $XVFB -ne 0 ]]; then
    if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so && $XVFB -eq 1 ]]; then
-#      exec ${SPI_PATH}/bin/xorg-run -n $XSVR -a -l $TMPDIR/xorg-spi$$.log -s "-config ${SPI_PATH}/share/xorg/xorg.conf" ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
-      exec ${SPI_PATH}/bin/xorg-run -n $XSVR -a -l /dev/null -s "-config ${SPI_PATH}/share/xorg/xorg.conf" ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
-   else 
+      exec "${SPI_PATH}/bin/xorg-run" -n $XSVR -a -l /dev/null -s "-config ${SPI_PATH}/share/xorg/xorg.conf" "${cmd[@]}"
+   else
       #----- Otherwise use the old Xvfb
-      exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+      exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' "${cmd[@]}"
    fi
 else
-   exec ${vg} ${SPI_DEBUG} ${SPI_LIB}/TCL/bin/wish${TCL_VERSION} "${SPI_PATH}/tcl/SPI.tcl" -- "$@"
+   exec "${cmd[@]}"
 fi
 

@@ -123,7 +123,7 @@ namespace eval Export::Raster {
                        {ILWIS Raster Map "ILWIS" {*.mpr *.mpl}}
                        {Intergraph Raster "INGR" {*.ingr}}
                        {USGS Astrogeology ISIS cube (Version 2) "ISIS2" {*.isis}}
-                       {JPEG JFIF "JPEG" {*,jpg}}
+                       {JPEG JFIF "JPEG" {*.jpg}}
                        {Vexcel MFF "MFF" {*.mff}}
                        {Vexcel MFF2 "MFF2" {*.HKV}}
                        {NTv2 Datum Grid Shift "NTv2" {*.nt}}
@@ -159,6 +159,7 @@ namespace eval Export::Vector {
 
    set Param(Modes)   { POINT CELL CONTOUR POLYGON }
    set Param(Formats) { {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
+                       {GeoPackage  "GPKG" {*.gpkg}}
                        {GeoJSON  "GeoJSON" {*.json}}
                        {KML "KMZ" {*.kml}}
                        {Géoconcept Export "Geoconcept" {*.gxt}}
@@ -167,7 +168,7 @@ namespace eval Export::Vector {
                        {GPS Exchange Format "GPX" {*.gpx}}
                        {GPSTrackMaker "GPSTrackMaker" {*.gtm *.gtz}}
                        {MapInfo Binary "MapInfo File" {*.mif *.mid}}
-                       {SQLite/SpatiaLite "SQLite" {}}
+                       {SQLite/SpatiaLite "SQLite" {*.sqlite *.sqlite3 *.db}}
                        {PostgreSQL "PostgreSQL" {}} }
 }
 
@@ -253,8 +254,8 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
       set bg $BGColor
    }
 
-   set params [concat -size ${Width}x${Height} xc:$bg -weight bold -pointsize 13 -fill $FontColor \
-      -draw \"image SrcOver $txtpos,5 $cwidth,$cheight '$Path.tmp'\"]
+   set params [list -size ${Width}x${Height} xc:$bg -weight bold -pointsize 13 -fill $FontColor \
+      -draw "image SrcOver $txtpos,5 $cwidth,$cheight '[string map {' \\' \\ \\\\} $Path].tmp'"]
 
    #----- Place the numbers beside the colorbar.
    set lv [llength $vals]
@@ -262,17 +263,18 @@ proc Export::Legend { Path Field Height Width FontColor { BGColor "" } } {
    set offset [expr $Height-5]
    foreach val $vals {
       set xOffset [expr $txtpos-3 - ([string length $val] * 7)]
-      set params  [concat $params -draw \"text $xOffset,$offset '$val'\"]
+      lappend params -draw "text $xOffset,$offset '[string map {' \\' \\ \\\\} $val]'"
       set offset  [expr $offset-$offsetText]
    }
 
    #----- If a layer was passed, add info from the layer definition, otherwise use style
    set desc "[fstdfield configure $Field -desc] ([fstdfield configure $Field -unit])"
-   set params [concat $params -rotate \"90\" -gravity \"South\" -draw \"text 0,0 '$desc'\" -rotate \"-90\" ]
+   lappend params -rotate 90 -gravity South -draw "text 0,0 '[string map {' \\' \\ \\\\} $desc]'" -rotate "-90"
 
    #----- Use ImageMagick to add the labels
-   if { [catch { eval exec convert -depth 8 $params $Path } msg] } {
+   if { [catch { exec convert -depth 8 {*}$params $Path } msg] } {
       Dialog::Error .export $Error(Legend)
+      puts $msg
    }
    file delete $Path.tmp
 }
@@ -439,6 +441,7 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
 #  <Format>  : Format du fichier
 #  <Fields>  : Champs a exporter
 #  <Options> : Driver specific creation options
+#  <Combine> : Combine everything in a single layer
 #
 # Retour:
 #
@@ -447,8 +450,9 @@ proc Export::Raster::Export { Path Format Mode Fields { Options "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc Export::Vector::Export { Path Format Fields { Options "" } } {
+proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } {
    global env
+   global GDefs
    variable Msg
 
    if { ![llength $Fields] } {
@@ -459,6 +463,7 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
    set ext  [file extension $Path]
 
    if { $Format=="KMZ" } {
+      set Combine False
       set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
       set f [open $kmzname.kml w]
       puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
@@ -488,14 +493,18 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
       set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
       set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
 
-      #----- Create filename 
+      #----- Create filename
       set name   [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
 
       if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
          set name $name.[incr nb]
       }
-      
-      Dialog::Wait .export $Export::Msg(Export) $desc
+
+      if { $Combine } {
+          Dialog::Wait .export $Export::Msg(Export) "[llength $Fields] [lindex $Export::Lbl(RPN) $GDefs(Lang)] ($Format)"
+      } else {
+          Dialog::Wait .export $Export::Msg(Export) "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype ($Format)"
+      }
 
       switch $Format {
          "PostgreSQL" {
@@ -544,11 +553,20 @@ proc Export::Vector::Export { Path Format Fields { Options "" } } {
             ogrfile open FILE write $name${ext} $Format
          }
       }
-  
+
       ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ $Options
-      ogrlayer import LAYER $field
+      if { $Combine } {
+         ogrlayer import LAYER $Fields
+      } else {
+         ogrlayer import LAYER $field
+      }
       ogrfile close FILE
       ogrlayer free LAYER
+
+      #----- If we combined everything into
+      if { $Combine } {
+         break
+      }
    }
 
    if { $Format=="KMZ" } {
