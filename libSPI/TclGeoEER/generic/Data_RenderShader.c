@@ -243,7 +243,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 
    glBegin(GL_TRIANGLES);
    if (Field->Spec->InterpDegree[0]=='L') {
-      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx;n+=3) {
          idx[0]=Field->GRef->Idx[n];
          idx[1]=Field->GRef->Idx[n+1];
          idx[2]=Field->GRef->Idx[n+2];
@@ -263,7 +263,7 @@ int Data_RenderShaderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          glVertex3dv(pos[idx[2]]);
       }
    } else {
-      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx;n+=3) {
          idx[0]=Field->GRef->Idx[n];
          idx[1]=Field->GRef->Idx[n+1];
          idx[2]=Field->GRef->Idx[n+2];
