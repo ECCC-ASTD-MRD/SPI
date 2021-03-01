@@ -46,8 +46,8 @@ find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
 
 #----- Optional packages
 find_package(OpenMP COMPONENTS C)
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS beta shared OPTIONAL)
-find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS shared OPTIONAL)
+find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
+find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
 find_package(GDB)
 find_package(ECCODES ${ECCODES_REQ_VERSION})
 find_package(ECBUFR ${ECBUFR_REQ_VERSION})
