@@ -19,15 +19,8 @@
 #   Log::End      { { Status 0 } }
 #   Log::Print    { Type Message { Var "" } }
 #   Log::Mail     { Subject File { Address { } } }
-#   Log::Pager    { }
-#   Log::XFlow    { }
 #   Log::CheckSPI { Version }
 #   Log::Stack    { }
-#
-#   Log::CyclopeStart    { }
-#   Log::CyclopeEnd      { }
-#   Log::CyclopeSysInfo  { }
-#   Log::CyclopeProcInfo { { PID "" } }
 #
 # Remarques :
 #   Aucune
@@ -72,9 +65,6 @@ namespace eval Log { } {
    set Param(Error)       0                     ;#Number of errors
    set Param(Process)     ""                    ;#Process number
    set Param(SPI)         ""                    ;#SPI version requirement
-   set Param(Vanish)      False                 ;#Disappear without leaving any trace (only applied if no error nor warning was encountered)
-   set Param(Retry)       0                     ;#Number of retry attempts
-   set Param(RetryNo)     0                     ;#Retry number
 
    set Param(SecTime)     [clock seconds]       ;#Current time
    set Param(SecLog)      $Param(SecTime)       ;#Log time
@@ -84,11 +74,6 @@ namespace eval Log { } {
 
    set Param(MailTo)      ""                    ;#Users to which mail will be sent
    set Param(MailTitle)   ""                    ;#Mail title
-   set Param(Pager)       ""                    ;#Pager address
-   set Param(PagerInfo)   ""                    ;#Info specifc for pager
-   
-   set Param(Cyclope)     False                 ;#Use Cyclope
-   set Param(CyclopePath) $env(HOME)/.Cyclope   ;#Path to Cyclope
 
    set Param(Job)         "Unknown"             ;#Job name
    set Param(JobVersion)  "Unknown"             ;#Job version
@@ -434,9 +419,6 @@ proc Log::Start { Job Version { Input "" } } {
    if { $Param(JobClass)=="INTERACTIVE" } {
       Log::Mail "Job started" $Param(OutFile)
    }
-
-   #----- Activate Cylope links
-   Log::CyclopeStart
 }
 
 #----------------------------------------------------------------------------
@@ -487,7 +469,6 @@ proc Log::End { { Status 0 } { Exit True } } {
    if { $Param(JobClass)=="REPORT" } {
       if { $Param(Error)>0 } {
          Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
-         Log::Pager
       } elseif { $Param(Warning)>0 } {
          Log::Mail "Job finished (WARNING ($Param(Warning)))" $Param(OutFile)
       } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
@@ -499,30 +480,20 @@ proc Log::End { { Status 0 } { Exit True } } {
       }
    } else {
       Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
-      Log::Pager
    }
 
-   if { $Param(Vanish) && $Param(Error)==0 && $Param(Warning)==0 } {
-      if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
-         close $Param(Out)
-         file delete -force -- $Param(OutFile)
-      }
-      Log::CyclopeDelete
-   } else {
-      #----- Activate Cylope links
-      Log::CyclopeEnd $Status
-      Log::CyclopeSysInfo
-      Log::CyclopeProcInfo
+   #----- End hook
+   Log::HookEnd $Status
 
-      if { $Param(Out)!="stdout" && $Param(Out)!="stderr" } {
-         close $Param(Out)
-      }
+   if { $Param(Out) ni {stdout stderr} } {
+      close $Param(Out)
    }
 
    if { $Exit } {
       exit $Status
    }
 }
+
 
 #----------------------------------------------------------------------------
 # Nom      : <Log::Print>
@@ -575,9 +546,8 @@ proc Log::Print { Type Message { Var "" } } {
       }
       incr Param(SecLog) $Param(Rotate)
 
-      #----- Print stats up til now
-      Log::CyclopeSysInfo
-      Log::CyclopeProcInfo
+      #----- Rotate hook
+      Log::HookRotate
    }
 
    if { $Param($Type)=="-" } {
@@ -736,373 +706,18 @@ proc Log::Mail { Subject File { Address { } } } {
 }
 
 #----------------------------------------------------------------------------
-# Nom      : <Log::Pager>
-# Creation : Avril 2017 - J.P. Gauthier - CMC/CMOE
+# Nom      : <Log::Hook*>
+# Creation : Février 2021 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Envoyer un message succint au pager.
-#
-# Parametres  :
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-
-proc Log::Pager { } {
-   variable Param
-
-   if { [llength $Param(Pager)] } {
-      if { $Param(Retry)>$Param(RetryNo) } {
-         Log::Print INFO "A retry will be attempted, no page will be sent for now"
-      } else {
-         Log::Print INFO "Sending page to the following addresses : $Param(Pager)"
-         set err [catch { exec -ignorestderr echo -e $Param(JobId) | mail -s "$Param(MailTitle) ($Param(PagerInfo))" {*}$Param(Pager) } msg]
-         if { $err } {
-            Log::Print ERROR "Problems while mailing pager:\n\n\t$msg"
-         }
-      }
-   }
-}
-
-proc Log::XFlow { } {
-   variable Param
-
-   if { $Param(XFlow)!=""  } {
-      set err [catch { exec echo "nodelogger -n /default_mod -d [clock format [clock seconds] -format %Y%m%d%H%M%S0000] \
-         -m "$Param(MailTitle)\\n\n$Param(XFlow)" \
-         -s info" | ssh -T -i ${HOME}/.ssh/rsa_nodelogger afsiops@castor 2>@1 } msg]
-      if { $err } {
-         Log::Print ERROR "Problems while calling nodelogger:\n\n\t$msg"
-      }
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopePing>
-# Creation : Juin 2012 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Touch du fichier ping de la job pour cyclope.
-#
-# Parametres  :
-#   <Delay>   : Delai de ping normal (Pour cyclope)
-#   <Job>     : Job to ping
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-
-proc Log::CyclopePing { { Delay -1 } { Job "" } } {
-   variable Param
-
-   if { $Job=="" } {
-      set Job $Param(JobId)
-   }
-
-   if { $Delay==-1 } {
-      if { [file exists $Param(CyclopePath)/ping/$Job] } {
-         exec touch $Param(CyclopePath)/ping/$Job
-      } else {
-         Log::Print ERROR "A ping delay must already be set in order to use the no-delay ping"
-      }
-   } else {
-      set fd [open $Param(CyclopePath)/ping/$Job w]
-      puts $fd $Delay
-      close $fd
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopeStart>
-# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Initialiser les informations du process pour cyclope.
+# But      : Hooks called to allow scritps to put a trace at specific steps
 #
 # Parametres  :
 #
 # Retour:
 #
 # Remarques :
+#     The main purpose of these hooks is so that other scripts can put a trace
+#     on the execution of these function. It should not contain anything.
 #----------------------------------------------------------------------------
-
-proc Log::CyclopeStart { } {
-   global env argv argc
-   variable Param
-
-   if { $Param(Cyclope) } {
-      #----- Handle RetryNo parameter
-      if { $Param(Retry) } {
-         if { [info exists env(CYCLOPE_RETRY_NO)] } {
-            set Param(RetryNo) $env(CYCLOPE_RETRY_NO)
-         }
-         if { $Param(RetryNo) } {
-            Log::Print INFO "This job has been automatically resubmitted. Retry number : $Param(RetryNo)/$Param(Retry)"
-         }
-      }
-
-      set path $Param(CyclopePath)/jobs/$Param(JobId)
-
-      #----- Setup process info
-      file mkdir $path
-      set f [open $path/info.txt w 00644]
-      puts $f  "Class     : $Param(JobClass)\nJob       : $Param(Job) $Param(JobVersion)"
-
-      set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
-      if { [info exists env(SelfJobResubmit)] } {
-         puts $f "Command   : $env(SelfJobResubmit)"
-         puts $f "Kill      : $env(SelfJobKill)"
-         puts $f "ID        : JobID/$host/$env(JOB_ID)"
-      } else {
-         puts $f "Command   : ssh $env(USER)@$host '. ~/.profile >/dev/null 2>&1; [info script] [join $argv]'"
-         puts $f "Kill      : ssh $env(USER)@$host kill [pid]"
-         puts $f "ID        : PID/$host/[pid]"
-      }
-      puts $f "Retry     : $Param(RetryNo)\nPath      : $Param(JobPath)\nLog       : $Param(OutFile)\nHostname  : [system info -name]\nArch      : [system info -os]\nStart time: $Param(SecStart)"
-
-      close $f
-      file attributes $path/info.txt  -permissions 00644
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopeEnd>
-# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Finaliser les informations du process pour cyclope.
-#
-# Parametres  :
-#    <Status> : Code de retour de la job (0=ok, sinon erreur)
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-
-proc Log::CyclopeEnd { Status } {
-   variable Param
-   global env
-
-   if { $Param(Cyclope) } {
-      set retry 0
-
-      #----- Resubmit job if needed
-      if { $Status && $Param(Retry)>$Param(RetryNo) } {
-         set retry [expr $Param(RetryNo)+1]
-
-         if { [info exists env(SelfJobResubmit)] } {
-            if { [catch {
-               #----- Get the PBS batch file that we want to resubmit
-               if { ![file readable [set f [lindex $env(SelfJobResubmit) end]]] } {
-                  throw ERROR "File \[$f\] can't be read. SelfJobResubmit is \[$env(SelfJobResubmit)\]"
-               }
-               set fr $f.retry$retry
-
-               #----- Make sure we don't already have a retry file with that retry number
-               #----- This prevents retries when the job is relaunched manually (if a retry occured already, that is)
-               #----- and also acts as a safeguard to prevent an execution/error/resubmit loop
-               if { [file exists $fr] } {
-                  throw ERROR "Retry file \[$fr\] already exists, will not proceed further"
-               }
-
-               #----- Get the file content
-               set fd [open $f r]
-               set str [read $fd]
-               close $fd
-
-               #----- Add our CYCLOPE_RETRY_NO env variable next to it and make sure it is there to prenvent an endless resubmit loop
-               if { ![regsub -line {^( *export SelfJobResubmit=.*)$} $str "\\1\nexport CYCLOPE_RETRY_NO=$retry" str] } {
-                  throw ERROR "No replacement made for job file \[$f\]. SelfJobResubmit not present?"
-               }
-
-               #----- Write the file
-               set fd [open $fr w]
-               puts $fd $str
-               close $fd
-
-               #----- Update the command
-               set cmd [lreplace $env(SelfJobResubmit) end end $fr]
-            } err] } {
-               Log::Print ERROR "Could not setup job retry; job won't be resubmitted.\n\t$err"
-               set retry 0
-            }
-         } else {
-            set host [expr {[info exists env(ORDENV_TRUEHOST)] ? $env(ORDENV_TRUEHOST) : [info hostname]}]
-            set cmd "ssh $env(USER)@$host '. ~/.profile >/dev/null 2>&1; export CYCLOPE_RETRY_NO=$retry; [info script] [join $argv]'"
-         }
-
-         if { $retry } {
-            Log::Print INFO "Relaunching job (retry attempt $retry/$Param(Retry)) with command \[$cmd\]"
-            if { [catch {exec -ignorestderr sh -c $cmd} err] } {
-               Log::Print ERROR "An error occured while relaunching job :\n\t$err"
-               set retry 0
-            }
-         }
-      }
-
-      #----- Update info file
-      set f [open $Param(CyclopePath)/jobs/$Param(JobId)/info.txt a]
-
-      #----- Close process info
-      puts $f "End time  : $Param(SecEnd)\nRun time  : [expr $Param(SecEnd)-$Param(SecStart)]"
-
-      if { $Status } {
-         puts $f "Status    : Error ($Status) ($Param(Error))"
-         if { $retry } {
-            puts $f "Cyclope   : Retry"
-         }
-      } elseif { $Param(Warning) } {
-         puts $f "Status    : Warning ($Param(Warning))"
-      } else {
-         puts $f "Status    : Success"
-      }
-
-      close $f
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopeDelete>
-# Creation : Janvier 2015 - E. Legault-Ouellet - CMC/CMOE
-#
-# But      : Supprimer le dossier Cyclope associe a la job.
-#
-# Parametres  :
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-proc Log::CyclopeDelete { } {
-   variable Param
-
-   if { $Param(Cyclope) } {
-      file delete -force -- $Param(CyclopePath)/jobs/$Param(JobId)
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopeSysInfo>
-# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Extraire les statistiques du process pour cyclope.
-#
-# Parametres  :
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-
-proc Log::CyclopeSysInfo { } {
-   variable Param
-
-   #----- Activate Cylope links
-   if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/jobs/$Param(JobId)
-
-      set calls "-uptime -loads -totalmem -freemem -sharedmem -buffermem -totalswap -freeswap -process -totalhigh -freehigh -memunit"
-      eval set stats \[system info $calls\]
-
-      #----- Print some stats
-      set f [open $path/sysinfo.txt w]
-      puts $f [format "%-10s: %s" Hostname [system info -name]]
-      puts $f [format "%-10s: %s" Arch [system info -os]]
-      foreach info $calls stat $stats {
-         puts $f [format "%-10s: %s" [string totitle [string trimleft $info -]] $stat]
-      }
-      close $f
-   }
-}
-
-#----------------------------------------------------------------------------
-# Nom      : <Log::CyclopeProcInfo>
-# Creation : Mai 2010 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Extraire les statistiques du process pour cyclope.
-#
-# Parametres  :
-#
-# Retour:
-#
-# Remarques :
-#----------------------------------------------------------------------------
-
-proc Log::CyclopeProcInfo { { PID "" } } {
-   variable Param
-   variable Stat
-
-   set Stat(Names) { PID Name State PPID PGRP SID STTY PTTY Flags MinFLT CMinFLT MajFLT CMajFLT UTime STime CUTime CSTime Priority Nice 0 ITRealValue
-      StartTime VSize RSS RLim StartCode EndCode Stack StackESP StackEIP SignalPending SignalBlocked SignalIgnored SignalCatched WChan NSwap CNSwap
-      SignalExit CPU RTPriority Policy }
-
-   set Stat(Infos) {
-      "Process ID"
-      "Filename of the executable"
-      "Proces state "
-      "Parent PID"
-      "Process group ID"
-      "Session"
-      "TTY"
-      "TTY's owner process group ID"
-      "Process kernel flags word"
-      "Number of minor faults"
-      "Chilren's number of minor faults"
-      "Number of major faults"
-      "Children's number of major faults"
-      "Number of user mode jiffies"
-      "Number of system mode jiffies"
-      "Chilren's number of user mode jiffies"
-      "Chilren's number of system mode jiffies"
-      "Nice value, plus fifteen"
-      "The nice value ranges"
-      "Placeholder for a removed field"
-      "Time in jiffies to SIGALRM"
-      "After boot start time in jiffies"
-      "Virtual memory size in bytes"
-      "Resident Set Size"
-      "RSS limit in bytes"
-      "Start code address"
-      "End code address"
-      "Stack start address"
-      "Stack pointer"
-      "Instruction pointer"
-      "Pending signals bitmap"
-      "Blocked signals bitmap"
-      "Ignored signals bitmap"
-      "Caught signals bitmap"
-      "Waiting channel"
-      "Pages swapped"
-      "Children's cumulative pages swapped"
-      "Signal to be sent to parent when we die"
-      "CPU number last executed on"
-      "Real-time scheduling priority"
-      "Policy"
-      "Unknown" }
-
-   if { $Param(Cyclope) } {
-      set path $Param(CyclopePath)/jobs/$Param(JobId)
-
-      set calls "-utime -stime -cutime -cstime -rss -shared -data -stack -minpagefault -majpagefault -swap -inblock -outblock -signal -vcswitch -ivcswitch"
-      eval set stats \[system usage $calls\]
-
-      #----- Print some stats
-      set f [open $path/procinfo.txt w]
-      puts $f "RUSAGE:"
-      foreach info $calls stat $stats {
-         puts $f [format "   %-10s: %s" [string totitle [string trimleft $info -]] $stat]
-      }
-
-      if { $PID=="" } {
-         set PID [pid]
-      }
-
-      #----- Got a signal 2 kill on the cat a few times so catch it for now
-      puts $f "PROCINFO:"
-      catch {
-         foreach info $Stat(Infos) stat [exec cat /proc/$PID/stat] {
-            puts $f [format "   %-40s: %s" $info $stat]
-         }
-      }
-      close $f
-   }
-}
+proc Log::HookEnd { Status } { }
+proc Log::HookRotate { } { }

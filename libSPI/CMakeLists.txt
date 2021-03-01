@@ -3,14 +3,16 @@ cmake_minimum_required(VERSION 3.16)
 #----- Append EC specific module path
 list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
 
-include(ec_utils)
-ec_parse_manifest() # Parse MANIFEST file
+include(ec_init)
+include(ec_parse_manifest) # Parse MANIFEST file
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
 message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
-include(compiler_rules)
+enable_language(C)
+include(compiler_presets)
+#include(compiler_rules)
 
 #----- Add some common compiling options
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE STDC_HEADERS)
@@ -44,8 +46,8 @@ find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
 
 #----- Optional packages
 find_package(OpenMP COMPONENTS C)
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS beta shared OPTIONAL)
-find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS shared OPTIONAL)
+find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
+find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
 find_package(GDB)
 find_package(ECCODES ${ECCODES_REQ_VERSION})
 find_package(ECBUFR ${ECBUFR_REQ_VERSION})

@@ -1471,7 +1471,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
 //      Proj->Type->Render(Proj,0,pos,Field->GRef->Idx,NULL,Field->Map,GL_TRIANGLES,Field->GRef->NIdx,0,NULL,NULL);
 //      glDisableClientState(GL_VERTEX_ARRAY);
       glBegin(GL_TRIANGLES);
-      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx;n+=3) {
          idx[0]=Field->GRef->Idx[n];
          idx[1]=Field->GRef->Idx[n+1];
          idx[2]=Field->GRef->Idx[n+2];
@@ -1490,7 +1490,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
       glEnd();
    } else {
       glBegin(GL_TRIANGLES);
-      for(n=0;n<Field->GRef->NIdx-3;n+=3) {
+      for(n=0;n<Field->GRef->NIdx;n+=3) {
          idx[0]=Field->GRef->Idx[n];
          idx[1]=Field->GRef->Idx[n+1];
          idx[2]=Field->GRef->Idx[n+2];

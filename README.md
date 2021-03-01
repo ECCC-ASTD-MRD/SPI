@@ -16,15 +16,60 @@ git clone --recursive git@gitlab.science.gc.ca:ECCC_CMOE_APPS/SPI
 ```
 
 # Building SPI
+You will need cmake with a version at least 3.16
+```shell
+. ssmuse-sh -x /fs/ssm/main/opt/cmake-3.16.4
+```
 
-```makeit -ext```
-```makeit -reconf -build -ssm```
+## Dependencies
+There are many dependencies to build SPI
+
+### Optional dependencies (On ECCC/SCIENCE network)
+[codetools](https://gitlab.science.gc.ca/RPN-SI/code-tools)
+```shell
+. r.load.dot rpn/codetools/1.5.1
+```
+
+[librmn](https://gitlab.science.gc.ca/RPN-SI/librmn)
+```shell
+. r.load.dot rpn/libs/19.7.0
+```
+
+[vgrid](https://gitlab.science.gc.ca/RPN-SI/vgrid)
+```shell
+. r.load.dot rpn/vgrid/6.5.0
+```
+
+External dependencies (GDAL,URP,ECCODES,LIBECBUFR,...). Within the ECCC/SCIENCE network, a package containing all the dependencies cna be loaded
+```shell
+export CMD_EXT_PATH=/fs/ssm/eccc/cmd/cmds/ext/20210211; . ssmuse-sh -x $CMD_EXT_PATH
+```
+
+### Mandatory dependencies
+Even though you could load an SSM package, you should build [libeerUtils](https://gitlab.science.gc.ca/ECCC_CMOE_MODELS/libeerutils) first as it is intimely tied to SPI
+
+
+### Environment setup
+The build process requires the definition of a variable indicating where the build will occur
+```shell
+export SSM_DEV=[where to build]
+mkdir -p $SSM_DEV/src $SSM_DEV/package $SSM_DEV/workspace $SSM_DEV/build
+```
+
+### Launching the build
+```shell
+cd libSPI
+./makeit -ext
+./makeit -reconf -build -ssm
+```
 
 # Building source package for distribution
 
 To build a package for external distribution, use the root makeit script.
 
-```makeit -src```
+```shell
+makeit -src
+```
 
 This will build a source package including SPI, [GenPhysX](https://gitlab.science.gc.ca/ECCC_CMOE_APPS/genphysx) and [libeerUtils](https://gitlab.science.gc.ca/ECCC_CMOE_MODELS/libeerutils).
 

@@ -1,4 +1,4 @@
-ec_parse_manifest() # Parse MANIFEST file
+include(ec_parse_manifest) # Parse MANIFEST file
 
 #set(DOXYGEN_FOUND True)
 # include(doxygen)    # Doxygen targetinclude(ec_utils)

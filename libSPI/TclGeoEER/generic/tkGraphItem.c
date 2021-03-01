@@ -3734,7 +3734,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    /* Display Icons */
    if (Item->Icon && Item->Size>0.0) {
       for(i=0;i<vn-hd;i++) {
-         if (i==0 || i==(vn-hd-1) ||Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
+         if (i==0 || i==(vn-hd-1) || Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
             sz=(Item->Size+Item->Width)*0.5;
 
             if (Item->Orient[0]=='X') {

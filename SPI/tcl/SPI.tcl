@@ -305,9 +305,8 @@ if { !$SPI::Param(Batch) } {
    }
 
    #----- EER Modeling tools
-   if { [info exists env(EER_TOOL)] && [file readable $env(EER_TOOL)/Models/Model.tcl] } {
+   if { ![catch {package require Model}] } {
       set SPI::Param(EER) True
-      source $env(EER_TOOL)/Models/Model.tcl
    }
 
    #----- Liste des layouts
