@@ -28,7 +28,7 @@ package require Logger
 namespace eval RPN2OGR { } {
    variable Param
 
-   set Param(Version) 1.1
+   set Param(Version) 1.2
 
    set Param(Format)    "ESRI Shapefile"
    set Param(Files)     {}
