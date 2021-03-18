@@ -1642,10 +1642,10 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
    /*Render as line to fill the imprecision gaps (only when no transparency)*/
    if (GLRender->TRCon && Proj->Type->Def!=PROJPLANE && (!Field->Spec->Map->Alpha && !Field->Spec->Alpha<100)) {
       glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-      for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
+      for(j=Field->Def->Limits[1][0];j<=Field->Def->Limits[1][1]-dp;j+=dp) {
          glBegin(GL_QUADS);
 
-         for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
+         for(i=Field->Def->Limits[0][0];i<=(Field->Def->Limits[0][1]+dp);i+=dp) {
 
             if (i!=Field->Def->Limits[0][0]) {
                idx1=idx0;
@@ -1733,11 +1733,11 @@ int Data_RenderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
 
    idx0 = Field->Def->Limits[1][0]*Field->Def->NI+Field->Def->Limits[0][0];
    /*Render the polygons over the lines*/
-   for(j=Field->Def->Limits[1][0];j<Field->Def->Limits[1][1]-dp;j+=dp) {
+   for(j=Field->Def->Limits[1][0];j<=Field->Def->Limits[1][1]-dp;j+=dp) {
 
       glBegin(GL_QUADS);
 
-      for(i=Field->Def->Limits[0][0];i<(Field->Def->Limits[0][1]+dp);i+=dp) {
+      for(i=Field->Def->Limits[0][0];i<=(Field->Def->Limits[0][1]+dp);i+=dp) {
 
          if (i!=Field->Def->Limits[0][0]) {
             idx1=idx0;
