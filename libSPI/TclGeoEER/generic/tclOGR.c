@@ -318,7 +318,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
    double             x,y,lat,lon;
    float             *index;
-   int                idx,idxfi,all,n;
+   int                idx,idxfi,all,n,side;
    char               mode;
    const char       **options=NULL;
    unsigned int       f;
@@ -454,15 +454,21 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case IMPORT:
-         if (Objc!=4 && Objc!=5) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer fields [grid]");
+         if (Objc!=4 && Objc!=5 && Objc!=6) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer fields [grid] [side]");
             return(TCL_ERROR);
          }
+         
          n=0;
          if (Objc==5) {
             Tcl_GetBooleanFromObj(Interp,Objv[4],&n);
          }
-         return(OGR_LayerImport(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),Objv[3],n));
+
+         side=0;
+         if (Objc==6) {
+            Tcl_GetIntFromObj(Interp,Objv[5],&side);
+         }
+         return(OGR_LayerImport(Interp,OGR_LayerGet(Tcl_GetString(Objv[2])),Objv[3],n,side));
          break;
 
       case INTERP:

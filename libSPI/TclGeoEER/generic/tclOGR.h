@@ -75,7 +75,7 @@ int                OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId);
 int                OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To);
 int                OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask);
 void               OGR_LayerLimit(OGR_Layer *Layer);
-int                OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid);
+int                OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid,int Side);
 int                OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,float *Index);
 int                OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]);
 void               OGR_LayerPreInit(OGR_Layer *Layer);
