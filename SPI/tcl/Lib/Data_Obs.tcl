@@ -500,23 +500,16 @@ proc Obs::ParamFrame { Frame Apply } {
    bind $Data(Frame).lev.desc.edit.select <<PasteSelection>> {+ set Obs::Param(IntervalMode) NONE ; Obs::ParamSet }
 
    for { set l 0 } { $l<$Param(InterspecsNb) } { incr l } {
-      set Param(Color$l) black
+      set Param(Color$l) ""
       set Param(Alpha$l) FF
-      set Param(Dash$l) ""
-      set Param(Width$l) 1
       set Param(Intervals$l) {}
       frame $Data(Frame).lev.lev$l
          entry $Data(Frame).lev.lev$l.lst -textvariable Obs::Param(Intervals$l) -bd 1 -width 12 -bg $GDefs(ColorLight)
          bind $Data(Frame).lev.lev$l.lst <Any-KeyRelease> "Obs::ParamSet"
-         IcoMenu::CreateDef $Data(Frame).lev.lev$l.st $GDefs(Dir)/share/bitmap \
-            { dash0.xbm dash1.xbm dash2.xbm dash3.xbm dash4.xbm dash5.xbm } { "" . - .- .-- .-. } \
-            Obs::Param(Dash$l) "Obs::ParamSet" 0 -relief groove -bd 2
-         IcoMenu::Create $Data(Frame).lev.lev$l.width $GDefs(Dir)/share/bitmap \
-            "width1.xbm width2.xbm width3.xbm width4.xbm width5.xbm" "1 2 3 4 5" \
-            Obs::Param(Width$l) "Obs::ParamSet" 0 -relief groove -bd 2
          ColorBox::CreateSel $Data(Frame).lev.lev$l.col [list Obs::Param(Color$l) Obs::Param(Alpha$l)] Obs::ParamSet
+         ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col ""
          pack $Data(Frame).lev.lev$l.lst -side left -fill x -expand true
-         pack $Data(Frame).lev.lev$l.col $Data(Frame).lev.lev$l.width $Data(Frame).lev.lev$l.st -side left
+         pack $Data(Frame).lev.lev$l.col -side left
       pack $Data(Frame).lev.lev$l -side top -fill x -padx 2
       Bubble::Create $Data(Frame).lev.lev$l            $Bubble(InterSpecs) 
    } 
@@ -649,9 +642,9 @@ proc Obs::ParamGet { { Spec "" } } {
 
    for { set i 0 }  { $i<$Param(InterspecsNb) } { incr i } {   
       if { [llength [lindex $Param(Interspecs) $i 0]] } {
-         lassign [lindex $Param(Interspecs) $i] Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
+         lassign [lindex $Param(Interspecs) $i] Param(Intervals$i) Param(Color$i) 
       } else {
-         lassign { {} "" "" "" } Param(Intervals$i) Param(Color$i) Param(Width$i) Param(Dash$i)
+         lassign { {} "" } Param(Intervals$i) Param(Color$i)
       }         
    }
 
@@ -718,7 +711,7 @@ proc Obs::ParamSet { { Spec "" } } {
    set Param(InterSpecs) {}
    for { set i 0 }  { $i<$Param(InterspecsNb) } { incr i } {   
       if { [llength $Param(Intervals$i)] } {
-         lappend Param(InterSpecs) [list $Param(Intervals$i) $Param(Color$i) $Param(Width$i) $Param(Dash$i)]
+         lappend Param(InterSpecs) [list $Param(Intervals$i) $Param(Color$i)]
       }
    }
 
@@ -784,13 +777,9 @@ proc Obs::ParamPut { } {
    #----- Set interspecs params
    for { set l 0 } { $l<$Param(InterspecsNb) } { incr l } {
       if { [llength $Param(Intervals$l)] } {
-         IcoMenu::Set $Data(Frame).lev.lev$l.st      [expr {[string length $Param(Dash$l)]?$Param(Dash$l):$Param(Dash)} ]  
-         IcoMenu::Set $Data(Frame).lev.lev$l.width   [expr {[string length $Param(Width$l)]?$Param(Width$l):$Param(Width)}] 
          ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col [expr {[string length $Param(Color$l)]?$Param(Color$l):$Param(Color)}]
       } else {
-         IcoMenu::Set $Data(Frame).lev.lev$l.st      ""
-         IcoMenu::Set $Data(Frame).lev.lev$l.width   1
-         ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col black
+         ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col ""
       }
    }
 }

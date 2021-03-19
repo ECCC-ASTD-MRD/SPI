@@ -2085,7 +2085,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             if (Obs->Spec->RenderTexture && Obs->Spec->Map) {
                if (Obs->Spec->InterSpecs) {
-               // Check for contour specific params
+                  // Check for contour specific params
                   spset=Data_ContourSpecSet(Interp,VP,Obs->Spec,val);
                }
                if (!spset) {
