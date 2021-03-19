@@ -1142,6 +1142,7 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
 
             // If we found a least 1 segment, keep it
             if (len>1) {
+
                if ((array=T3DArray_Alloc(Inter[n],len))) {
                   if ((list=TList_Add(Def->Segments,array))) {
                      Def->Segments=list;
@@ -1433,7 +1434,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
          // Check for mask
          if (Def->Mask && (!Def->Mask[pidx[0]] || !Def->Mask[pidx[1]] || !Def->Mask[pidx[2]] || !Def->Mask[pidx[3]]))
             break;
-         
+
          Def_GetQuadMod(Def,pidx,pvox);
 
          // Test for value validity
@@ -1448,6 +1449,7 @@ unsigned int FFContour_Quad(TGeoPos *GPos,TDef *Def,unsigned char *PMatrix,int X
             if (!(side=FFContour_QuadCross(1.0,Side,pvox,Inter,&x,&y,TRUE))) {
                break;
             }
+
             // First point entry is same as exit for next vertex
             index=FFContour_BuildIndex(Depth,&side,X,Y,x,y);
             

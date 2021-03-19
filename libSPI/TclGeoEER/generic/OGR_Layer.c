@@ -2361,7 +2361,8 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
  *   <Interp>   : L'interpreteur Tcl
  *   <Band>     : Bande
  *   <Field>    : Champs
- *   <Grid>     : coordonnee points de grille
+ *   <Grid>     : Coordonnee points de grille
+ *   <Side>     : Side of coordinates reference to force coordinates fro LatLon referential (-1:negative,1:positive,0:keep as is)
  *
  * Retour       : Code d'erreur standard TCL
  *
@@ -2369,7 +2370,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid) {
+int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid,int Side) {
 
    int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s;
    double    lat,lon,x,y,spd,dir;
@@ -2495,8 +2496,8 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
                geom=OGR_G_CreateGeometry(spec->RenderTexture?wkbLinearRing:wkbLineString);
                for(k=0;k<array->Size;k++) {
-                  Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],CLAMPLON(array->Data[k][0]),1,1);
-                  OGR_G_AddPoint_2D(geom,x,y);
+                  Layer->GRef->UnProject(Layer->GRef,&x,&y,array->Data[k][1],array->Data[k][0],1,1);
+                  OGR_G_AddPoint_2D(geom,SIDELON(Side,x),y);
                }
                OGR_G_AddGeometryDirectly(cont,geom);
                list=list->Next;
@@ -2689,7 +2690,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                      OGR_G_AddPoint(geom,i,j,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   } else {
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,field[0]->GRef->AY[idx],field[0]->GRef->AX[idx],1,1);
-                     OGR_G_AddPoint(geom,x,y,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
+                     OGR_G_AddPoint(geom,SIDELON(Side,x),y,(field[0]->GRef->Hgt?field[0]->GRef->Hgt[idx]:0.0));
                   }
                } else if (spec->RenderTexture) {
                   if (cidx>-1) {
@@ -2708,19 +2709,19 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   } else {
                      field[0]->GRef->Project(field[0]->GRef,i-0.5,j-0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
-                     OGR_G_AddPoint_2D(poly,x,y);
+                     OGR_G_AddPoint_2D(poly,SIDELON(Side,x),y);
                      field[0]->GRef->Project(field[0]->GRef,i-0.5,j+0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
-                     OGR_G_AddPoint_2D(poly,x,y);
+                     OGR_G_AddPoint_2D(poly,SIDELON(Side,x),y);
                      field[0]->GRef->Project(field[0]->GRef,i+0.5,j+0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
-                     OGR_G_AddPoint_2D(poly,x,y);
+                     OGR_G_AddPoint_2D(poly,SIDELON(Side,x),y);
                      field[0]->GRef->Project(field[0]->GRef,i+0.5,j-0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
-                     OGR_G_AddPoint_2D(poly,x,y);
+                     OGR_G_AddPoint_2D(poly,SIDELON(Side,x),y);
                      field[0]->GRef->Project(field[0]->GRef,i-0.5,j-0.5,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,CLAMPLAT(lat),lon,1,1);
-                     OGR_G_AddPoint_2D(poly,x,y);
+                     OGR_G_AddPoint_2D(poly,SIDELON(Side,x),y);
                   }
                   OGR_G_AddGeometryDirectly(geom,poly);
                } else {
@@ -2737,7 +2738,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                   } else {
                      field[0]->GRef->Project(field[0]->GRef,i,j,&lat,&lon,1,1);
                      Layer->GRef->UnProject(Layer->GRef,&x,&y,lat,lon,1,1);
-                     OGR_G_AddPoint_2D(geom,x,y);
+                     OGR_G_AddPoint_2D(geom,SIDELON(Side,x),y);
                   }
                }
 

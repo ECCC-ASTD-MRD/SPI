@@ -7,9 +7,13 @@ SPI is built in Tcl/Tk. Most of the rendering and scientific functionalities are
 An exhaustive API described in another document allows for very powerful scripting, going from generation of a map to calculating flux along the path of a shape like country boundary. This API can be used to interact with many kind of data like RPN standard file, CMC trajectories, ESRI shapefiles, GeoTIFF imagery, BURP observation files and more,.
 
 
-# [SPI Documentation](https://wiki.cmc.ec.gc.ca/wiki/MIDAS/Coding_Standards)
+# [SPI Documentation](https://wiki.cmc.ec.gc.ca/wiki/SPI)
 # [SPI API Documentation](https://wiki.cmc.ec.gc.ca/wiki/SPI/Documentation#Developer_documentation)
 
+# Getting the source code
+```shell
+git clone --recursive git@gitlab.science.gc.ca:ECCC_CMOE_APPS/SPI 
+```
 
 # Building SPI
 You will need cmake with a version at least 3.16

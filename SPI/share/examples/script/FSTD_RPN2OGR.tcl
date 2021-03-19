@@ -28,7 +28,7 @@ package require Logger
 namespace eval RPN2OGR { } {
    variable Param
 
-   set Param(Version) 1.1
+   set Param(Version) 1.2
 
    set Param(Format)    "ESRI Shapefile"
    set Param(Files)     {}
@@ -39,6 +39,7 @@ namespace eval RPN2OGR { } {
    set Param(IP1)       -1
    set Param(IP2)       -1
    set Param(IP3)       -1
+   set Param(Side)      0
    set Param(Zip)       False
    set Param(ProjFile)  ""
    set Param(Intervals) {}
@@ -55,6 +56,7 @@ namespace eval RPN2OGR { } {
 \t-factor      : List of factors per variables
 \t-map         : Colormap (${APP_COLOR_GREEN}$Param(Map)${APP_COLOR_RESET})
 \t-mode        : Feature type (POINT ${APP_COLOR_GREEN}CELL${APP_COLOR_RESET} CONTOUR POLYGON)
+\t-side        : Force coordinates to be positive or negative \[-1:Negative,0:Keep as is,1:Positive\] (${APP_COLOR_GREEN}$Param(Side)${APP_COLOR_RESET})
 \t-inter       : List of contour to use
 \t-fstd        : List of RPN files to process (Mandatory)
 \t-typvar      : TYPVAR to use (${APP_COLOR_GREEN}\"$Param(TypVar)\"${APP_COLOR_RESET})
@@ -147,7 +149,7 @@ proc RPN2OGR::Run { } {
                ogrlayer create FILE LAYER ${date}_${time} "" $Param(Options)
             }
 
-            ogrlayer import LAYER $fields
+            ogrlayer import LAYER $fields False $Param(Side)
 
             ogrfile close FILE
             ogrlayer free LAYER
@@ -199,6 +201,7 @@ proc RPN2OGR::ParseCommandLine { } {
          "factor"   { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Factors)] }
          "map"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Map)] }
          "mode"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Mode) $Export::Vector::Param(Modes)] }
+         "side"     { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(Side) [list -1 0 1]] }
          "inter"    { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Intervals)] }
          "fstd"     { set i [Args::Parse $gargv $gargc $i LIST  RPN2OGR::Param(Files)] }
          "prj"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2OGR::Param(ProjFile)] }
