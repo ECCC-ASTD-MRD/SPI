@@ -494,20 +494,28 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
    
    // If a contour specification has been found
    if (objs) {
+      Tcl_ListObjLength(interp,objs,&nobj);
+
+      color=NULL;
       Tcl_ListObjIndex(interp,objs,1,&objv);
       if (DataSpec_GetColor(interp,objv,&color)!=TCL_OK) {
          return(TCL_ERROR);
       }
       
-      Tcl_ListObjIndex(interp,objs,2,&objv);
-      if (Tcl_GetIntFromObj(interp,objv,&width)!=TCL_OK) {
-         return(TCL_ERROR);         
+      width=0;
+      if (nobj>1) {
+         Tcl_ListObjIndex(interp,objs,2,&objv);
+         if (Tcl_GetIntFromObj(interp,objv,&width)!=TCL_OK) {
+            return(TCL_ERROR);         
+         }
       }
       
-      Tcl_ListObjIndex(interp,objs,3,&objv);
       dash.number=0;
-      if (Tk_GetDash(interp,Tcl_GetString(objv),&dash)!=TCL_OK) {
-         return(TCL_ERROR);
+      if (nobj>2) {
+         Tcl_ListObjIndex(interp,objs,3,&objv);
+         if (Tk_GetDash(interp,Tcl_GetString(objv),&dash)!=TCL_OK) {
+            return(TCL_ERROR);
+         }
       }
       
       if (Interp) {
