@@ -1981,11 +1981,13 @@ void Obs_RenderPath(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pr
 
 int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Proj) {
 
-   int    i,idx=0,n;
+   int    i,idx=0,n,spset=0;
    float  sz,z,z0,z1,pz;
    float  val;
    Vect3d pix;
 
+   extern int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,double Interval);
+   
    if (!Obs->Spec->Icon)
       return(0);
 
@@ -2082,10 +2084,16 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
          if (OBSVALID(val)) {
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             if (Obs->Spec->RenderTexture && Obs->Spec->Map) {
-               if (Interp) {
-                  CMap_PostscriptColor(Interp,Obs->Spec->Map,idx);
-               } else {
-                  glColor4ub(Obs->Spec->Map->Color[idx][0],Obs->Spec->Map->Color[idx][1],Obs->Spec->Map->Color[idx][2],Obs->Spec->Map->Color[idx][3]*Obs->Spec->Alpha*0.01);
+               if (Obs->Spec->InterSpecs) {
+               // Check for contour specific params
+                  spset=Data_ContourSpecSet(Interp,VP,Obs->Spec,val);
+               }
+               if (!spset) {
+                  if (Interp) {
+                     CMap_PostscriptColor(Interp,Obs->Spec->Map,idx);
+                  } else {
+                     glColor4ub(Obs->Spec->Map->Color[idx][0],Obs->Spec->Map->Color[idx][1],Obs->Spec->Map->Color[idx][2],Obs->Spec->Map->Color[idx][3]*Obs->Spec->Alpha*0.01);
+                  }
                }
             }
          } else {
