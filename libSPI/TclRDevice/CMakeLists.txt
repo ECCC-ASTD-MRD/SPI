@@ -26,7 +26,7 @@ target_link_libraries(${NAME} TkglCanvas)
 target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
 #----- RPATH handling
-#ec_target_rpath_from_libs(${NAME})
+ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
