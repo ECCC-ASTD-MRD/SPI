@@ -1435,7 +1435,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
       nb=strlen(title);
    }
 
-   sz=strlen(head)*4;
+   sz=strlen(head)*64;
    if (!(bytes=(char*)malloc(sz))) {
       Tcl_AppendResult(Interp,"\n   Obs_LoadASCII: Unabel to allocate temporary array",(char*)NULL);
       return(TCL_ERROR);
@@ -1479,7 +1479,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    loc->NbInfo=0;
 
    obj=Tcl_NewListObj(0,NULL);
-  /*Allocate space for structures*/
+   /*Allocate space for structures*/
    for(n=0;n<gntok;n++) {
       if (strncmp(gtok[n],"DATA",4)==0) {
          sprintf(name,"%s.#%i",&gtok[n][5],ObsNo+n);
@@ -2085,7 +2085,7 @@ int Obs_RenderIcon(Tcl_Interp *Interp,TObs *Obs,ViewportItem *VP,Projection *Pro
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
             if (Obs->Spec->RenderTexture && Obs->Spec->Map) {
                if (Obs->Spec->InterSpecs) {
-               // Check for contour specific params
+                  // Check for contour specific params
                   spset=Data_ContourSpecSet(Interp,VP,Obs->Spec,val);
                }
                if (!spset) {

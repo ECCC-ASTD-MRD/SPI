@@ -501,9 +501,9 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
       if (DataSpec_GetColor(interp,objv,&color)!=TCL_OK) {
          return(TCL_ERROR);
       }
-      
+
       width=0;
-      if (nobj>1) {
+      if (nobj>2) {
          Tcl_ListObjIndex(interp,objs,2,&objv);
          if (Tcl_GetIntFromObj(interp,objv,&width)!=TCL_OK) {
             return(TCL_ERROR);         
@@ -511,7 +511,7 @@ int Data_ContourSpecSet(Tcl_Interp *Interp,ViewportItem *VP,TDataSpec *Spec,doub
       }
       
       dash.number=0;
-      if (nobj>2) {
+      if (nobj>3) {
          Tcl_ListObjIndex(interp,objs,3,&objv);
          if (Tk_GetDash(interp,Tcl_GetString(objv),&dash)!=TCL_OK) {
             return(TCL_ERROR);

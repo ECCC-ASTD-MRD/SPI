@@ -172,6 +172,7 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
 
    set Data(State)  0
    set Data(Result) $Data(Current)
+   set Data(Hex)    $Data(Current)
 
    #----- Creer une fenetre sans frame en bas a gauche du parent
 
@@ -201,7 +202,8 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
                canvas .colbox.opt.sel.cv.hsv -width 120 -height 120 -relief sunken -bd 1
                canvas .colbox.opt.sel.cv.h -width 10 -height 120 -relief sunken -bd 1
                pack .colbox.opt.sel.cv.hsv .colbox.opt.sel.cv.h -side left -padx 2 -pady 2
-            entry .colbox.opt.sel.hex -textvariable ColorBox::Data(Current) -relief sunken -bd 1 -width 8
+            entry .colbox.opt.sel.hex -textvariable ColorBox::Data(Hex) -relief sunken -bd 1 -width 8 \
+               -validate key -validatecommand [list ColorBox::ValidateHex %W %P %d %S %i]
             pack .colbox.opt.sel.cv -side top -anchor sw
             pack .colbox.opt.sel.hex
 
@@ -376,7 +378,7 @@ proc ColorBox::Update { X Y } {
    }
 
    if { $X<120 && $Y<120 && $X>0 && $Y>0} {
-      eval set Data(Current) \[string toupper \[format \"#%02x%02x%02x\" [hsv get $X $Y]\]\]
+      set Data(Current) [string toupper [format "#%02x%02x%02x" {*}[hsv get $X $Y]]]
    }
 
    set Data(V) [expr int($X/120.0*100.0)]
@@ -452,8 +454,7 @@ proc ColorBox::UpdateRGB { Image args } {
    .colbox.opt.sel.cv.hsv coords HSV_SBAR 0 $y 120 $y
    .colbox.opt.sel.cv.hsv coords HSV_VBAR $x 0 $x 120
 
-   set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]
-   .colbox.opt.sel.hex configure -bg $Data(Current)
+   UpdateHex
 
    if { $Image } {
       colorsel image -sv hsv $Data(H)
@@ -507,11 +508,94 @@ proc ColorBox::UpdateHSV { args } {
    set Data(G) [expr int($Data(G))]
    set Data(B) [expr int($Data(B))]
 
-   if { [expr $Data(R)+$Data(G)+$Data(B)+$Data(H)+$Data(S)+$Data(V)]==0 } {
-#      set Data(Current) ""
-     .colbox.opt.sel.hex configure -bg $GDefs(ColorFrame)
-   } else {
-      set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]
-     .colbox.opt.sel.hex configure -bg $Data(Current)
+   UpdateHex
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <ColorBox::UpdateHex>
+# Creation : Mars 2021- E. Legault-Ouellet - CMC/CMOE -
+#
+# But     : Mettre à jour la couleur hexadécimale en fonction des paramètres RGB
+#
+# Parametres :
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc ColorBox::UpdateHex { } {
+   variable Data
+
+   #----- Update the real hex value
+   set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]
+
+   #----- Update the color of the hex background/foreground
+   set fg [expr {$Data(R)*0.2126+$Data(G)*0.7152+$Data(B)*0.0722 < 128 ? "#FFFFFF" : "#000000"}]
+   .colbox.opt.sel.hex configure -bg $Data(Current) -fg $fg -insertbackground $fg
+}
+
+#------------------------------------------------------------------------------
+# Nom      : <ColorBox::ValidateHex>
+# Creation : Mars 2021- E. Legault-Ouellet - CMC/CMOE -
+#
+# But     : Valider les modifications manuelles faite à la valeur hexadécimale
+#
+# Parametres :
+#  <W>      : Le widget (entry) ayant initié la validation
+#  <Val>    : La nouvelle valeur que prendrait le widget
+#  <Type>   : Le type de modification (0=delete, 1=insert, -1=Other)
+#  <Delta>  : Ce qui a été inséré/supprimé
+#  <Idx>    : Index des modifications (-1 si aucune)
+#
+# Retour:
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+proc ColorBox::ValidateHex { W Val Type Delta Idx } {
+   variable Data
+
+   #----- Rubberstamp anything that isn't an insertion or a deletion as we only care about manual user manipulation
+   if { $Type!=0 && $Type != 1 } {
+      return 1
    }
+
+   if { $Val == "" } {
+      return 1
+   } elseif { $Type==0 && [string index $Val 0]!="#" } {
+      #----- Attempt to delete the beginning '#' is refused
+      return 0
+   } elseif { [regexp {^#?[0-9a-fA-F]{0,6}$} $Val] } {
+      if { $Type == 1 } {
+         #----- Make sure we have uppercase values
+         set val [string toupper $Val]
+
+         #----- Make sure we start with a #
+         if { [string index $val 0] != "#" } {
+            set val "#$val"
+            incr Idx $Type
+         }
+
+         #----- Update the value if need be
+         if { $val != $Val } {
+            set Data(Hex) $val
+            incr Idx [string length $Delta]
+            $W icursor $Idx
+            after idle [list $W config -validate key]
+            set Val $val
+         }
+      }
+
+      #----- Update the RGB value
+      set Val "#[string repeat "0" [expr 7-[string length $Val]]][string range $Val 1 end]"
+      scan $Val "#%2x%2x%2x" Data(R) Data(G) Data(B)
+
+      #----- Update the rest
+      UpdateHSV
+
+      return 1
+   }
+
+   return 0
 }

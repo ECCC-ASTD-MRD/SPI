@@ -1155,7 +1155,6 @@ proc FSTD::ParamPut { { Update False } } {
          IcoMenu::Set $Data(Frame).lev.lev$l.st      ""
          IcoMenu::Set $Data(Frame).lev.lev$l.width   1
          ColorBox::ConfigNoColor $Data(Frame).lev.lev$l.col black
-      
       }
    }
    MapBox::Select "" $Param(Map)
