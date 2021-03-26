@@ -23,10 +23,10 @@ set_target_properties(${NAME} PROPERTIES
 target_link_libraries(${NAME} TCL::TCL TCL::TK)
 target_link_libraries(${NAME} R::R)
 target_link_libraries(${NAME} TkglCanvas)
-target_link_libraries(${NAME} OpenGL::GLU OpenGL::GL)
+target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
 #----- RPATH handling
-ec_target_rpath_from_libs(${NAME})
+#ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")

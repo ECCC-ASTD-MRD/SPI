@@ -29,7 +29,7 @@ set_target_properties(${NAME} PROPERTIES
 target_link_libraries(${NAME} TkglCanvas)
 target_link_libraries(${NAME} TCL::TCL TCL::TK)
 target_link_libraries(${NAME} eerUtils::eerUtils)
-target_link_libraries(${NAME} OpenGL::GLU)
+target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
 #----- Optional libs
 ec_target_link_library_if(${NAME} RMN_FOUND              RMN::RMN)
@@ -45,7 +45,7 @@ ec_target_link_library_if(${NAME} OpenMP_FOUND           OpenMP::OpenMP_C)
 ec_target_link_library_if(${NAME} DistanceMetrics_FOUND  DistanceMetrics::DistanceMetrics)
 
 #----- RPATH handling
-ec_target_rpath_from_libs(${NAME})
+#ec_target_rpath_from_libs(${NAME})
 
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")

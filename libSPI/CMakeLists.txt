@@ -39,8 +39,10 @@ if(TK_FOUND)
    target_compile_definitions(TCL::TK INTERFACE HAVE_TK _TK_SOURCE)
 endif()
 
+#----- Use LEGACY OpenGL, not GVNC (causes segfault in batch mode)
+cmake_policy(SET CMP0072 OLD)
 find_package(OpenGL REQUIRED)
-message(STATUS "OPENGL_LIBRARIES: ${OPENGL_LIBRARIES}\n-- OPENGL_glu_LIBRARY: ${OPENGL_glu_LIBRARY}")
+message(STATUS "OPENGL_LIBRARIES: ${OPENGL_LIBRARIES} - ${OPENGL_gl_LIBRARY}\n-- OPENGL_glu_LIBRARY: ${OPENGL_glu_LIBRARY}")
 
 find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
 
