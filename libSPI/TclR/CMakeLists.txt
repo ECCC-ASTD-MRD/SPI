@@ -1,4 +1,4 @@
-include(ec_parse_manifest) # Parse MANIFEST file
+ec_parse_manifest() # Parse MANIFEST file
 
 #set(DOXYGEN_FOUND True)
 # include(doxygen)    # Doxygen target_link_libraries
@@ -35,4 +35,4 @@ install(TARGETS ${NAME}
    PUBLIC_HEADER  DESTINATION TCL/include
 )
 
-include(ec_build_tcl_pkgindex)
+ec_build_tcl_pkgindex()

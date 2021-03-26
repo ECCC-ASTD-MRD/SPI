@@ -4,15 +4,15 @@ cmake_minimum_required(VERSION 3.16)
 list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
 
 include(ec_init)
-include(ec_parse_manifest) # Parse MANIFEST file
+include(ec_build_tcl_pkgindex)
+ec_parse_manifest() # Parse MANIFEST file
 
 project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
 
 message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
 enable_language(C)
-include(compiler_presets)
-#include(compiler_rules)
+include(ec_compiler_presets)
 
 #----- Add some common compiling options
 add_compile_definitions(_${CMAKE_SYSTEM_NAME}_ _GNU_SOURCE STDC_HEADERS)
