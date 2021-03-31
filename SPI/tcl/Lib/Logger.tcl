@@ -721,3 +721,58 @@ proc Log::Mail { Subject File { Address { } } } {
 #----------------------------------------------------------------------------
 proc Log::HookEnd { Status } { }
 proc Log::HookRotate { } { }
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::RegisterErrorHandler>
+# Creation : Mars 2021 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Register the error handler
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Log::RegisterErrorHandler { } {
+   chan push stderr Log::StderrErrorHandler
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::StderrErrorHandler>
+# Creation : Mars 2021 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Handler called for every message printed on stderr that will
+#            log as an error through the logger any stack trace encountered.
+#            Since there is no equivalent for bgerror outisde of the event loop,
+#            this is the best we can do.
+#
+# Parametres  :
+#
+# Retour:
+#
+# Remarques :
+#     To prevent the handler from getting caught in an endless loop, no message
+#     will be processed if the logging file is stderr.
+#----------------------------------------------------------------------------
+proc Log::StderrErrorHandler { Cmd Handle {Xtra ""} } {
+   variable Param
+
+   switch -exact $Cmd {
+      initialize  {return [list initialize finalize write]}
+      finalize    {}
+      write {
+         if { $Param(Out)!="stderr" && [info exists ::errorInfo] && $::errorInfo==[string map {\r ""} $Xtra] } {
+            Log::Print ERROR "Stack trace caught:\n\t[string map {\r "" \n \n\t} $Xtra]"
+
+            #----- A stack trace printed on stderr usually means that an error went uncaught
+            #----- up to the highest level. In non-interactive mode, this means we've reached
+            #----- the end of the road, so might as well handle it gracefully
+            if { !$::tcl_interactive } {
+               Log::End 1 0
+            }
+         }
+         return $Xtra
+      }
+   }
+}
