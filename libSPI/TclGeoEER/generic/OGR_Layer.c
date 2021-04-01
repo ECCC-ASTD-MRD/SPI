@@ -2467,7 +2467,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       OGR_FieldCreate(Layer,"DateTime","DateTime",0,0);
 
       for(f=0,n=0;f<nf;f++) {
-         System_StampDecode(((TRPNHeader*)field[0]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
+         System_StampDecode(((TRPNHeader*)field[f]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
 
          for(idx=0;idx<spec->InterNb;idx++,++n) {
             Layer->Feature[n]=OGR_F_Create(Layer->Def);
