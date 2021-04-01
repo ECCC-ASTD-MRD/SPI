@@ -2107,13 +2107,15 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
             case FSTD_LISTETIKET:
                Tcl_SetStringObj(obj,head.ETIKET,-1);
                if (TclY_ListObjFind(Interp,list,obj)==-1) {
-                  Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  Tcl_ListObjAppendEleme
+                  nt(Interp,list,Tcl_DuplicateObj(obj));
                }
                break;
 
             case FSTD_LISTDATEV:
                if (head.DATEV>0) {
-                  Tcl_SetLongObj(obj,System_Stamp2Seconds(head.DATEV));
+                  Tcl_SetLongObj(obj,head.DATEV>0?System_Stamp2Seconds(head.DATEV):0);
+               
                   if (TclY_ListObjFind(Interp,list,obj)==-1) {
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
                   }
