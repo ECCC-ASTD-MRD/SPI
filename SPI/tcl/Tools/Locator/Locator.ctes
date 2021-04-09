@@ -24,6 +24,7 @@ namespace eval Locator {
 
    set Param(Title)   { "Localisations" "Locations" }
    set Param(Version) 2.1
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Icon)    LOCATION                                    ;#Icone
    set Param(Geom)    { +[winfo rootx .]+[winfo rooty .] }        ;#Geometry
    set Param(Dock)    False                                       ;#Docking

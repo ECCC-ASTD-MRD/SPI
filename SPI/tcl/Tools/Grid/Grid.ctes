@@ -24,6 +24,7 @@ namespace eval Grid {
 
    set Param(Title)      { "Grid Maker" "Grid Maker" }
    set Param(Version)    0.1
+   set Param(Enabled)    True                                        ;#Flag de disponibilite
    set Param(Geom)       { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)       ARROWGRID
    set Param(Dock)       1                                           ;#Fenetre separee ou non

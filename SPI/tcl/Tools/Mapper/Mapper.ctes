@@ -39,6 +39,7 @@ namespace eval Mapper { } {
 
    set Param(Title)     { "Données Geographiques" "Geographical data" }
    set Param(Version)   2.1
+   set Param(Enabled)   True                                        ;#Flag de disponibilite
    set Param(Icon)      BINOCULAR                                   ;#Icone
    set Param(Geom)      { 300x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)      1                                           ;#Flag d'activation de l'outils

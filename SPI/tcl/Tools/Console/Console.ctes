@@ -26,14 +26,15 @@ namespace eval Console { } {
 
    set Param(Title)   { "Console" "Console" }
    set Param(Version) 1.1
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Icon)    COMPUTER                                    ;#Icone
    set Param(Geom)    { 200x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
 
-   set Data(Active) 0                     ;#Flag d'activation de l'outils
-   set Data(Canvas) ""                    ;#Canvas Actif
-   set Data(Frame)  ""                    ;#Frame actif
-   set Data(VP)     ""                    ;#Viewport actif
+   set Data(Active)  0                     ;#Flag d'activation de l'outils
+   set Data(Canvas)  ""                    ;#Canvas Actif
+   set Data(Frame)   ""                    ;#Frame actif
+   set Data(VP)      ""                    ;#Viewport actif
 
    set Data(History)      { }
    set Data(HistoryIndex)  0

@@ -22,6 +22,7 @@ namespace eval YourToolHere {
 
    set Param(Title)   { "Votre outils" "Your tool here" }
    set Param(Version) 1.0
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Geom)    { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)    INTEROGATE
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils

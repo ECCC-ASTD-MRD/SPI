@@ -19,6 +19,7 @@ namespace eval HFManager { } {
 
    set Param(Title)   { "Gestion de fichiers" "File Manager" }
    set Param(Version) 1.1
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Icon)    OPENDIR                                     ;#Icone
    set Param(Geom)    { 700x200+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)    0                                           ;#Flag d'activation de l'outils

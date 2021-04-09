@@ -732,14 +732,20 @@ proc SPI::WindowMenu { } {
       .menu.tools.menu add separator
 
       foreach tool $Param(Tools) {
-         eval set title \$${tool}::Param(Title)
+         set enabled True
+         catch { eval set enabled \$${tool}::Param(Enabled) }
 
-         if { [info exists ${tool}::Param(Icon)] } {
-            eval set icon \$${tool}::Param(Icon)
-         } else {
-            set icon TOOL
+         if { $enabled } {
+
+            eval set title \$${tool}::Param(Title)
+
+            if { [info exists ${tool}::Param(Icon)] } {
+               eval set icon \$${tool}::Param(Icon)
+            } else {
+               set icon TOOL
+            }
+            .menu.tools.menu add command -label "[lindex $title $GDefs(Lang)] ..." -image $icon -compound left -command "${tool}::Window"
          }
-         .menu.tools.menu add command -label "[lindex $title $GDefs(Lang)] ..." -image $icon -compound left -command "${tool}::Window"
       }
 
    Areas::CreateWidget .menu.disp.menu

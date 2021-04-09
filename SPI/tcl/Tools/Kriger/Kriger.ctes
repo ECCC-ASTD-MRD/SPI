@@ -22,6 +22,7 @@ namespace eval Kriger {
 
    set Param(Title)   { "Interpolation par krigage" "Kriging interpolator" }
    set Param(Version) 1.0
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Geom)    { 600x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)    GRID
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils

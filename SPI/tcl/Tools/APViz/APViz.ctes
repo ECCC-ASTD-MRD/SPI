@@ -25,6 +25,7 @@ namespace eval APViz {
 
    set Param(Title)   { "APViz" "APViz" }
    set Param(Version) 1.0
+   set Param(Enabled) False                                       ;#Flag de disponibilite
    set Param(Geom)    { 425x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Icon)    EYE
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils

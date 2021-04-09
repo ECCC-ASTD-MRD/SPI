@@ -98,6 +98,7 @@ namespace eval Drawing {
    set Data(Dash)       ""
 
    set Param(Title)   { "Dessin" "Drawing" }
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Version) 4.0
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
    set Param(Icon)    PENCIL                                      ;#Icone
@@ -106,11 +107,10 @@ namespace eval Drawing {
    set Param(Types)   "line poly rect oval circ bitm imag text valu strm dist vert head strk"   ;#Type d'items
    set Param(Images)  "LINE POLY SQUARE OVAL CIRCLE BITMAP IMAGE TEXT VAL STREAM RULER SCALE COMPASS PENCIL" ;#Type d'items
 
-
-   set Data(Active) 0                                           ;#Flag d'activation de l'outils
-   set Data(Canvas) ""                                          ;#Canvas Actif
-   set Data(Frame)  ""                                          ;#Frame actif
-   set Data(VP)     ""                                          ;#Viewport actif
+   set Data(Active)  0                                           ;#Flag d'activation de l'outils
+   set Data(Canvas)  ""                                          ;#Canvas Actif
+   set Data(Frame)   ""                                          ;#Frame actif
+   set Data(VP)      ""                                          ;#Viewport actif
 
    set Bubble(Dock)    { "Attacher/Détacher l'interface de la fenêtre principale" "Dock/Undock window from main window" }
    set Bubble(Close)   { "Fermer l'outils" "Close the tool" }

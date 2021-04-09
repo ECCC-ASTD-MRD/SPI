@@ -22,6 +22,7 @@ namespace eval RGraph {
 
     set Param(Title)        {"Graphique R" "R Graph"}
     set Param(Version)      1.0
+    set Param(Enabled) True                                             ;#Flag de disponibilite
     set Param(Geom)         { 200x600+[winfo rootx .]+[winfo rooty .] } ;#Geometry
     set Param(Icon)         GRAPH
     set Param(Dock)         1                                           ;#Flag d'activation de l'outils

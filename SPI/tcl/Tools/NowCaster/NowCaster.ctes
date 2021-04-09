@@ -23,6 +23,7 @@ namespace eval NowCaster { } {
 
    set Param(Title)   { "Now Casting" "Now casting" }
    set Param(Version) 1.0
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Icon)    SUN                                         ;#Icone
    set Param(Geom)    { 200x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils

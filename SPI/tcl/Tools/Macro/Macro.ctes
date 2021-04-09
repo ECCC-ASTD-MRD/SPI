@@ -23,6 +23,7 @@ namespace eval Macro { } {
 
    set Param(Title)   { "Gestion des macros" "Macro manager" }
    set Param(Version) 1.2
+   set Param(Enabled) True                                        ;#Flag de disponibilite
    set Param(Icon)    DOCRUN                                      ;#Icone
    set Param(Geom)    { 200x400+[winfo rootx .]+[winfo rooty .] } ;#Geometry
    set Param(Dock)    1                                           ;#Flag d'activation de l'outils
