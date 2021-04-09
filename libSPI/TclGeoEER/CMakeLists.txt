@@ -3,7 +3,8 @@ ec_parse_manifest() # Parse MANIFEST file
 #set(DOXYGEN_FOUND True)
 # include(doxygen)    # Doxygen targetinclude(ec_utils)
 
-project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
+project(${NAME} DESCRIPTION "${DESCRIPTION}")
+set(PROJECT_VERSION ${VERSION})
 
 message(STATUS "Generating ${NAME} library")
 

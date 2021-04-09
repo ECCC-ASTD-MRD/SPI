@@ -5,9 +5,11 @@ list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH})
 
 include(ec_init)
 include(ec_build_tcl_pkgindex)
-ec_parse_manifest() # Parse MANIFEST file
+ec_parse_manifest()   # Parse MANIFEST file
+#ec_git_version()      # Get version from git 
 
-project(${NAME} VERSION ${VERSION} DESCRIPTION "${DESCRIPTION}")
+project(${NAME} DESCRIPTION "${DESCRIPTION}")
+set(PROJECT_VERSION ${VERSION})
 
 message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
