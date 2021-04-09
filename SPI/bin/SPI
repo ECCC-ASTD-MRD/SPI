@@ -33,10 +33,13 @@ while [[ $# -gt 0 ]]; do
          SOFT=0
          ;;
       -valgrind)
+         ldd ${SPI_LIB}/TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so
+         export  LIBGL_DEBUG=verbose
          SPI_DEBUG=(valgrind --track-origins=yes --leak-check=full)
          ;;
       -gdb)
          ldd ${SPI_LIB}/TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so
+         export  LIBGL_DEBUG=verbose
          SPI_DEBUG=(gdb)
          if [[ $2 = *core* && -r $2 ]]; then
             SPI_DEBUG+=(-c "$2")
