@@ -193,8 +193,8 @@ proc RPN2GDAL::ParseCommandLine { } {
          "ip3"      { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(IP3)] }
          "etiket"   { set i [Args::Parse $gargv $gargc $i VALUE RPN2GDAL::Param(Etiket)] }
 
-         "verbose"       { set i [Args::Parse $argv $argc $i VALUE         Log::Param(Level)] }
-         "verbosecolor"  { set i [Args::Parse $argv $argc $i FLAG          Log::Param(Color)] }
+         "verbose"       { set i [Args::Parse $gargv $gargc $i VALUE         Log::Param(Level)] }
+         "verbosecolor"  { set i [Args::Parse $gargv $gargc $i FLAG          Log::Param(Color)] }
          "help"          { Log::Print MUST "$Param(CommandInfo)\n\n$Param(CommandLine)"; Log::End 0 }
          "version"       { Log::Print MUST $Param(Version); Log::End 0 }
          default         { Log::Print ERROR "Invalid argument [lindex $gargv $i]\n\n$Param(CommandLine)"; Log::End 1 }

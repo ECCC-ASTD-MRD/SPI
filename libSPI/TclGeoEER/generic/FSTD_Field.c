@@ -2112,9 +2112,12 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                break;
 
             case FSTD_LISTDATEV:
-                  Tcl_SetLongObj(obj,System_Stamp2Seconds(head.DATEV));
+               if (head.DATEV>0) {
+                  Tcl_SetLongObj(obj,head.DATEV>0?System_Stamp2Seconds(head.DATEV):0);
+
                   if (TclY_ListObjFind(Interp,list,obj)==-1) {
                      Tcl_ListObjAppendElement(Interp,list,Tcl_DuplicateObj(obj));
+                  }
                }
                break;
 

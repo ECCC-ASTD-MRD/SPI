@@ -250,7 +250,7 @@ if [[ $BLD -eq 1 ]]; then
    cd build
 
    if [[ $REC -eq 1 ]]; then
-      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS ../
+      cmake -DCMAKE_INSTALL_PREFIX=$DESTDIR $CMAKE_COMP_FLAGS -DVERSION=${VERSION} ../
    fi && make -j $VERBOSE ${VERBOSE:+VERBOSE=$VERBOSE} && make install || exit 1
 
    cd ${LIB_PATH}/lib
