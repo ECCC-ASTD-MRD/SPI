@@ -75,7 +75,7 @@ namespace eval Viewport {
    set Data(VPNb)       0            ;#Compteur de viewport
    set Data(VP)         ""           ;#Viewport courant
    set Data(Time)       0            ;#Heure en seconde de la projection
-   set Data(Date)       0            ;#Date en seconde de la projection
+   set Data(Date)       [clock seconds] ;#Date en seconde de la projection
    set Data(Followers)  { Viewport } ;#Liste des packages de suivit des coordonnees
    set Data(FollowerNb) 0            ;#Nombre de suivit courant
    set Data(Link)       {}           ;#Lien source
@@ -3214,7 +3214,6 @@ proc Viewport::Setup { Frame } {
    set Data(VP$Frame)               ""             ;#Viewport courant dans un frame
    set Map(Type$Frame)              [lindex [split $Map(Type) :] 0]     ;#Type de projection
    set Map(GeoRef$Frame)            [lindex [split $Map(Type) :] 1]     ;#Georef associee
-   set Data(Date)                   0              ;#Projection date (lightning)
    set ::Miniport::Data(Mini$Frame) {}             ;#Miniport table
 
    if { [lsearch -exact [font names] $Resources(Font)]==-1 } {
