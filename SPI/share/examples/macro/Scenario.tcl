@@ -50,9 +50,11 @@ namespace eval Macro::Scenario {} {
 #      set Param(Desc...)   Long description of the model                  
 #      set Param(Param...)  FSTD configuration parameter for each var 
 
-   font create LARGE  -family arial -size -20 -weight bold
-   font create MEDIUM -family arial -size -20 -weight bold
-   font create LABEL  -family helvetica -size -12 -weight bold
+   catch {
+      font create LARGE  -family arial -size -20 -weight bold
+      font create MEDIUM -family arial -size -20 -weight bold
+      font create LABEL  -family helvetica -size -12 -weight bold
+   }
 }
 
 proc Macro::Scenario::Execute { } {
