@@ -5,12 +5,20 @@ variables:
     # CI_DEBUG_TRACE: "true"
 
 stages:
+   - demo
    - build
    - test
    - package
    - deploy
 #   - doc
-
+demo:
+   stage: demo
+   script:
+      - mkdir build
+      - cd build
+      - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install-site
+      - make
+      - make install
 build:
    stage: build
    script:
