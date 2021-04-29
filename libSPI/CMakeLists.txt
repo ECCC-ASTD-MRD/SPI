@@ -10,11 +10,10 @@ endif()
 set(tcl_thing tcl8.5.11)
 ExternalProject_Add(
     tcl8.5.11
-    DOWNLOAD_COMMAND mkdir -p ${CMAKE_BINARY_DIR}/${tcl_thing}
-                     && cp -R /home/phc001/workspace/maestro/src/tcl/tcl8.5.11/*
-                              ${CMAKE_BINARY_DIR}/${tcl_thing}
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}/${subdir}
-    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}/${subdir} && echo "LS" && ls && ./configure
+    DOWNLOAD_COMMAND rsync -ar /home/phc001/workspace/maestro/src/tcl/tcl8.5.11/
+                               ${CMAKE_BINARY_DIR}/TCL/${tcl_thing}/
+    SOURCE_DIR ${CMAKE_BINARY_DIR}/TCL/${tcl_thing}/${subdir}
+    CONFIGURE_COMMAND cd ${CMAKE_BINARY_DIR}/TCL/${tcl_thing}/${subdir} && ./configure
                       --enable-threads
                       --enable-shared
                       --prefix=${CMAKE_INSTALL_PREFIX}
