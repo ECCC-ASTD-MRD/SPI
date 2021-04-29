@@ -12,7 +12,7 @@ ExternalProject_Add(
     tcl8.5.11
     DOWNLOAD_COMMAND cp -R /home/phc001/workspace/maestro/src/tcl/tcl8.5.11 ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}/${subdir}
-    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}/${subdir} && ./configure
+    CONFIGURE_COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR}/${tcl_thing}/${subdir} && echo "LS" && ls && ./configure
                       --enable-threads
                       --enable-shared
                       --prefix=${CMAKE_INSTALL_PREFIX}
