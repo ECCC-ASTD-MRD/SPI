@@ -11,12 +11,13 @@ stages:
    - package
    - deploy
 #   - doc
+before_script:
 demo:
    stage: demo
    script:
       - mkdir build
       - cd build
-      - cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install-site
+      - /home/phc001/miniconda3/bin/cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install-site
       - make
       - make install
 build:
