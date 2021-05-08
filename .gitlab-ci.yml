@@ -4,6 +4,11 @@
 variables:
     # CI_DEBUG_TRACE: "true"
 before_script:
+   - export ORDENV_SITE_PROFILE=20190814
+   - export ORDENV_COMM_PROFILE=eccc/20191002
+   - export ORDENV_GROUP_PROFILE=eccc/cmc/1.8
+   - . /fs/ssm/main/env/ordenv-boot-20200204.sh
+   - source SETUP.sh
    # Anything from CMake that has color will show color
    # even if the output is not a tty.  Which is cool for CI.
    - export CLICOLOR_FORCE=true
