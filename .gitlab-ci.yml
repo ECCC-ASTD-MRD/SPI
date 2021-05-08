@@ -4,9 +4,9 @@
 variables:
     # CI_DEBUG_TRACE: "true"
 before_script:
-  # Anything from CMake that has color will show color
-  # even if the output is not a tty.  Which is cool for CI.
-  - export CLICOLOR_FORCE=true
+   # Anything from CMake that has color will show color
+   # even if the output is not a tty.  Which is cool for CI.
+   - export CLICOLOR_FORCE=true
 
 stages:
    - build
@@ -24,10 +24,6 @@ build:
       - . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
       - cd libSPI
       - ./makeit -build -auto -reconf
-   only:
-      - master
-      - dev
-      - phc001*
 
 test:
    stage: test
