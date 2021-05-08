@@ -3,6 +3,10 @@
 
 variables:
     # CI_DEBUG_TRACE: "true"
+before_script:
+  # Anything from CMake that has color will show color
+  # even if the output is not a tty.  Which is cool for CI.
+  - export CLICOLOR_FORCE=true
 
 stages:
    - build
@@ -23,6 +27,7 @@ build:
    only:
       - master
       - dev
+      - phc001*
 
 test:
    stage: test
