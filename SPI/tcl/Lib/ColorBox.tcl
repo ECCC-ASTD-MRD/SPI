@@ -45,6 +45,8 @@ namespace eval ColorBox {
    set Data(B)   0             ;#Blue
    set Data(A)   255           ;#Alpha
 
+   set Data(Validating) 0      ;#Whether validation is on (used to not update certain variables while validating)
+
    catch {
       set Resources(Fill)   $GDefs(Dir)/share/bitmap/fill.xbm
       set Resources(Colors) $GDefs(Colors)
@@ -343,7 +345,7 @@ proc ColorBox::Create { Parent { Color "" } { Alpha "" } } {
       set $Color $ColorBox::Data(Result)
    }
    if { $Alpha!="" } {
-      set $Alpha [string toupper [format "%02x" $ColorBox::Data(A)]]
+      set $Alpha [format "%02X" $ColorBox::Data(A)]
    }
    
    if { $color!=$ColorBox::Data(Result) || $alpha!=$Data(A) } {
@@ -378,7 +380,7 @@ proc ColorBox::Update { X Y } {
    }
 
    if { $X<120 && $Y<120 && $X>0 && $Y>0} {
-      set Data(Current) [string toupper [format "#%02x%02x%02x" {*}[hsv get $X $Y]]]
+      set Data(Current) [format "#%02X%02X%02X" {*}[hsv get $X $Y]]
    }
 
    set Data(V) [expr int($X/120.0*100.0)]
@@ -528,7 +530,10 @@ proc ColorBox::UpdateHex { } {
    variable Data
 
    #----- Update the real hex value
-   set Data(Current) [string toupper [format "#%02x%02x%02x" $Data(R) $Data(G) $Data(B)]]
+   set Data(Current) [format "#%02X%02X%02X" $Data(R) $Data(G) $Data(B)]
+   if { !$Data(Validating) } {
+      set Data(Hex) $Data(Current)
+   }
 
    #----- Update the color of the hex background/foreground
    set fg [expr {$Data(R)*0.2126+$Data(G)*0.7152+$Data(B)*0.0722 < 128 ? "#FFFFFF" : "#000000"}]
@@ -592,7 +597,9 @@ proc ColorBox::ValidateHex { W Val Type Delta Idx } {
       scan $Val "#%2x%2x%2x" Data(R) Data(G) Data(B)
 
       #----- Update the rest
+      set Data(Validating) 1
       UpdateHSV
+      set Data(Validating) 0
 
       return 1
    }
