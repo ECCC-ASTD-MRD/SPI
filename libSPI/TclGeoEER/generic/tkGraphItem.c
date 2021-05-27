@@ -2197,7 +2197,7 @@ void GraphItem_Display2DTexture(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *
                FFCellQuadNearest(Data->Spec,g0,g1,g2,g3,c0,c1,c2,c3,base);
             } else {
                /*Is the quad resolution enough ???*/
-               if (depth>=2 && (ABS(c0-c1)>1 || ABS(c1-c2)>1 || ABS(c2-c3)>1 || ABS(c3-c0)>1)) {
+               if (depth>=1 && ((c0!=c1) || (c1!=c2) || (c2!=c3) || (c3!=c0))) {
                   FFCellQuadLinear(Data->Spec,g0,g1,g2,g3,c0,c1,c2,c3,v0,v1,v2,v3,depth,base);
                } else {
                   glColor4ubv(Data->Spec->Map->Color[c0<0?base:c0]);glVertex3dv(g0);
