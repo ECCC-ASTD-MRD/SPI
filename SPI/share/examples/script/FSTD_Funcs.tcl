@@ -259,10 +259,12 @@ fstdfile close GEM4 OUT
 
 #----- Test un fichier trunque
 puts "\nTesting truncated file:"
-fstdfile open TRUNC read $env(CI_DATA_IN)/truncated
-if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
+if { [catch { fstdfile open TRUNC read $env(CI_DATA_IN)/truncated } msg] } {
    puts "\n   File is truncated: $msg"
 }
+#if { [catch { fstdfield read BADFIELD TRUNC -1 "" -1 -1 -1 "" "SN" } msg] } {
+#   puts "\n   File is truncated: $msg"
+#}
 
 fstdfile close TRUNC
 
