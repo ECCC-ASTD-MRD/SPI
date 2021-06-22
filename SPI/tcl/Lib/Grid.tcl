@@ -534,7 +534,7 @@ proc Grid::Decode { Scale { Lat 0.0 } { Lon 0.0 } } {
       if { [expr ($Param(NI)*$Param(ResLLX))>=(360-$Param(ResLLX))] } {
           set center False
           set Param(Lon0) -180
-          set Param(Lon1) 180
+          set Param(Lon1) [expr 180-$Param(ResLLX)]
           set Param(Lat0) -90
           set Param(Lat1) 90
       } else {
