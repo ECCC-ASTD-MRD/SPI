@@ -615,7 +615,7 @@ proc Graph::Section::ItemDefineV { GR { Update True } } {
    #----- Cleanup previous items
    foreach pos $data(Pos) {
       if { [string match DATA_* $pos] } {
-         Graph::Profile::ItemUnDefine $GR $pos
+         Graph::Section::ItemUnDefine $GR $pos
       }
    }
 
@@ -631,7 +631,7 @@ proc Graph::Section::ItemDefineV { GR { Update True } } {
          set coords [fstdfield stats $field -grid]
 
          set data(Items$Pos)  {}
-         set data(Coords$Pos) $coords
+         set data(Coords$Pos) [list [lindex $coords 0] [lindex $coords 1] [lindex $coords end-1] [lindex $coords end]] 
          set data(Pos$Pos)    $coords
          set data(ZTypes$Pos) [lsearch -all -inline -regexp [fstdfile info [fstdfield define $field -FID] NOMVAR] "^\\^{1}.."]
 
