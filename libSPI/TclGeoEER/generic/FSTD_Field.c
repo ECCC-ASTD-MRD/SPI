@@ -1086,9 +1086,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          ezto=0;
       }
 
-      if (FieldFrom->GRef->Grid[0]!='R' && FieldTo->GRef->Grid[0]!='R') {
-         FSTD_FieldSetTo(FieldTo,FieldFrom);
-      }
+      FSTD_FieldSetTo(FieldTo,FieldFrom);
       
       if (Degree==-1) {
          interp=(char*)FieldTo->Spec->InterpDegree;
@@ -1665,11 +1663,11 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
                      grtyp[0]='L';
                      f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4);
-                    if (ref) {
+                     if (ref) {
                         Field->GRef=GeoRef_Find(GeoRef_RDRSetup(dxg1,dxg2,0.0,r,dxg3,dxg4));
                      } else {
                         Field->GRef=GeoRef_Find(GeoRef_RDRSetup(0.0,0.0,0.0,0.0,0.0,0.0));
-                    }
+                     }
                      grtyp=NULL;
                   } else if (grtyp[0]=='Z' && grtyp[1]=='E') {
                         // Do nothing as it should be built with georef define function
@@ -2542,8 +2540,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          if (proj) free(proj);
       } 
    } else if (grtyp[0]=='R') {
-       f77name(cigaxg)('L',&xg1,&xg2,&xg3,&xg4,&h.IG1,&h.IG2,&h.IG3,&h.IG4);
-       field->GRef=GeoRef_Find(GeoRef_RDRSetup(xg1,xg2,0.0,ni,xg3,xg4));
+      grtyp[0]='L';
+      f77name(cigaxg)(grtyp,&xg1,&xg2,&xg3,&xg4,&h.IG1,&h.IG2,&h.IG3,&h.IG4);
+      grtyp[0]='R';
+      field->GRef=GeoRef_Find(GeoRef_RDRSetup(xg1,xg2,0.0,nj,xg3,xg4));
    }
 
    if (tile) {

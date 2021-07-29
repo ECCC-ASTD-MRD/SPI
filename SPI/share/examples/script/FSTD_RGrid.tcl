@@ -35,13 +35,15 @@ fstdfile open FILEOUT write $env(CI_DATA_OUT)/FSTD_RGrid.fstd
 
 #----- Creer un champs sur grille Radar
 fstdfield create GRID 360 48 1
-fstdfield define GRID -GRTYP R 45.53 -75.63 0.0 240 5.0 1.0
+
+#-----                         lat    lon   height  NbBin  Bin res  Azimuth Res
+fstdfield define GRID -GRTYP R 45.53 -75.63 0.0     48     5000.0   1.0
 
 #----- Boucler sur les champs a interpoler
 foreach var { TT UU GZ } {
-   fstdfield read FROM FILEIN -1 "" -1 -1 -1  "" $var
+   fstdfield read FROM FILEIN -1 "" 12000 -1 -1  "" $var
    fstdfield gridinterp GRID FROM
-   fstdfield write GRID FILEOUT -16 True
+   fstdfield write GRID FILEOUT -32 True
 }
 
 fstdfile close FILEIN FILEOUT
