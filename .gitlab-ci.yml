@@ -5,10 +5,10 @@ variables:
     # CI_DEBUG_TRACE: "true"
 
 stages:
-   - build
-   - test
-   - package
-   - deploy
+#   - build
+#   - test
+#   - package
+#   - deploy
 #   - doc
 
 build:
