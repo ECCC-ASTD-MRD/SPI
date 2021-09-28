@@ -32,6 +32,7 @@
  */
 
 #include "App.h"
+#include "tclDataSpec.h"
 #include "RPN.h"
 #include "List.h"
 #include "tclGeoRef.h"

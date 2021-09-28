@@ -39,16 +39,13 @@
 extern int GDAL_Type[];
 extern int TD2GDAL[];
 
-
-typedef struct
-{
+typedef struct {
    unsigned long  key;
    float  fld;
    int    acc;
 } DiscreetGridPoint;
 
-typedef struct 
-{
+typedef struct {
    Tcl_HashTable      table;
    DiscreetGridPoint *lastUsed;
    int                nk;
@@ -89,6 +86,7 @@ static void               dscg_free_grid( DiscreetGrid  *dscg );
 */
 int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int NIdx,int X0,int Y0,int X1,int Y1,int BD,int Full) {
 
+#ifdef HAVE_GDAL
    GDAL_File      *file=NULL;
    GDAL_Band      *band;
    GDALRasterBandH hband;
@@ -258,7 +256,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
    CMap_CurveDefine(band->Spec->Map);
    CMap_RatioDefine(band->Spec->Map);
    CMap_Put(Interp,band->Spec->Map);
-
+#endif
    return(TCL_OK);
 }
 
@@ -284,6 +282,7 @@ int GDAL_BandRead(Tcl_Interp *Interp,char *Name,char FileId[][128],int *Idxs,int
 
 int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Scale) {
 
+#ifdef HAVE_GDAL
    double incri,incrj,posX,posY,dfy;
    int    x,y,cidx,idx,z,lvl=0;
    float  *levels=NULL;
@@ -384,7 +383,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
    }
    if (levels)
       free(levels);
-
+#endif
    return(TCL_OK);
 }
 
@@ -408,6 +407,7 @@ int GDAL_BandFSTDImportV(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field,int Sca
 */
 int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
 
+#ifdef HAVE_GDAL
    unsigned int x,y,idx,nidx,val;
 
    Tk_PhotoImageBlock data;
@@ -482,7 +482,7 @@ int GDALBand_GetImage(Tcl_Interp *Interp,GDAL_Band *Band,char* Img){
      return(TCL_ERROR);
    }
    free(data.pixelPtr);
-
+#endif
    return(TCL_OK);
 }
 
@@ -791,6 +791,7 @@ int Murphy_Polygon(TMurphy *M,double *Poly,int Nb,int X,int Y,int Scale,double A
 */
 int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 
+#ifdef HAVE_GDAL
    double    lat,lon,latd,lond,i,j;
    double    val,dir,ddir;
    int       n,x,y,z=0,idx,dy;
@@ -976,7 +977,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
          }
       }
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -999,6 +1000,7 @@ int GDAL_BandFSTDImport(Tcl_Interp *Interp,GDAL_Band *Band,TData *Field) {
 */
 int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj        *obj;
    GDAL_Band      *band;
    GDAL_File      *file;
@@ -1096,7 +1098,7 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
       }
    }
    band->File=file;
-
+#endif
    return(TCL_OK);
 }
 
@@ -1122,6 +1124,7 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
 */
 int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    int          i,c,w,h,idx,ex=0,tr=1,i0,i1,b,c0,c1,cnt,s,clamp,n;
    double       lat,lon,x0,y0,dval,min,max,mean,std,dmin,dmax,val,val1;
    GDAL_Band   *band;
@@ -1753,7 +1756,11 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             break;
       }
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1777,9 +1784,10 @@ int GDAL_BandStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 */
 int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    int          i,j,idx,nidx,order=1,c,n;
    double       tra[6],inv[6],*tm=NULL,*im=NULL;
-    char **meta;
+   char        **meta;
    GDAL_Band   *band,*xband,*yband;
    TGeoRef     *ref;
    Tcl_Obj     *obj,*lst;
@@ -2175,7 +2183,11 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
       }
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -2197,6 +2209,7 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 */
 int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj      *obj;
    double        x,y,lat,lon;
    int           nobj;
@@ -2231,7 +2244,7 @@ int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List) {
       str=GDALGetMetadataItem(Band->Band[0],buf,"LocationInfo");
       Tcl_AppendElement(Interp,str);
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -2253,6 +2266,7 @@ int GDAL_Pick(Tcl_Interp *Interp,GDAL_Band *Band,Tcl_Obj *List) {
 */
 void GDAL_BandGetStat(GDAL_Band *Band) {
 
+#ifdef HAVE_GDAL
    double        val,pts[4],minmax[2];
    unsigned int  i,j,c;
    unsigned long n=0;
@@ -2321,6 +2335,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
          }
       }
    }
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -2340,6 +2355,7 @@ void GDAL_BandGetStat(GDAL_Band *Band) {
 */
 void GDAL_BandPreInit(GDAL_Band *Band) {
 
+#ifdef HAVE_GDAL
    if (!Band->Stat)
       GDAL_BandGetStat(Band);
 
@@ -2356,6 +2372,7 @@ void GDAL_BandPreInit(GDAL_Band *Band) {
    }
 
    DataSpec_Define(Band->Spec);
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -2379,6 +2396,7 @@ void GDAL_BandPreInit(GDAL_Band *Band) {
 */
 int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max) {
 
+#ifdef HAVE_GDAL
    // If the number of bins requested is different
    if (Band->Stat[Index].Histo && Band->Stat[Index].HistoBin!=Bin) {
       free(Band->Stat[Index].Histo);
@@ -2392,6 +2410,7 @@ int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max) {
       Band->Stat[Index].HistoBin=Bin;
       GDALGetRasterHistogramEx(Band->Band[Index],Min,Max,Band->Stat[Index].HistoBin,Band->Stat[Index].Histo,FALSE,Band->Approx,GDALDummyProgress,NULL);
    }
+#endif
    return(1);
 }
 /*--------------------------------------------------------------------------------------------------------------
@@ -2413,6 +2432,7 @@ int GDAL_BandGetHisto(GDAL_Band *Band,int Index,int Bin,double Min,double Max) {
 */
 int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
 
+#ifdef HAVE_GDAL
    int           n;
    GLuint        tx=0;
    GLhandleARB   prog;
@@ -2616,6 +2636,7 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
       glPixelTransferf(sc[n],1.0);
       glPixelTransferf(bc[n],0.0);
    }
+#endif
    return(1);
 }
 
@@ -2637,8 +2658,10 @@ int GDAL_BandRender(Projection *Proj,ViewportItem *VP,GDAL_Band *Band) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
-   {
+int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field ) {
+
+#ifdef HAVE_GDAL
+#ifdef HAVE_RMN
    char     buf[256];
    int      i, j;
    int      offset;
@@ -2667,11 +2690,10 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    OGRSpatialReferenceH          *TdstSR;
    OGRSpatialReferenceH           srcSR, dstSR;
 
-   if (band == NULL)
-      {
+   if (band == NULL) {
       Tcl_AppendResult(Interp, "band null",(char*)NULL);
-      return TCL_ERROR;
-      }
+      return(TCL_ERROR);
+   }
 
    
    FromRef = band->GRef;
@@ -2679,30 +2701,27 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    ToRef   = field->GRef;
    ToDef   = field->Def;
 
-   if (ToRef->NId > 1)
-      {
+   if (ToRef->NId > 1) {
       Tcl_AppendResult(Interp, "subgrids not supported",(char*)NULL);
-      return TCL_ERROR;
-      }
+      return(TCL_ERROR);
+   }
    ToRefId = ToRef->Ids[ToRef->NId];
 
 
-   if (FromRef->Grid[0]!='W') 
-      {
+   if (FromRef->Grid[0]!='W') {
       Tcl_AppendResult(Interp, "Error, bad band",(char*)NULL);
-      return  TCL_ERROR;
-      }
+      return(TCL_ERROR);
+   }
 
    Transform =  FromRef->Transform;
-   if (Transform == NULL)
-      {
+   if (Transform == NULL) {
       Tcl_AppendResult(Interp, "Error, No transform",(char*)NULL);
-      return  TCL_ERROR;
-      }
+      return(TCL_ERROR);
+   }
 
    nthreads = get_num_threads();
 #ifdef _OPENMP
-   omp_set_num_threads( nthreads );
+   omp_set_num_threads(nthreads);
 #endif //_OPENMP
 
    dNI = ToDef->NI;
@@ -2725,26 +2744,21 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
    TsrcSR  = (OGRSpatialReferenceH *) malloc( nthreads*sizeof(OGRSpatialReferenceH));
    TdstSR  = (OGRSpatialReferenceH *) malloc( nthreads*sizeof(OGRSpatialReferenceH));
 
-   for (i = 0; i < nthreads ; i++)
-      {
+   for (i = 0; i < nthreads ; i++) {
       TscanX[i] = (double *)malloc(sNI*sizeof(double));
       TscanY[i] = (double *)malloc(sNI*sizeof(double));
       Tflt_X[i] = (float *)malloc(sNI*sizeof(float));
       Tflt_Y[i] = (float *)malloc(sNI*sizeof(float));
-      if ( FromRef->Spatial )
-         {
+      if ( FromRef->Spatial ) {
          srcSR = TsrcSR[i] = OSRClone(FromRef->Spatial);
          dstSR = TdstSR[i] = OSRCloneGeogCS(srcSR);
          Tctf[i]   = OCTNewCoordinateTransformation( srcSR, dstSR );
-         }
-      else
-         {
+      } else {
          TsrcSR[i] = NULL;
          TdstSR[i] = NULL;
          Tctf[i]   = NULL;
-         }
       }
-
+   }
 
 #pragma omp parallel \
    shared(band,sNI,sNJ,dNI,dNJ,nodata,Transform,ToRefId,TscanX,TscanY,Tflt_X,Tflt_Y,Tctf,FromDef)\
@@ -2757,8 +2771,7 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
 #else
    tid = 0;
 #endif
-   if (tid == 0)
-      {
+   if (tid == 0) {
 #ifdef _OPENMP
       nthreads = omp_get_num_threads();
 #else
@@ -2768,8 +2781,7 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
       }
 #endif
 #pragma omp for schedule(static)
-   for (j = 0; j < sNJ ; j++)
-      {
+   for (j = 0; j < sNJ ; j++) {
 #ifdef _OPENMP
       tid = omp_get_thread_num();
 #else
@@ -2829,8 +2841,7 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
 
 /* free up allocated memory */
 
-   for (i = 0; i < nmemalloc ; i++)
-      {
+   for (i = 0; i < nmemalloc ; i++) {
       free( TscanX[i] );
       free( TscanY[i] );
       free( Tflt_X[i] );
@@ -2838,7 +2849,7 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
       OCTDestroyCoordinateTransformation( Tctf[i] );
       OSRDestroySpatialReference( TsrcSR[i] );
       OSRDestroySpatialReference( TdstSR[i] );
-      }
+   }
 
    free( TdstSR );
    free( TsrcSR );
@@ -2850,8 +2861,10 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
 
    sprintf( buf, "%d", cnt );
    Tcl_AppendResult(Interp, buf,(char*)NULL );
-   return TCL_OK;
-   }
+#endif
+#endif
+   return(TCL_OK);
+}
 
 
 /*----------------------------------------------------------------------------
@@ -2879,10 +2892,9 @@ int GDAL_BandToGridXY( Tcl_Interp *Interp, GDAL_Band *band, TData *field )
  *
  *----------------------------------------------------------------------------
 */
-int GDAL_BandToFieldWithPos
-   (Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand, GDAL_Band *PosBand, int Mode)
-   {
+int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand, GDAL_Band *PosBand, int Mode) {
 
+#ifdef HAVE_GDAL
    double        vx,*fld, fldInitValue;
    int          *acc=NULL;
    unsigned long idxt,nijk,nij;
@@ -3064,40 +3076,34 @@ int GDAL_BandToFieldWithPos
       dscg_free_grid( Tdsgrid[i] );
       }
    free( Tdsgrid );
+#endif
    return(TCL_OK);
-   }
+}
 
-static int get_num_threads(void)
-   {
+static int get_num_threads(void) {
 #ifdef _OPENMP
    int nthreads;
    int nprocs;
 
    char *env = getenv("OMP_NUM_THREADS");
-   if (env)
-      {
+   if (env) {
       nthreads = atoi(env);
-      }
-   else
-      {
-/*
- * default to 4 threads
- */
+   } else {
+      // Default to 4 threads
       nthreads = 4;
-      }
-/*
- * cannot exceed max available CPU
- */
-   nprocs = omp_get_num_procs();
-   if (nthreads > nprocs) nthreads = nprocs;
-   return nthreads;
-#else //_OPENMP
-   return 1;
-#endif //_OPENMP
    }
 
-static DiscreetGrid      *dscg_create(int nk, int nij)
-   {
+   // Cannot exceed max available CPU
+   nprocs = omp_get_num_procs();
+   if (nthreads > nprocs) nthreads = nprocs;
+   return(nthreads);
+#else //_OPENMP
+   return(1);
+#endif //_OPENMP
+}
+
+static DiscreetGrid *dscg_create(int nk, int nij) {
+
    DiscreetGrid *dscg;
 
    dscg = (DiscreetGrid *)malloc( sizeof(DiscreetGrid) );
@@ -3105,43 +3111,38 @@ static DiscreetGrid      *dscg_create(int nk, int nij)
    dscg->nk = nk;
    dscg->nij = nij;
    Tcl_InitHashTable( &(dscg->table), TCL_ONE_WORD_KEYS );
-   return dscg;
-   }
+   return(dscg);
+}
 
-static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int *new )
-   {
+static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int *new ) {
+
    Tcl_HashEntry      *entry;
    DiscreetGridPoint  *dgp;
-   if (dscg->lastUsed)
-      {
+   if (dscg->lastUsed) {
       if (dscg->lastUsed->key == key) return dscg->lastUsed;
-      }
+   }
 
    entry = Tcl_FindHashEntry( &(dscg->table), (char *)key );
-   if (entry == NULL)
-      {
+   if (entry == NULL) {
       entry = Tcl_CreateHashEntry( &(dscg->table), (char *)key, new );
       dgp = (DiscreetGridPoint *)malloc( sizeof(DiscreetGridPoint) );
       dgp->fld = 0.0;
       dgp->acc = 0;
       dgp->key   = key;
       Tcl_SetHashValue( entry, dgp );
-      }
-   else
-      {
+   } else {
       *new = 0;
       dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
-      if (dgp->key != key)
-         {
+      if (dgp->key != key) {
          fprintf( stderr, "dscg_fetch: keys differs %ld != %ld\n", dgp->key, key );
-         }
       }
-   dscg->lastUsed = dgp;
-   return dgp;
    }
+   dscg->lastUsed = dgp;
+   return(dgp);
+}
 
-static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double Nodata, int Mode )
-   {
+static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double Nodata, int Mode ) {
+
    DiscreetGridPoint  *dgp;
    Tcl_HashEntry      *entry;
    Tcl_HashSearch     searchPtr;
@@ -3150,45 +3151,38 @@ static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fl
    char               buffer[256];
 
    entry = Tcl_FirstHashEntry( &(dscg->table), &searchPtr );
-   while ( entry )
-      {
+   while ( entry ) {
       dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
       idxt = dgp->key;
       if (fld[idxt] == Nodata) fld[idxt] = initValue;
-      if (Mode == 0)
-         {
+      if (Mode == 0) {
          fld[idxt] += dgp->fld;
          acc[idxt] += dgp->acc;
          if (dgp->fld == 0)
             tot_acc += dgp->acc;
-         }
-      else if (Mode < 0)
-         {
+      } else if (Mode < 0) {
          if ( fld[idxt] > dgp->fld ) fld[idxt] = dgp->fld ;
-         }
-      else
-         {
+      } else {
          if ( fld[idxt] < dgp->fld ) fld[idxt] = dgp->fld ;
-         }
-      entry = Tcl_NextHashEntry( &searchPtr );
       }
-
-   Tcl_AppendResult(Interp, buffer,(char*)NULL);
+      entry = Tcl_NextHashEntry( &searchPtr );
    }
 
-static void dscg_free_grid( DiscreetGrid  *dscg )
-   {
+   Tcl_AppendResult(Interp, buffer,(char*)NULL);
+}
+
+static void dscg_free_grid( DiscreetGrid *dscg ) {
+
    DiscreetGridPoint  *dgp;
    Tcl_HashEntry      *entry;
    Tcl_HashSearch     searchPtr;
 
    entry = Tcl_FirstHashEntry( &(dscg->table), &searchPtr );
-   while ( entry )
-      {
+   while ( entry ) {
       dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
       free( dgp );
       entry = Tcl_NextHashEntry( &searchPtr );
-      }
+   }
    Tcl_DeleteHashTable( &(dscg->table) );
    free( dscg );
-   }
+}

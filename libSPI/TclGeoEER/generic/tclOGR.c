@@ -33,11 +33,12 @@
 #include <string.h>
 #include <strings.h>
 
+#include "App.h"
 #include "tclOGR.h"
 #include "tclGDAL.h"
 #include "Projection.h"
 
-/*Table contenant la liste des fichiers en memoire*/
+// Table contenant la liste des fichiers en memoire
 static Tcl_HashTable OGR_FileTable;
 static Tcl_HashTable OGR_LayerTable;
 static Tcl_HashTable OGR_GeometryTable;
@@ -153,11 +154,13 @@ Tcl_Obj* OGR_GeometryPut(Tcl_Interp *Interp,char *Name,OGRGeometryH Geometry) {
 */
 int OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name) {
 
+#ifdef HAVE_GDAL
    OGRGeometryH *geom=NULL;
 
    if ((geom=(OGRGeometryH*)TclY_HashDel(&OGR_GeometryTable,Name))) {
       OGR_G_DestroyGeometry(geom);
    }
+#endif
    return(TCL_OK);
 }
 
@@ -181,6 +184,7 @@ int OGR_GeometryDestroy(Tcl_Interp *Interp,char *Name) {
 */
 static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
+#ifdef HAVE_GDAL
    OGRGeometryH         g0,g1;
    OGRwkbGeometryType   t;
    int                  idx,n;
@@ -292,7 +296,11 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          TclY_HashAll(Interp,&OGR_GeometryTable);
          break;
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -316,6 +324,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
 
 static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
+#ifdef HAVE_GDAL
    double             x,y,lat,lon;
    float             *index;
    int                idx,idxfi,all,n,side;
@@ -788,7 +797,11 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 //         TclY_HashWipe(&OGR_GeometryTable,(TclY_HashFreeEntryDataFunc*)OGR_G_DestroyGeometry);
          break;
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -809,8 +822,8 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeometryType Type,char **Options) {
 
-   OGR_Layer *layer;
-
+   OGR_Layer *layer=NULL;
+#ifdef HAVE_GDAL
    if (!Name || !strlen(Name) || !(layer=(OGR_Layer*)TclY_HashPut(Interp,&OGR_LayerTable,Name,sizeof(OGR_Layer)))) {
       return(NULL);
    }
@@ -862,7 +875,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
 
    Vect_Init(layer->Vr[0],1e32,1e32,1e32);
    Vect_Init(layer->Vr[1],-1e32,-1e32,-1e32);
-
+#endif
    return(layer);
 }
 
@@ -884,6 +897,7 @@ OGR_Layer* OGR_LayerCreate(Tcl_Interp *Interp,char *Name,char *Desc,OGRwkbGeomet
 */
 OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRef *GRef,char **Options) {
 
+#ifdef HAVE_GDAL
    if (!File || !Layer) {
       return(NULL);
    }
@@ -900,6 +914,9 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }
    return(Layer->Layer);
+#else
+   return(NULL);
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -946,6 +963,7 @@ int OGR_LayerDestroy(Tcl_Interp *Interp,char *Name) {
 */
 void OGR_LayerFree(OGR_Layer *Layer) {
 
+#ifdef HAVE_GDAL
    int n;
 
    for(n=0;n<Layer->NFeature;n++) {
@@ -967,6 +985,7 @@ void OGR_LayerFree(OGR_Layer *Layer) {
    if (Layer->Spec)       DataSpec_FreeHash(NULL,Layer->Spec->Name);
 
    OGR_LayerClean(Layer,-1);
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1089,6 +1108,7 @@ OGR_Layer* OGR_LayerGet(char *Name) {
 struct TDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 
    TDef     *def=NULL;
+#ifdef HAVE_GDAL
    TDef_Type type=TD_Unknown;
    int       i,f,n=0;
    double    val;
@@ -1120,6 +1140,7 @@ struct TDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
          def->NI=def->NIJ=n;
       }
    }
+#endif
    return(def);
 }
 
@@ -1142,6 +1163,7 @@ struct TDef* OGR_LayerToDef(OGR_Layer *Layer,char *Field) {
 */
 OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDef *Def) {
 
+#ifdef HAVE_GDAL
    int    i,f,n=0;
    double val;
    
@@ -1162,6 +1184,9 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDef *Def) {
    } else {
       return(NULL);
    }
+#else
+   return(NULL);
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -1185,6 +1210,7 @@ OGR_Layer *OGR_LayerFromDef(OGR_Layer *Layer,char *Field,TDef *Def) {
 */
 static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    OGR_File  *file;
    Tcl_Obj   *obj;
 
@@ -1270,7 +1296,11 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          return(TCL_OK);
          break;
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1374,6 +1404,7 @@ int OGR_FilePut(Tcl_Interp *Interp,OGR_File *File){
 */
 int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char **Options) {
 
+#ifdef HAVE_GDAL
    GDALDatasetH   *source=NULL;
    GDALDriverH     driver=NULL;
    OGRLayerH       layer;
@@ -1458,6 +1489,6 @@ int OGR_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,c
        Tcl_ListObjAppendElement(Interp,lst,sublst);
    }
    Tcl_SetObjResult(Interp,lst);
-
+#endif
    return(TCL_OK);
 }

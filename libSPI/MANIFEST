@@ -1,11 +1,11 @@
 NAME       : libSPI
-VERSION    : 8.1.0
+VERSION    : 8.2.0
 BUILD      : Release
-DESCRIPTION: SPI's libraries
-SUMMARY    : SPI's libraries
+DESCRIPTION: SPI (Spherical Projection Interface)
+SUMMARY    : Scientific visualisation and data processing API libraries
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
+URL        : https://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerSPI
 
-TCL    >= 8.6.0
 GDAL   >= 2.1.0
 ECCODE >= 2.16.0
 ECBUFR >= 0.9.1
@@ -16,3 +16,13 @@ EER    >= 4.0.0
 RMN   ~>= 19.6.0
 VGRID  ~= 6.5.0
 DistanceMetrics ~>= 1.0.0
+
+# External dependencies
+TCL     = 8.6.6
+TCLLIB  = 1.18.0
+TCLTLS  = 1.7.12
+TKTABLE = 2.10.0
+TKDND   = 2.8.0
+TDOM    = 0.8.2
+MESA    = 7.9.2
+TKIMG   = 1.4.6

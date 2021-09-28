@@ -31,7 +31,6 @@
  *==============================================================================
  */
 
-#ifdef HAVE_RMN
 
 #include "App.h"
 #include "tclFSTD.h"
@@ -43,6 +42,8 @@ TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
 int      FSTD_UNTILE=0;
 Tcl_Obj *FSTD_HIDELIST=NULL;
+
+#ifdef HAVE_RMN
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_TypeCheck>
@@ -3133,6 +3134,8 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
       return(TCL_ERROR);
    }
 }
+#endif
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldDataCopy>
@@ -3152,9 +3155,7 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldDataCopy
-   (Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) 
-   {
+int FSTD_FieldDataCopy(Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) {
 
    int    i,j;
    float  val0;
@@ -3180,51 +3181,41 @@ int FSTD_FieldDataCopy
    tNJ = Field2->Def->NJ;
 
    cnt = 0;
-   if (insert_mode)
-      {
+   if (insert_mode) {
 #pragma omp parallel \
       shared(sNI,sNJ,Field0,Field2,dx,dy) \
       private(i,j,p1,pi1,pj1,offset,val0,i1,j1,offset2)
 {
 #pragma omp for schedule(static)
-      for (j=0;j<sNJ;j++) 
-         {
+      for (j=0;j<sNJ;j++) {
          offset = sNI * j;
-         for (i=0;i<sNI;i++) 
-            {
+         for (i=0;i<sNI;i++) {
             Field0->GRef->Project(Field0->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
-            if (Field2->GRef->UnProject(Field2->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
-               {
+            if (Field2->GRef->UnProject(Field2->GRef,&pi1,&pj1,p1[0],p1[1],1,1)) {
                Def_Get(Field0->Def,0,offset+i,val0);
                i1 = (int)(pi1 + 0.5 + dx );
                j1 = (int)(pj1 + 0.5 + dy );
                if ((i1 < 0)||(i1 >= tNI)) continue;
                if ((j1 < 0)||(j1 >= tNJ)) continue;
-               if (delta > 0)
-                  {
+               if (delta > 0) {
                   if ((i1 >= delta)&&(i-delta)<0) continue;
                   if ((i1 < (tNI-delta))&&(i>=(sNI-delta))) continue;
                   if ((j1 >= delta)&&(j-delta)<0) continue;
                   if ((j1 < (tNJ-delta))&&(j>=(sNJ-delta))) continue;
-                  }
+               }
                offset2 = tNI * j1 + i1;
                Def_Set(Field2->Def,0, offset2, val0);
                cnt += 1;
-               }
             }
          }
-}
       }
-   else
-      {
-      for (j=0;j<Field2->Def->NJ;j++) 
-         {
+}
+   } else {
+      for (j=0;j<Field2->Def->NJ;j++) {
          offset = Field2->Def->NI * j;
-         for (i=0;i<Field2->Def->NI;i++) 
-            {
+         for (i=0;i<Field2->Def->NI;i++) {
             Field2->GRef->Project(Field2->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
-            if (Field0->GRef->UnProject(Field0->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
-               {
+            if (Field0->GRef->UnProject(Field0->GRef,&pi1,&pj1,p1[0],p1[1],1,1)) {
                i1 = (int)(pi1 + 0.5 + dx );
                j1 = (int)(pj1 + 0.5 + dy );
                if ((i1 < 0)||(i1 >= Field0->Def->NI)) continue;
@@ -3232,12 +3223,9 @@ int FSTD_FieldDataCopy
                offset2 = Field0->Def->NI * j1 + i1;
                Def_Get(Field0->Def,0,offset2,val0);
                Def_Set(Field2->Def,0, offset+i, val0);
-               }
             }
          }
       }
-   return TCL_OK;
    }
-
-
-#endif
+   return(TCL_OK);
+}

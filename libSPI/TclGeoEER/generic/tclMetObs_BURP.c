@@ -33,6 +33,7 @@
 #ifdef HAVE_RMN
 
 #include "App.h"
+#include "tclDataSpec.h"
 #include "RPN.h"
 #include "tclMetObs.h"
 

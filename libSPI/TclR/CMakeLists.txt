@@ -1,8 +1,5 @@
 ec_parse_manifest() # Parse MANIFEST file
 
-#set(DOXYGEN_FOUND True)
-# include(doxygen)    # Doxygen target_link_libraries
-
 project(${NAME} DESCRIPTION "${DESCRIPTION}")
 set(PROJECT_VERSION ${VERSION})
 
@@ -35,5 +32,7 @@ install(TARGETS ${NAME}
    LIBRARY        DESTINATION TCL/lib/${NAME}${VERSION}
    PUBLIC_HEADER  DESTINATION TCL/include
 )
+ec_install_symlink(../TCL/lib/${NAME}${VERSION}/lib${NAME}.so.${VERSION} ${CMAKE_INSTALL_PREFIX}/lib/lib${NAME}.so.${VERSION})
+ec_install_symlink(./lib${NAME}.so.${VERSION} ${CMAKE_INSTALL_PREFIX}/lib/lib${NAME}.so)
 
 ec_build_tcl_pkgindex()
