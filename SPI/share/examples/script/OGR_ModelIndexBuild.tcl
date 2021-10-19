@@ -64,7 +64,7 @@ foreach model $models sub $subs var $vars name $names {
       Log::Print INFO "Processing $model $s"
 
       #------ Read lat/lon for glsoce model (Great Lakes)
-      set file [open "$env(CI_DATA_IN)/Model/$model" r]
+      set file [open "$env(CI_DATA_IN)/ModelDomain/$model" r]
       set coord_glsoce [gets $file]
       close $file
 
@@ -89,7 +89,7 @@ foreach model $models sub $subs var $vars name $names {
       Log::Print INFO "Processing $model $s"
 
       #------ Read lat/lon for SHOP model (St-Lawrence river)
-      set file [open "$env(CI_DATA_IN)/Model/$model" r]
+      set file [open "$env(CI_DATA_IN)/ModelDomain/$model" r]
       set coord_shop [gets $file]
       close $file
 
@@ -120,7 +120,7 @@ foreach model $models sub $subs var $vars name $names {
          if { $name=="WEBTIDE"} {
             set file [glob -nocomplain $model/$s/*.fstd]
          } else {
-            set file $env(CI_DATA_IN)/Model/$model
+            set file $env(CI_DATA_IN)/ModelDomain/$model
          }
          if { ![llength $file] } {
             Log::Print WARNING "No data is available of model $model/$s"
