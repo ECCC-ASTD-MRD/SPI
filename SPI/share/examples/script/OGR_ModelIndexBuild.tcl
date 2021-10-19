@@ -27,12 +27,12 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-#                 0             1           2               3               4                5                6            7            8             9          10
-set names  {     "RDPS"        "HRDPS"      "Caps"          "CAPSOCE"       "CIOPS_EAST"     "CIOPS_WEST"     "GLSOCE"     "GSL"        "RIOPS"       "SHOP"     "WEBTIDE"}
-set vars   {      P0            P0          P0              GL              GL               GL               GL           GL           GL            TM         M2       }
-#                 0             1           2               3               4                5                6            7            8             9          10         11       12     13      14   15
-set subs   {      { "" }        { "" }      { "" }          { "" }          { "" }           { "" }           { "" }       { "" }       { "" }        { "" }     { arctic9  ne_pac4  nwatl  sshelf  h3o  stle400 } }
-set models [list  rdps.fstd     hrdps.fstd  caps_eta.fstd   caps_oce.fstd   ciops_east.fstd  ciops_west.fstd  glsoce.txt   gsloce.fstd  riops.fstd    shop.txt   $env(WEBTIDE_DATA)]
+#                 0             1           2                3                4               5                6                7            8            9             10         11
+set names  {     "RDPS"        "HRDPS"      "HRDPS_NORD"     "HRDPS_WEST"     "Caps"          "CIOPS_EAST"     "CIOPS_WEST"     "GLSOCE"     "GSL"        "RIOPS"       "SHOP"     "WEBTIDE"}
+set vars   {      P0            P0          P0               P0               P0              GL               GL               GL           GL           GL            TM         M2       }
+#                 0             1           2                3                4               5                6                7            8            9             10         11         12       13     14      16   16
+set subs   {      { "" }        { "" }      { "" }           { "" }           { "" }          { "" }           { "" }           { "" }       { "" }       { "" }        { "" }     { arctic9  ne_pac4  nwatl  sshelf  h3o  stle400 } }
+set models [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd  caps_eta.fstd   ciops_east.fstd  ciops_west.fstd  glsoce.txt   gsloce.fstd  riops.fstd    shop.txt   $env(WEBTIDE_DATA)]
 
 set nb 0
 foreach s $subs { incr nb [llength $s] }
