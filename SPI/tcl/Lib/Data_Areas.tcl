@@ -68,11 +68,11 @@ proc Areas::CreateWidget { Parent } {
 
    set no 0
    foreach layer $Data(Layers) {
-      set l [lindex $layer 0]
-      $Parent.areas add cascade -label $l -menu $Parent.areas.t$no
+      set zone [lindex $layer 0]
+      $Parent.areas add cascade -label $zone -menu $Parent.areas.t$no
       menu $Parent.areas.t$no -tearoff 1
 
-      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display \"$layer\""
+      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$zone) -command "Areas::Display \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Fill) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Fill$layer) -command "Areas::DisplayFill \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId \"$layer\""
       foreach l $layer {
@@ -195,16 +195,17 @@ proc Areas::Display { args { All "" } } {
    global GDefs
    variable Data
 
+   set zone [lindex $args 0]
+
    foreach type $args {
       set f {}
 
       if { $All!="" } {
-         set Data(All$type) $All
+         set Data(All$zone) $All
       }
       
       for { set n 0 } { $n<[ogrlayer define $type -nb] } { incr n } {
-
-         if { $Data(All$type) } {
+         if { $Data(All$zone) } {
             set Data(Toggle$type$n) 1
             lappend f $n
          } else {
