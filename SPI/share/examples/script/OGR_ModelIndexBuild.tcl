@@ -27,219 +27,208 @@ package require Logger
 
 Log::Start [info script] 0.1
 
-#                 0             1           2                3                4               5                6                7            8            9             10         11
-set names  {     "RDPS"        "HRDPS"      "HRDPS_NORD"     "HRDPS_WEST"     "Caps"          "CIOPS_EAST"     "CIOPS_WEST"     "GLSOCE"     "GSL"        "RIOPS"       "SHOP"     "WEBTIDE"}
-set vars   {      P0            P0          P0               P0               P0              GL               GL               GL           GL           GL            TM         M2       }
-#                 0             1           2                3                4               5                6                7            8            9             10         11         12       13     14      16   16
-set subs   {      { "" }        { "" }      { "" }           { "" }           { "" }          { "" }           { "" }           { "" }       { "" }       { "" }        { "" }     { arctic9  ne_pac4  nwatl  sshelf  h3o  stle400 } }
-set models [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd  caps_eta.fstd   ciops_east.fstd  ciops_west.fstd  glsoce.txt   gsloce.fstd  riops.fstd    shop.txt   $env(WEBTIDE_DATA)]
+#------ Liste des shapefiles à créer
+set ModelDomain  { ModelDomain ModelDomainWet ModelDomainWaves }
+set type         { met         wet            waves }
 
-set nb 0
-foreach s $subs { incr nb [llength $s] }
+#------ Liste des modèles Atmosphériques
+set names(met)  {     "RDPS"        "HRDPS"     "HRDPS_NORD"     "HRDPS_WEST"     }
+set vars(met)   {      P0            P0          P0               P0              }
+set subs(met)   {      { "" }        { "" }      { "" }           { "" }          }
+set models(met) [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd ]
 
-#----- Open GEM index file
-eval file delete [glob -nocomplain $env(CI_DATA_OUT)/ModelDomain*]
-ogrfile open INDEXFILE write $env(CI_DATA_OUT)/ModelDomain.shp "ESRI Shapefile"
-ogrlayer create INDEXFILE INDEX "Domain"
+#------ Liste des modèles Aquatiques
+set names(wet)  {     "RIOPS"     "CIOPS_WEST"     "CIOPS_EAST"    "SHOP"    "WCPS"    "SALISH"   "WEBTIDE" }
+set vars(wet)   {      GL          GL               GL              ""        ""        ""         M2       }
+set subs(wet)   {      { "" }      { "" }           { "" }          { "" }    { "" }    { "" }     { arctic9 ne_pac4 nwatl stle400 sshelf h3o } }
+set models(wet) [list  riops.fstd  ciops_west.fstd  ciops_east.fstd shop.txt  wcps.txt  salish.txt $env(WEBTIDE_DATA)]
 
-ogrlayer define INDEX -field NAME String
-ogrlayer define INDEX -field ID   Integer
-ogrlayer define INDEX -nb $nb
+#------ Liste des modèles de vagues
+set names(waves)  {     "RDWPS (NEP)"  "RDWPS (SUP)"   "RDWPS (HUM)"    "RDWPS (ERI)"    "RDWPS (ONT)"   "RDWPS (NWA)"   }
+set vars(waves)   {     WH              GL              GL               GL               GL              WH             }
+set subs(waves)   {     { "" }          { "" }          { "" }           { "" }           { "" }          { "" }         }
+set models(waves) [list rdwps_nep.txt   rdwps_sup.fstd  rdwps_hum.fstd   rdwps_eri.fstd   rdwps_ont.fstd  rdwps_nwa.txt  ]
 
-#----- Initialiser la geometrie
-ogrgeometry create TIN   "Multi Polygon"
-ogrgeometry create TRI   "Polygon"
-ogrgeometry create POLY  "Polygon"
-ogrgeometry create RING  "Linear Ring"
-ogrgeometry create MPOINT "Multi Point"
-ogrgeometry create POINT "Point"
+foreach md $ModelDomain t $type {
 
-#----- Loop on the models
-set no  0
-set mdl 0
+   set nb 0
+   foreach s $subs($t) { incr nb [llength $s] }
 
-foreach model $models sub $subs var $vars name $names {
+   #----- Open GEM index file
+   eval file delete [glob -nocomplain $env(CI_DATA_OUT)/$md*]
+   ogrfile open INDEXFILE($md) write $env(CI_DATA_OUT)/$md.shp "ESRI Shapefile"
+   ogrlayer create INDEXFILE($md) INDEX($md) "Domain"
 
-   if {$name == "GLSOCE" } {
-      Log::Print INFO "Processing $model $s"
+   ogrlayer define INDEX($md) -field NAME String
+   ogrlayer define INDEX($md) -field ID   Integer
+   ogrlayer define INDEX($md) -nb $nb
 
-      #------ Read lat/lon for glsoce model (Great Lakes)
-      set file [open "$env(CI_DATA_IN)/ModelDomain/$model" r]
-      set coord_glsoce [gets $file]
-      close $file
+   #----- Initialiser la geometrie
+   ogrgeometry create TIN($md)    "Multi Polygon"
+   ogrgeometry create TRI($md)    "Polygon"
+   ogrgeometry create POLY($md)   "Polygon"
+   ogrgeometry create RING($md)   "Linear Ring"
+   ogrgeometry create MPOINT($md) "Multi Point"
+   ogrgeometry create POINT($md)  "Point"
 
-      ogrgeometry define RING -points {}
-      foreach coord $coord_glsoce {
-         set coord [split $coord ,]
-         ogrgeometry define RING -addpoint [lindex $coord 0] [lindex $coord 1]
-      }
-      ogrgeometry define POLY -geometry False RING
-      set geom POLY
+   #----- Loop on the models
+   set no  0
+   set mdl 0
 
-      if { $s!="" } {
-         ogrlayer define INDEX -feature $no NAME "$name ($s)"
+   foreach model $models($t) sub $subs($t) var $vars($t) name $names($t) {
+
+      if {$name == "GLSOCE" || $name == "SHOP" || $name == "WCPS" || $name == "SALISH" || $name == "RDWPS (NEP)" || $name == "RDWPS (NWA)" } {
+         Log::Print INFO "Processing $model $name"
+
+         #------ Read lat/lon for glsoce model (Great Lakes)
+         set file [open "$env(CI_DATA_IN)/ModelDomain/$model" r]
+         set coords [gets $file]
+         close $file
+
+         ogrgeometry define RING($md) -points {}
+         foreach coord $coords {
+            set coord [split $coord ,]
+            ogrgeometry define RING($md) -addpoint [lindex $coord 0] [lindex $coord 1]
+         }
+         ogrgeometry define POLY($md) -geometry False RING($md)
+         set geom POLY($md)
+
+         ogrlayer define INDEX($md) -feature $no NAME $name
+         ogrlayer define INDEX($md) -feature $no ID $mdl
+         ogrlayer define INDEX($md) -geometry $no False $geom
+         incr no
+
       } else {
-         ogrlayer define INDEX -feature $no NAME $name
-      }
-      ogrlayer define INDEX -feature $no ID $mdl
-      ogrlayer define INDEX -geometry $no False $geom
-      incr no
 
-   } elseif { $name == "SHOP" } {
-      Log::Print INFO "Processing $model $s"
+         foreach s $sub {
 
-      #------ Read lat/lon for SHOP model (St-Lawrence river)
-      set file [open "$env(CI_DATA_IN)/ModelDomain/$model" r]
-      set coord_shop [gets $file]
-      close $file
+            Log::Print INFO "Processing $model $s"
 
-      ogrgeometry define RING -points {}
-      foreach coord $coord_shop {
-         set coord [split $coord ,]
-         ogrgeometry define RING -addpoint [lindex $coord 0] [lindex $coord 1]
-      }
-      ogrgeometry define POLY -geometry False RING
-      set geom POLY
+            #----- Pick the last file
+            if { $name=="WEBTIDE"} {
+               set file [glob -nocomplain $model/$s/*.fstd]
+            } else {
+               set file $env(CI_DATA_IN)/ModelDomain/$model
+            }
+            if { ![llength $file] } {
+               Log::Print WARNING "No data is available of model $model/$s"
+               continue
+            }
 
-      if { $s!="" } {
-         ogrlayer define INDEX -feature $no NAME "$name ($s)"
-      } else {
-         ogrlayer define INDEX -feature $no NAME $name
-      }
-      ogrlayer define INDEX -feature $no ID $mdl
-      ogrlayer define INDEX -geometry $no False $geom
-      incr no
+            fstdfile open RPNFILE read $file
 
-   } else {
+            #----- Read P0 since it's always available
+            if { [catch { fstdfield read VAR RPNFILE -1 "" -1 -1 -1 "" $var} ] } {
+               fstdfile close RPNFILE
+               continue
+            }
 
-      foreach s $sub {
+            #----- Get the limits
+            set ni  [fstdfield define VAR -NI]
+            set nj  [fstdfield define VAR -NJ]
+            set gr  [fstdfield define VAR -GRTYP]
 
-         Log::Print INFO "Processing $model $s"
+            ogrgeometry define RING($md) -points {}
 
-         #----- Pick the last file
-         if { $name=="WEBTIDE"} {
-            set file [glob -nocomplain $model/$s/*.fstd]
-         } else {
-            set file $env(CI_DATA_IN)/ModelDomain/$model
-         }
-         if { ![llength $file] } {
-            Log::Print WARNING "No data is available of model $model/$s"
-            continue
-         }
+            switch $gr {
+               "Y" {
+                      fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
+                      fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
 
-         fstdfile open RPNFILE read $file
+                      ogrgeometry define MPOINT($md) -geometry False {}
+                      for { set i 0 } { $i<$ni } { incr i } {
+                         set lat [fstdfield stats LAT -gridvalue $i 0]
 
-         #----- Read P0 since it's always available
-         if { [catch { fstdfield read VAR RPNFILE -1 "" -1 -1 -1 "" $var} ] } {
-            fstdfile close RPNFILE
-            continue
-         }
+                         if { [fstdfield define LON -NJ]==1 } {
+                            set lon [fstdfield stats LON -gridvalue $i 0]
+                         } else {
+                            set lon [fstdfield stats LON -gridvalue 0 $i]
+                         }
 
-         #----- Get the limits
-         set ni  [fstdfield define VAR -NI]
-         set nj  [fstdfield define VAR -NJ]
-         set gr  [fstdfield define VAR -GRTYP]
+                         ogrgeometry define POINT($md) -points [list $lon $lat]
+                         ogrgeometry define MPOINT($md) -addgeometry False POINT($md)
+                      }
+                      set geom [ogrgeometry stats MPOINT($md) -convexhull]
+                   }
+               "M" {
+                      fstdfield read IDX RPNFILE -1 "" -1 -1 -1 "" ##
+                      fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
+                      fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
 
-         ogrgeometry define RING -points {}
+                      ogrgeometry define TIN($md)    -geometry False {}
+                      for { set i 0 } { $i<[fstdfield define IDX -NI] } { incr i 3 } {
+                         set i0 [fstdfield stats IDX -gridvalue $i          0]
+                         set i1 [fstdfield stats IDX -gridvalue [expr $i+1] 0]
+                         set i2 [fstdfield stats IDX -gridvalue [expr $i+2] 0]
 
-         switch $gr {
-            "Y" {
-                   fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
-                   fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
+                         set lo0 [fstdfield stats LON -gridvalue $i0 0]; set lo0 [expr $lo0>90?$lo0-360:$lo0]
+                         set la0 [fstdfield stats LAT -gridvalue $i0 0]
+                         set lo1 [fstdfield stats LON -gridvalue $i1 0]; set lo1 [expr $lo1>90?$lo1-360:$lo1]
+                         set la1 [fstdfield stats LAT -gridvalue $i1 0]
+                         set lo2 [fstdfield stats LON -gridvalue $i2 0]; set lo2 [expr $lo2>90?$lo2-360:$lo2]
+                         set la2 [fstdfield stats LAT -gridvalue $i2 0]
 
-                   ogrgeometry define MPOINT -geometry False {}
-                   for { set i 0 } { $i<$ni } { incr i } {
-                      set lat [fstdfield stats LAT -gridvalue $i 0]
-
-                      if { [fstdfield define LON -NJ]==1 } {
-                         set lon [fstdfield stats LON -gridvalue $i 0]
-                      } else {
-                         set lon [fstdfield stats LON -gridvalue 0 $i]
+                         ogrgeometry define RING($md) -points [list $lo0 $la0 $lo1 $la1 $lo2 $la2 $lo0 $la0]
+                         ogrgeometry define TRI($md) -geometry False RING($md)
+                         ogrgeometry define TIN($md) -addgeometry False TRI($md)
+                      }
+                      set geom [ogrgeometry stats TIN($md) -dissolve]
+         #            set geom [ogrgeometry stats TIN($md) -convexhull]
+                   }
+               default {
+                      #----- Bottom
+                      set j 0
+                      for { set i 0 } { $i<$ni } { incr i } {
+                         set ll [fstdfield stats VAR -gridpoint $i $j]
+                         ogrgeometry define RING($md) -addpoint [lindex $ll 1] [lindex $ll 0]
                       }
 
-                      ogrgeometry define POINT -points [list $lon $lat]
-                      ogrgeometry define MPOINT -addgeometry False POINT
-                   }
-                   set geom [ogrgeometry stats MPOINT -convexhull]
+                      #----- Right
+                      set i [expr $ni-1]
+                      for { set j 0 } { $j<$nj } { incr j } {
+                         set ll [fstdfield stats VAR -gridpoint $i $j]
+                         ogrgeometry define RING($md) -addpoint [lindex $ll 1] [lindex $ll 0]
+                      }
+
+                      #----- Top
+                      set j [expr $nj-1]
+                      for { set i [expr $ni -1] } { $i>=0 } { incr i -1 } {
+                         set ll [fstdfield stats VAR -gridpoint $i $j]
+                         ogrgeometry define RING($md) -addpoint [lindex $ll 1] [lindex $ll 0]
+                      }
+
+                      #----- Left
+                      set i 0
+                      for { set j [expr $nj-1] } { $j>=0 } { incr j -1 } {
+                         set ll [fstdfield stats VAR -gridpoint $i $j]
+                         ogrgeometry define RING($md) -addpoint [lindex $ll 1] [lindex $ll 0]
+                      }
+
+                      #----- Close the polygon
+                      set ll [fstdfield stats VAR -gridpoint 0 0]
+                      ogrgeometry define RING($md) -addpoint [lindex $ll 1] [lindex $ll 0]
+                      ogrgeometry define POLY($md) -geometry False RING($md)
+                      set geom POLY($md)
                 }
-            "M" {
-                   fstdfield read IDX RPNFILE -1 "" -1 -1 -1 "" ##
-                   fstdfield read LAT RPNFILE -1 "" -1 -1 -1 "" ^^
-                   fstdfield read LON RPNFILE -1 "" -1 -1 -1 "" >>
-
-                   ogrgeometry define TIN    -geometry False {}
-                   for { set i 0 } { $i<[fstdfield define IDX -NI] } { incr i 3 } {
-                      set i0 [fstdfield stats IDX -gridvalue $i          0]
-                      set i1 [fstdfield stats IDX -gridvalue [expr $i+1] 0]
-                      set i2 [fstdfield stats IDX -gridvalue [expr $i+2] 0]
-
-                      set lo0 [fstdfield stats LON -gridvalue $i0 0]; set lo0 [expr $lo0>90?$lo0-360:$lo0]
-                      set la0 [fstdfield stats LAT -gridvalue $i0 0]
-                      set lo1 [fstdfield stats LON -gridvalue $i1 0]; set lo1 [expr $lo1>90?$lo1-360:$lo1]
-                      set la1 [fstdfield stats LAT -gridvalue $i1 0]
-                      set lo2 [fstdfield stats LON -gridvalue $i2 0]; set lo2 [expr $lo2>90?$lo2-360:$lo2]
-                      set la2 [fstdfield stats LAT -gridvalue $i2 0]
-
-                      ogrgeometry define RING -points [list $lo0 $la0 $lo1 $la1 $lo2 $la2 $lo0 $la0]
-                      ogrgeometry define TRI -geometry False RING
-                      ogrgeometry define TIN -addgeometry False TRI
-                   }
-                   set geom [ogrgeometry stats TIN -dissolve]
-      #            set geom [ogrgeometry stats TIN -convexhull]
-                }
-            default {
-                   #----- Bottom
-                   set j 0
-                   for { set i 0 } { $i<$ni } { incr i } {
-                      set ll [fstdfield stats VAR -gridpoint $i $j]
-                      ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
-                   }
-
-                   #----- Right
-                   set i [expr $ni-1]
-                   for { set j 0 } { $j<$nj } { incr j } {
-                      set ll [fstdfield stats VAR -gridpoint $i $j]
-                      ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
-                   }
-
-                   #----- Top
-                   set j [expr $nj-1]
-                   for { set i [expr $ni -1] } { $i>=0 } { incr i -1 } {
-                      set ll [fstdfield stats VAR -gridpoint $i $j]
-                      ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
-                   }
-
-                   #----- Left
-                   set i 0
-                   for { set j [expr $nj-1] } { $j>=0 } { incr j -1 } {
-                      set ll [fstdfield stats VAR -gridpoint $i $j]
-                      ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
-                   }
-
-                   #----- Close the polygon
-                   set ll [fstdfield stats VAR -gridpoint 0 0]
-                   ogrgeometry define RING -addpoint [lindex $ll 1] [lindex $ll 0]
-                   ogrgeometry define POLY -geometry False RING
-                   set geom POLY
              }
-          }
-          fstdfile close RPNFILE
+             fstdfile close RPNFILE
 
-          if { $s!="" } {
-             ogrlayer define INDEX -feature $no NAME "$name ($s)"
-          } else {
-             ogrlayer define INDEX -feature $no NAME $name
-          }
-          ogrlayer define INDEX -feature $no ID $mdl
-          ogrlayer define INDEX -geometry $no False $geom
+             if { $s!="" } {
+                ogrlayer define INDEX($md) -feature $no NAME "$name ($s)"
+             } else {
+                ogrlayer define INDEX($md) -feature $no NAME $name
+             }
+             ogrlayer define INDEX($md) -feature $no ID $mdl
+             ogrlayer define INDEX($md) -geometry $no False $geom
 
-          incr no
+             incr no
+          }
        }
-    }
 
-    incr mdl
+       incr mdl
+   }
+
+   ogrfile close INDEXFILE($md)
 }
-
-ogrfile close INDEXFILE
 
 Log::End
