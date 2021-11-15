@@ -2401,9 +2401,9 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
           case DATE:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
-               Tcl_GetWideIntFromObj(Interp,Objv[++i],&Var->Date);
+               Tcl_GetLongFromObj(Interp,Objv[++i],&Var->Date);
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(Var->Date));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(Var->Date));
             }
             break;
 
