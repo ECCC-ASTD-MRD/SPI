@@ -11,7 +11,7 @@ include(ec_init)           # Initialise compilers and ec specific functions
 ec_git_version()           # Get version from git state
 ec_parse_manifest()        # Parse MANIFEST file
 
-project(${NAME} DESCRIPTION "${DESCRIPTION}")
+project(${NAME} DESCRIPTION "${DESCRIPTION}" LANGUAGES NONE)
 set(PROJECT_VERSION ${VERSION})
 
 #ec_build_info()            # Generate build include file

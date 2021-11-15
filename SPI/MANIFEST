@@ -1,6 +1,7 @@
 NAME       : SPI
 VERSION    : 8.2.0
 BUILD      : Release
+STATE      :
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 

@@ -67,7 +67,7 @@ fi
 
 #----- Check for software mode
 if [[ $SOFT -eq 1 ]]; then
-   export LD_PRELOAD=$"{SPI_LIB}/GL/lib ${LD_PRELOAD}"
+   export LD_PRELOAD="${SPI_LIB}/GL/lib/libGL.so.1 ${SPI_LIB}/GL/lib/libglapi.so.0 ${LD_PRELOAD}"
    unset vg
 fi
 

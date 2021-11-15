@@ -1,7 +1,7 @@
 export TCL_VERSION=@TCL@
 
 export SPI_VERSION=@VERSION@
-export SPI_STATE=@BUILD@
+export SPI_STATE=@STATE@
 export SPI_DATE=@BUILD_TIMESTAMP@
 
 export EER_VERSION=@EER@
