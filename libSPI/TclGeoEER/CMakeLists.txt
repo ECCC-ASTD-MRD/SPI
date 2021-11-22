@@ -8,7 +8,7 @@ message(STATUS "Generating ${NAME} library")
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
 
-find_package(BISON REQUIRED)
+find_package(BISON 3.0.0 REQUIRED)
 find_package(FLEX REQUIRED)
 BISON_TARGET(Parser generic/Data_Calc.y ${CMAKE_CURRENT_BINARY_DIR}/Data_Parser.c COMPILE_FLAGS "-p vexpr_")
 FLEX_TARGET(Lexer generic/Data_Calc.l ${CMAKE_CURRENT_BINARY_DIR}/Data_Lexer.c COMPILE_FLAGS "-P vexpr_")
