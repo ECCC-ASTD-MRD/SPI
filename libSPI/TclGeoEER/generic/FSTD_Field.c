@@ -2133,7 +2133,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                break;
 
             case FSTD_LISTDATEV:
-               if (head.DATEV>0) {
+               if (head.DATEV>0 || !RPN_IsDesc(head.NOMVAR)) {
                   Tcl_SetLongObj(obj,head.DATEV>0?System_Stamp2Seconds(head.DATEV):0);
 
                   if (TclY_ListObjFind(Interp,list,obj)==-1) {
