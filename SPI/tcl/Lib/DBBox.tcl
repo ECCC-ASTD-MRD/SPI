@@ -18,9 +18,7 @@
 #     DBBox::CheckDB     { DB }
 #     DBBox::ReadDB      { DB }
 #     DBBox::Search      { DB Column Pattern }
-#     DBBox::SearchClear { DB {Columns {}} }
 #     DBBox::Sort        { DB W }
-#     DBBox::GetFmt      { DB W }
 #     DBBox::Update      { DB W }
 #
 #
@@ -32,9 +30,6 @@ catch { SPI::Splash "Loading Widget Package DBBox 1.0" }
 
 namespace eval DBBox {
    variable Lbl
-   variable Param
-
-   set Lbl(Close)    {"Fermer" "Close"}
 }
 
 #-------------------------------------------------------------------------------
@@ -59,7 +54,6 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    global   GDefs
    variable Lbl
    variable Data
-   variable Search
    variable Param
 
    CheckDB $DB
@@ -70,66 +64,131 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    toplevel .dbbox -bg $GDefs(ColorLight)
    wm transient .dbbox $Parent
    wm title .dbbox [lindex $Lbl(${DB}Title) $GDefs(Lang)]
-   wm resizable .dbbox 0 1
-   wm protocol .dbbox WM_DELETE_WINDOW { }
+   wm resizable .dbbox 1 1
+   wm geometry .dbbox 900x400
+   wm protocol .dbbox WM_DELETE_WINDOW {set DBBox::Data(Result) ""}
 
-   #----- Create the header (title + searchbox)
-   set hlst {}
-   set h .dbbox.head
-   frame $h
-      foreach key $Param(${DB}Lst) w $Param(${DB}Width) lbl [lindex $Lbl(${DB}Lst) $GDefs(Lang)] {
-         lappend hlst [frame $h.$key]
-         #pack [label $h.$key.title -bd 1 -text $lbl -height 5 -relief raised -width $w] -side top -fill y
-         pack [radiobutton $h.$key.title -bd 1 -text $lbl -height 5 -relief raised -width $w -indicatoron 0 -variable DBBox::Param(Sort) -value $key -command [list DBBox::Sort $DB .dbbox.body.box]] -side top -fill y
-         pack [entry $h.$key.search -relief sunken -bd 1 -width $w -bg $GDefs(ColorLight) -textvariable DBBox::Search($DB$key)] -side top -fill x
-         bind $h.$key.search <KeyRelease> [list DBBox::Update $DB .dbbox.body.box]
+   #----- Main frame
+   frame [set f .dbbox.main]
+
+   #----- Table
+   scrollbar $f.sy -relief sunken -bd 1 -width 10 -command "$f.tbl yview"
+   table [set tbl $f.tbl] -relief flat -bd 1 -bg $GDefs(ColorLight) -anchor w -yscrollcommand "$f.sy set" \
+      -selectmode browse -selecttype row -sparsearray 1 -drawmode fast -state normal -cursor left_ptr \
+      -bd 0 -bordercursor sb_h_double_arrow -resizeborders col -colstretchmode unset -width 1 -height 1 -multiline 0 \
+      -rows 2 -cols [llength $Param(${DB}Lst)] -titlecols 0 -titlerows 2 -highlightbackground $GDefs(ColorHighLight) -invertselected 0 \
+      -insertbackground $GDefs(ColorLight) -variable ::DBBox::Tbl -autoclear 1 -padx 2 -ellipsis "…"
+   pack $f.sy -side left -fill y
+   pack $f.tbl -side left -fill both -expand 1 -before $f.sy
+
+   pack $f -side top -expand 1 -fill both
+
+   #----- Table header
+   $tbl set row 0,0 [lindex $Lbl(${DB}Lst) $GDefs(Lang)]
+   $tbl height 0 [::tcl::mathfunc::max {*}[lmap l [lindex $Lbl(${DB}Lst) $GDefs(Lang)] {llength [split $l \n]}]]
+
+   #----- Tagging command
+   $tbl configure -rowtagcommand [list apply [list {Row} {
+      if { $Row >= 2 } {
+         return data
+      } elseif { $Row == 1 } {
+         return search
       }
-      pack {*}$hlst -side left -fill both -expand true
-   pack $h -side top -anchor w -fill x
-
-   #----- Body (actual content)
-   set b .dbbox.body
-   frame $b
-      listbox $b.box -relief sunken -bd 1 -exportselection false  -highlightthickness 0 \
-         -yscrollcommand "$b.scroll set" -height 25 -width 170 -background $GDefs(ColorLight)
-      pack $b.box -side left -expand true -fill both
-
-      scrollbar $b.scroll -command "$b.box yview" -bd 1 -width 10  -highlightthickness 0
-      pack $b.scroll  -side left -fill y
-   pack $b -side top -anchor w -expand true -fill both
-
-   #----- Afficher le bouton pour fermer la fenetre de selection
-   set t .dbbox.tail
-   frame $t
-      button $t.close -bd 1 -text [lindex $Lbl(Close) $GDefs(Lang)] -highlightthickness 0 -command {
-         if { [llength [.dbbox.body.box curselection]] } {
-            set DBBox::Data(Result) [lindex $DBBox::Data(Shown) [.dbbox.body.box curselection]]
-         } else {
-            set DBBox::Data(Result) ""
-         }
-      }
-      pack $t.close -side top -fill both -expand true
-   pack $t -side top -fill x
-
-   if { $Cmd != "" } {
-      bind $b.box <B1-ButtonRelease> "$Cmd \[lindex \$DBBox::Data(Shown) \[%W nearest %y\]\]"
+   }]]
+   if { [info exists Param(${DB}Type)] } {
+      $tbl configure -coltagcommand [list apply [list {Fmts Col} {
+         return [lindex $Fmts $Col]
+      }] $Param(${DB}Type)]
    }
-   bind $b.box <Double-1> {if { [llength [.dbbox.body.box curselection]] } { set DBBox::Data(Result) [lindex $DBBox::Data(Shown) [.dbbox.body.box curselection]] }}
+
+   #----- Table formatting
+   $tbl tag configure title -anchor center -relief raised -multiline 1 -justify center -bg $GDefs(ColorFrame) -fg black -bd 1
+   $tbl tag configure sel -relief flat -bg $GDefs(ColorFrame)
+   $tbl tag configure search -state normal -relief sunken -multiline 0
+   $tbl tag configure data -state disabled -relief flat
+   $tbl tag configure sort -fg blue
+   $tbl tag configure click -relief sunken
+   $tbl tag configure int -anchor e
+   $tbl tag configure fp -anchor e
+   $tbl tag configure exp -anchor e
+   $tbl tag configure str -anchor w
+
+   $tbl tag raise search
+   $tbl tag raise click
+   $tbl tag raise sort
+
+   #----- Bindings for scrolling
+   bind $tbl <ButtonPress-4> [list $tbl yview scroll -1 units]
+   bind $tbl <ButtonPress-5> [list $tbl yview scroll 1 units]
+
+   #----- Bindings for sorting
+   bind $tbl <ButtonPress-1> [list apply [list {W X Y} {
+      lassign [split [set idx [$W index @$X,$Y]] ,] row col
+      #----- If on the first row and not on a column border
+      if { $row==0
+           && ($col==0 || [$W index @[expr $X-2],$Y col]==$col)
+           && ($col-1==[$W cget -cols] || [$W index @[expr $X+2],$Y col]==$col) } {
+         $W tag cell click $idx
+      }
+   } [namespace current]] %W %x %y]
+   bind $tbl <ButtonRelease-1> [list apply [list {DB W X Y} {
+      variable Param
+
+      lassign [split [set idx [$W index @$X,$Y]] ,] row col
+      #----- Make sure we were clicking on this button
+      if { [$W tag includes click $idx] } {
+         Sort $DB $W $col
+      }
+
+      $W clear tags 0,0 0,[$W cget -cols]
+      if { $Param(Sort) >= 0 } {
+         $W tag cell sort 0,$Param(Sort)
+      }
+   } [namespace current]] $DB %W %x %y]
+
+   #----- Bindings for the search boxes
+   bind $tbl <KeyRelease>     [list after idle [list DBBox::Update $DB $tbl]]
+   bind $tbl <Key-KP_Enter>   {%W selection clear all; %W activate ""}
+   bind $tbl <Key-Return>     {%W selection clear all; %W activate ""}
+   bind $tbl <Motion>         [list apply [list {W X Y} {
+      if { [$W tag includes search [$W index @$X,$Y]] } {
+         $W configure -cursor "xterm"
+         update idletasks
+      } elseif { [$W cget -cursor] == "xterm" } {
+         $W configure -cursor "left_ptr"
+         update idletasks
+      }
+   } [namespace current]] %W %x %y]
+
+   #----- Binding for the selection
+   bind $tbl <Double-1> [list apply [list {W X Y DB} {
+      lassign [split [set idx [$W index @$X,$Y]] ,] row col
+      if { $row >= 2 } {
+         #set DBBox::Data(Result) [$W get $row,0 $row,[$W cget -cols]]
+         set DBBox::Data(Result) [lindex $DBBox::Data(View$DB) $row-2]
+      }
+   }] %W %x %y $DB]
+   if { $Cmd != "" } {
+      bind $tbl <B1-ButtonRelease> [list apply [list {W X Y Cmd} {
+         lassign [split [set idx [$W index @$X,$Y]] ,] row col
+         if { $row >= 2 } {
+            {*}$Cmd [$W get $row,0 $row,[$W cget -cols]]
+         }
+      }] %W %x %y $Cmd]
+   }
 
    update
 
-   #----- Inserer les données dans la ScrollBox
+   #----- Default vars + fill the table
 
-   set Param(Sort) ""
+   set Param(Sort) -1
    set Param(SortOrder) "increasing"
-   SearchClear $DB
-   Update $DB $b.box
+   Update $DB $tbl
 
-   #----- Attente de la selection du fichier
+   #----- Wait for selection
 
    set prevgrab [grab current]
    grab .dbbox
-   focus .dbbox.head.[lindex $Param(${DB}Lst) 0].search
    set Data(Result) ""
    tkwait variable DBBox::Data(Result)
 
@@ -267,141 +326,41 @@ proc DBBox::Search { DB Column Pattern } {
 }
 
 #-------------------------------------------------------------------------------
-# Nom      : <DBBox::SearchClear>
-# Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
-#
-# But      : Réinitialise les critères de recherche
-#
-# Parametres :
-#     <DB>     : La base de données
-#     <Columns>: Les colonnes (nom ou index) à réinitialisé.
-#                Aucune colonnes = toutes les colonnes
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-proc DBBox::SearchClear { DB {Columns {}} } {
-   variable Search
-   variable Param
-   variable Data
-
-   if { [llength $Columns] } {
-      foreach col $Columns {
-         if { [string is integer $col] } {
-            set Search($DB[lindex $Param(${DB}Lst) $col]) ""
-         } else {
-            set Search($DB$col) ""
-         }
-      }
-   } else {
-      foreach key $Param(${DB}Lst) {
-         set Search($DB$key) ""
-      }
-   }
-}
-
-#-------------------------------------------------------------------------------
 # Nom      : <DBBox::Sort>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
 # But      : Sort sur une colone
 #
 # Parametres :
-#     <DB>     : La base de données
-#     <W>   : Le widget (listbox) à updater
+#  <DB>     : La base de données
+#  <W>      : Le widget (listbox) à updater
+#  <Col>    : La colone sur laquelle faire le trie
 #
 # Retour:
 #
 # Remarques :
 #
 #-------------------------------------------------------------------------------
-proc DBBox::Sort { DB W } {
+proc DBBox::Sort { DB W Col } {
    variable Param
 
-   #----- Set the sorting order
-   if { ![info exists Param(SortPrev)] || $Param(Sort)!=$Param(SortPrev) || $Param(SortOrder)=="decreasing" } {
+   if { ![string is integer -strict $Col] } {
+      if { [set idx [lsearch -exact $Param(${DB}Lst) $Col]]!=-1 } {
+         set Col $idx
+      } else {
+         return -code error "Invalid column: $Col"
+      }
+   }
+
+   if { $Param(Sort)!=$Col || $Param(Sort)==$Col && $Param(SortOrder)=="decreasing" } {
       set Param(SortOrder) "increasing"
    } else {
       set Param(SortOrder) "decreasing"
    }
 
-   set Param(SortPrev)  $Param(Sort)
+   set Param(Sort) $Col
 
    Update $DB $W
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <DBBox::GetFmt>
-# Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
-#
-# But      : Retourne (en le construisant si nécessaire) le format (de style
-#            printf) à utiliser pour formater les données.
-#
-# Parametres :
-#     <DB>  : La base de données
-#     <W>   : Le widget (listbox) où seront affichées les données
-#
-# Retour:
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-proc DBBox::GetFmt { DB W } {
-   variable Param
-
-   if { [info exists Param(${DB}Fmt)] } {
-      return $Param(${DB}Fmt)
-   }
-
-   update
-
-   set fmt  ""
-   set nb   0
-   set font [$W cget -font]
-   set cw   [font measure $font -displayof $W " "] ;# The next lines assume that this is a fixed-width font
-
-   foreach key $Param(${DB}Lst) just $Param(${DB}Just) {
-      set ent  .dbbox.head.$key
-      set gap  [lindex [$ent.search bbox 0] 0]
-      set x    [winfo x $ent]
-      set w    [winfo width $ent]
-      set j    [string index $just 0]
-
-      #----- Left pad with spaces if needed
-      set pad [expr {double($x+$gap-$nb*$cw)/double($cw)}]
-      set pad [expr {int($nb>0 ? ceil($pad) : $pad)}]
-
-      #----- Calculate the number of characters we can put in this field
-      set adj  [expr {($nb+$pad)*$cw-$x-$gap}]
-      set nc   [expr {int(double($w-2*$gap-($adj>0?$adj:0))/double($cw))}]
-
-      #----- Adjust the gap and the number of chars if we use the centered justification
-      if { $j == "c" } {
-         set j [string index $just 1]
-         set c [string range $just 2 end]
-
-         set adj [expr {double($nc-$c)*0.5}]
-         if { $j == "r" } {
-            set nc [expr {$nc-int($adj)}]
-         } else {
-            set nc   [expr {$nc-int(ceil($adj))}]
-            set pad  [expr {$pad+int($adj)}]
-         }
-      }
-
-      #----- Append to the format string
-      append fmt [string repeat " " $pad] % [expr {$j=="l"?"-":""}] $nc.$nc s
-
-      #----- Update our new position
-      set nb [expr {$nb+$pad+$nc}]
-   }
-
-   #----- Save the format
-   set Param(${DB}Fmt) $fmt
-
-   return $fmt
 }
 
 #-------------------------------------------------------------------------------
@@ -421,37 +380,42 @@ proc DBBox::GetFmt { DB W } {
 #
 #-------------------------------------------------------------------------------
 proc DBBox::Update { DB W } {
-   variable Search
+   variable Tbl
    variable Param
    variable Data
 
+   set ntr [$W cget -titlerows]
+   set ntc [$W cget -titlecols]
+
    #----- Clear the listbox
-   $W delete 0 end
+   $W delete rows $ntr
 
    #----- Only keep items that match the criterias
    set lst $Data(View$DB)
-   set idx 0
-   foreach key $Param(${DB}Lst) {
-      if { [info exists Search($DB$key)] && $Search($DB$key)!="" } {
-         set lst [lsearch -glob -nocase -index $idx -inline -all $lst "*[join $Search($DB$key) *]*[set lst ""]"]
+   set a ""
+   catch {
+      lassign [split [set a [$W index active]] ,] r c
+      if { $r == 1 } {
+         set lst [lsearch -glob -nocase -index $c -inline -all $lst "*[join $Tbl(active) *]*[set lst ""]"]
       }
-      incr idx
+   }
+   foreach {idx val} [array get Tbl 1,*] {
+      if { $idx != $a } {
+         set lst [lsearch -glob -nocase -index [lindex [split $idx ,] 1] -inline -all $lst "*[join $val *]*[set lst ""]"]
+      }
    }
 
    #----- Sort based on the selected column (if necessary)
-   if { [set idx [lsearch -exact $Param(${DB}Lst) $Param(Sort)]]!=-1 } {
-      set lst [lsort -index $idx -nocase -$Param(SortOrder) $lst[set lst ""]]
+   if { $Param(Sort) >= 0 } {
+      set lst [lsort -index $Param(Sort) -nocase -$Param(SortOrder) $lst[set lst ""]]
    }
 
    #----- Add the items that match the search criterias
-   set fmt [GetFmt $DB $W]
+   $W configure -rows [expr $ntr+[llength $lst]]
+   set r $ntr
    foreach row $lst {
-      $W insert end [format $fmt {*}$row]
+      $W set row $r,$ntc $row
+      incr r
    }
-
-   #----- Keep a copy of what we've added (some DB have spaces in some of their fields which mean that we need to keep the list formatting)
-   set Data(Shown) $lst
-
-   update
 }
 
