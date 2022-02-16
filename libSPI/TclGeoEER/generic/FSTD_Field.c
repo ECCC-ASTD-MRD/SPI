@@ -401,10 +401,10 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'Y':
-            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
             if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
@@ -2445,28 +2445,33 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       } 
    }
 
+   ok=-1;
    // Check for mask (TYPVAR==@@) 
    if (h.TYPVAR[0]!='@' && h.TYPVAR[1]=='@') {
       ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
-      if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
-         if ((field->Def->Mask=(char*)malloc(ni*nj))) {
-            if ((tmpi=(int*)malloc(ni*nj*sizeof(int)))) {
-               cs_fstlukt(tmpi,h.File->Id,ok,&tile,&ni,&nj,&nk);
-               for(i=0;i<ni*nj;i++) {
-                  field->Def->Mask[i]=tmpi[i]!=0x0;
-               }
-               free(tmpi);
-            } else {
-               free(field->Def->Mask);
-               field->Def->Mask=NULL;
-               App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
+   }
+   // Check for mask (TYPVAR=*@)
+   if (ok<=0) {
+      ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3," @",h.NOMVAR);
+   }
+   if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
+      if ((field->Def->Mask=(char*)malloc(ni*nj))) {
+         if ((tmpi=(int*)malloc(ni*nj*sizeof(int)))) {
+            cs_fstlukt(tmpi,h.File->Id,ok,&tile,&ni,&nj,&nk);
+            for(i=0;i<ni*nj;i++) {
+               field->Def->Mask[i]=tmpi[i]!=0x0;
             }
+            free(tmpi);
          } else {
-            App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
+            free(field->Def->Mask);
+            field->Def->Mask=NULL;
+            App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
          }
+      } else {
+         App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
       }
    }
-
+   
    // Recuperer les type de niveaux et forcer ETA pour SIGMA
    lvl=ZRef_IP2Level(h.IP1,&type);
    type=type==LVL_SIGMA?LVL_ETA:type;
