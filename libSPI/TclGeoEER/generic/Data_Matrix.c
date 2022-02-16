@@ -31,7 +31,9 @@
  *==============================================================================
  */
 
+
 #include "App.h"
+#include "tclDataSpec.h"
 #include "RPN.h"
 #include "Data_Matrix.h"
 #include "Data_Calc.h"
@@ -567,7 +569,8 @@ TDef* Calc_Dir(TDef* A) {
       free(spd);
    }
 #else
-   App_ErrorSet("%s: Need RMNLIB",__func__);
+   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   return(NULL);
 #endif
 
    return(GData[GDataN]);

@@ -1,70 +1,31 @@
-#The program 'gitlab-runner' must be found in the PATH to get the artifacts collecting working.
-#local tests: gitlab-ci-multi-runner-linux-amd64 exec shell [stage]
-
 variables:
-    # CI_DEBUG_TRACE: "true"
+   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
-#   - build
-#   - test
-#   - package
+   - build
+   - test
+   - package
 #   - deploy
-#   - doc
 
-build:
-   stage: build
-   script:
-      - . SPI/VERSION
-      - . ssmuse-sh -x eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
-      - . r.env.dot --arch amd64
-      - . ssmuse-sh -x comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -x hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
-      - cd libSPI
-      - ./makeit -build -auto -reconf
-   only:
-      - master
-      - dev
+before_script:
+   # Force color CMake output even when output is not TTY
+   - export CLICOLOR_FORCE=true
 
-test:
-   stage: test
-   variables:
-   script:
-      - CI_Run.sh -path ${CI_PROJECT_DIR} -ref ${CI_BUILD_REF} -test ${CI_PROJECT_DIR}/test/CI.sh
-   only:
-      - master
-      - dev
-
-package:
-   stage: package
-   script:
-      - cd libSPI
-      - ./makeit -ssm
-      - cd ../SPI
-      - ./makeit -ssm
-#      - cd ..
-#      - ./makeit -src
-   only:
-      - master
-
-deploy:
-   stage: deploy
-   script:
-      - . SPI/VERSION
-#      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}.ssm
-#      - ssm install -d /ssm/net/cmds/apps/SPI/master -f $SSM_DEV/package/SPI_${SPI_VERSION}_all.ssm
-#      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p libSPI_${SPI_VERSION}${SSM_COMP}_${ORDENV_PLAT}
-#      - ssm publish -d /ssm/net/cmds/apps/SPI/master -P /ssm/net/cmds/apps/SPI/beta -p SPI_${SPI_VERSION}_all
-      
-#      - ssh eer@eccessdepot.cmc.ec.gc.ca mkdir -p www/software/SPI/${SPI_VERSION}${SPI_STATE}
-#      - ssh eer@eccessdepot.cmc.ec.gc.ca ln -fs ../DBGeo/DBGeo.tgz DBGeo.tgz
-#      - scp INSTALL.txt $SSM_DEV/package/SPI_${SPI_VERSION}-src.tgz eer@accessdepot.cmc.ec.gc.ca:www/software/SPI/${SPI_VERSION}${SPI_STATE}     
-   only:
-      - master
-      
-#doc:
-  #stage: doc
-  #variables:
-    #docname: $CI_BUILD_REF_NAME-$CI_BUILD_REF
-    #midasdoc: /home/erv000/public_html/midas-doc
-  #script:
-  #only:
-    #- master
+#build:intel-19.0.3:
+#   stage: build
+#   only:
+#      - master
+#      - dev
+#   script:
+#      - source ci-env/latest/ubuntu-18.04-amd-64/intel-19.0.3.199.sh
+#      - export SSM_DEV=/users/dor/afsr/005/links/storage/ssm
+#      - export CMD_EXT_PATH=/ssm/net/cmds/ext/20210301
+#      - . ssmuse-sh -x $CMD_EXT_PATH
+#      - mkdir build_intel-19.0.3
+#      - cd build_intel-19.0.3
+#      - cmake ../ 
+#      - make
+#   artifacts:
+#      expire_in: 2 hrs
+#      paths:
+#         - build_intel-19.0.3

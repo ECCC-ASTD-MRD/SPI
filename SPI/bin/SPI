@@ -11,7 +11,8 @@ HOST=`hostname`
 PROG=("${SPI_LIB}/TCL/bin/wish${TCL_VERSION}" "${SPI_PATH}/tcl/SPI.tcl")
 
 #----- Check for VirtualGL
-type vglrun >/dev/null 2>&1 && vg=vglrun
+# Not needed anymore, whole session is started with vglrun (VGL_ISACTIVE could be used at some point)
+#type vglrun >/dev/null 2>&1 && vg=vglrun
 
 #----- Parse the flags fo batch token
 args=()
@@ -66,7 +67,7 @@ fi
 
 #----- Check for software mode
 if [[ $SOFT -eq 1 ]]; then
-   export LD_LIBRARY_PATH=${SPI_LIB}/GL/lib:${LD_LIBRARY_PATH}
+   export LD_PRELOAD="${SPI_LIB}/GL/lib/libGL.so.1 ${SPI_LIB}/GL/lib/libglapi.so.0 ${LD_PRELOAD}"
    unset vg
 fi
 

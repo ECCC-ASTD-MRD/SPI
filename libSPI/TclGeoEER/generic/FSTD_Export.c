@@ -33,6 +33,7 @@
 
 #ifdef HAVE_RMN
 
+#include "tclDataSpec.h"
 #include "RPN.h"
 #include "tclFSTD.h"
 #include "tclGDAL.h"
@@ -165,7 +166,8 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
 
    fclose(fid);
 #else
-   App_ErrorSet("%s: Need RMNLIB",__func__);
+   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   return(TCL_ERROR);
 #endif
    return(TCL_OK);
 }

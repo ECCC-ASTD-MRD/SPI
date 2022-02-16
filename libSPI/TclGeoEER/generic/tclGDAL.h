@@ -41,10 +41,6 @@
 #include "tclGeoRef.h"
 #include "GeoTex.h"
 
-//#include "gdal.h"
-//#include "ogr_srs_api.h"
-//#include "cpl_string.h"
-
 #define GDAL_REPLACE   0
 #define GDAL_MIN       1
 #define GDAL_MAX       2

@@ -853,7 +853,8 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
 
    // Fix for matrix transformation to work correclty
    if (mtx[0]==180.0) mtx[0]=-180;
-   
+
+#ifdef HAVE_GDAL   
    if ((ref=GRIB_WKTProjCS(Interp,head->Handle,&rt))) {
       if (OSRIsProjected(ref)) {
          if ((llref=OSRCloneGeogCS(ref))) {
@@ -900,6 +901,10 @@ int GRIB_GridGet(Tcl_Interp *Interp,TData *Field,int NI,int NJ,int NK) {
    } else {
       return(TCL_ERROR);
    }
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
    return(TCL_OK);
 }
 
@@ -1184,7 +1189,8 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
 //          (*RT)->CosPhi=cos(lons);
    }
 #else
-   App_ErrorSet("%s: Need RMNLIB",__func__);
+   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   return(TCL_ERROR);
 #endif
    
    return(TCL_OK);

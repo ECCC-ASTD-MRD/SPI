@@ -33,6 +33,7 @@
 
 #include "App.h"
 #include "tclUtils.h"
+#include "tclDataSpec.h"
 #include "RPN.h"
 #include "Triangle.h"
 
@@ -2301,7 +2302,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          free(ll);
          free(xy);
 #else
-   App_ErrorSet("%s: Need RMNLIB",__func__);
+   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
 #endif
    }
 
