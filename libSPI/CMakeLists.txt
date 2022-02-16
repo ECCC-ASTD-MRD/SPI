@@ -22,9 +22,10 @@ include(ec_doxygen)           # Doxygen target
 ec_install_prefix(eerUtils ${EER_REQ_VERSION} eer_prefix)
 set(eerUtils_ROOT ${CMAKE_INSTALL_PREFIX}/${eer_prefix})
 
-ec_install_prefix()  # Define install prefix  
-set(TCL_ROOT ${CMAKE_INSTALL_PREFIX}/TCL) 
+ec_install_prefix()  # Define install prefix 
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PACKAGE_PREFIX})
 set(GDB_ROOT ${CMAKE_INSTALL_PREFIX}) 
+set(TCL_ROOT ${CMAKE_INSTALL_PREFIX}/TCL) 
 
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -64,6 +65,10 @@ endif()
 
 #----- Required packages
 find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
+set(TCL_LIBRARY ${TCL_PREFIX}/lib/${TCL_LIB_FILE})
+set(TCL_INCLUDE_PATH ${TCL_PREFIX}/include)
+set(TK_LIBRARY ${TK_PREFIX}/lib/${TK_LIB_FILE})
+set(TKL_INCLUDE_PATH ${TK_PREFIX}/include)
 if(TCL_FOUND)
    add_library(TCL::TCL SHARED IMPORTED)
    set_target_properties(TCL::TCL PROPERTIES IMPORTED_LOCATION ${TCL_LIBRARY} IMPORTED_NO_SONAME TRUE)
@@ -80,7 +85,7 @@ if(TK_FOUND)
 endif()
 
 #----- Use LEGACY OpenGL, not GVNC (causes segfault in batch mode)
-cmake_policy(SET CMP0072 OLD)
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_LIBRARIES: ${OPENGL_LIBRARIES}\n-- OPENGL_glu_LIBRARY: ${OPENGL_glu_LIBRARY}")
 
@@ -97,6 +102,16 @@ find_package(FLT ${FLT_REQ_VERSION})
 find_package(URP ${URP_REQ_VERSION})
 find_package(DistanceMetrics ${DISTANCEMETRICS_REQ_VERSION} CONFIG COMPONENTS static)
 
+#----- Look for non system default gdal
+execute_process(
+      COMMAND gdal-config --prefix
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      RESULT_VARIABLE GDAL_RESULT
+      OUTPUT_VARIABLE GDAL_ROOT
+      ERROR_VARIABLE GDAL_ERROR
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_STRIP_TRAILING_WHITESPACE
+   )
 find_package(GDAL ${GDAL_REQ_VERSION})
 if(GDAL_FOUND)
    target_compile_definitions(GDAL::GDAL INTERFACE HAVE_GDAL)
@@ -138,6 +153,6 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/../README.md")
 set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/package")
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_INSTALL_PREFIX}")
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_PREFIX}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 include(CPack)
