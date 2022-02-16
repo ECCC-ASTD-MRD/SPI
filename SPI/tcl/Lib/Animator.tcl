@@ -581,39 +581,52 @@ proc Animator::GetPlayList { } {
    set Play(VPs)    [lsort -dictionary -increasing -unique $Play(VPs)]
    set Play(Length) [llength $Play(Frames)]
    set Play(Length) [expr $Play(Length)>0?$Play(Length)-1:0]
-   
-   #----- Ajouter les données aux pas de temps intermédiaire le plus petit
-   set a 0
-   foreach vp $Play(VPs) {
-      set pframe [lindex $Play(Frames) 0]
-      foreach frame [lrange $Play(Frames) 1 end] {
-         set i 0
-         if { [info exists Animator::Play($vp$pframe)] } {
-            foreach d $Play($vp$pframe) {
-               if { [fstdfield is $d] } {
-                  set idx [lindex [split $d .] 1]
 
-                  #----- If this field is not available at this time step   
-                  if { [lsearch -glob $Play($vp$frame) "ANI.$idx.*" ]==-1 } {
-                     if { $Play(Type)=="DATE" && $Play(Interp) } {
-                        #----- find the time boundary fields
-                        set flds [lsort -dictionary [lsearch -inline -all -glob [fstdfield all] ANI.$idx.*]]
-                        if { [set n [expr [lsearch -exact $flds $d]+1]]<[llength $flds] } {
-                           fstdfield timeinterp ANII.$idx.$a $d [lindex $flds $n] [fstdstamp fromseconds $frame]
-                           fstdfield configure ANII.$idx.$a -dataspec [fstdfield configure $d -dataspec]
-                           set d ANII.$idx.$a
-                           incr a
-                        }
-                     } 
-                     #----- Add the new field to the animation frame
-                     set Play($vp$frame) [linsert $Play($vp$frame) [incr idx $i] $d]
-                  }
+   #----- Patch holes made by missing steps
+
+   set n [llength $Play(Frames)]
+   set a 0
+   foreach {vp sf} $Play(VPSF) {
+      #----- Find the first available step
+      for {set i0 0} {$i0<$n} {incr i0} {
+         set dt [lindex $Play(Frames) $i0]
+         if { [info exists Play($vp$dt)] && [set f0 [lsearch -inline -glob $Play($vp$dt) "ANI.$sf.*"]]!="" } {
+            break
+         }
+      }
+
+      while { $i0 < $n } {
+         #----- Find the next available step
+         for {set i1 [expr $i0+1]} {$i1<$n} {incr i1} {
+            set dt [lindex $Play(Frames) $i1]
+            if { [info exists Play($vp$dt)] && [set f1 [lsearch -inline -glob $Play($vp$dt) "ANI.$sf.*"]]!="" } {
+               break
+            }
+         }
+
+         #----- If we are missing a step
+         if { $i0+1 < $i1 } {
+            set f $f0
+
+            foreach dt [lrange $Play(Frames) $i0+1 $i1-1] {
+               #----- Make the time interpolation for time steps that are in between available fields
+               if { $Play(Interp) && $i1<$n && $Play(Type)=="DATE" } {
+                  fstdfield timeinterp ANII.$sf.$a $f0 $f1 [fstdstamp fromseconds $dt]
+                  fstdfield configure ANII.$sf.$a -dataspec [fstdfield configure $f0 -dataspec]
+                  set f ANII.$sf.$a
+                  incr a
+               }
+
+               if { [info exists Play($vp$dt)] } {
+                  set Play($vp$dt) [lsort -dictionary [linsert $Play($vp$dt) end $f]]
                } else {
-                  incr i
+                  lappend Play($vp$dt) $f
                }
             }
          }
-         set pframe $frame
+
+         set i0 $i1
+         set f0 $f1
       }
    }
 
@@ -678,6 +691,7 @@ proc Animator::GetPlayListField { } {
    variable Play
    variable Lbl
 
+   set Play(VPSF) {}
    set f 0
    foreach vp $Play(VPs) {
       foreach fld $Viewport::Data(Data$vp) {
@@ -780,6 +794,7 @@ proc Animator::GetPlayListField { } {
                return
             }
          }
+         lappend Play(VPSF) $vp $f
          incr f
       }
    }
