@@ -30,7 +30,9 @@ install(DIRECTORY data/ DESTINATION data USE_SOURCE_PERMISSIONS)
 install(FILES .profile_spi ${CMAKE_BINARY_DIR}/VERSION DESTINATION .) 
 install(PROGRAMS tclsh tclshd wish DESTINATION .) 
 
-ec_prepare_ssm()           # Prepare ssm packaging files
+# Packaging
+ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
+ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_VENDOR "ECCC")
@@ -39,7 +41,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/../README.md")
 set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/package")
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_INSTALL_PREFIX}")
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_PREFIX}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 include(CPack)
 

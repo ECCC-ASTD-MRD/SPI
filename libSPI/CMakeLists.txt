@@ -143,8 +143,10 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/GL      DESTINATION . USE_SOURCE_PERMI
 install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/include DESTINATION . USE_SOURCE_PERMISSIONS) 
 install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib     DESTINATION . USE_SOURCE_PERMISSIONS) 
 
-#ec_build_config()          # Create build configuration script
-ec_prepare_ssm()           # Prepare ssm packaging files
+# Packaging
+ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
+#ec_build_config()                                             # Create build configuration script
+ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
 set(CPACK_PACKAGE_VENDOR "ECCC")
