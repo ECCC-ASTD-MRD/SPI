@@ -18,8 +18,8 @@ set(PROJECT_VERSION ${VERSION})
 string(TIMESTAMP BUILD_TIMESTAMP UTC)
 
 # Define install prefix  
-set(ec_prefix "${NAME}_${PROJECT_VERSION}_all")
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${ec_prefix})
+set(PACKAGE_PREFIX "${NAME}_${PROJECT_VERSION}_all")
+set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PACKAGE_PREFIX})
 
 configure_file(VERSION.in ${CMAKE_BINARY_DIR}/VERSION @ONLY)
 
@@ -31,7 +31,6 @@ install(FILES .profile_spi ${CMAKE_BINARY_DIR}/VERSION DESTINATION .)
 install(PROGRAMS tclsh tclshd wish DESTINATION .) 
 
 # Packaging
-ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
 ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
