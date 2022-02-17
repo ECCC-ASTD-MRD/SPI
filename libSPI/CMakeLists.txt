@@ -58,8 +58,7 @@ ec_parse_config(${CMAKE_INSTALL_PREFIX}/TCL/lib/tclConfig.sh)
 ec_parse_config(${CMAKE_INSTALL_PREFIX}/TCL/lib/tkConfig.sh)
 
 #----- Add intel library dir to RPATH if needed
-if(DEFINED ENV{INTELCOMP_HOME})
-   list(APPEND CMAKE_INSTALL_RPATH "$ENV{INTELCOMP_HOME}/lib/intel64_lin")
+if(COMPILER_SUITE MATCHES intel)
    add_link_options(-lintlc -lifcore -lifport -limf)
 endif()
 
@@ -145,7 +144,7 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib     DESTINATION . USE_SOURCE_PERMI
 
 # Packaging
 ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
-#ec_build_config()                                             # Create build configuration script
+#ec_build_config()                                            # Create build configuration script
 ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
