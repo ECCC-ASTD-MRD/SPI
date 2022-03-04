@@ -25,7 +25,7 @@ namespace eval Locator {
 
    #----- Definitions des labels
 
-   set Lbl(Area)    { "Sous-Région" " Sub-Area  " }
+   set Lbl(Area)    { "Région" " Area " }
    set Lbl(Close)   { "Ok / Fermer" "Ok / Close" }
    set Lbl(Elev)    { "Hauteur(m)" "Height(m)" }
    set Lbl(Export)  { "Exporter (ICO)" "Export (ICO)" }

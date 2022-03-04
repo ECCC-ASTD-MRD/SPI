@@ -780,8 +780,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          ok=TCL_OK;
 
          for(nid=(pnid?pnid:(field0->GRef->NbId>1?1:0));nid<=(pnid?pnid:(field0->GRef->NbId>1?field0->GRef->NbId:0));nid++) {
+#ifdef HAVE_RMN
             FSTD_FieldSubSelect(field0,nid);
-
+#endif
             imode=-1;
             // Interpolate a field
             if ((field1=Data_Get(Tcl_GetString(Objv[3])))) {
@@ -1212,7 +1213,9 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          }
          if (table) free(table);
 
+#ifdef HAVE_RMN
          FSTD_FieldSubSelect(field0,pnid);
+#endif
          return(ok);
          break;
 
@@ -2398,9 +2401,9 @@ static Tcl_Obj *FSTD_DictVarInfo(Tcl_Interp *Interp,TDictVar *Var,int Objc,Tcl_O
           case DATE:
             n++;
             if (i+1<Objc && Tcl_GetString(Objv[i+1])[0]!='-') {
-               Tcl_GetWideIntFromObj(Interp,Objv[++i],&Var->Date);
+               Tcl_GetLongFromObj(Interp,Objv[++i],&Var->Date);
             } else {
-               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewWideIntObj(Var->Date));
+               Tcl_ListObjAppendElement(Interp,obj,Tcl_NewLongObj(Var->Date));
             }
             break;
 
