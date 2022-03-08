@@ -67,8 +67,11 @@ fi
 
 #----- Check for software mode
 if [[ $SOFT -eq 1 ]]; then
-   export LD_PRELOAD="${SPI_LIB}/GL/lib/libGL.so.1 ${SPI_LIB}/GL/lib/libglapi.so.0 ${LD_PRELOAD}"
-   unset vg
+   #----- If mesa has been built, use it
+   if [[ -r ${SPI_LIB}/GL/lib/libGL.so.1 ]]; then
+      export LD_PRELOAD="${SPI_LIB}/GL/lib/libGL.so.1 ${SPI_LIB}/GL/lib/libglapi.so.0 ${LD_PRELOAD}"
+   fi
+   #unset vg
 fi
 
 #----- Load up the fonts
