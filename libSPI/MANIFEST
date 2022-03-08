@@ -6,15 +6,15 @@ SUMMARY    : Scientific visualisation and data processing API libraries
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
 URL        : https://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerSPI
 
-GDAL   >= 2.1.0
-ECCODE >= 2.16.0
-ECBUFR >= 0.9.2
-FLT    >= 1.0.0
-URP    >= 2.12.0
-GDB    >= 1.0.0
-EER    >= 4.1.0
-RMN   ~>= 19.6.0
-VGRID  ~= 6.5.0
+GDAL             >= 2.1.0
+ECCODE           >= 2.16.0
+ECBUFR           >= 0.9.1
+FLT              >= 1.0.0
+URP              >= 2.12.0
+GDB              >= 1.0.0
+eerUtils         >= 4.1.0
+rmn             ~>= 20.0.0
+vgrid            ~= 6.7.0
 DistanceMetrics ~>= 1.0.0
 
 # External dependencies

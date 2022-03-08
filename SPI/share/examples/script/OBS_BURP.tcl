@@ -10,7 +10,7 @@ exec $SPI_PATH/tclsh "$0" "$@"
 # Projet     : Exemple de scripts.
 # Fichier    : OBS_BURP.tcl
 # Creation   : Novembre 2006 - J.P. Gauthier - CMC/CMOE
-# Description: Démonstrations des fonctionnalitées des objets metobs (BURP/BUFR)
+# Description: Dï¿½monstrations des fonctionnalitï¿½es des objets metobs (BURP/BUFR)
 #
 # Parametres :
 #   <file>   : Burp file to read
@@ -63,6 +63,11 @@ puts  "   Reports for date : [llength [metobs define BURPDATA -REPORT "" [lindex
 
 #----- Parse the metobs data by elements
 puts  "\n   Per stations:\n"
+puts " [metobs table -desc 20203]"
+puts " Original: [metobs define BURPDATA -ELEMENT HEBA 20203 1171504800 ]"
+metobs define BURPDATA -ELEMENT HEBA 20203 1171504800 { 700 700 }
+puts " New     : [metobs define BURPDATA -ELEMENT HEBA 20203 1171504800 ]"
+
 
 set idx 0
 foreach id [metobs define BURPDATA -ID] {

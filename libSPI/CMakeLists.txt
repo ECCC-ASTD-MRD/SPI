@@ -18,9 +18,11 @@ include(ec_compiler_presets)
 include(ec_shared_lib)
 include(ec_doxygen)           # Doxygen target
 
+cmake_policy(SET CMP0095 OLD)
+
 #----- Look for libeerUtils
-ec_install_prefix(eerUtils ${EER_REQ_VERSION} eer_prefix)
-set(eerUtils_ROOT ${CMAKE_INSTALL_PREFIX}/${eer_prefix})
+ec_install_prefix(eerUtils ${eerUtils_REQ_VERSION} eerUtils_prefix)
+set(eerUtils_ROOT ${CMAKE_INSTALL_PREFIX}/${eerUtils_prefix})
 
 ec_install_prefix()  # Define install prefix 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PACKAGE_PREFIX})
@@ -88,12 +90,12 @@ set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL REQUIRED)
 message(STATUS "OPENGL_LIBRARIES: ${OPENGL_LIBRARIES}\n-- OPENGL_glu_LIBRARY: ${OPENGL_glu_LIBRARY}")
 
-find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
+find_package(eerUtils ${eerUtils_REQ_VERSION} CONFIG REQUIRED)
 
 #----- Optional packages
 find_package(OpenMP COMPONENTS C)
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
-find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
+find_package(rmn ${rmn_REQ_VERSION} COMPONENTS shared)
+find_package(vgrid ${vgrid_REQ_VERSION} COMPONENTS shared)
 find_package(GDB)
 find_package(ECCODES ${ECCODES_REQ_VERSION})
 find_package(ECBUFR ${ECBUFR_REQ_VERSION})

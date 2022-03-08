@@ -1452,7 +1452,7 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
    }
 
    ref=OSRNewSpatialReference(NULL);
-   
+    
    switch(opt) {
       case ROTATED_LL :             
          if (grib_get_double(Handle,"angleOfRotationInDegrees",&rot)!=GRIB_SUCCESS) {

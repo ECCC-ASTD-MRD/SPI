@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "tuple": "c"
-    }
+        "tuple": "c",
+        "projection.h": "c"
+    },
+    "C_Cpp.dimInactiveRegions": false
 }

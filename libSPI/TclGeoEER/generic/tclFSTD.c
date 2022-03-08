@@ -1153,7 +1153,7 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 #ifdef HAVE_ECBUFR
             } else if ((metobs=MetObs_Get(Tcl_GetString(Objv[3])))) {
 
-              /*Interpolate a metobs*/
+               /*Interpolate a metobs*/
                if(Objc!=10 && Objc!=11) {
                   Tcl_WrongNumArgs(Interp,2,Objv,"fldto metobsfrom time element [SPHERICAL | EXPONENTIAL | GAUSSIAN | LINEAR] Nugget(C0) Sill(C1) Range(A) [Outside]");
                   ok=TCL_ERROR; break;
