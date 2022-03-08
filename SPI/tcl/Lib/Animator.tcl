@@ -626,7 +626,7 @@ proc Animator::GetPlayList { } {
          }
 
          set i0 $i1
-         set f0 $f1
+         catch {set f0 $f1}
       }
    }
 
