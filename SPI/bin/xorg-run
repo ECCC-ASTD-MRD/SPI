@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # This script is a copy of xvfb-run, modified to run Xorg instead of X
 # This script starts an instance of Xvfb, the "fake" X server, runs a command
