@@ -555,6 +555,7 @@ void GeoTex_Qualify(GDAL_Band *Band) {
 */
 int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
 
+#ifdef HAVE_GDAL
    unsigned int c,dx,dy,rx,ry,nx,ny,idx,idxd,sz;
    char         *data=NULL;
 
@@ -627,7 +628,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    }
    
    Tile->Flag|=GEOTEX_DATA;
-
+#endif
    return(1);
 }
 

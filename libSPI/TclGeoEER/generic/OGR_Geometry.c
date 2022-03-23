@@ -58,6 +58,7 @@ static Vect3d  *OGR_ArrayEx=NULL;
 */
 int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    OGRGeometryH   geom,subgeom;
    int            i,j,idx,n,t,v,err,d,dobj=0;
    char          *buf;
@@ -483,6 +484,10 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
             break;
       }
    }
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
    return(TCL_OK);
 }
 
@@ -507,6 +512,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
 */
 int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    OGRGeometryH  g0,g1;
    OGREnvelope   env;
    TGeoRef      *ref,*ref0;
@@ -1013,11 +1019,15 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(OGR_G_IsRing(g0)));
          break;
    }
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
    return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
- * Nom      : <OGR_GeometryNameToTypet>
+ * Nom      : <OGR_GeometryNameToType>
  * Creation : Aout J.P. Gauthier - CMC/CMOE
  *
  * But      : Installer la geometrie d'un feature.
@@ -1037,6 +1047,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
 */
 OGRwkbGeometryType OGR_GeometryNameToType(char *Name) {
 
+#ifdef HAVE_GDAL
    if (strcmp(Name,"Unknown (any)")==0) {
       return(wkbUnknown);
    } else if (strcmp(Name,"Point")==0) {
@@ -1074,10 +1085,14 @@ OGRwkbGeometryType OGR_GeometryNameToType(char *Name) {
    } else {
       return(wkbNone);
    }
+#else
+   return(0);
+#endif
 }
 
 int OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj           *obj,*xobj,*yobj,*zobj;
    OGRGeometryH       geom=NULL;
    OGRwkbGeometryType type;
@@ -1161,7 +1176,7 @@ int OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc) {
       OGR_G_AddGeometryDirectly(Geom,geom);
    } else {
    }
-
+#endif
    return(1);
 }
 
@@ -1184,11 +1199,11 @@ int OGR_GeometrySet(Tcl_Interp *Interp,OGRGeometryH Geom,Tcl_Obj *Desc) {
 */
 Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
 
+   Tcl_Obj       *obj=NULL;
+#ifdef HAVE_GDAL
    OGRGeometryH   subgeom;
    Vect3d         pt;
    int            j;
-
-   Tcl_Obj       *obj;
 
    obj=Tcl_NewListObj(0,NULL);
    Tcl_ListObjAppendElement(Interp,obj,Tcl_NewStringObj(OGRGeometryTypeToName(OGR_G_GetGeometryType(Geom)),-1));
@@ -1207,6 +1222,7 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(pt[2]));
       }
    }
+#endif
    return(obj);
 }
 
@@ -1233,6 +1249,7 @@ Tcl_Obj* OGR_GeometryGetObj(Tcl_Interp *Interp,OGRGeometryH Geom) {
 /*
 void OGR_GeomNURBS(OGRGeometryH Geom) {
 
+#ifdef HAVE_GDAL
    OGRGeometryH geom;
    GLUnurbsObj *nurb;
    Vect3f       temp[1000];
@@ -1323,11 +1340,13 @@ void OGR_GeomNURBS(OGRGeometryH Geom) {
    glRotatef(90.0,1.0,0.0,0.0);
 
    gluDeleteNurbsRenderer(nurb);
+#endif
 }
 */
 
 void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
+#ifdef HAVE_GDAL
    unsigned int  g,n,nv=0,pnv;
    Vect3d        nr,n0,n1;
    OGRGeometryH  geom;
@@ -1448,6 +1467,7 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
       }
       gluTessEndPolygon(GLRender->GLTess);
    }
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -1476,9 +1496,10 @@ void OGR_GeomTess(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Ge
 
 int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude,unsigned int Size) {
 
+   unsigned int  n,nv=0;
+#ifdef HAVE_GDAL
    short         z=2;
    char          td=0;
-   unsigned int  n,nv=0;
    Vect3d        *pvr,*cvr=NULL;
    Coord         co;
 
@@ -1558,6 +1579,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          }
       }
    }
+#endif
    return(nv);
 }
 
@@ -1583,6 +1605,7 @@ int OGR_GeometryProject(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
 */
 void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeometryH Geom,double Elev,double Extrude) {
 
+#ifdef HAVE_GDAL
    OGRGeometryH       subgeom;
    OGRwkbGeometryType type;
    GLenum             mode;
@@ -1649,4 +1672,5 @@ void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
          }
       }
    }
+   #endif
 }

@@ -37,7 +37,7 @@
 #include "Projection.h"
 #include "Data_FF.h"
 
-/*Table contenant la liste des fichiers en memoire*/
+// Table contenant la liste des fichiers en memoire
 static Tcl_HashTable GDAL_FileTable;
 static Tcl_HashTable GDAL_BandTable;
 static int GDALInit=0;
@@ -99,6 +99,7 @@ int TclGDAL_Init(Tcl_Interp *Interp) {
 
 static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]) {
 
+#ifdef HAVE_GDAL
    double         lat,lon,x,y,*table;
    char           idxid[4][128],*field;
    const char   **list;
@@ -785,7 +786,10 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          TclY_HashWipe(&GDAL_BandTable,(TclY_HashFreeEntryDataFunc*)NULL);
          break;
    }
-
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
    return(TCL_OK);
 }
 
@@ -808,9 +812,8 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 
 GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
 
-   GDAL_Band* band;
-
-
+   GDAL_Band* band=NULL;
+#ifdef HAVE_GDAL
   if (!(band=(GDAL_Band*)TclY_HashPut(Interp,&GDAL_BandTable,Name,sizeof(GDAL_Band)))) {
       return(NULL);
    }
@@ -847,7 +850,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
    }
    band->Spec->RenderTexture=1;
    band->Spec->TexRes=1;
-
+#endif
    return(band);
 }
 
@@ -871,6 +874,7 @@ GDAL_Band* GDAL_BandCreate(Tcl_Interp *Interp,char *Name) {
 */
 void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
 
+#ifdef HAVE_GDAL
    if (Band) {
       if (Pos)
          GeoTex_Signal(&Band->Tex,GEOTEX_CLRCOO);
@@ -879,6 +883,7 @@ void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
          GeoTex_Clear(&Band->Tex,GEOTEX_CLRTEX,0,0);
          //GeoTex_Signal(&Band->Tex,GEOTEX_CLRTEX);
    }
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -901,6 +906,7 @@ void GDAL_BandClean(GDAL_Band *Band,int Map,int Pos,int Seg) {
 */
 void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 
+#ifdef HAVE_GDAL
    GDAL_Band      *band;
    Tcl_HashSearch  ptr;
    Tcl_HashEntry  *entry=NULL;
@@ -916,6 +922,7 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
       entry=Tcl_NextHashEntry(&ptr);
    }
    TclY_UnlockHash();
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -938,8 +945,9 @@ void GDAL_BandCleanAll(TDataSpec *Spec,int Map,int Pos,int Seg) {
 */
 GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
 
-   GDAL_Band *band;
+   GDAL_Band *band=NULL;
 
+#ifdef HAVE_GDAL
    /* Verifier que le champs n'est pas lui-meme*/
    if ((band=GDAL_BandGet(Name))) {
       if (band!=Band) {
@@ -977,6 +985,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
       memcpy(band->Spec->Map,Band->Spec->Map,sizeof(CMap_Rec));
       band->Spec->Map->Name = mapname;
    }
+#endif
    return(band);
 }
 
@@ -1002,6 +1011,7 @@ GDAL_Band *GDAL_BandCopy(Tcl_Interp *Interp,GDAL_Band *Band,char *Name,int Def){
 */
 int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
 
+#ifdef HAVE_GDAL
    GDAL_Band *band;
  
    if ((band=(GDAL_Band*)TclY_HashDel(&GDAL_BandTable,Name))) {
@@ -1026,6 +1036,7 @@ int GDAL_BandDestroy(Tcl_Interp *Interp,char *Name) {
  
       free(band);
    }
+#endif
    return(TCL_OK);
 }
 
@@ -1072,6 +1083,7 @@ GDAL_Band* GDAL_BandGet(char *Name) {
 */
 static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    GDAL_File  *file;
    Tcl_Obj     *obj;
 
@@ -1338,7 +1350,11 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          return(TCL_OK);
          break;
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1360,6 +1376,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 */
 int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
 
+#ifdef HAVE_GDAL
    GDAL_File *file=NULL;
    int        si;
    char       subid[1024];
@@ -1382,7 +1399,7 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
       free(file->Name);
       free(file);
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -1406,6 +1423,7 @@ int GDAL_FileClose(Tcl_Interp *Interp,char *Id) {
 */
 GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id){
 
+#ifdef HAVE_GDAL
    Tcl_HashEntry *entry;
 
    if (Id && strlen(Id)>0) {
@@ -1417,11 +1435,13 @@ GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id){
          return((GDAL_File*)(Tcl_GetHashValue(entry)));
       }
    }
+#endif
    return(NULL);
 }
 
 int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
 
+#ifdef HAVE_GDAL
    Tcl_HashEntry *entry;
    int            new;
 
@@ -1433,8 +1453,8 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
    }
 
    Tcl_SetHashValue(entry,File);
-
-   return TCL_OK;
+#endif
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -1461,6 +1481,7 @@ int GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File){
 */
 int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,char *Desc) {
 
+#ifdef HAVE_GDAL
    GDALColorInterp ci=0;
    GDALDatasetH    set=NULL;
    GDALRasterBandH band=NULL;
@@ -1573,7 +1594,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
    }
 
    GDAL_FilePut(Interp,file);
-
+#endif
    return(TCL_OK);
 }
 
@@ -1600,6 +1621,7 @@ int GDAL_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name,char *Driver,
 */
 TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int NbGCPs,int Nx,int Ny) {
 
+#ifdef HAVE_GDAL
    GDALRPCInfo rpcinfo;
 
    TGeoRef *ref;
@@ -1717,6 +1739,9 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
    GeoRef_Size(ref,0,0,Nx-1,Ny-1,0);
 
    return(ref);
+#else
+   return(NULL);
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -1739,6 +1764,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 */
 int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Driver) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj        *obj;
    GDAL_Band      *band=NULL;
    GDALColorTableH htable;
@@ -1852,7 +1878,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
       Tcl_AppendResult(Interp,"Could not create dataset ",Name,(char*)NULL);
       return(TCL_ERROR);
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -1874,6 +1900,7 @@ int GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Drive
 */
 int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj *obj;
    double   incry,val;
    int      cidx,idx,x,y,n;
@@ -1958,6 +1985,6 @@ int GDAL_GetMapImage(Tcl_Interp *Interp,GDAL_Band *Band) {
    }
 
    Tcl_SetObjResult(Interp,obj);
-
+#endif
    return(TCL_OK);
 }

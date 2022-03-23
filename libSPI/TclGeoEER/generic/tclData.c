@@ -3061,8 +3061,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
    pnid=Field->GRef->NId;
 
    for(nid=(pnid?pnid:(Field->GRef->NbId>1?1:0));nid<=(pnid?pnid:(Field->GRef->NbId>1?Field->GRef->NbId:0));nid++) {
+#ifdef HAVE_RMN
       FSTD_FieldSubSelect(Field,nid);
-   
+#endif   
       if (nc==4) {
          // This is a latlon bounding box defined by 2 corners
          Tcl_ListObjIndex(Interp,Objv[0],0,&sub);
@@ -3239,7 +3240,9 @@ int Data_GetAreaValue(Tcl_Interp *Interp,int Mode,TData *Field,int Objc,Tcl_Obj 
          }
       }
    }
+   #ifdef HAVE_RMN
    FSTD_FieldSubSelect(Field,pnid);
+   #endif
    
    // Finalize calculations
    switch(Mode) {

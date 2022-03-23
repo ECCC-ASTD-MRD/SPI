@@ -62,6 +62,7 @@ int QSort_OGR(const void *A,const void *B);
 */
 int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    Tcl_Obj       *obj,*lst,*sublst;
    Tcl_WideInt    w;
    TGeoRef       *ref;
@@ -472,7 +473,11 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             break;
       }
    }
-   return TCL_OK;
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
+   return(TCL_OK);
 }
 
 /*----------------------------------------------------------------------------
@@ -497,7 +502,8 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
 */
 static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,int NFeature) {
 
-   OGR_Layer *layerres;
+   OGR_Layer *layerres=NULL;
+#ifdef HAVE_GDAL
    if (!(layerres=OGR_LayerCreate(Interp,Name,(char*)OGR_FD_GetName(From->Def),wkbUnknown,NULL))) {
       Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to create operation layer",(char*)NULL);
       return(NULL);
@@ -522,12 +528,13 @@ static OGR_Layer* OGR_LayerResult(Tcl_Interp *Interp,OGR_Layer *From,char *Name,
       Tcl_AppendResult(Interp,"OGR_LayerResult: Unable to allocate location buffer",(char*)NULL);
       return(NULL);
    }
-      
+#endif  
    return(layerres);
 }
 
 int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 
+#ifdef HAVE_GDAL
    OGRCoordinateTransformationH  tr=NULL;
    OGREnvelope                   env,lim;
    OGRGeometryH                  geom,new,uni;
@@ -1350,7 +1357,10 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
          break;
    }
-
+#else
+   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   return(TCL_ERROR);
+#endif
    return(TCL_OK);
 }
 
@@ -1375,7 +1385,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
  *----------------------------------------------------------------------------
 */
 int OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer) {
-   
+
+#ifdef HAVE_GDAL
    int f;
  
    Layer->Sort.Nb=0;
@@ -1400,7 +1411,7 @@ int OGR_LayerSort(Tcl_Interp *Interp,OGR_Layer *Layer) {
          Layer->Sort.Table=NULL;
       }
    }
-  
+#endif
    return(TCL_OK);
 }
 
@@ -1533,6 +1544,7 @@ int OGR_LayerSelectTest(Tcl_Interp *Interp,Tcl_Obj *Field,Tcl_Obj *Value,Tcl_Obj
 */
 int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj      *st,*it,*op,*val,*fd;
    Tcl_WideInt   w;
    int           n,i,ns,nf,fld,ni,len,err;
@@ -1617,6 +1629,7 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
          exp=NULL;
       }
    }
+#endif
    return(TCL_OK);
 }
 
@@ -1640,13 +1653,14 @@ int OGR_LayerSelect(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Predicates) {
 */
 Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
+   Tcl_Obj         *obj=NULL;
+#ifdef HAVE_GDAL
    int             n,nb,year,month,day,hour,min,sec,tz;
    time_t          time;
    char            **clist;
    const int       *ilist;
    const long long *llist;
    const double    *dlist;
-   Tcl_Obj         *obj;
 
    obj=Tcl_NewObj();
 
@@ -1721,11 +1735,13 @@ Tcl_Obj* OGR_GetTypeObj(Tcl_Interp *Interp,OGRFieldDefnH Field,OGRFeatureH Featu
             break;
       }
    }
+#endif
    return(obj);
 }
 
 int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
+#ifdef HAVE_GDAL
    int       year,month,day,hour,min,sec,tz,dt,tm,n,nobj,*ival;
    long long *lval;
    double    *dval;
@@ -1817,7 +1833,7 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
       case OFTBinary:
          break;
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -1843,6 +1859,7 @@ int OGR_SetTypeObj(Tcl_Interp *Interp,Tcl_Obj* Obj,OGRLayerH Layer,OGRFieldDefnH
 */
 void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatureH Feature,int Index) {
 
+#ifdef HAVE_GDAL
    int   year,month,day,hour,min,sec,tz;
 
    switch (OGR_Fld_GetType(Field)) {
@@ -1888,6 +1905,7 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
          sprintf(Buf,"Not Recognised");
          break;
    }
+#endif
 }
 
 /*----------------------------------------------------------------------------
@@ -1913,7 +1931,7 @@ void OGR_SingleTypeString(char *Buf,TDataSpec *Spec,OGRFieldDefnH Field,OGRFeatu
 OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,int Prec) {
 
    OGRFieldDefnH  field=NULL;
-
+#ifdef HAVE_GDAL
    if (Field && strlen(Field)) {
       if (strcmp(Type,"Integer")==0) {
          field=OGR_Fld_Create(Field,OFTInteger);
@@ -1960,6 +1978,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,
 
       Layer->Changed=1;
    }
+#endif
    return(field);
 }
 
@@ -1981,6 +2000,7 @@ OGRFieldDefnH OGR_FieldCreate(OGR_Layer *Layer,char *Field,char *Type,int Width,
 */
 int OGR_LayerUpdate(OGR_Layer *Layer) {
 
+#ifdef HAVE_GDAL
    unsigned int f;
 
    if (Layer->Update) {
@@ -1993,6 +2013,7 @@ int OGR_LayerUpdate(OGR_Layer *Layer) {
       }
       Layer->Update=0;
    }
+#endif
    return(TRUE);
 }
 
@@ -2015,7 +2036,8 @@ int OGR_LayerUpdate(OGR_Layer *Layer) {
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer) {
-   
+
+#ifdef HAVE_GDAL   
    unsigned int f;
 
    OGR_L_ResetReading(Layer->Layer);
@@ -2028,11 +2050,13 @@ int OGR_LayerReadFeature(Tcl_Interp *Interp,OGR_Layer *Layer) {
       if (!Layer->Space) 
          Layer->Space=OGR_G_GetCoordinateDimension(OGR_F_GetGeometryRef(Layer->Feature[f]));
    }
+#endif
    return(TCL_OK);   
 }
 
 int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 
+#ifdef HAVE_GDAL
    OGR_File    *file=NULL;
    OGR_Layer   *layer=NULL;
    OGREnvelope  env;
@@ -2094,6 +2118,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
    
    // Size the georef for grid interpolation
    GeoRef_Size(layer->GRef,env.MinX-1.0,env.MinY-1.0,env.MaxX+1.0,env.MaxY+1.0,0);
+#endif
    return(TCL_OK);
 }
 
@@ -2116,6 +2141,7 @@ int OGR_LayerRead(Tcl_Interp *Interp,char *Name,char *FileId,int Idx) {
 */
 int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
 
+#ifdef HAVE_GDAL
    OGR_Layer   *from=NULL,*to=NULL;
    unsigned int f;
 
@@ -2163,7 +2189,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
          return(TCL_ERROR);
       }
    }
-  
+#endif
    return(TCL_OK);
 }
 
@@ -2188,6 +2214,7 @@ int OGR_LayerCopy(Tcl_Interp *Interp,char *From,char *To) {
 */
 int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 
+#ifdef HAVE_GDAL
    char        **opt=NULL;
    unsigned int  f,trans=0;
 
@@ -2252,7 +2279,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
    layer->File=file;
    layer->Update=0;
    layer->Changed=0;
-
+#endif
    return(TCL_OK);
 }
 
@@ -2276,6 +2303,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
 */
 int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom) {
 
+#ifdef HAVE_GDAL
    OGR_File     *file=NULL;
    OGR_Layer    *layer;
    OGRLayerH     srcl;
@@ -2348,6 +2376,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       OGR_L_GetExtent(layer->Layer,&env,1);
       GeoRef_Size(layer->GRef,env.MinX,env.MinY,env.MaxX,env.MaxY,0);
    }
+#endif
    return(TCL_OK);
 }
 
@@ -2372,6 +2401,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid,int Side) {
 
+#ifdef HAVE_GDAL
    int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s;
    double    lat,lon,x,y,spd,dir;
    char      buf[64],*mask=NULL,style[256];
@@ -2786,7 +2816,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate location buffer",(char*)NULL);
       return(TCL_ERROR);
    }
-
+#endif
    return(TCL_OK);
 }
 
@@ -2809,6 +2839,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 */
 int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 
+#ifdef HAVE_GDAL
    unsigned int f;
 
    if (!Layer) {
@@ -2828,6 +2859,7 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
          Layer->Changed=1;
       }
    }
+#endif
    return(TCL_OK);
 }
 
@@ -2850,7 +2882,10 @@ int OGR_LayerClear(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,double Value) {
 */
 int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromRef,TDef *FromDef,char Mode,int Final,int Prec,float *Index) {
 
-   int           i,j,n=0,nt=0,rw=0;
+   int           nt=0;
+
+#ifdef HAVE_GDAL
+   int           i,j,n=0,rw=0;
    unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
    OGRGeometryH  cell,ring,inter,geom;
@@ -3074,6 +3109,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
    // Return size of index or number of hits, or 1 if nothing found
    nt=Index?(ip-Index)+1:nt;
+#endif
    return(nt==0?1:nt);
 }
 
@@ -3094,6 +3130,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 */
 void OGR_LayerPreInit(OGR_Layer *Layer) {
 
+#ifdef HAVE_GDAL
    /*Assigner les limites d'affichage*/
    if (!(Layer->Spec->MinMax&DATASPEC_MINSET)) Layer->Spec->Min=Layer->Min;
    if (!(Layer->Spec->MinMax&DATASPEC_MAXSET)) Layer->Spec->Max=Layer->Max;
@@ -3102,6 +3139,7 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
       DataSpec_Intervals(Layer->Spec,Layer->Spec->Min,Layer->Spec->Max);
    }
    DataSpec_Define(Layer->Spec);
+#endif
 }
 
 /*--------------------------------------------------------------------------------------------------------------
@@ -3124,7 +3162,8 @@ void OGR_LayerPreInit(OGR_Layer *Layer) {
 */
 
 int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
-   
+
+#ifdef HAVE_GDAL   
    Vect3d        vr;
    double        elev=0.0,extr=0.0;
    OGRGeometryH  geom;
@@ -3145,15 +3184,16 @@ int OGR_LayerParseBuild(OGR_Layer *Layer,Projection *Proj,int Index) {
       }
    }
    glEndList();
-   
+#endif   
    return(1);
 }
 
 int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 
+   int          t=0;
+#ifdef HAVE_GDAL
    Coord        co[2];
-   int          t;
-   unsigned int f;
+   unsigned int f=0;
    clock_t      sec;
 
    if (Layer->GFeature==Layer->NFeature) {
@@ -3191,6 +3231,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
       if (Delay)
          Tcl_CreateTimerHandler(0,ViewportRefresh_Canvas,Proj->VP->canvas);
    }
+#endif
    return(t);
 }
 
@@ -3214,6 +3255,7 @@ int OGR_LayerParse(OGR_Layer *Layer,Projection *Proj,int Delay) {
 */
 int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Layer *Layer,int Mask) {
 
+#ifdef HAVE_GDAL
    int     f,idx=-1,x,y,g,nf,dx,w;
    int     fsize=-1,fmap=-1,flabel=-1;
    Vect3d  vr;
@@ -3636,7 +3678,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    glDisableClientState(GL_VERTEX_ARRAY);
    glStencilFunc(GL_EQUAL,0x0,0xff);
    glStencilOp(GL_KEEP,GL_KEEP,GL_KEEP);
-
+#endif
    return(1);
 }
 
@@ -3662,6 +3704,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 */
 int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *List,int All,int Mode) {
 
+#ifdef HAVE_GDAL
    Tcl_Obj      *obj;
    OGRGeometryH  geom,pick;
    OGREnvelope   envg,envp;
@@ -3763,6 +3806,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
    }
    
    Tcl_SetObjResult(Interp,obj);
+#endif
    return(TCL_OK);
 }
 
@@ -3784,6 +3828,7 @@ int OGR_Pick(Tcl_Interp *Interp,OGR_Layer *Layer,OGRGeometryH *Geom,Tcl_Obj *Lis
 */
 int QSort_OGR(const void *A,const void *B){
 
+#ifdef HAVE_GDAL
    int         fai,fbi;
    double      fad,fbd;
    const char *fas,*fbs;
@@ -3824,5 +3869,6 @@ int QSort_OGR(const void *A,const void *B){
       case OFTBinary:
          break;
    }
+#endif
    return(0);
 }

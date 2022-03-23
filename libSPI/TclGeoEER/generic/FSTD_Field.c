@@ -31,7 +31,6 @@
  *==============================================================================
  */
 
-#ifdef HAVE_RMN
 
 #include "App.h"
 #include "tclFSTD.h"
@@ -43,6 +42,8 @@ TCL_DECLARE_MUTEX(MUTEX_FSTDVI)
 
 int      FSTD_UNTILE=0;
 Tcl_Obj *FSTD_HIDELIST=NULL;
+
+#ifdef HAVE_RMN
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_TypeCheck>
@@ -400,10 +401,10 @@ int FSTD_FieldReadMesh(TData *Field) {
             break;
 
          case 'Y':
-            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"^^",1,0);
-            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
+            if (!Field->GRef->AY) FSTD_FieldReadComp(head,&Field->GRef->AY,"LA",0,0);
             if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,">>",1,0);
+            if (!Field->GRef->AX) FSTD_FieldReadComp(head,&Field->GRef->AX,"LO",0,0);
             if (!Field->GRef->Hgt) FSTD_FieldReadComp(head,&Field->GRef->Hgt,"ZH",0,0);
             break;
 
@@ -1086,9 +1087,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
          ezto=0;
       }
 
-      if (FieldFrom->GRef->Grid[0]!='R' && FieldTo->GRef->Grid[0]!='R') {
-         FSTD_FieldSetTo(FieldTo,FieldFrom);
-      }
+      FSTD_FieldSetTo(FieldTo,FieldFrom);
       
       if (Degree==-1) {
          interp=(char*)FieldTo->Spec->InterpDegree;
@@ -1274,6 +1273,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
    int          i,j,idx,nidx;
    char         buf[64],*grtyp=NULL;
    double       dxg1,dxg2,dxg3,dxg4;
+   double       r,height;
    float        xg1,xg2,xg3,xg4;
    double       tra[6],inv[6],*tm,*im;
    const char **list;
@@ -1649,6 +1649,27 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
 
                      }
                      Field->ZRef->Levels=(float*)realloc(Field->ZRef->Levels,Field->Def->NJ*sizeof(float));
+                  } else if (grtyp[0]=='R') {
+                     if (i+6<Objc && (Tcl_GetDoubleFromObj(Interp,Objv[i+1],&dxg1)!=TCL_ERROR)) {
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg1);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg2);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&height);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&r);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg3);
+                        Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg4);
+                     } else {
+                        Tcl_AppendResult(Interp,"Invalid number of arguments, must be -GRTYP type lat lon height r resr resa",(char*)NULL);
+                        return(TCL_ERROR);
+                     }
+                     xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
+                     grtyp[0]='L';
+                     f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4);
+                     if (ref) {
+                        Field->GRef=GeoRef_Find(GeoRef_RDRSetup(dxg1,dxg2,0.0,r,dxg3,dxg4));
+                     } else {
+                        Field->GRef=GeoRef_Find(GeoRef_RDRSetup(0.0,0.0,0.0,0.0,0.0,0.0));
+                     }
+                     grtyp=NULL;
                   } else if (grtyp[0]=='Z' && grtyp[1]=='E') {
                         // Do nothing as it should be built with georef define function
                         Field->GRef->Grid[0]='Z';
@@ -2112,7 +2133,7 @@ int FSTD_FieldList(Tcl_Interp *Interp,TRPNFile *File,int Mode,char *Var){
                break;
 
             case FSTD_LISTDATEV:
-               if (head.DATEV>0) {
+               if (head.DATEV>0 || !RPN_IsDesc(head.NOMVAR)) {
                   Tcl_SetLongObj(obj,head.DATEV>0?System_Stamp2Seconds(head.DATEV):0);
 
                   if (TclY_ListObjFind(Interp,list,obj)==-1) {
@@ -2224,7 +2245,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    TRPNHeader   h;
    int          ok,ni,nj,nk,i,type,idx,datyp,mni,mnj,mnk;
    int          pni,pnj,ig1,ig2,ig3,ig4,*tmpi;
-   float        lvl;
+   float        lvl,xg1,xg2,xg3,xg4;
    char         nomvar[5],typvar[2],grtyp[3],tile,etik[13],*proj=NULL;
    double       nhour,val=0.0;
 
@@ -2424,28 +2445,33 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       } 
    }
 
+   ok=-1;
    // Check for mask (TYPVAR==@@) 
    if (h.TYPVAR[0]!='@' && h.TYPVAR[1]=='@') {
       ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3,"@@",h.NOMVAR);
-      if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
-         if ((field->Def->Mask=(char*)malloc(ni*nj))) {
-            if ((tmpi=(int*)malloc(ni*nj*sizeof(int)))) {
-               cs_fstlukt(tmpi,h.File->Id,ok,&tile,&ni,&nj,&nk);
-               for(i=0;i<ni*nj;i++) {
-                  field->Def->Mask[i]=tmpi[i]!=0x0;
-               }
-               free(tmpi);
-            } else {
-               free(field->Def->Mask);
-               field->Def->Mask=NULL;
-               App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
+   }
+   // Check for mask (TYPVAR=*@)
+   if (ok<=0) {
+      ok=cs_fstinf(h.File->Id,&ni,&nj,&nk,h.DATEV,h.ETIKET,h.IP1,h.IP2,h.IP3," @",h.NOMVAR);
+   }
+   if (ok>0 && (tile || (ni==mni && nj==mnj && nk==mnk))) {
+      if ((field->Def->Mask=(char*)malloc(ni*nj))) {
+         if ((tmpi=(int*)malloc(ni*nj*sizeof(int)))) {
+            cs_fstlukt(tmpi,h.File->Id,ok,&tile,&ni,&nj,&nk);
+            for(i=0;i<ni*nj;i++) {
+               field->Def->Mask[i]=tmpi[i]!=0x0;
             }
+            free(tmpi);
          } else {
-            App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
+            free(field->Def->Mask);
+            field->Def->Mask=NULL;
+            App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
          }
+      } else {
+         App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
       }
    }
-
+   
    // Recuperer les type de niveaux et forcer ETA pour SIGMA
    lvl=ZRef_IP2Level(h.IP1,&type);
    type=type==LVL_SIGMA?LVL_ETA:type;
@@ -2519,6 +2545,11 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          field->GRef=GeoRef_Find(GeoRef_WKTSetup(ni,nj,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,proj,tm,im,NULL));
          if (proj) free(proj);
       } 
+   } else if (grtyp[0]=='R') {
+      grtyp[0]='L';
+      f77name(cigaxg)(grtyp,&xg1,&xg2,&xg3,&xg4,&h.IG1,&h.IG2,&h.IG3,&h.IG4);
+      grtyp[0]='R';
+      field->GRef=GeoRef_Find(GeoRef_RDRSetup(xg1,xg2,0.0,nj,xg3,xg4));
    }
 
    if (tile) {
@@ -2526,7 +2557,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
    }
 
    field->ZRef=ZRef_Define(type,nk,&lvl);
-   if (grtyp[0]!='W') {
+      if (grtyp[0]!='W' && grtyp[0]!='R') {
       field->GRef=GeoRef_Find(GeoRef_RPNSetup(ni,nj,grtyp,h.IG1,h.IG2,h.IG3,h.IG4,h.File->Id));
    }
 
@@ -3108,6 +3139,8 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
       return(TCL_ERROR);
    }
 }
+#endif
+
 
 /*----------------------------------------------------------------------------
  * Nom      : <FSTD_FieldDataCopy>
@@ -3127,9 +3160,7 @@ int FSTD_FieldTile(Tcl_Interp *Interp,char *Id,TData *Field,int NI,int NJ,int Ha
  *
  *----------------------------------------------------------------------------
 */
-int FSTD_FieldDataCopy
-   (Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) 
-   {
+int FSTD_FieldDataCopy(Tcl_Interp *Interp, TData *Field2, TData *Field0, int delta) {
 
    int    i,j;
    float  val0;
@@ -3155,51 +3186,41 @@ int FSTD_FieldDataCopy
    tNJ = Field2->Def->NJ;
 
    cnt = 0;
-   if (insert_mode)
-      {
+   if (insert_mode) {
 #pragma omp parallel \
       shared(sNI,sNJ,Field0,Field2,dx,dy) \
       private(i,j,p1,pi1,pj1,offset,val0,i1,j1,offset2)
 {
 #pragma omp for schedule(static)
-      for (j=0;j<sNJ;j++) 
-         {
+      for (j=0;j<sNJ;j++) {
          offset = sNI * j;
-         for (i=0;i<sNI;i++) 
-            {
+         for (i=0;i<sNI;i++) {
             Field0->GRef->Project(Field0->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
-            if (Field2->GRef->UnProject(Field2->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
-               {
+            if (Field2->GRef->UnProject(Field2->GRef,&pi1,&pj1,p1[0],p1[1],1,1)) {
                Def_Get(Field0->Def,0,offset+i,val0);
                i1 = (int)(pi1 + 0.5 + dx );
                j1 = (int)(pj1 + 0.5 + dy );
                if ((i1 < 0)||(i1 >= tNI)) continue;
                if ((j1 < 0)||(j1 >= tNJ)) continue;
-               if (delta > 0)
-                  {
+               if (delta > 0) {
                   if ((i1 >= delta)&&(i-delta)<0) continue;
                   if ((i1 < (tNI-delta))&&(i>=(sNI-delta))) continue;
                   if ((j1 >= delta)&&(j-delta)<0) continue;
                   if ((j1 < (tNJ-delta))&&(j>=(sNJ-delta))) continue;
-                  }
+               }
                offset2 = tNI * j1 + i1;
                Def_Set(Field2->Def,0, offset2, val0);
                cnt += 1;
-               }
             }
          }
-}
       }
-   else
-      {
-      for (j=0;j<Field2->Def->NJ;j++) 
-         {
+}
+   } else {
+      for (j=0;j<Field2->Def->NJ;j++) {
          offset = Field2->Def->NI * j;
-         for (i=0;i<Field2->Def->NI;i++) 
-            {
+         for (i=0;i<Field2->Def->NI;i++) {
             Field2->GRef->Project(Field2->GRef,i,j,&(p1[0]),&(p1[1]),1,1);
-            if (Field0->GRef->UnProject(Field0->GRef,&pi1,&pj1,p1[0],p1[1],1,1))
-               {
+            if (Field0->GRef->UnProject(Field0->GRef,&pi1,&pj1,p1[0],p1[1],1,1)) {
                i1 = (int)(pi1 + 0.5 + dx );
                j1 = (int)(pj1 + 0.5 + dy );
                if ((i1 < 0)||(i1 >= Field0->Def->NI)) continue;
@@ -3207,12 +3228,9 @@ int FSTD_FieldDataCopy
                offset2 = Field0->Def->NI * j1 + i1;
                Def_Get(Field0->Def,0,offset2,val0);
                Def_Set(Field2->Def,0, offset+i, val0);
-               }
             }
          }
       }
-   return TCL_OK;
    }
-
-
-#endif
+   return(TCL_OK);
+}

@@ -1,0 +1,17 @@
+NAME       : SPI
+VERSION    : 8.2.0
+BUILD      : Release
+STATE      :
+DESCRIPTION: SPI (Spherical Projection Interface)
+SUMMARY    : Scientific visualisation and data processing API
+MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
+URL        : https://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerSPI
+
+# Dependencies 
+
+TCL      : 8.6
+EER      : 4.1.0
+RMN      : 19.7.0
+VGRID    : 6.5.0
+GENPHYSX : 2.6.0
+CMDS_EXT : 20220202

@@ -68,11 +68,11 @@ proc Areas::CreateWidget { Parent } {
 
    set no 0
    foreach layer $Data(Layers) {
-      set l [lindex $layer 0]
-      $Parent.areas add cascade -label $l -menu $Parent.areas.t$no
+      set zone [lindex $layer 0]
+      $Parent.areas add cascade -label $zone -menu $Parent.areas.t$no
       menu $Parent.areas.t$no -tearoff 1
 
-      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$layer) -command "Areas::Display \"$layer\""
+      $Parent.areas.t$no add checkbutton -label [lindex $Lbl(All) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(All$zone) -command "Areas::Display \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Fill) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Fill$layer) -command "Areas::DisplayFill \"$layer\""
       $Parent.areas.t$no add checkbutton -label [lindex $Lbl(Id) $GDefs(Lang)] -onvalue True -offvalue False -variable Areas::Data(Id$layer) -command "Areas::DisplayId \"$layer\""
       foreach l $layer {
@@ -115,18 +115,18 @@ proc Areas::Init { } {
    global GDefs
    variable Data
 
-   Areas::Read $GDefs(Dir)/data/RSMC.shp                                                                                     #AAAA00 #FFFF00 False True
-   Areas::Read [list $GDefs(Dir)/data/VAAC.shp $GDefs(Dir)/data/VAAC_555km.shp $GDefs(Dir)/data/VAAC_Washington_backup.shp ] #AA0000 #FF0000 False True
-   Areas::Read $GDefs(Dir)/data/FIR.shp                                                                                      #00AA00 #00FF00 False True
-   Areas::Read $GDefs(Dir)/data/MWO.shp                                                                                      #0000AA #0000FF False True
-   Areas::Read $GDefs(Dir)/data/Volcano.shp                                                                                  #AA0000 #FF0000 False True
-   Areas::Read $GDefs(Dir)/data/ISTOP_Regions.shp                                                                            #AA0000 #FF0000 False True RegionDesc
-   Areas::Read $GDefs(Dir)/data/TimeZone.shp                                                                                 #AAAA00 #FFFF00 False True TZ
-   Areas::Read $GDefs(Dir)/data/RADAR.shp                                                                                    #AAAAAA #FFFFFF False True ID
-   Areas::Read $GDefs(Dir)/data/ModelDomain.shp                                                                              #00C0CA #000000 False False NAME
-   Areas::Read $GDefs(Dir)/data/land_PubMesoZone.shp                                                                         #CCCCCC #BDBDBD False False NAME
-   Areas::Read $GDefs(Dir)/data/land_PubStdZone.shp                                                                          #CCCCCC #BDBDBD False False NAME
-   Areas::Read $GDefs(Dir)/data/water_MarStdZone.shp                                                                         #C5DAFF #B3CFCF False False NAME
+   Areas::Read $GDefs(Dir)/data/RSMC.shp                                                                                          #AAAA00 #FFFF00 False True
+   Areas::Read [list $GDefs(Dir)/data/VAAC.shp $GDefs(Dir)/data/VAAC_555km.shp $GDefs(Dir)/data/VAAC_Washington_backup.shp ]      #AA0000 #FF0000 False True
+   Areas::Read $GDefs(Dir)/data/FIR.shp                                                                                           #00AA00 #00FF00 False True
+   Areas::Read $GDefs(Dir)/data/MWO.shp                                                                                           #0000AA #0000FF False True
+   Areas::Read $GDefs(Dir)/data/Volcano.shp                                                                                       #AA0000 #FF0000 False True
+   Areas::Read $GDefs(Dir)/data/ISTOP_Regions.shp                                                                                 #AA0000 #FF0000 False True RegionDesc
+   Areas::Read $GDefs(Dir)/data/TimeZone.shp                                                                                      #AAAA00 #FFFF00 False True TZ
+   Areas::Read $GDefs(Dir)/data/RADAR.shp                                                                                         #AAAAAA #FFFFFF False True ID
+   Areas::Read [list $GDefs(Dir)/data/ModelDomain.shp $GDefs(Dir)/data/ModelDomainWet.shp $GDefs(Dir)/data/ModelDomainWaves.shp ] #00C0CA #000000 False False NAME
+   Areas::Read $GDefs(Dir)/data/land_PubMesoZone.shp                                                                              #CCCCCC #BDBDBD False False NAME
+   Areas::Read $GDefs(Dir)/data/land_PubStdZone.shp                                                                               #CCCCCC #BDBDBD False False NAME
+   Areas::Read $GDefs(Dir)/data/water_MarStdZone.shp                                                                              #C5DAFF #B3CFCF False False NAME
 }
 
 #----------------------------------------------------------------------------
@@ -195,16 +195,17 @@ proc Areas::Display { args { All "" } } {
    global GDefs
    variable Data
 
+   set zone [lindex $args 0]
+
    foreach type $args {
       set f {}
 
       if { $All!="" } {
-         set Data(All$type) $All
+         set Data(All$zone) $All
       }
       
       for { set n 0 } { $n<[ogrlayer define $type -nb] } { incr n } {
-
-         if { $Data(All$type) } {
+         if { $Data(All$zone) } {
             set Data(Toggle$type$n) 1
             lappend f $n
          } else {

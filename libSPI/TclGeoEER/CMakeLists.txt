@@ -1,8 +1,5 @@
 ec_parse_manifest() # Parse MANIFEST file
 
-#set(DOXYGEN_FOUND True)
-# include(doxygen)    # Doxygen targetinclude(ec_utils)
-
 project(${NAME} DESCRIPTION "${DESCRIPTION}")
 set(PROJECT_VERSION ${VERSION})
 
@@ -11,7 +8,7 @@ message(STATUS "Generating ${NAME} library")
 file(GLOB PROJECT_INCLUDE_FILES generic/*.h)
 file(GLOB PROJECT_SOURCE_FILES generic/*.c)
 
-find_package(BISON REQUIRED)
+find_package(BISON 3.0.0 REQUIRED)
 find_package(FLEX REQUIRED)
 BISON_TARGET(Parser generic/Data_Calc.y ${CMAKE_CURRENT_BINARY_DIR}/Data_Parser.c COMPILE_FLAGS "-p vexpr_")
 FLEX_TARGET(Lexer generic/Data_Calc.l ${CMAKE_CURRENT_BINARY_DIR}/Data_Lexer.c COMPILE_FLAGS "-P vexpr_")
@@ -56,5 +53,8 @@ install(TARGETS ${NAME}
    LIBRARY        DESTINATION TCL/lib/${NAME}${VERSION}
    PUBLIC_HEADER  DESTINATION TCL/include
 )
+
+ec_install_symlink(../TCL/lib/${NAME}${VERSION}/lib${NAME}.so.${VERSION} ${CMAKE_INSTALL_PREFIX}/lib/lib${NAME}.so.${VERSION})
+ec_install_symlink(./lib${NAME}.so.${VERSION} ${CMAKE_INSTALL_PREFIX}/lib/lib${NAME}.so)
 
 ec_build_tcl_pkgindex()
