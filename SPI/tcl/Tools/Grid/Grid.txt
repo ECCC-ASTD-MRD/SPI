@@ -44,6 +44,7 @@ namespace eval Grid {
    set Lbl(Launch)     { "Lancer" "Launch" }
    set Lbl(Target)     { "Cible" "Target" }
    set Lbl(Path)       { "Répertoire" "Directory" }
+   set Lbl(ParamsFile) { "Fichier Parametres" "Parameters file" }
    set Lbl(Host)       { "Hôte" "Host" }
 
    #----- Messages
