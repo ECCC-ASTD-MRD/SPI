@@ -287,9 +287,9 @@ proc Grid::WindowSave { } {
 
       frame .gridmakersave.physx.param
          label .gridmakersave.physx.param.lbl -text param -width 12 -anchor w
-         entry .gridmakersave.physx.param.ent -textvariable Grid::Data(ParamsFile) -bg $GDefs(ColorLight)
+         entry .gridmakersave.physx.param.ent -textvariable Grid::GenPhysX(ParamsFile) -bg $GDefs(ColorLight)
          button .gridmakersave.physx.param.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised \
-            -command { set Grid::Data(ParamsFile) [FileBox::Create . $Grid::Data(ParamsFile) Path {}] }
+            -command { set Grid::GenPhysX(ParamsFile) [FileBox::Create . $Grid::GenPhysX(ParamsFile) Path {}] }
          pack .gridmakersave.physx.param.lbl -side left
          pack .gridmakersave.physx.param.ent -side left -fill x -expand True
          pack .gridmakersave.physx.param.sel -side left

@@ -64,6 +64,6 @@ namespace eval Grid {
 
    set GenPhysX(ParamsFile) ""
    if { [info exist env(GRIDMAKER_GENPHYSX_PARAMSFILE)] == 1 } {
-      set Data(ParamsFile)  $env(GRIDMAKER_GENPHYSX_PARAMSFILE)
+      set GenPhysX(ParamsFile)  $env(GRIDMAKER_GENPHYSX_PARAMSFILE)
    }
 }
