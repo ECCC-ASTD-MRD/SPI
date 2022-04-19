@@ -159,7 +159,7 @@ trap clean_up EXIT
 if [ -z "$AUTHFILE" ]; then
     XORG_RUN_TMPDIR="$(mktemp -d -t $PROGNAME.XXXXXX)"
     # Create empty file to avoid xauth warning
-    AUTHFILE=$(tempfile -n "$XORG_RUN_TMPDIR/Xauthority")
+    AUTHFILE=$(mktemp -p "$XORG_RUN_TMPDIR"  Xauthority.XXXXXX)
 fi
 
 # Start Xorg.

@@ -80,13 +80,15 @@ cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" -- "${args[@]}")
 
 #----- Let's start up the software
 if [[ $XVFB -ne 0 ]]; then
-   if [[ -f /usr/lib/xorg/modules/drivers/dummy_drv.so && $XVFB -eq 1 ]]; then
+   xdummy=`ls -1  /usr/lib*/xorg/modules/drivers/dummy_drv.so 2>/dev/null`
+   if [[ -f ${xdummy} && $XVFB -eq 1 ]]; then
+      echo "(INFO) Starting Xorg dummy driver"
       exec "${SPI_PATH}/bin/xorg-run" -n $XSVR -a -l /dev/null -s "-config ${SPI_PATH}/share/xorg/xorg.conf" "${cmd[@]}"
    else
       #----- Otherwise use the old Xvfb
+      echo "(INFO) Starting Xvfb"
       exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' "${cmd[@]}"
    fi
 else
    exec "${cmd[@]}"
 fi
-
