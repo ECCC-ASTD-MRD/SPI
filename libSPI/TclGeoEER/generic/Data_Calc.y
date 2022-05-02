@@ -524,10 +524,10 @@ exp:
       STACK_PAD($1->Args,$1->Opts);
 
       // Make sure we have the right number of arguments
-      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_F): Invalid number of arguments");
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_M): Invalid number of arguments");
 
       // Make sure the mandatory arguments are not NULL
-      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_M): Mandatory arguments can't be NULL")
 
       $$=Calc_Matrix($1->Func,1,0,$1->Type,STACK_NB,$3);
       STACK_POP;
@@ -545,10 +545,10 @@ exp:
       STACK_PAD($1->Args,$1->Opts);
 
       // Make sure we have the right number of arguments
-      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_F): Invalid number of arguments");
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_D): Invalid number of arguments");
 
       // Make sure the mandatory arguments are not NULL
-      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_F): Mandatory arguments can't be NULL")
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_D): Mandatory arguments can't be NULL")
 
       $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,$3);
       STACK_POP;
