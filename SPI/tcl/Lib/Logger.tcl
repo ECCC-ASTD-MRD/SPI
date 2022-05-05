@@ -763,13 +763,13 @@ proc Log::StderrErrorHandler { Cmd Handle {Xtra ""} } {
       initialize  {return [list initialize finalize write]}
       finalize    {}
       write {
-         if { $Param(Out)!="stderr" && [info exists ::errorInfo] && $::errorInfo==[string map {\r ""} $Xtra] } {
-            Log::Print ERROR "Stack trace caught:\n\t[string map {\r "" \n \n\t} $Xtra]"
+         if { $Param(Out)!="stderr" && [info exists ::errorInfo] && [string first [string map {\r ""} [string trimright $Xtra \r\n]] $::errorInfo]==0 } {
+            Log::Print ERROR "Stack trace caught:\n\t[string map {\n \n\t} $::errorInfo]"
 
             #----- A stack trace printed on stderr usually means that an error went uncaught
             #----- up to the highest level. In non-interactive mode, this means we've reached
             #----- the end of the road, so might as well handle it gracefully
-            if { !$::tcl_interactive } {
+            if { !$::tcl_interactive && ($::argc || [chan tell stdin]==-1) } {
                Log::End 1 0
             }
          }
