@@ -57,6 +57,7 @@ namespace eval Log { } {
    set Param(Level)       INFO                  ;#Log level
    set Param(Color)       False                 ;#Log color
    set Param(Time)        False                 ;#Print the time
+   set Param(TimeFormat)  "%+"                  ;#Time format
    set Param(Proc)        False                 ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Keep)        24                    ;#Number of back log to keep
@@ -411,7 +412,7 @@ proc Log::Start { Job Version { Input "" } } {
          Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
    }
-   Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
+   Log::Print MUST "Start time          : [clock format $Param(SecStart) -format $Param(TimeFormat)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    Log::CheckSPI $Param(SPI)
@@ -460,7 +461,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    } else {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
-   Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
+   Log::Print MUST "End time            : [clock format $Param(SecEnd) -format $Param(TimeFormat)]"
    Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
@@ -591,7 +592,7 @@ proc Log::Print { Type Message { Var "" } } {
 
       #----- Do we print the time
       if { $Param(Time) } {
-         set time "([clock format [clock seconds]]) "
+         set time "([clock format [clock seconds] -format $Param(TimeFormat)]) "
       } else {
          set time ""
       }
@@ -659,7 +660,7 @@ proc Log::Progress { Percent {Msg ""} } {
 
    #----- Do we print the time
   if { $Param(Time) } {
-     set time "([clock format [clock seconds]]) "
+     set time "([clock format [clock seconds] -format $Param(TimeFormat)]) "
   } else {
      set time ""
   }
