@@ -669,6 +669,32 @@ proc Log::Progress { Percent {Msg ""} } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Log::PrintFile>
+# Creation : Mai 2022 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Afficher le contenu d'un fichier de façon indentée
+#
+# Parametres  :
+#    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG)
+#    <File>   : Le path vers les fichier à afficher
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Log::PrintFile { Type File } {
+   if { [catch {
+      set fd [open $File r]
+      set msg [string map {\n \n\t} [read -nonewline $fd]]
+      close $fd
+
+      Log::Print $Type "Content of file $File:\n\t$msg"
+   } err] } {
+      Log::Print ERROR "Could not print file $File to log:\n\t$err"
+   }
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Log::Mail>
 # Creation : Octobre 2009 - J.P. Gauthier - CMC/CMOE
 #
