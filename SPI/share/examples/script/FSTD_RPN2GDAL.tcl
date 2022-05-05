@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # the next line restarts using tclsh \
 exec $SPI_PATH/tclsh "$0" "$@"
 #============================================================================

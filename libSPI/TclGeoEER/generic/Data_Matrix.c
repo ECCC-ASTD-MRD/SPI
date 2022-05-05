@@ -62,20 +62,21 @@ static double Calc_CallFunc(TFunc *Func,const int NFlds,TDef *Flds[]) {
 }
 
 static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
-   size_t idx,n,msk[NFlds],nc;
+   size_t idx,n,nc,imsk[NFlds],cmsk[NFlds];
    double v[NFlds];
    int f;
 
    // Initialize the meta info for the fields
    for(f=0; f<NFlds; ++f) {
-      msk[f] = FSIZE3D(Flds[f])==1 ? 0 : SIZE_MAX;
+      imsk[f] = FSIZE3D(Flds[f])==1 ? 0 : SIZE_MAX;
+      cmsk[f] = Flds[f]->NC==1 ? 0 : SIZE_MAX;
    }
 
    n=FSIZE3D(R);
    for(nc=0; nc<R->NC; ++nc) {
       for(idx=0; idx<n; ++idx) {
          for(f=0; f<NFlds; ++f) {
-            Def_Get(Flds[f],nc&msk[f],idx&msk[f],v[f]);
+            Def_Get(Flds[f],nc&cmsk[f],idx&imsk[f],v[f]);
          }
          switch (NFlds) {
             case 1:  v[0]=Func(v[0]);                                                  break;

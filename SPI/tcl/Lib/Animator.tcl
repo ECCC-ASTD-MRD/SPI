@@ -626,7 +626,7 @@ proc Animator::GetPlayList { } {
          }
 
          set i0 $i1
-         set f0 $f1
+         catch {set f0 $f1}
       }
    }
 
@@ -691,70 +691,74 @@ proc Animator::GetPlayListField { } {
    variable Play
    variable Lbl
 
+   array set idxs {NOMVAR 0 TYPVAR 1 ETIKET 8 DATEV end-6 IP1 end-3 IP2 end-2 IP3 end-1}
+
    set Play(VPSF) {}
    set f 0
    foreach vp $Play(VPs) {
       foreach fld $Viewport::Data(Data$vp) {
+         set filter {}
 
          if { [fstdfield is $fld] } {
-
             set tags [fstdfield stats $fld -tag]
             set box  [lindex $tags 2]
 
-            #----- On recupere les parametres du champs selectionne
+            #----- Set related field criterias
+            lappend filter $idxs(NOMVAR)  [fstdfield define $fld -NOMVAR]
+            lappend filter $idxs(IP1)     [fstdfield define $fld -IP1]
+            lappend filter $idxs(IP2)     [fstdfield define $fld -IP2]
+            lappend filter $idxs(ETIKET)  [fstdfield define $fld -ETIKET]
 
-            set var     [fstdfield define $fld -NOMVAR]
-            set tvar    [fstdfield define $fld -TYPVAR]
-            set ip1     [fstdfield define $fld -IP1]
-            set ip2     [fstdfield define $fld -IP2]
-            set ip3     [fstdfield define $fld -IP3]
-            set etiket  [fstdfield define $fld -ETIKET]
-            
-            #----- Sepcial case for secconds at 0
+            #----- Sepcial case for seconds at 0
             if { [set sec [fstdstamp toseconds [fstdfield define $fld -DATEV]]] } {
-               set date    [clock format $sec -format "%Y%m%d%H%M" -timezone :UTC]
+               set date [clock format $sec -format "%Y%m%d%H%M" -timezone :UTC]
             } else {
                set date 000000000000
             }
-         } elseif { [gribfield is $fld] } {
+            lappend filter $idxs(DATEV) $date
 
+            #----- Conditional criterias
+            if { $Play(Typvar) } {
+               lappend filter $idxs(TYPVAR) [fstdfield define $fld -TYPVAR]
+            }
+            if { $Play(IP3) } {
+               lappend filter $idxs(IP3) [fstdfield define $fld -IP3]
+            }
+         } elseif { [gribfield is $fld] } {
             set tags [gribfield stats $fld -tag]
             set box  [lindex $tags 2]
 
-            #----- On recupere les parametres du champs selectionne
-
-            set var     [fstdfield define $fld -NOMVAR]
-            set tvar    .+
-            set ip1     [fstdfield define $fld -IP1]
-            set ip2     \\d+
-            set ip3     \\d+
-            set etiket  .+
-            set date    [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -timezone :UTC]
+            #----- Set related field criterias
+            lappend filter $idxs(NOMVAR)  [fstdfield define $fld -NOMVAR]
+            lappend filter $idxs(IP1)     [fstdfield define $fld -IP1]
+            lappend filter $idxs(DATEV)   [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -timezone :UTC]
          } else {
             continue
          }
 
-         if { !$Play(IP3) } {
-            set ip3 \\d+
-         }
-         if { !$Play(Typvar) } {
-             set tvar .+
+         #----- Remove the key(s) on which we want to animate
+         switch $Play(Type) {
+            "IP1"    { set filter [dict remove $filter $idxs(IP1)] }
+            "IP3"    { set filter [dict remove $filter $idxs(IP1) $idxs(IP3)] }
+            "ETIKET" { set filter [dict remove $filter $idxs(ETIKET)] }
+            "IP2"    -
+            "DATE"   { set filter [dict remove $filter $idxs(IP2) $idxs(DATEV)] }
          }
 
-         switch $Play(Type) {
-            "IP1"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 $ip3 .+field$" }
-            "IP2"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
-            "IP3"     { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+$date \\d+ \\d+ \\d+ $ip2 \\d+ .+field$" }
-            "ETIKET"  { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+.+\\s+$date \\d+ \\d+ $ip1 $ip2 $ip3 .+field$" }
-            "DATE"    { set str "^$var\\s+$tvar\\s.+ .+\\s+.+ .+\\s.+ .+\\s+$etiket\\s+\\d+ \\d+ \\d+ $ip1 \\d+ $ip3 .+field$" }
+         #----- Apply the filters
+         set fields [FieldBox::GetContent $box]
+         dict for {idx val} $filter {
+            set fields [lmap field $fields {expr {[lindex $field $idx]==$val ? $field : [continue]}}]
          }
+
          set no 0
-         foreach field [lsearch -all -inline -regexp [FieldBox::GetContent $box] $str] {
+         foreach field $fields {
 
             #----- Do not use masks
             if  { [string index [lindex $field 1] 0]=="@" } {
                continue
             }
+            set var     [lindex $field 0]
             set fid     [lindex $field end-5]
             set idx     [lindex $field end-4]
             set type    [lindex $field end]

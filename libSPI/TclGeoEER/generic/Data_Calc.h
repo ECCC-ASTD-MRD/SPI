@@ -30,6 +30,8 @@
  *
  *==============================================================================
  */
+// Uncomment to debug
+//#define DEBUG DEBUG
 
 #ifndef _DATA_CALC_H_
 #define _DATA_CALC_H_
