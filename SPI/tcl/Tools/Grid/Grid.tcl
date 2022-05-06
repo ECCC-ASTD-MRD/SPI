@@ -458,7 +458,11 @@ proc Grid::ProjectSave { Path } {
          set f [open ${path}/Gem_geophy.sh w 0755]
          puts $f "#!/bin/bash"
    #TODO      puts $f ". ssmuse-sh -x eccc/cmd/cmds/apps/SPI/beta"
-         puts $f "GenPhysX -gridfile ${path}/grid.fstd -target RELWS-1.0 -result ${path}/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
+	 if { [string compare $GenPhysX(ParamsFile) "" ] == 0 } {
+            puts $f "GenPhysX -gridfile ${path}/grid.fstd -target \"$GenPhysX(Target)\" -result ${path}/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
+	 } else {
+            puts $f "GenPhysX -gridfile ${path}/grid.fstd -target \"$GenPhysX(Target)\" -param \"$GenPhysX(ParamsFile)\" -result ${path}/Gem_geophy -batch -mach $GenPhysX(Host) -t $GenPhysX(Time) -cm $GenPhysX(Memory) -cpus $GenPhysX(CPU)"
+         }
          close $f
       
          exec ${path}/Gem_geophy.sh &

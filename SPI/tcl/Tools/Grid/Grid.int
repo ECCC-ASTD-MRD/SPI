@@ -120,6 +120,14 @@ proc Grid::Window { } {
    Grid::SettingsShow
    
    raise  .gridmaker
+
+   puts "SavePath is  $Data(SavePath)"
+   if { [string compare $Data(SavePath) ""] != 0 } {
+      if { [file isdir $Data(SavePath)] } {
+         puts "Loading Project"
+         Grid::ProjectLoad  $Data(SavePath)
+      }
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -269,19 +277,29 @@ proc Grid::WindowSave { } {
    
       checkbutton .gridmakersave.toggle -text "GenPhysX" -compound right -bitmap @$GDefs(Dir)/share/bitmap/down.xbm -variable Grid::GenPhysX(On) -onvalue True -offvalue False \
          -indicatoron False -bd 0 -activebackground $GDefs(ColorHighLight) -selectcolor $GDefs(ColorFrame) \
-         -command { if { $Grid::GenPhysX(On) } { pack .gridmakersave.physx.host .gridmakersave.physx.target -side top -fill x -expand True; .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm } else { pack forget .gridmakersave.physx.host .gridmakersave.physx.target; .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm }} 
+         -command { if { $Grid::GenPhysX(On) } { pack .gridmakersave.physx.host .gridmakersave.physx.target .gridmakersave.physx.param  -side top -fill x -expand True; .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/up.xbm } else { pack forget .gridmakersave.physx.host .gridmakersave.physx.param .gridmakersave.physx.target; .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm }} 
       labelframe .gridmakersave.physx -labelwidget .gridmakersave.toggle
       frame .gridmakersave.physx.host
          label .gridmakersave.physx.host.lbl -text [lindex $Lbl(Host) $GDefs(Lang)] -width 12 -anchor w
          ComboBox::Create .gridmakersave.physx.host.sel Grid::GenPhysX(Host) noedit sorted nodouble -1 $GenPhysX(Hosts) 18 5 {}
          pack .gridmakersave.physx.host.lbl -side left 
          pack .gridmakersave.physx.host.sel -side left -fill x -expand True
+
+      frame .gridmakersave.physx.param
+         label .gridmakersave.physx.param.lbl -text param -width 12 -anchor w
+         entry .gridmakersave.physx.param.ent -textvariable Grid::GenPhysX(ParamsFile) -bg $GDefs(ColorLight)
+         button .gridmakersave.physx.param.sel -bd 1 -image FOLD -relief flat -bd 1 -overrelief raised \
+            -command { set Grid::GenPhysX(ParamsFile) [FileBox::Create . $Grid::GenPhysX(ParamsFile) Path {}] }
+         pack .gridmakersave.physx.param.lbl -side left
+         pack .gridmakersave.physx.param.ent -side left -fill x -expand True
+         pack .gridmakersave.physx.param.sel -side left
+
       frame .gridmakersave.physx.target
          label .gridmakersave.physx.target.lbl -text [lindex $Lbl(Target) $GDefs(Lang)] -width 12 -anchor w
          ComboBox::Create .gridmakersave.physx.target.sel Grid::GenPhysX(Target) noedit sorted nodouble -1 $GenPhysX(Targets) 18 5 {}
          pack .gridmakersave.physx.target.lbl -side left 
          pack .gridmakersave.physx.target.sel -side left -fill x -expand True
-      pack .gridmakersave.physx.host  .gridmakersave.physx.target -side top -fill x 
+      pack .gridmakersave.physx.host  .gridmakersave.physx.target .gridmakersave.physx.param -side top -fill x 
  
    frame .gridmakersave.cmd -relief sunken -bd 1
       button .gridmakersave.cmd.go     -bd 1 -text [lindex $Lbl(Launch) $GDefs(Lang)] -command { if { [Grid::ProjectSave $Grid::Data(SavePath)] } { destroy .gridmakersave } }
@@ -292,7 +310,7 @@ proc Grid::WindowSave { } {
    update idletasks
          
    if { !$Grid::GenPhysX(On) } {
-      pack forget .gridmakersave.physx.host .gridmakersave.physx.target
+      pack forget .gridmakersave.physx.host .gridmakersave.physx.target .gridmakersave.physx.param 
       .gridmakersave.toggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm 
    }
 }

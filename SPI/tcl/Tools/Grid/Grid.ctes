@@ -38,8 +38,10 @@ namespace eval Grid {
    set Data(SavePath) ""
    if { [info exists env(RELW_GENPATH)] } {
       set Data(SavePath) $env(RELW_GENPATH)
+   } elseif { [info exist env(GRIDMAKER_PROJECT_DIR)] } {
+      set Data(SavePath) $env(GRIDMAKER_PROJECT_DIR)
    }
-   
+  
    set Data(Cascs)     { HRDPS RDPS GDPS }
    set Data(CascGDPS)  { 250 1000 2500 10000 }
    set Data(CascRDPS)  { 250 1000 2500 }
@@ -51,12 +53,17 @@ namespace eval Grid {
    colormap create GRID3; colormap control GRID3 -add 255 255 255 000 255; colormap control GRID3 -add 0 200 200 000 255
    colormap create GRID4; colormap control GRID4 -add 255 000 255 000 255; colormap control GRID4 -add 0 000 200 000 255
 
-   set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS-5.1 RELWS-1.0 }
+   set GenPhysX(Targets) { LEGACY GEMMESO GEM4.4 GDPS-5.1 RELWS-1.0 "" }
    set GenPhysX(Target)  RELWS-1.0
-   set GenPhysX(Hosts)   { ppp3 ppp4 }
-   set GenPhysX(Host)    ppp3
+   set GenPhysX(Hosts)   { ppp5 ppp6 }
+   set GenPhysX(Host)    ppp5
    set GenPhysX(Time)    10800
    set GenPhysX(Memory)  100G
    set GenPhysX(CPU)     1
    set GenPhysX(On)      False
+
+   set GenPhysX(ParamsFile) ""
+   if { [info exist env(GRIDMAKER_GENPHYSX_PARAMSFILE)] == 1 } {
+      set GenPhysX(ParamsFile)  $env(GRIDMAKER_GENPHYSX_PARAMSFILE)
+   }
 }
