@@ -121,10 +121,8 @@ proc Grid::Window { } {
    
    raise  .gridmaker
 
-   puts "SavePath is  $Data(SavePath)"
    if { [string compare $Data(SavePath) ""] != 0 } {
       if { [file isdir $Data(SavePath)] } {
-         puts "Loading Project"
          Grid::ProjectLoad  $Data(SavePath)
       }
    }
