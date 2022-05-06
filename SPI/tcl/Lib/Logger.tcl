@@ -57,6 +57,7 @@ namespace eval Log { } {
    set Param(Level)       INFO                  ;#Log level
    set Param(Color)       False                 ;#Log color
    set Param(Time)        False                 ;#Print the time
+   set Param(TimeFormat)  "%+"                  ;#Time format
    set Param(Proc)        False                 ;#Print the calling proc
    set Param(Path)        $env(HOME)/.spi/logs  ;#Path where to store the log files
    set Param(Keep)        24                    ;#Number of back log to keep
@@ -411,7 +412,7 @@ proc Log::Start { Job Version { Input "" } } {
          Log::Print MUST "   Waiting time     : [clock format [expr $Param(SecTime)-${secs}] -format "%H:%M:%S" -timezone :UTC]"
       }
    }
-   Log::Print MUST "Start time          : [clock format $Param(SecStart)]"
+   Log::Print MUST "Start time          : [clock format $Param(SecStart) -format $Param(TimeFormat)]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
    Log::CheckSPI $Param(SPI)
@@ -460,7 +461,7 @@ proc Log::End { { Status 0 } { Exit True } } {
    } else {
       Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
    }
-   Log::Print MUST "End time            : [clock format $Param(SecEnd)]"
+   Log::Print MUST "End time            : [clock format $Param(SecEnd) -format $Param(TimeFormat)]"
    Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
    Log::Print MUST "-------------------------------------------------------------------------------\n"
 
@@ -591,7 +592,7 @@ proc Log::Print { Type Message { Var "" } } {
 
       #----- Do we print the time
       if { $Param(Time) } {
-         set time "([clock format [clock seconds]]) "
+         set time "([clock format [clock seconds] -format $Param(TimeFormat)]) "
       } else {
          set time ""
       }
@@ -659,12 +660,38 @@ proc Log::Progress { Percent {Msg ""} } {
 
    #----- Do we print the time
   if { $Param(Time) } {
-     set time "([clock format [clock seconds]]) "
+     set time "([clock format [clock seconds] -format $Param(TimeFormat)]) "
   } else {
      set time ""
   }
 
    puts $Param(Out) "${cstart}${time}(PROGRESS) \[[format %6.2f $Percent] %\] $Msg$cend"
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <Log::PrintFile>
+# Creation : Mai 2022 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Afficher le contenu d'un fichier de façon indentée
+#
+# Parametres  :
+#    <Type>   : Type de mesage (MUST,ERROR,WARNING,INFO,DEBUG)
+#    <File>   : Le path vers les fichier à afficher
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Log::PrintFile { Type File } {
+   if { [catch {
+      set fd [open $File r]
+      set msg [string map {\n \n\t} [read -nonewline $fd]]
+      close $fd
+
+      Log::Print $Type "Content of file $File:\n\t$msg"
+   } err] } {
+      Log::Print ERROR "Could not print file $File to log:\n\t$err"
+   }
 }
 
 #----------------------------------------------------------------------------
@@ -762,13 +789,13 @@ proc Log::StderrErrorHandler { Cmd Handle {Xtra ""} } {
       initialize  {return [list initialize finalize write]}
       finalize    {}
       write {
-         if { $Param(Out)!="stderr" && [info exists ::errorInfo] && $::errorInfo==[string map {\r ""} $Xtra] } {
-            Log::Print ERROR "Stack trace caught:\n\t[string map {\r "" \n \n\t} $Xtra]"
+         if { $Param(Out)!="stderr" && [info exists ::errorInfo] && [string first [string map {\r ""} [string trimright $Xtra \r\n]] $::errorInfo]==0 } {
+            Log::Print ERROR "Stack trace caught:\n\t[string map {\n \n\t} $::errorInfo]"
 
             #----- A stack trace printed on stderr usually means that an error went uncaught
             #----- up to the highest level. In non-interactive mode, this means we've reached
             #----- the end of the road, so might as well handle it gracefully
-            if { !$::tcl_interactive } {
+            if { !$::tcl_interactive && ($::argc || [chan tell stdin]==-1) } {
                Log::End 1 0
             }
          }
