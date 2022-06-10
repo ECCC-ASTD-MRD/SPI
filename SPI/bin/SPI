@@ -78,17 +78,19 @@ fi
 #----- Command to execute
 cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" -- "${args[@]}")
 
-if [ -d /usr/share/X11/fonts ]
-then
-   FONTDIR=/usr/share/X11/fonts
-else
-   FONTDIR=/usr/share/fonts/X11
-fi
-
-fp_set="-fp ${FONTDIR}/misc,${FONTDIR}/cyrillic,${FONTDIR}/Type1,${FONTDIR}/100dpi,${FONTDIR}/75dpi"
 
 #----- Let's start up the software
 if [[ $XVFB -ne 0 ]]; then
+
+   #----- Define the font paths
+   if [[ -d /usr/share/X11/fonts ]]; then
+      FONTDIR=/usr/share/X11/fonts
+   else
+      FONTDIR=/usr/share/fonts/X11
+   fi
+
+   fp_set="-fp ${FONTDIR}/misc,${FONTDIR}/cyrillic,${FONTDIR}/Type1,${FONTDIR}/100dpi,${FONTDIR}/75dpi"
+
    xdummy=`ls -1  /usr/lib*/xorg/modules/drivers/dummy_drv.so 2>/dev/null`
    if [[ -f ${xdummy} && $XVFB -eq 1 ]]; then
       echo "(INFO) Starting Xorg dummy driver"
