@@ -169,7 +169,7 @@ namespace eval Graph {
                         @$GDefs(Dir)/share/bitmap/rayhor16.xbm
                         @$GDefs(Dir)/share/bitmap/rayver16.xbm"
 
-   set Graph(Icons)    { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON BARB }
+   set Graph(Icons)    { NONE TRIANGLE SQUARE VBAR HBAR CIRCLE LOZENGE PENTAGON HEXAGON BARB SPEAR ARROW }
    set Graph(Colors)   { #FF0000 #00FF00 #0000FF #FFF300 #00FFF3 #E600FF #FF8C00 #804F4F #8CFF40 #B5A36B #80F9FF #A66BFF }
 
    set Item(No)          0
@@ -1256,7 +1256,7 @@ proc Graph::ParamsItem { Parent } {
       frame $Parent.item.icon
          label $Parent.item.icon.lbl -text [lindex $Lbl(Icon) $GDefs(Lang)] -width 12 -anchor w
          IcoMenu::Create $Parent.item.icon.sel $GDefs(Dir)/share/bitmap \
-            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm wind1.xbm } \
+            { zeroth.xbm stri.xbm ssquare.xbm svbar.xbm shbar.xbm scircle.xbm slos.xbm spenta.xbm shexa.xbm wind1.xbm wind2.xbm wind3.xbm } \
             $Graph::Graph(Icons) Graph::Item(Icon) { Graph::ItemConfigure $Graph::Data(Graph) $Graph::Data(Type) $Graph::Data(Item); Graph::ItemConfigureData $Graph::Data(Graph) $Graph::Data(Type) } \
             0 -relief groove -bd 2
          scale $Parent.item.icon.size -from 1 -to 20 -resolution 1 -variable Graph::Item(Size) -showvalue false \
@@ -1646,17 +1646,12 @@ proc Graph::ItemConfigure { Graph Type Item } {
       set stipple ""
    }
 
-   if { $Graph::Item(Icon)!="BARB" } {
-      set icon $Graph::Item(Icon)
-   } else {
-      set icon "PLACE"
-   }
 #   set Graph::Item(Bitmap) @$GDefs(Dir)/share/bitmap/CLEAR.xbm
 #   set Graph::Item(Image)  MODEL
 
    graphitem configure $Item -outline $Graph::Item(Outline) -fill $fill -iconoutline $Graph::Item(Outline) -iconfill $fill -transparency $Graph::Item(Tranparency) \
       -width $Graph::Item(Width) -size $Graph::Item(Size) -value $Graph::Item(Value) -avg $Graph::Item(Avg) -dash $Graph::Item(Dash) \
-      -type $Graph::Item(Type) -font $Graph::Item(Font) -icon $icon \
+      -type $Graph::Item(Type) -font $Graph::Item(Font) -icon $Graph::Item(Icon) \
       -bitmap $Graph::Item(Bitmap) -stipple $stipple -image $Graph::Item(Image)
 
    set item [graphitem configure $Item -desc]
@@ -1701,9 +1696,6 @@ proc Graph::ItemSelect { Item } {
    set Graph::Item(Bitmap)      [graphitem configure $Item -bitmap]
    set Graph::Item(Stipple)     [graphitem configure $Item -stipple]
   
-   if { $Graph::Item(Icon)=="PLACE" } {
-      set Graph::Item(Icon) BARB
-   }
    if { $Graph::Item(Outline)!="" } {
       $Data(Frame).item.line.col configure -fg $Graph::Item(Outline)
    }

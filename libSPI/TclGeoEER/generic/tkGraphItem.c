@@ -1478,7 +1478,7 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
    Vect3d        *v=NULL,*vl=NULL,v0,v1,vt;
    char           buf[32];
    double        *vm,x,y,db,dh,x0,y0,sz,avg;
-   int            i,j,n,vn,px,py,pw,hd;
+   int            i,j,n,vn,px,py,pw,hd,vtype;
 
    vecx=Vector_Get(Item->XData);
    vecy=Vector_Get(Item->YData);
@@ -1765,17 +1765,22 @@ void GraphItem_DisplayXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,T
       }
       glDisable(GL_LINE_STIPPLE);
 
-      vecs=Vector_Get(Item->Speed);
-      vecd=Vector_Get(Item->Dir);
-      if (vecs && vecd) {
-         for(i=0;i<vn;i++) {
-            Data_RenderBarbule(1,1,0.0,v[i][0],v[i][1],0.0,vecs->V[i],vecd->V[i],Item->Size*2,NULL);
+      vtype=ABS(Item->Icon-17);
+      if (vtype==BARB || vtype==SPEAR || vtype==ARROW) {
+         vecs=Vector_Get(Item->Speed);
+         vecd=Vector_Get(Item->Dir);
+
+         if (vecs && vecd) {
+            // Translate icon index into RenderVector type
+            for(i=0;i<vn;i++) {
+               Data_RenderBarbule(vtype,1,0.0,v[i][0],v[i][1],0.0,vecs->V[i],vecd->V[i],(vtype==BARB?Item->Size*2:Item->Size*4),NULL);
+            }
          }
       }
    }
 
    // Display Icons
-   if (Item->Icon && Item->Size>0.0) {
+   if (Item->Icon && Item->Icon<14 && Item->Size>0.0) {
       sz=(Item->Size+Item->Width)*0.5;
       glLineWidth(Item->Width);
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -2958,7 +2963,7 @@ int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0
       glDisplayTextLayout(Item->Text,0,X0,Y0,0,-1,1);
    }
 
-   if (Item->Icon && Item->Size>0.0) {
+   if (Item->Icon && Item->Icon<14 &&Item->Size>0.0) {
       glEnableClientState(GL_VERTEX_ARRAY);
       glVertexPointer(2,GL_DOUBLE,0,IconList[Item->Icon].Co);
       glPushMatrix();
@@ -3732,7 +3737,7 @@ void GraphItem_PostscriptXYZ(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Ite
    }
 
    /* Display Icons */
-   if (Item->Icon && Item->Size>0.0) {
+   if (Item->Icon && Item->Icon<14 &&Item->Size>0.0) {
       for(i=0;i<vn-hd;i++) {
          if (i==0 || i==(vn-hd-1) || Item->IconXShowValue==1e32 || fmod(vecx->V[i],Item->IconXShowValue)==0.0) {
             sz=(Item->Size+Item->Width)*0.5;
@@ -3963,7 +3968,7 @@ int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *I
       }
    }
 
-   if (Item->Icon && Item->Size>0.0) {
+   if (Item->Icon && Item->Icon<14 && Item->Size>0.0) {
       sprintf(buf,"gsave\n%i %i translate %f %f scale\n",X1+10,(int)Tk_CanvasPsY(Graph->canvas,y),Item->Size,Item->Size);
       Tcl_AppendResult(Interp,buf,(char*)NULL);
 

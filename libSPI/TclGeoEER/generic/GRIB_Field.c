@@ -1439,7 +1439,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
       Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Could not get gridType",(char*)NULL);
       return(NULL);
    }
-
    for (opt=0;gridTypes[opt]!=NULL;opt++) {
       if (!strncmp(gridType,gridTypes[opt],64)) {
          break;
@@ -1566,7 +1565,9 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
             Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get projectionCentreFlag",(char*)NULL);
             return(NULL);
          }
-         scale=scale==1?-90:90;
+// TODO: Something changed either with GDAL or ECCODE, to be investigated further
+//         scale=scale==1?-90:90;
+         scale=1;
          OSRSetPS(ref,lat,lon,scale,0.0,0.0);
       break;
 
@@ -1610,7 +1611,6 @@ OGRSpatialReferenceH GRIB_WKTProjCS(Tcl_Interp* Interp,grib_handle* Handle,TRota
          Tcl_AppendResult(Interp,"\n   GRIB_WKTProjCS: Couldn't get shapeOfTheEarth",(char*)NULL);
          return(NULL);
       }
-
       switch(lval) {
          case 1 :  // User defined (w/ scale factor); earth is spherical (1/f=1.0) 
          case 0 :

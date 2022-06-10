@@ -2501,7 +2501,7 @@ for { set i 0 } { $i < $argc } { incr i } {
       "field*"    { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW FieldBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(FSTD)\]"] }
       "traj*"     { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW TrajBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(TRAJ) \$FileBox::Type(HYSPLIT)\]"] }
       "obs*"      { set i [Args::ParseDo $argv $argc $i 1 0 "SPI::FileOpen NEW ObsBox \"[string range [lindex $argv $i] 6 end]\" \[list \$FileBox::Type(OBS)\]"] }
-      "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; NowCaster::Obs::Add"] }
+      "metobs"    { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) NowCaster; lappend SPI::Param(MetObs)"] }
       "geo"       { set i [Args::ParseDo $argv $argc $i 1 0 "lappend SPI::Param(Tool) Mapper; lappend SPI::Param(Geos)"] }
       "icon"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Icons)"] }
       "args"      { set i [Args::ParseDo $argv $argc $i 1 0 "set SPI::Param(Args)"] }
@@ -2572,6 +2572,11 @@ Page::Update
 #----- Ouvrir les donnees georeference
 foreach file $SPI::Param(Geos) {
    Mapper::Read $file
+}
+
+#----- Ouvrir les donnees metobs
+foreach file $SPI::Param(MetObs) {
+   NowCaster::Obs::Add $file
 }
 
 #----- On bypass les arguments regulier de SPI pour ceux du script a etre execute

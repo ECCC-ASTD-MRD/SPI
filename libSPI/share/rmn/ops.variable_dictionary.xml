@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE  CMCRPN_DataDictionary SYSTEM "dict-2.3.dtd">
-<CMCRPN_DataDictionary name="Operational" date="2021-06-30" version_number="2.2.0">
+<CMCRPN_DataDictionary name="Operational" date="2022-01-31" version_number="2.2.1">
 
 <metvar usage="current" date="2018-10-10">
       <nomvar>DPDT</nomvar>
@@ -4697,6 +4697,92 @@
                </logical>
       </measure>
 </metvar>
+<metvar usage="current" origin="DHPS" date="2022-01-31">
+      <nomvar>DA</nomvar>
+      <description>
+               <short lang="fr">Aire de drainage</short>
+               <short lang="en">Drainage area</short>
+               <long lang="fr">Superficie du terrain (bassin-versant) dont l'écoulement passe par le point de grille considéré, en incluant le point de grille lui-même</long>
+               <long lang="en">Area of the terrain that drains into a given grid cell, including the grid cell itself</long>
+      </description>
+      <measure>
+               <real>
+                        <units>km²</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="DHPS" date="2022-01-31">
+      <nomvar>REAC</nomvar>
+      <description>
+               <short lang="fr">Identifiant pour les entités d'eau traitées explicitement</short>
+               <short lang="en">ID for bodies of water treated explicitly</short>
+               <long lang="fr">Identifiant unique affecté à une entité d'eau (lac ou réservoir) traitée explicitement dans le modèle de routage. La numérotation commence par la valeur 1. Voir la note technique du système correspondant pour la liste des identifiants de chaque domaine.</long>
+               <long lang="en">Unique ID assigned to a body of water (lake or reservoir) treated explicitly by the river routing model starting with unity. See the technical note for the system generating the field for a list of valid IDs.</long>
+      </description>
+      <measure>
+               <integer>
+                        <units>nil</units>
+               </integer>
+      </measure>
+</metvar>
+<metvar usage="current" origin="DHPS" date="2022-01-31">
+      <nomvar>DIRF</nomvar>
+      <description>
+               <short lang="fr">Directions d'écoulement corrigées</short>
+               <short lang="en">Corrected flow directions</short>
+               <long lang="fr">Directions d'écoulement corrigées sous-jacentes au réseau de drainage d'un domaine de modélisation. Les valeurs varient entre 1 et 128, avec un incrément suivant les puissances de 2, en débutant avec la valeur 1 pour représenter l'Est, en progressant dans le sens des aiguilles d'une montre et en finissant avec 128 pour représenter le Nord-Est. Tous les points situés dans des entités d'eau (lacs) représentés explicitement par le modèle prennent la valeur 256.</long>
+               <long lang="en">Corrected flow directions underlying the river network of a modelling domain. Values range from 1 to 128, incremented by powers of 2, progressing clockwise starting from 1 to indicate East and ending with 128 to indicate Northeast. All bodies of water that are represented explicitly by the model are assigned a value of 256.</long>
+      </description>
+      <measure>
+               <code>
+                        <value>1</value>
+                        <meaning lang="fr">Est</meaning>
+                        <meaning lang="en">East</meaning>
+                        <value>2</value>
+                        <meaning lang="fr">Sud-Est</meaning>
+                        <meaning lang="en">Southeast</meaning>
+                        <value>4</value>
+                        <meaning lang="fr">Sud</meaning>
+                        <meaning lang="en">South</meaning>
+                        <value>8</value>
+                        <meaning lang="fr">Sud-Ouest</meaning>
+                        <meaning lang="en">Southwest</meaning>
+                        <value>16</value>
+                        <meaning lang="fr">Ouest</meaning>
+                        <meaning lang="en">West</meaning>
+                        <value>32</value>
+                        <meaning lang="fr">Nord-Ouest</meaning>
+                        <meaning lang="en">Northwest</meaning>
+                        <value>64</value>
+                        <meaning lang="fr">Nord</meaning>
+                        <meaning lang="en">North</meaning>
+                        <value>128</value>
+                        <meaning lang="fr">Nord-Est</meaning>
+                        <meaning lang="en">Northeast</meaning>
+                        <value>256</value>
+                        <meaning lang="fr">Entités d'eau (lacs et réservoirs) représentées explicitement</meaning>
+                        <meaning lang="en">Explicitly treated bodies of water (lakes and reservoirs)</meaning>
+               </code>
+      </measure>
+</metvar>
+
+<metvar usage="current" origin="CSWP" date="2022-01-31">
+      <nomvar>SWP</nomvar>
+      <description>
+               <short lang="fr">Probabilité qu’un endroit soit recouvert d’eau</short>
+               <short lang="en">Probability of a location being covered with water</short>
+               <long lang="fr">Probabilité (0 à 100 %) qu'un lieu soit recouvert d'eau, estimée par des données satellitaires et par l'apprentissage de machine. Les valeurs négatives indiquent une absence de données.</long>
+               <long lang="en">Probability (0 to 100%) of a location being covered with water as estimated by satellite data and Machine Learning. Negative values indicate an absence of data.</long>
+      </description>
+      <measure>
+               <real>
+                        <units>%</units>
+                        <min>0.0</min>
+                        <max>100.0</max>
+               </real>
+      </measure>
+</metvar>
+
 <metvar usage="current" origin="WCPS" date="2016-06-15">
       <nomvar>STOR</nomvar>
       <description>
@@ -6254,24 +6340,46 @@
 <metvar usage="current" origin="CMDM" date="2018-10-10">
         <nomvar>CIEL</nomvar>
         <description>
-                <short lang="fr">État du ciel</short>
-                <short lang="en">Sky state</short>
-                <long></long>
+                <short lang="fr">État du ciel (jour/nuit)</short>
+                <short lang="en">Sky state (day/night)</short>
+                <long lang="fr">État du ciel pour jour/nuit (couverture et opacité nuageuse combinées)</long>
+                <long lang="en">State of the sky for daytime/nightime (combined cloud cover and opacity)</long>
         </description>
         <measure>
                <code>
-                      <value>[0,1.5]</value>
-                      <meaning>Sunny / Clear</meaning>
-                      <value>[1.5,3.5]</value>
-                      <meaning>Mainly sunny / Cloudy periods</meaning>
-                      <value>[3.5,6.5]</value>
-                      <meaning>Mix of sun and clouds / Partly cloudy</meaning>
-                      <value>[6.5,8.5]</value>
-                      <meaning>Mainly cloudy</meaning>
-                      <value>[8.5,9.5]</value>
-                      <meaning>Cloudy</meaning>
-                      <value>[9.5,10]</value>
-                      <meaning>Cloudy / Overcast</meaning>
+                      <value>0</value>
+                      <meaning lang="fr">Ensoleillé / Dégagé</meaning>
+                      <meaning lang="en">Sunny / Clear</meaning>
+                      <value>1</value>
+                      <meaning lang="fr">Ensoleillé / Dégagé</meaning>
+                      <meaning lang="en">Sunny / Clear</meaning>
+                      <value>2</value>
+                      <meaning lang="fr">Généralement ensoleillé / Quelques nuages</meaning>
+                      <meaning lang="en">Mainly sunny / Cloudy periods</meaning>
+                      <value>3</value>
+                      <meaning lang="fr">Généralement ensoleillé / Quelques nuages</meaning>
+                      <meaning lang="en">Mainly sunny / Cloudy periods</meaning>
+                      <value>4</value>
+                      <meaning lang="fr">Alternance de soleil et de nuages / Partiellement nuageux</meaning>
+                      <meaning lang="en">Mix of sun and clouds / Partly cloudy</meaning>
+                      <value>5</value>
+                      <meaning lang="fr">Alternance de soleil et de nuages / Partiellement nuageux</meaning>
+                      <meaning lang="en">Mix of sun and clouds / Partly cloudy</meaning>
+                      <value>6</value>
+                      <meaning lang="fr">Alternance de soleil et de nuages / Partiellement nuageux</meaning>
+                      <meaning lang="en">Mix of sun and clouds / Partly cloudy</meaning>
+                      <value>7</value>
+                      <meaning lang="fr">Généralement nuageux</meaning>
+                      <meaning lang="en">Mainly cloudy</meaning>
+                      <value>8</value>
+                      <meaning lang="fr">Généralement nuageux</meaning>
+                      <meaning lang="en">Mainly cloudy</meaning>
+                      <value>9</value>
+                      <meaning lang="fr">Nuageux</meaning>
+                      <meaning lang="en">Cloudy</meaning>
+                      <value>10</value>
+                      <meaning lang="fr">Nuageux / Couvert</meaning>
+                      <meaning lang="en">Cloudy / Overcast</meaning>
                </code>
       </measure>
 </metvar>
@@ -8640,8 +8748,21 @@
 <metvar usage="current" origin="SVS" date="2019-08-15">
       <nomvar>VEGH</nomvar>
       <description>
-               <short lang="fr">Fraction de la maille couverte par la végétation haute</short>
-               <short lang="en">Fraction of grid cell covered by high vegetation</short>
+               <short lang="fr">Fraction d'aire occupée par la végétation longue relatif à la fraction de surface terrestre</short>
+               <short lang="en">Fraction of high vegetation with respect to land surface fraction</short>
+               <long></long>
+      </description>
+      <measure>
+               <real>
+                        <units>fraction</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="SVS" date="2022-01-31">
+      <nomvar>VEGL</nomvar>
+      <description>
+               <short lang="fr">Fraction d'aire occupée par la végétation courte relatif à la fraction de surface terrestre</short>
+               <short lang="en">Fraction of low vegetation with respect to land surface fraction</short>
                <long></long>
       </description>
       <measure>
@@ -10332,7 +10453,7 @@
 <metvar usage="current">
       <nomvar>I5</nomvar>
       <description>
-               <short lang="fr">Equivalent en eau de la neige (SWE) de la couche de neige</short>
+               <short lang="fr">Equivalent en eau de la neige (EEN) de la couche de neige</short>
                <short lang="en">Snow Water Equivalent (SWE) of the snow pack</short>
                <long lang="fr">Profondeur de l'eau qui serait théoriquement résulter si toute la couche de neige instantanement fondue</long>
                <long lang="en">Depth of water that would theoretically result if the whole snow pack instantaneously melted</long>
@@ -10340,6 +10461,34 @@
       <measure>
                <real>
                         <units>kg/m²</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="CMDW" date="2022-01-31">
+      <nomvar>I5A</nomvar>
+      <description>
+               <short lang="fr">Anomalie de l'équivalent en eau de la neige</short>
+               <short lang="en">Snow water equivalent anomaly</short>
+               <long lang="fr">Dans le cadre de la surveillance des crues printanières, l'anomalie du EEN donne la différence entre le EEN courant et celui de la climatologie.</long>
+               <long lang="en">In the context of spring flood surveillance, the SWE anomaly gives the difference between the current SWE and the climatology.</long>
+      </description>
+      <measure>
+               <real>
+                        <units>kg/m²</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="CMDW" date="2022-01-31">
+      <nomvar>I5AR</nomvar>
+      <description>
+               <short lang="fr">Anomalie relative de l'équivalent en eau de la neige</short>
+               <short lang="en">Snow water equivalent relative anomaly</short>
+               <long lang="fr">Dans le cadre de la surveillance des crues printanières, l'anomalie relative du EEN donne une meilleure indication sur l'ampleur de l'anomalie de la quantité de neige accumulées sur le sol. De façon similaire à l’anomalie standardisée de température, l’anomalie relative du EEN est calculée en divisant l’anomalie brute par la moyenne à long terme.</long>
+               <long lang="en">In the context of spring flood surveillance, the SWE relative anomaly gives a better indication of the magnitude of the snow pack anomaly accumulated on the ground. Similar to the standardized temperature anomaly, the relative anomaly, is calculated by dividing the raw anomaly by the long-term average. </long>
+      </description>
+      <measure>
+               <real>
+                        <units>%</units>
                </real>
       </measure>
 </metvar>
@@ -21070,6 +21219,48 @@ gov/adds/metars/description/page_no/4</long>
                      <units>fraction</units>
                      <min>0.</min>
                      <max>1.</max>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="RPN-A" date="2022-01-31">
+      <nomvar>RDPR</nomvar>
+      <description>
+               <short lang="fr">Taux de précipitation inférés à partir des radars</short>
+               <short lang="en">Radar-inferred precipitation rates</short>
+               <long lang="fr">Taux de précipitation utilisés pour l'assimilation des observations radar. Ces taux de précipitations sont inférés à partir de mesures radar (réflectivité et/ou autre) et ont étés traitées pour réduire l'erreur de représentation par rapport à un modèle donné.</long>
+               <long lang="en">Precipitation rates used for the assimilation of radar observations. These precipitation rates are inferred from radar measurements (reflectivity and/or other measurements) and have been processed to reduce representation errors with respect to a specific model.</long>
+      </description>
+      <measure>
+               <real>
+                     <units>mm/h</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="RPN-A" date="2022-01-31">
+      <nomvar>RDQI</nomvar>
+      <description>
+               <short lang="fr">Taux de précipitation inférés à partir des radars</short>
+               <short lang="en">Radar-inferred precipitation rates</short>
+               <long lang="fr">Index de qualité des observations radar. Cet index va de 0 à 1. Une valeur de 0 indique des observations de faible qualité; la valeur 1 indique des observations de la meilleure qualité.</long>
+               <long lang="en">Quality index of radar observations. In a range from 0 to 1 with 0 indicating poor quality and 1 good quality.</long>
+      </description>
+      <measure>
+               <real>
+                     <units>nil</units>
+               </real>
+      </measure>
+</metvar>
+<metvar usage="current" origin="RPN-A" date="2022-01-31">
+      <nomvar>TREE</nomvar>
+      <description>
+               <short lang="fr">Représentation numérique de branches dans un arbre de décision</short>
+               <short lang="en">Numerical code describing branches in a decision tree</short>
+               <long lang="fr">Certains algorithmes ont des comportements différents qui dépendent de plusieurs clauses si-alors-sinon. La variable TREE est une représentation numérique des différentes branches dans un tel arbre de décision. TREE utilise un encodage à virgule flottante qui dépend de la version de GEM utilisée. Voir  https://wiki.cmc.ec.gc.ca/wiki/The_variable_tree pour la définition qui s'applique au jeu de données que vous utilisez.</long>
+               <long lang="en">Some algorithms act differently depending on a number of if/then/else criteria. The TREE variable is a numerical representation for the various branches of such decision trees. TREE uses a floating point encoding which depends on the GEM version being used. See https://wiki.cmc.ec.gc.ca/wiki/The_variable_tree for the code definition relevant to the data files being used.</long>
+      </description>
+      <measure>
+               <real>
+                     <units>nil</units>
                </real>
       </measure>
 </metvar>

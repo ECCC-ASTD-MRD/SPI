@@ -11,8 +11,8 @@ HOST=`hostname`
 PROG=("${SPI_LIB}/TCL/bin/wish${TCL_VERSION}" "${SPI_PATH}/tcl/SPI.tcl")
 
 #----- Check for VirtualGL
-# Not needed anymore, whole session is started with vglrun (VGL_ISACTIVE could be used at some point)
-#type vglrun >/dev/null 2>&1 && vg=vglrun
+# check if we need to start vglrun or whole session is started with vglrun (VGL_ISACTIVE)
+type vglrun >/dev/null 2>&1 && [[ ! $VGL_ISACTIVE ]] && vg=vglrun
 
 #----- Parse the flags fo batch token
 args=()
@@ -78,12 +78,23 @@ fi
 #----- Command to execute
 cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" -- "${args[@]}")
 
+
 #----- Let's start up the software
 if [[ $XVFB -ne 0 ]]; then
+
+   #----- Define the font paths
+   if [[ -d /usr/share/X11/fonts ]]; then
+      FONTDIR=/usr/share/X11/fonts
+   else
+      FONTDIR=/usr/share/fonts/X11
+   fi
+
+   fp_set="-fp ${FONTDIR}/misc,${FONTDIR}/cyrillic,${FONTDIR}/Type1,${FONTDIR}/100dpi,${FONTDIR}/75dpi"
+
    xdummy=`ls -1  /usr/lib*/xorg/modules/drivers/dummy_drv.so 2>/dev/null`
    if [[ -f ${xdummy} && $XVFB -eq 1 ]]; then
       echo "(INFO) Starting Xorg dummy driver"
-      exec "${SPI_PATH}/bin/xorg-run" -n $XSVR -a -l /dev/null -s "-config ${SPI_PATH}/share/xorg/xorg.conf" "${cmd[@]}"
+      exec "${SPI_PATH}/bin/xorg-run" -n $XSVR -a -l /dev/null -s "-config ${SPI_PATH}/share/xorg/xorg.conf $fp_set" "${cmd[@]}"
    else
       #----- Otherwise use the old Xvfb
       echo "(INFO) Starting Xvfb"

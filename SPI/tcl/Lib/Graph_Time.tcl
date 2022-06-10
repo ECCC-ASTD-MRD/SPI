@@ -698,7 +698,7 @@ proc Graph::Time::ItemData { GR Pos Item Data } {
             set graph(UnitY) UNDEFINED
          }
          
-         if { $Graph::Item(Icon)=="BARB" && $dir!="" } {
+         if { $Graph::Item(Icon)=="BARB" || $Graph::Item(Icon)=="SPEAR"  || $Graph::Item(Icon)=="ARROW" && $dir!="" } {
             graphitem configure $Item -speed $Item.Y -dir $Item.D
          } else {
             graphitem configure $Item -speed "" -dir ""
