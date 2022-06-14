@@ -28,8 +28,11 @@ proc Macro::HelloWorld::Execute { } {
       $Page::Data(Canvas) create text 10 [expr $f*20] -text "Hello World ($font $size)" -font Font$f -anchor nw
       incr f
    }
-   PrintBox::Image $Page::Data(Frame) png HelloWorld
-   SPI::Quit
+   
+   if { $SPI::Param(Batch) } {
+      PrintBox::Image $Page::Data(Frame) png HelloWorld
+      SPI::Quit
+   }
 }
 
 proc Macro::HelloWorld::Clean { } {
