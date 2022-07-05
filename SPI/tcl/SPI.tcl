@@ -1994,7 +1994,7 @@ proc SPI::Progress { Percent { Info "" } { Var "" } } {
 # But      : Fin de l'application.
 #
 # Parametres :
-#   <Code>   : code de sortie (Defaut: 0 = Ok)
+#   <Code>   : code de sortie (Defaut: 0 = Ok, -1 = Check error count, else error code )
 #
 # Retour:
 #
@@ -2002,7 +2002,7 @@ proc SPI::Progress { Percent { Info "" } { Var "" } } {
 #
 #----------------------------------------------------------------------------
 
-proc SPI::Quit { { Code 0 } } {
+proc SPI::Quit { { Code -1 } } {
    variable Param
    variable Data
 
