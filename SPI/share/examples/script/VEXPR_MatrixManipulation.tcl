@@ -8,6 +8,24 @@ package require Logger
 #set Log::Param(Level) DEBUG
 Log::Start [info script] 0.1
 
+proc PrintFld { Fld } {
+    set ni [fstdfield define $Fld -NI]
+    set nj [fstdfield define $Fld -NJ]
+    set nk [fstdfield define $Fld -NK]
+
+    puts "Field $Fld:"
+    for {set k 0;set idx 0} {$k<$nk} {incr k} {
+        puts "\[$k\]"
+        for {set j 0} {$j<$nj} {incr j} {
+            for {set i 0} {$i<$ni} {incr i;incr idx} {
+                puts -nonewline [format " %6g" [vexpr - ${Fld}($i,$j,$k)]]
+            }
+            puts ""
+        }
+        puts ""
+    }
+}
+
 proc TestCatch { IsErr args } {
     set err [catch {set res [{*}$args]} msg]
     if { $IsErr } {
@@ -140,6 +158,39 @@ if { [TestCatch 0 vexpr SHP reshape(FLD,3,2,4)] && [TestDim SHP 3 2 4] && [TestV
 }
 if { [TestCatch 0 vexpr SHP reshape(FLD,24,1,1)] && [TestDim SHP 24 1 1] && [TestVal 0 SHP {*}$vals] } {
     Log::Print INFO "==> TEST PASSED : reshape a 3D field into a 1D field"
+}
+
+
+Log::Print MUST ""
+
+#----- Test join
+Log::Print INFO "Testing join..."
+
+fstdfield create FLD1 3 4 2 Float64
+set vals1 {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23}
+fstdfield define FLD1 -DATA [binary format d* $vals1]
+
+fstdfield create FLD2 3 2 2 Float64
+set vals2 {1.5 7.8 6.4 -25.6 -7.1 0.0 1.1 2.2 3.3 4.4 5.5 6.6}
+fstdfield define FLD2 -DATA [binary format d* $vals2]
+
+fstdfield create FLD3 3 2 2 Float64
+set vals3 {1.5 7.8 6.4 -25.6 -7.1 0.0 7.7 8.8 9.9 10.10 11.11 12.12}
+fstdfield define FLD3 -DATA [binary format d* $vals3]
+
+fstdfield create FLD4 3 4 2 Int32
+set vals4 {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23}
+fstdfield define FLD4 -DATA [binary format n* $vals1]
+
+TestCatch 1 vexpr JOIN join(0,FLD1,FLD4)
+TestCatch 1 vexpr JOIN join(0,FLD1,FLD2)
+set res {0 1 2 3 4 5 6 7 8 9 10 11 1.5 7.8 6.4 -25.6 -7.1 0.0 12 13 14 15 16 17 18 19 20 21 22 23 1.1 2.2 3.3 4.4 5.5 6.6}
+if { [TestCatch 0 vexpr JOIN join(1,FLD1,FLD2)] && [TestDim JOIN 3 6 2] && [TestVal 0 JOIN {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : joining 2 fields"
+}
+set res {0 1 2 3 4 5 6 7 8 9 10 11 1.5 7.8 6.4 -25.6 -7.1 0.0 1.5 7.8 6.4 -25.6 -7.1 0.0 12 13 14 15 16 17 18 19 20 21 22 23 1.1 2.2 3.3 4.4 5.5 6.6 7.7 8.8 9.9 10.10 11.11 12.12}
+if { [TestCatch 0 vexpr JOIN join(1,FLD1,FLD2,FLD3)] && [TestDim JOIN 3 8 2] && [TestVal 0 JOIN {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : joining 3 fields"
 }
 
 Log::End -1

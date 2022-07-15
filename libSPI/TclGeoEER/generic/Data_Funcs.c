@@ -92,6 +92,7 @@ TFuncDef FuncD[] = {
   { "seq"       , seq       , 4, 4, TD_Float64 },
   { "reshape"   , reshape   , 4, 0, TD_Unknown },
   { "repeat"    , repeat    , 3, 1, TD_Unknown },
+  { "join"      , join      , 9, 7, TD_Unknown },
 
   // Distance metrics
   { "dt"    , (TFunc*)dt    , 1, 0, TD_Float64 },
@@ -486,6 +487,123 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
    for(datar=Res->Data[0],dataf=Fld->Data[0]; nloops; --nloops,dataf+=size) {
       for(r=0; r<n; ++r,datar+=size) {
          memcpy(datar,dataf,size);
+      }
+   }
+
+   return(FSIZE3D(Res));
+}
+
+double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8) {
+   TDef *flds[8];
+   const int nd=4;
+   int i,d,id,n=0,dim[nd],dimf[nd],type;
+
+   if( FSIZE3D(D)!=1 )     Calc_RaiseError("join: The expanding dimension should be a scalar\n");
+
+   if( Calc_InError() )
+      return(0.0);
+
+   // Check in which dimension we'll expand
+   Def_Get(D,0,0,d);
+   if( d<0 || d>=nd ) {
+      Calc_RaiseError("join: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+      return(0.0);
+   }
+
+   // Compile the list of fields
+   if( F1 && FSIZE3D(F1)>0 ) flds[n++] = F1;
+   if( F2 && FSIZE3D(F2)>0 ) flds[n++] = F2;
+   if( F3 && FSIZE3D(F3)>0 ) flds[n++] = F3;
+   if( F4 && FSIZE3D(F4)>0 ) flds[n++] = F4;
+   if( F5 && FSIZE3D(F5)>0 ) flds[n++] = F5;
+   if( F6 && FSIZE3D(F6)>0 ) flds[n++] = F6;
+   if( F7 && FSIZE3D(F7)>0 ) flds[n++] = F7;
+   if( F8 && FSIZE3D(F8)>0 ) flds[n++] = F8;
+
+   if( !n ) {
+      Calc_RaiseError("join: No fields to join or all fields are empty\n");
+      return(0.0);
+   }
+
+   // Make sure the dimensions of the fields are compatible in the direction that is not expanding
+   // and calculate the final dimension
+   size_t size[n],nloops;
+
+   dim[0]=flds[0]->NI; dim[1]=flds[0]->NJ; dim[2]=flds[0]->NK; dim[3]=flds[0]->NC; dim[d]=0;
+   for(i=0; i<n; ++i) {
+      dimf[0]=flds[i]->NI; dimf[1]=flds[i]->NJ; dimf[2]=flds[i]->NK; dimf[3]=flds[i]->NC;
+
+      if( flds[0]->Type != flds[i]->Type ) {
+         Calc_RaiseError("join: Incompatible field type. The type of all fields to join must be the same\n");
+         return(0.0);
+      }
+
+      size[i] = (size_t)TDef_Size[flds[i]->Type];
+
+      // Loop over dimensions
+      for(id=0; id<nd; ++id) {
+         if( id == d ) {
+            // We expand in this direction
+            dim[d] += dimf[d];
+         } else if( dim[id] != dimf[id] ) {
+            // We don't expand in this direction, the dimension has to match
+            Calc_RaiseError("join: Incompatible field size. The size of all fields to join must match in the non-expanding dimension\n");
+            return(0.0);
+         }
+
+         // Get the number of contiguous bytes we can copy per shot for that field
+         if( id <= d ) {
+            size[i] *= (size_t)dimf[id];
+         }
+      }
+   }
+
+   // Max of 4 components
+   if( d==3 && dim[3]>4 ) {
+      Calc_RaiseError("join: A maximum of 4 components are possible\n");
+      return(0.0);
+   }
+
+   // Res has been created specifically for the result of this function, but would have been inspired by the first arg (D)
+   // So it is very possible that the type of the field is not the right one, but the good news is that we can do whatever we want to the field
+   // In this case, if the type is not compatible (same size), we'll reset the NI dimension to make sure the resize resets the whole thing
+   if( TDef_Size[Res->Type] != TDef_Size[flds[0]->Type] )
+      Res->NI=0;
+   Res->Type = flds[0]->Type;
+
+   // Resize the result field to hold the values we'll generate
+   if( Res->NC != dim[3] ) {
+      size_t s = (size_t)dim[0]*(size_t)dim[1]*(size_t)dim[2];
+      char *buf = realloc(Res->Data[0],dim[4]*s*(size_t)TDef_Size[Res->Type]);
+      if( !buf ) {
+         Calc_RaiseError("join: An error occured when resizing components.\n");
+         return(0.0);
+      }
+
+      Res->Data[0] = buf;
+      Res->NC = dim[3];
+      for(i=1; i<Res->NC; ++i)
+         Res->Data[i] = Res->Data[i-1]+s;
+      for(; i<4; ++i)
+         Res->Data[i] = NULL;
+   } else if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+      Calc_RaiseError("join: An error occured when resizing.\n");
+      return(0.0);
+   }
+
+   // Get the number of times we'll need to loop over to make the entire copy
+   for(id=d+1,nloops=1; id<=3; ++id)
+      nloops *= (size_t)dim[id];
+
+   // Init the data source
+   char *datar,*dataf[n];
+   for(i=0; i<n; ++i)
+      dataf[i] = flds[i]->Data[0];
+
+   // Join the fields
+   for(datar=Res->Data[0]; nloops; --nloops) {
+      for(i=0; i<n; datar+=size[i],dataf[i]+=size[i],++i) {
+         memcpy(datar,dataf[i],size[i]);
       }
    }
 
