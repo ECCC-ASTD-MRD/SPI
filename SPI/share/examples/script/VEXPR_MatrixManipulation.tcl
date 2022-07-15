@@ -73,6 +73,15 @@ if { [TestCatch 0 vexpr SEQ CTX+seq(-1,-4)] && [TestDim SEQ 4 1 1] && [TestVal 1
 #if { [TestCatch 0 vexpr SEQ CTX+seq(2,10,15)] && [TestDim SEQ 1 1 1] && [TestVal 0 SEQ 2] } {
 #    Log::Print INFO "==> TEST PASSED : sequence from 2 to 10 step 15"
 #}
+if { [TestCatch 0 vexpr SEQ CTX+seq(2,10,NULL,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
+    Log::Print INFO "==> TEST PASSED : sequence of 5 from 2 to 10"
+}
+if { [TestCatch 0 vexpr SEQ CTX+seq(2,NULL,2,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
+    Log::Print INFO "==> TEST PASSED : sequence of 5 from 2 step 2"
+}
+
+
+Log::Print MUST ""
 
 #----- Test repeat
 Log::Print INFO "Testing repeat..."

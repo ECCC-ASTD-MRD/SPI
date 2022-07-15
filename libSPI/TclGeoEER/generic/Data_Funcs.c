@@ -89,7 +89,7 @@ TFuncDef FuncD[] = {
   { "tcount"    , tcount    , 2, 0, TD_Int32 },
   { "flipy"     , flipy     , 1, 0, TD_Unknown },
 
-  { "seq"       , seq       , 3, 1, TD_Float64 },
+  { "seq"       , seq       , 4, 4, TD_Float64 },
   { "reshape"   , reshape   , 4, 0, TD_Unknown },
   { "repeat"    , repeat    , 2, 0, TD_Unknown },
 
@@ -260,40 +260,116 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   return(NULL);
 }
 
-double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    double from,to,step;
    int i,n;
 
    // Make sure we got scalars for the dimensions
-   if( FSIZE3D(From)!=1 )           Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
-   if( FSIZE3D(To)!=1 )             Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
+   if( From && FSIZE3D(From)!=1 )   Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
+   if( To && FSIZE3D(To)!=1 )       Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
    if( Step && FSIZE3D(Step)!=1 )   Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
+   if( N && FSIZE3D(N)!=1 )         Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
 
    if( Calc_InError() )
       return(0.0);
 
    // Get the values from the fields
-   Def_Get(From,0,0,from);
-   Def_Get(To,0,0,to);
+   if( From )  Def_Get(From,0,0,from);
+   if( To )    Def_Get(To,0,0,to);
+
    if( Step ) {
-       Def_Get(Step,0,0,step);
-   } else {
-       step = from<=to ? 1.0 : -1.0;
+      Def_Get(Step,0,0,step);
+      if( step == 0.0 ) {
+         Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
+         return(0.0);
+      }
    }
 
-   if( !step ) {
-      Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
-      return(0.0);
+   if( N ) {
+      Def_Get(N,0,0,n);
+      if( n <= 0 ) {
+         Calc_RaiseError("seq: The number of values in the sequence can't be negative nor 0\n");
+         return(0.0);
+      }
    }
 
-   // Coherence check
-   if( ((to-from)<0.0) ^ (step<0.0) ) {
-      Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
-      return(0.0);
+   // Calculate the missing values and make sure they are compatible
+   switch( !From<<3 | !To<<2 | !Step<<1 | !N ) {
+      case 0:
+         // All values are given, make sure they are compatible
+         if( ((to-from)<0.0) ^ (step<0.0) ) {
+            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            return(0.0);
+         }
+         if( (n==1) ^ (to==from) ) {
+            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            return(0.0);
+         }
+         if( n != (int)((to-from)/step)+1 ) {
+            Calc_RaiseError("seq: Incompatible To, From, Step and N values : the number of values that would be created is different from the requested number of values\n");
+            return(0.0);
+         }
+         break;
+      case 1:
+         // We have From, To and Step
+         // Coherence check
+         if( ((to-from)<0.0) ^ (step<0.0) ) {
+            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            return(0.0);
+         }
+         // Calculate the number of values we'll generate
+         n = (int)((to-from)/step)+1;
+         break;
+      case 2:
+         // We have From, To and N
+         // Coherence check
+         if( (n==1) ^ (to==from) ) {
+            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            return(0.0);
+         }
+         // Calculate the step
+         step = n==1 ? 0 : (to-from)/(n-1);
+         break;
+      case 3:
+         // We have From and To
+         // Apply corresponding default stepping value
+         step = from<=to ? 1.0 : -1.0;
+         // Calculate the number of values we'll generate
+         n = (int)((to-from)/step)+1;
+         break;
+      case 4:
+         // We have From, Step and N
+         // No need to calculate the "To" value as we won't use it anyway
+         break;
+      case 6:
+         // We have From and N
+         // Apply default stepping value
+         step = 1.0;
+         break;
+      case 8:
+         // We have To, Step and N
+         // Set the from value and reverse the stepping
+         from = to;
+         step = -step;
+         break;
+      case 10:
+         // We have To and N
+         // Set the from value and set the reverse default stepping
+         from = to;
+         step = -1.0;
+         break;
+      case 5:  // We have From and Step
+      case 7:  // We have From
+      case 9:  // We have To and Step
+      case 11: // We have To
+      case 12: // We have Step and N
+      case 13: // We have Step
+      case 14: // We have N
+      case 15: // We have nothing
+      default:
+         Calc_RaiseError("seq: Invalid combination of arguments. Valid combinations are: From+To+Step+N, From+To+Step, From+To+N, From+To, From+Step+N, From+N, To+Step+N and To+N\n");
+         return(0.0);
    }
-
-   // Get the number of values we'll generate
-   n = (int)((to-from)/step)+1;
 
    // Resize the result field to hold the values we'll generate
    if( !Def_Resize(Res,n,1,1) ) {
