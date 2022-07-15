@@ -91,7 +91,7 @@ TFuncDef FuncD[] = {
 
   { "seq"       , seq       , 4, 4, TD_Float64 },
   { "reshape"   , reshape   , 4, 0, TD_Unknown },
-  { "repeat"    , repeat    , 2, 0, TD_Unknown },
+  { "repeat"    , repeat    , 3, 1, TD_Unknown },
 
   // Distance metrics
   { "dt"    , (TFunc*)dt    , 1, 0, TD_Float64 },
@@ -411,12 +411,15 @@ double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK) {
    return(0.0);
 }
 
-double repeat(TDef *Res,TDef *Fld,TDef *N) {
-   size_t size;
-   int n,c,r,dim[3]={1,1,1},d=0;
+double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
+   char *datar,*dataf;
+   size_t size,nloops;
+   const int nd=4;
+   int n,r,i,dim[4]={Fld->NI,Fld->NJ,Fld->NK,Fld->NC},d,id;
 
-   if( FSIZE3D(N)!=1 )     Calc_RaiseError("repeat: The repeat number should be a scalar\n");
-   if( FSIZE3D(Fld)==0 )   Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
+   if( FSIZE3D(N)!=1 )        Calc_RaiseError("repeat: The repeat number should be a scalar\n");
+   if( D && FSIZE3D(D)!=1 )   Calc_RaiseError("repeat: The expanding dimension should be a scalar\n");
 
    if( Calc_InError() )
       return(0.0);
@@ -432,22 +435,57 @@ double repeat(TDef *Res,TDef *Fld,TDef *N) {
    }
 
    // Check in which dimension we'll expand
-   if( Fld->NI>1 )   dim[d++]=Fld->NI;
-   if( Fld->NJ>1 )   dim[d++]=Fld->NJ;
-   if( Fld->NK>1 )   dim[d++]=Fld->NK;
+   if( D ) {
+      Def_Get(D,0,0,d);
+      if( d<0 || d>=nd ) {
+         Calc_RaiseError("repeat: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+         return(0.0);
+      }
+   } else {
+      // Find the first unused dimension (dim==1) or select the last one
+      for(d=0; d<nd-1; ++d)
+         if( dim[d] == 1 )
+            break;
+   }
+
+   // Get the number of contiguous bytes we can copy per shot
+   for(id=0,size=(size_t)TDef_Size[Res->Type]; id<=d; ++id)
+      size *= (size_t)dim[id];
+
+   // Get the number of times we'll need to loop over the repeat
+   for(id=d+1,nloops=1; id<nd; ++id)
+      nloops *= (size_t)dim[id];
 
    // Resize the result field to hold the values we'll generate
-   dim[d>2?2:d] *= n;
-   if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+   dim[d] *= n;
+   if( d==3 && dim[3]>4 ) {
+      Calc_RaiseError("repeat: A maximum of 4 components are possible\n");
+      return(0.0);
+   }
+
+   if( Res->NC != dim[3] ) {
+      size_t s = (size_t)dim[0]*(size_t)dim[1]*(size_t)dim[2];
+      char *buf = realloc(Res->Data[0],dim[3]*s*(size_t)TDef_Size[Res->Type]);
+      if( !buf ) {
+         Calc_RaiseError("repeat: An error occured when resizing components.\n");
+         return(0.0);
+      }
+
+      Res->Data[0] = buf;
+      Res->NC = dim[3];
+      for(i=1; i<Res->NC; ++i)
+         Res->Data[i] = Res->Data[i-1]+s;
+      for(; i<4; ++i)
+         Res->Data[i] = NULL;
+   } else if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
       Calc_RaiseError("repeat: An error occured when resizing.\n");
       return(0.0);
    }
 
    // Set the values
-   size = (size_t)FSIZE3D(Fld)*(size_t)TDef_Size[Res->Type];
-   for(c=0; c<Res->NC; ++c) {
-      for(r=0; r<n; ++r) {
-         memcpy(Res->Data[c]+r*size,Fld->Data[c],size);
+   for(datar=Res->Data[0],dataf=Fld->Data[0]; nloops; --nloops,dataf+=size) {
+      for(r=0; r<n; ++r,datar+=size) {
+         memcpy(datar,dataf,size);
       }
    }
 

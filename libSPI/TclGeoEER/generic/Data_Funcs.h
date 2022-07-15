@@ -101,7 +101,7 @@ double flipy(TDef *Res,TDef *MA);
 // Matrix creation/manipulation functions
 double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N);
 double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK);
-double repeat(TDef *Res,TDef *Fld,TDef *N);
+double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D);
 
 // Matrix reduction operations
 double stat_all(TDef *MA,TDef *MB);   // All stats 

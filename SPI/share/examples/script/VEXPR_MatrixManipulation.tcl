@@ -106,16 +106,27 @@ fstdfield create FLD 3 2 3 Float64
 set rep 7
 set vals {1.5 7.8 6.4 -25.6 -7.1 0.0 1.1 2.2 3.3 4.4 5.5 6.6 7.7 8.8 9.9 10.10 11.11 12.12}
 fstdfield define FLD -DATA [binary format d* $vals]
-if { [TestCatch 0 vexpr REP repeat(FLD,$rep)] && [TestDim REP 3 2 [expr 3*$rep]] && [TestVal 0 REP {*}[lrepeat $rep {*}$vals]] } {
-    Log::Print INFO "==> TEST PASSED : repeat a 3D field $rep times"
+if { [TestCatch 0 vexpr REP repeat(FLD,$rep,2)] && [TestDim REP 3 2 [expr 3*$rep]] && [TestVal 0 REP {*}[lrepeat $rep {*}$vals]] } {
+    Log::Print INFO "==> TEST PASSED : repeat a 3D field $rep times, expanding in K"
 }
 fstdfield create FLD 1 2 3 Float64
 set rep 5
 set vals {1.5 7.8 6.4 -25.6 -7.1 0.0}
 fstdfield define FLD -DATA [binary format d* $vals]
-if { [TestCatch 0 vexpr REP repeat(FLD,$rep)] && [TestDim REP 2 3 $rep] && [TestVal 0 REP {*}[lrepeat $rep {*}$vals]] } {
-    Log::Print INFO "==> TEST PASSED : repeat a 2D field $rep times"
+if { [TestCatch 0 vexpr REP repeat(FLD,$rep)] && [TestDim REP $rep 2 3] && [TestVal 0 REP {*}[concat {*}[lmap v $vals {lrepeat $rep $v}]]] } {
+    Log::Print INFO "==> TEST PASSED : repeat a 2D field $rep times in the I dimension"
 }
+fstdfield create FLD 3 2 3 Float64
+set rep 2
+set vals {1.5 7.8 6.4 -25.6 -7.1 0.0 1.1 2.2 3.3 4.4 5.5 6.6 7.7 8.8 9.9 10.10 11.11 12.12}
+set res {1.5 7.8 6.4 -25.6 -7.1 0.0 1.5 7.8 6.4 -25.6 -7.1 0.0 1.1 2.2 3.3 4.4 5.5 6.6 1.1 2.2 3.3 4.4 5.5 6.6 7.7 8.8 9.9 10.10 11.11 12.12 7.7 8.8 9.9 10.10 11.11 12.12}
+fstdfield define FLD -DATA [binary format d* $vals]
+if { [TestCatch 0 vexpr REP repeat(FLD,$rep,1)] && [TestDim REP 3 [expr 2*$rep] 3] && [TestVal 0 REP {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : repeat a 2D field $rep times in the J dimension"
+}
+
+
+Log::Print MUST ""
 
 #----- Test reshape
 Log::Print INFO "Testing reshape..."
