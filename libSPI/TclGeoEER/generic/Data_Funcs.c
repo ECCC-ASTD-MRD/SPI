@@ -476,21 +476,12 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
       return(0.0);
    }
 
+   // If we need to resize NC, make sure we trigger the resize by setting NI to 0
    if( Res->NC != dim[3] ) {
-      size_t s = (size_t)dim[0]*(size_t)dim[1]*(size_t)dim[2];
-      char *buf = realloc(Res->Data[0],dim[3]*s*(size_t)TDef_Size[Res->Type]);
-      if( !buf ) {
-         Calc_RaiseError("repeat: An error occured when resizing components.\n");
-         return(0.0);
-      }
-
-      Res->Data[0] = buf;
       Res->NC = dim[3];
-      for(i=1; i<Res->NC; ++i)
-         Res->Data[i] = Res->Data[i-1]+s;
-      for(; i<4; ++i)
-         Res->Data[i] = NULL;
-   } else if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+      Res->NI = 0;
+   }
+   if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
       Calc_RaiseError("repeat: An error occured when resizing.\n");
       return(0.0);
    }
@@ -583,22 +574,14 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
       Res->NI=0;
    Res->Type = flds[0]->Type;
 
-   // Resize the result field to hold the values we'll generate
+   // If we need to resize NC, make sure we trigger the resize by setting NI to 0
    if( Res->NC != dim[3] ) {
-      size_t s = (size_t)dim[0]*(size_t)dim[1]*(size_t)dim[2];
-      char *buf = realloc(Res->Data[0],dim[4]*s*(size_t)TDef_Size[Res->Type]);
-      if( !buf ) {
-         Calc_RaiseError("join: An error occured when resizing components.\n");
-         return(0.0);
-      }
-
-      Res->Data[0] = buf;
       Res->NC = dim[3];
-      for(i=1; i<Res->NC; ++i)
-         Res->Data[i] = Res->Data[i-1]+s;
-      for(; i<4; ++i)
-         Res->Data[i] = NULL;
-   } else if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+      Res->NI = 0;
+   }
+
+   // Resize the result field to hold the values we'll generate
+   if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
       Calc_RaiseError("join: An error occured when resizing.\n");
       return(0.0);
    }
