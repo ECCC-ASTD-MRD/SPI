@@ -233,7 +233,7 @@ TFuncDef FuncM[] = {
 /*Matrix Creation/Manipulation Functions*/
 TFuncDef FuncC[] = {
   { "seq"       , seq       , 4, 4, TD_Float64 },
-  { "reshape"   , reshape   , 4, 0, TD_Unknown },
+  { "reshape"   , reshape   , 5, 3, TD_Unknown },
   { "repeat"    , repeat    , 3, 1, TD_Unknown },
   { "join"      , join      , 9, 7, TD_Unknown },
 
@@ -393,24 +393,29 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    return(n);
 }
 
-double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK) {
-   int ni,nj,nk;
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC) {
+   int ni=1,nj=1,nk=1,nc=1;
 
-   if( FSIZE3D(NI)!=1 )    Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
-   if( FSIZE3D(NJ)!=1 )    Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
-   if( FSIZE3D(NK)!=1 )    Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
-   if( FSIZE3D(Res)==0 )   Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
+   if( NI && FSIZE3D(NI)!=1 ) Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
+   if( NJ && FSIZE3D(NJ)!=1 ) Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
+   if( NK && FSIZE3D(NK)!=1 ) Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
+   if( NC && FSIZE3D(NC)!=1 ) Calc_RaiseError("reshape: The new dimension in C should be a scalar\n");
 
    if( !Calc_InError() ) {
-      Def_Get(NI,0,0,ni);
-      Def_Get(NJ,0,0,nj);
-      Def_Get(NK,0,0,nk);
+      if( NI ) Def_Get(NI,0,0,ni);
+      if( NJ ) Def_Get(NJ,0,0,nj);
+      if( NK ) Def_Get(NK,0,0,nk);
+      if( NC ) Def_Get(NC,0,0,nc);
 
-      if( FSIZE3D(Fld) == ni*nj*nk ) {
+      if( FSIZE3D(Fld)*Fld->NC == ni*nj*nk*nc ) {
+         // Two things can happen: either NC was already the same in which case nothing changes,
+         // or NC is different in which case NI or NJ or NK had to change (which guaranties it will be handled by Def_Resize)
+         Res->NC = nc;
          if( !Def_Resize(Res,ni,nj,nk) ) {
             Calc_RaiseError("reshape: An error occured when resizing.\n");
          }
-         memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*Res->NC*ni*nj*nk);
+         memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*ni*nj*nk*nc);
       } else {
          Calc_RaiseError("reshape: The new dimensions are invalid. They must match the current dimensions of the field.\n");
       }

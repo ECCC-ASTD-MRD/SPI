@@ -155,7 +155,7 @@ TestCatch 1 vexpr SHP reshape(FLD,2,4,2)
 if { [TestCatch 0 vexpr SHP reshape(FLD,3,2,4)] && [TestDim SHP 3 2 4] && [TestVal 0 SHP {*}$vals] } {
     Log::Print INFO "==> TEST PASSED : reshape a 3D field"
 }
-if { [TestCatch 0 vexpr SHP reshape(FLD,24,1,1)] && [TestDim SHP 24 1 1] && [TestVal 0 SHP {*}$vals] } {
+if { [TestCatch 0 vexpr SHP reshape(FLD,24)] && [TestDim SHP 24 1 1] && [TestVal 0 SHP {*}$vals] } {
     Log::Print INFO "==> TEST PASSED : reshape a 3D field into a 1D field"
 }
 
