@@ -71,30 +71,29 @@ proc TestVal { Tol Fld args } {
 
 #----- Test seq
 Log::Print INFO "Testing seq..."
-fstdfield create CTX 1 1 1 Int32
-TestCatch 1 vexpr SEQ CTX+seq(10,2,1)
-TestCatch 1 vexpr SEQ CTX+seq(-2,-10,1)
-TestCatch 1 vexpr SEQ CTX+seq(2,10,-1)
-TestCatch 1 vexpr SEQ CTX+seq(2,10,0)
-if { [TestCatch 0 vexpr SEQ CTX+seq(1,10,2)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 1 3 5 7 9] } {
+TestCatch 1 vexpr SEQ seq(10,2,1)
+TestCatch 1 vexpr SEQ seq(-2,-10,1)
+TestCatch 1 vexpr SEQ seq(2,10,-1)
+TestCatch 1 vexpr SEQ seq(2,10,0)
+if { [TestCatch 0 vexpr SEQ seq(1,10,2)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 1 3 5 7 9] } {
     Log::Print INFO "==> TEST PASSED : sequence from 1 to 10 step 2"
 }
-if { [TestCatch 0 vexpr SEQ CTX+seq(-0.2,-1.2,-.2)] && [TestDim SEQ 6 1 1] && [TestVal 1e-7 SEQ -0.2 -0.4 -0.6 -0.8 -1.0 -1.2] } {
+if { [TestCatch 0 vexpr SEQ seq(-0.2,-1.2,-.2)] && [TestDim SEQ 6 1 1] && [TestVal 1e-7 SEQ -0.2 -0.4 -0.6 -0.8 -1.0 -1.2] } {
     Log::Print INFO "==> TEST PASSED : sequence from -0.2 to -1.2 step -.2"
 }
-if { [TestCatch 0 vexpr SEQ CTX+seq(1,4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ 1 2 3 4] } {
+if { [TestCatch 0 vexpr SEQ seq(1,4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ 1 2 3 4] } {
     Log::Print INFO "==> TEST PASSED : sequence from 1 to 4 with default step 1"
 }
-if { [TestCatch 0 vexpr SEQ CTX+seq(-1,-4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ -1 -2 -3 -4] } {
+if { [TestCatch 0 vexpr SEQ seq(-1,-4)] && [TestDim SEQ 4 1 1] && [TestVal 1e-7 SEQ -1 -2 -3 -4] } {
     Log::Print INFO "==> TEST PASSED : sequence from -1 to -4 with default step -1"
 }
-#if { [TestCatch 0 vexpr SEQ CTX+seq(2,10,15)] && [TestDim SEQ 1 1 1] && [TestVal 0 SEQ 2] } {
-#    Log::Print INFO "==> TEST PASSED : sequence from 2 to 10 step 15"
-#}
-if { [TestCatch 0 vexpr SEQ CTX+seq(2,10,NULL,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
+if { [TestCatch 0 vexpr SEQ seq(2,10,15)] && [TestDim SEQ 1 1 1] && [TestVal 0 SEQ 2] } {
+    Log::Print INFO "==> TEST PASSED : sequence from 2 to 10 step 15"
+}
+if { [TestCatch 0 vexpr SEQ seq(2,10,NULL,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
     Log::Print INFO "==> TEST PASSED : sequence of 5 from 2 to 10"
 }
-if { [TestCatch 0 vexpr SEQ CTX+seq(2,NULL,2,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
+if { [TestCatch 0 vexpr SEQ seq(2,NULL,2,5)] && [TestDim SEQ 5 1 1] && [TestVal 0 SEQ 2 4 6 8 10] } {
     Log::Print INFO "==> TEST PASSED : sequence of 5 from 2 step 2"
 }
 

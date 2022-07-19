@@ -16,6 +16,7 @@ extern TDef   *GData[1024];
 extern int     GDataN;
 extern int     GError;
 extern int     GMode;
+extern int     GForceFld;
 
 #define STACK_MAX    128
 #define STACKP_MAX   16
@@ -28,7 +29,7 @@ static int  STACKPN=0;
 #define PASTE2(A,B)     A##B
 #define QUOTE(A)        #A
 #ifdef DEBUG
-#define STACK_DEBUG     if(STACKN>0)fprintf(stdout,"(DEBUG) STACK[%d]=%p\n",STACKN-1,STACK[STACKN-1]);
+#define STACK_DEBUG     if(STACKN>0)fprintf(stdout,"(DEBUG) STACK[%d]=%p\n",STACKN-1,(void*)STACK[STACKN-1]);
 #define STACKP_DEBUG    if(STACKPN>0)fprintf(stdout,"(DEBUG) STACKP[%d]=%d\n",STACKPN-1,STACKP[STACKPN-1]);
 #else // DEBUG
 #define STACK_DEBUG
@@ -93,6 +94,7 @@ int vexpr_error(char* s);
 %token <Func>      T_FNCT_F           /* Matrix to Float Function */
 %token <Func>      T_FNCT_M           /* Matrix to Matrix Function */
 %token <Func>      T_FNCT_D           /* Matrix derivative Function */
+%token <Func>      T_FNCT_C           /* Matrix creation/manipulation Function */
 %token <Data>      T_DATA
 %token <Data>      T_CHAR
 %token <Num>       T_FIELD_FUNC
@@ -194,6 +196,7 @@ exp:
       fprintf(stdout,"(DEBUG) INT (%ld)\n",(long)$1);
 #endif
       $$=Calc_MatrixInt((long)$1);
+      GForceFld = 0;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_INT): Critical!");
          YYERROR;
@@ -205,6 +208,7 @@ exp:
       fprintf(stdout,"(DEBUG) FLOAT (%g)\n",$1);
 #endif
       $$=Calc_MatrixFloat($1);
+      GForceFld = 0;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FLOAT): Critical!");
          YYERROR;
@@ -220,6 +224,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Index($1,(int)$3);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Index failed: Critical!");
@@ -233,6 +238,7 @@ exp:
       fprintf(stdout,"(DEBUG) Vector Length\n");
 #endif
       $$=Calc_Length($2);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Length failed: Critical!");
@@ -245,6 +251,7 @@ exp:
       fprintf(stdout,"(DEBUG) Vector Dir\n");
 #endif
       $$=Calc_Dir($2);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Length failed: Critical!");
@@ -261,6 +268,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$3,0);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Slice failed: Critical!");
@@ -278,6 +286,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,(int)$3,(int)$3,0,$1->NJ-1,0,$1->NK-1);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Set setting failed: Critical!");
@@ -295,6 +304,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$5,1);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Slice failed: Critical!");
@@ -312,6 +322,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,0,$1->NI-1,(int)$5,(int)$5,0,$1->NK-1);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Set setting failed: Critical!");
@@ -329,6 +340,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Slice($1,(int)$7,2);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Slice failed: Critical!");
@@ -346,6 +358,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,0,$1->NI-1,0,$1->NJ-1,(int)$7,(int)$7);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_Set setting failed: Critical!");
@@ -363,6 +376,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_IndexValue($1,(int)$3,(int)$5,0);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_IndexValue failed: Critical!");
@@ -380,6 +394,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$8,(int)$3,(int)$3,(int)$5,(int)$5,0,0);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_IndexSetting failed: Critical!");
@@ -397,6 +412,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_IndexValue($1,(int)$3,(int)$5,(int)$7);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_IndexValue failed: Critical!");
@@ -414,6 +430,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$10,(int)$3,(int)$3,(int)$5,(int)$5,(int)$7,(int)$7);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_IndexSetting failed: Critical!");
@@ -431,6 +448,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_RangeValue($1,(int)$4,(int)$6,(int)$10,(int)$12,0,0);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_RangeValue failed: Critical!");
@@ -448,6 +466,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$16,(int)$4,(int)$6,(int)$10,(int)$12,0,0);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_RangeSetting failed: Critical!");
@@ -467,6 +486,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_RangeValue($1,(int)$4,(int)$6,(int)$10,(int)$12,(int)$16,(int)$18);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_RangeValue failed: Critical!");
@@ -486,6 +506,7 @@ exp:
          YYERROR;
       } else {
          $$=Calc_Set($1,$22,(int)$4,(int)$6,(int)$10,(int)$12,(int)$16,(int)$18);
+         GForceFld = 0;
 
          if (!$$) {
             vexpr_error("Calc_RangeSetting failed: Critical!");
@@ -509,6 +530,7 @@ exp:
 
       // Make the function call
       $$=Calc_Matrix($1->Func,0,0,$1->Type,STACK_NB,$3);
+      GForceFld = 0;
       STACK_POP;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FNCT_F): Critical!");
@@ -530,6 +552,7 @@ exp:
       STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_M): Mandatory arguments can't be NULL")
 
       $$=Calc_Matrix($1->Func,1,0,$1->Type,STACK_NB,$3);
+      GForceFld = 0;
       STACK_POP;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FNCT_M): Critical!");
@@ -551,12 +574,36 @@ exp:
       STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_D): Mandatory arguments can't be NULL")
 
       $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,$3);
+      GForceFld = 0;
       STACK_POP;
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_FNCT_D): Critical!");
          YYERROR;
       }
    }
+
+   | T_FNCT_C "(" farg ")" {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Function call (C) : %s(%d args)\n",$1->Name,STACK_NB);
+#endif
+      // Fill optional arguments with NULL values if needed
+      STACK_PAD($1->Args,$1->Opts);
+
+      // Make sure we have the right number of arguments
+      STACK_ASSERT_NARGS($1->Args,"(T_FNCT_C): Invalid number of arguments");
+
+      // Make sure the mandatory arguments are not NULL
+      STACK_ASSERT_NOTNULL($1->Args-$1->Opts,"(T_FNCT_C): Mandatory arguments can't be NULL")
+
+      $$=Calc_Matrix($1->Func,0,1,$1->Type,STACK_NB,$3);
+      GForceFld = 1;
+      STACK_POP;
+      if (!$$) {
+         vexpr_error("Calc_Matrix failed (T_FNCT_C): Critical!");
+         YYERROR;
+      }
+   }
+
 
    | T_FIELD_FUNC "(" T_INT "," T_INT ")" {
       $$ = 0;
@@ -574,6 +621,7 @@ exp:
       GMode=GMode==T_VAL?T_FLD:GMode;
 
       $$ = GData[++GDataN]=Def_Copy(GField->Def);
+      GForceFld = 1;
 #endif
       if (!$$) {
          vexpr_error("FSTD_Field failed (T_FIELD_FUNC): Critical!");
@@ -597,6 +645,7 @@ exp:
 
    | exp T_EQU exp {
       $$ = Calc_Matrixv(equ,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_EQU): Critical!");
@@ -606,6 +655,7 @@ exp:
 
    | exp T_NEQ exp {
       $$ = Calc_Matrixv(neq,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_NEQ): Critical!");
@@ -615,6 +665,7 @@ exp:
 
    | exp T_GRQ exp {
       $$ =Calc_Matrixv(grq,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if ($$ == 0) {
          vexpr_error("Calc_Matrix failed (T_GRQ): Critical!");
@@ -624,6 +675,7 @@ exp:
 
    | exp T_GRE exp {
       $$ = Calc_Matrixv(gre,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_GRE): Critical!");
@@ -633,6 +685,7 @@ exp:
 
    | exp T_SMQ exp {
       $$ = Calc_Matrixv(smq,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_SMQ): Critical!");
@@ -642,6 +695,7 @@ exp:
 
    | exp T_SMA exp {
       $$ = Calc_Matrixv(sma,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_SMA): Critical!");
@@ -651,6 +705,7 @@ exp:
 
    | exp T_ADD exp {
       $$ = Calc_Matrixv(add,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_ADD): Critical!");
@@ -660,6 +715,7 @@ exp:
 
    | exp T_SUB exp {
       $$ = Calc_Matrixv(sub,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_SUB): Critical!");
@@ -669,6 +725,7 @@ exp:
 
    | exp T_MUL exp {
       $$ = Calc_Matrixv(mul,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_MUL): Critical!");
@@ -678,6 +735,7 @@ exp:
 
    | exp T_DIV exp {
       $$ = Calc_Matrixv(dvd,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_DIV): Critical!");
@@ -687,6 +745,7 @@ exp:
 
    | exp T_MOD exp {
       $$ = Calc_Matrixv(fmod,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
         vexpr_error("Calc_Matrix failed (T_DIV): Critical!");
@@ -696,6 +755,7 @@ exp:
 
    | T_SUB exp %prec T_NEG {
       $$ = Calc_Matrix(neg,1,0,TD_Unknown,1,&$2);
+      GForceFld = 0;
 
       if (!$$) {
         vexpr_error("Calc_Matrix failed (T_SUB): Critical!");
@@ -705,6 +765,7 @@ exp:
 
    | exp T_EXP exp {
       $$ = Calc_Matrixv(pow,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
         vexpr_error("Calc_Matrix failed (T_EXP): Critical!");
@@ -714,6 +775,7 @@ exp:
 
    |  T_NOT exp {
       $$ = Calc_Matrix(not,1,0,TD_UByte,1,&$2);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_NOT): Critical!");
@@ -723,6 +785,7 @@ exp:
 
    | exp T_AND exp {
       $$ = Calc_Matrixv(and,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_AND): Critical!");
@@ -732,6 +795,7 @@ exp:
 
    | exp T_OR exp {
       $$ = Calc_Matrixv(or,1,0,TD_UByte,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_OR): Critical!");
@@ -741,6 +805,7 @@ exp:
 
    |  T_BNOT exp {
       $$ = Calc_Matrix(bnot,1,0,TD_Unknown,1,&$2);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_BNOT): Critical!");
@@ -750,6 +815,7 @@ exp:
 
    | exp T_BND exp {
       $$ = Calc_Matrixv(band,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_BND): Critical!");
@@ -759,6 +825,7 @@ exp:
 
    | exp T_BOR exp {
       $$ = Calc_Matrixv(bor,1,0,TD_Unknown,2,$1,$3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_Matrix failed (T_BOR): Critical!");
@@ -768,6 +835,7 @@ exp:
 
    | exp T_INTERP2 exp {
       $$ = Calc_MatrixTo($1,$3,2);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_MatrixTo failed (T_INTERP2): Critical!");
@@ -777,6 +845,7 @@ exp:
 
    | exp T_INTERP3 exp {
       $$ = Calc_MatrixTo($1,$3,3);
+      GForceFld = 0;
 
       if (!$$) {
          vexpr_error("Calc_MatrixTo failed (T_INTERP3): Critical!");

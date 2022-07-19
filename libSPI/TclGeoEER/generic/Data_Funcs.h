@@ -61,6 +61,7 @@ typedef struct TFuncDef {
 extern TFuncDef FuncF[];
 extern TFuncDef FuncM[];
 extern TFuncDef FuncD[];
+extern TFuncDef FuncC[];
 
 TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol);
 

@@ -40,8 +40,8 @@
 
 extern Tcl_Interp *GInterp;
 extern TData      *GField,*GFieldP;
-extern TDef   *GData[256];
-extern TDef_Type GType;
+extern TDef       *GData[1024];
+extern TDef_Type  GType;
 extern int        GDataN;
 
 static double Calc_CallFunc(TFunc *Func,const int NFlds,TDef *Flds[]) {
@@ -108,7 +108,7 @@ static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
 TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
 
 #ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Called Calc_Compat(A:%p,B:%p)\n",(void*)A,(void*)B);
+   fprintf(stdout,"(DEBUG) Called Calc_Compat(A:%p,B:%p,Dim:%d,Vect:%d)\n",(void*)A,(void*)B,Dim,Vect);
 #endif
 
    /* Something would be DEFINITELY wrong here */

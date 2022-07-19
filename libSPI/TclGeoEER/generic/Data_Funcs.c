@@ -89,11 +89,6 @@ TFuncDef FuncD[] = {
   { "tcount"    , tcount    , 2, 0, TD_Int32 },
   { "flipy"     , flipy     , 1, 0, TD_Unknown },
 
-  { "seq"       , seq       , 4, 4, TD_Float64 },
-  { "reshape"   , reshape   , 4, 0, TD_Unknown },
-  { "repeat"    , repeat    , 3, 1, TD_Unknown },
-  { "join"      , join      , 9, 7, TD_Unknown },
-
   // Distance metrics
   { "dt"    , (TFunc*)dt    , 1, 0, TD_Float64 },
   { "gdt"   , (TFunc*)gdt   , 2, 1, TD_Float64 },
@@ -233,6 +228,18 @@ TFuncDef FuncM[] = {
 
   { NULL    , (TFunc*)NULL  , 0, 0, TD_Unknown }
 };
+
+
+/*Matrix Creation/Manipulation Functions*/
+TFuncDef FuncC[] = {
+  { "seq"       , seq       , 4, 4, TD_Float64 },
+  { "reshape"   , reshape   , 4, 0, TD_Unknown },
+  { "repeat"    , repeat    , 3, 1, TD_Unknown },
+  { "join"      , join      , 9, 7, TD_Unknown },
+
+  { NULL        , NULL      , 0, 0, TD_Unknown }
+};
+
 
 typedef struct
 {
