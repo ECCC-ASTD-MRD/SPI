@@ -1579,7 +1579,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                   return(TCL_ERROR);
                }
 
-               if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[0]=='Y') {
+               if (Field->GRef->Grid[0]=='Z'&&Field->GRef->Grid[1]!='W' || Field->GRef->Grid[0]=='Y') {
                   head=(TRPNHeader*)fieldAX->Head;
                   RPN_IntLock();
                   if (!Field->GRef->Ids)
