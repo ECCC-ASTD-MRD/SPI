@@ -89,10 +89,6 @@ TFuncDef FuncD[] = {
   { "tcount"    , tcount    , 2, 0, TD_Int32 },
   { "flipy"     , flipy     , 1, 0, TD_Unknown },
 
-  { "seq"       , seq       , 3, 1, TD_Float64 },
-  { "reshape"   , reshape   , 4, 0, TD_Unknown },
-  { "repeat"    , repeat    , 2, 0, TD_Unknown },
-
   // Distance metrics
   { "dt"    , (TFunc*)dt    , 1, 0, TD_Float64 },
   { "gdt"   , (TFunc*)gdt   , 2, 1, TD_Float64 },
@@ -233,6 +229,18 @@ TFuncDef FuncM[] = {
   { NULL    , (TFunc*)NULL  , 0, 0, TD_Unknown }
 };
 
+
+/*Matrix Creation/Manipulation Functions*/
+TFuncDef FuncC[] = {
+  { "seq"       , seq       , 4, 4, TD_Float64 },
+  { "reshape"   , reshape   , 5, 3, TD_Unknown },
+  { "repeat"    , repeat    , 3, 1, TD_Unknown },
+  { "join"      , join      , 9, 7, TD_Unknown },
+
+  { NULL        , NULL      , 0, 0, TD_Unknown }
+};
+
+
 typedef struct
 {
    double b;
@@ -260,40 +268,116 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   return(NULL);
 }
 
-double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    double from,to,step;
    int i,n;
 
    // Make sure we got scalars for the dimensions
-   if( FSIZE3D(From)!=1 )           Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
-   if( FSIZE3D(To)!=1 )             Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
+   if( From && FSIZE3D(From)!=1 )   Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
+   if( To && FSIZE3D(To)!=1 )       Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
    if( Step && FSIZE3D(Step)!=1 )   Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
+   if( N && FSIZE3D(N)!=1 )         Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
 
    if( Calc_InError() )
       return(0.0);
 
    // Get the values from the fields
-   Def_Get(From,0,0,from);
-   Def_Get(To,0,0,to);
+   if( From )  Def_Get(From,0,0,from);
+   if( To )    Def_Get(To,0,0,to);
+
    if( Step ) {
-       Def_Get(Step,0,0,step);
-   } else {
-       step = from<=to ? 1.0 : -1.0;
+      Def_Get(Step,0,0,step);
+      if( step == 0.0 ) {
+         Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
+         return(0.0);
+      }
    }
 
-   if( !step ) {
-      Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
-      return(0.0);
+   if( N ) {
+      Def_Get(N,0,0,n);
+      if( n <= 0 ) {
+         Calc_RaiseError("seq: The number of values in the sequence can't be negative nor 0\n");
+         return(0.0);
+      }
    }
 
-   // Coherence check
-   if( ((to-from)<0.0) ^ (step<0.0) ) {
-      Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
-      return(0.0);
+   // Calculate the missing values and make sure they are compatible
+   switch( !From<<3 | !To<<2 | !Step<<1 | !N ) {
+      case 0:
+         // All values are given, make sure they are compatible
+         if( ((to-from)<0.0) ^ (step<0.0) ) {
+            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            return(0.0);
+         }
+         if( (n==1) ^ (to==from) ) {
+            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            return(0.0);
+         }
+         if( n != (int)((to-from)/step)+1 ) {
+            Calc_RaiseError("seq: Incompatible To, From, Step and N values : the number of values that would be created is different from the requested number of values\n");
+            return(0.0);
+         }
+         break;
+      case 1:
+         // We have From, To and Step
+         // Coherence check
+         if( ((to-from)<0.0) ^ (step<0.0) ) {
+            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            return(0.0);
+         }
+         // Calculate the number of values we'll generate
+         n = (int)((to-from)/step)+1;
+         break;
+      case 2:
+         // We have From, To and N
+         // Coherence check
+         if( (n==1) ^ (to==from) ) {
+            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            return(0.0);
+         }
+         // Calculate the step
+         step = n==1 ? 0 : (to-from)/(n-1);
+         break;
+      case 3:
+         // We have From and To
+         // Apply corresponding default stepping value
+         step = from<=to ? 1.0 : -1.0;
+         // Calculate the number of values we'll generate
+         n = (int)((to-from)/step)+1;
+         break;
+      case 4:
+         // We have From, Step and N
+         // No need to calculate the "To" value as we won't use it anyway
+         break;
+      case 6:
+         // We have From and N
+         // Apply default stepping value
+         step = 1.0;
+         break;
+      case 8:
+         // We have To, Step and N
+         // Set the from value and reverse the stepping
+         from = to;
+         step = -step;
+         break;
+      case 10:
+         // We have To and N
+         // Set the from value and set the reverse default stepping
+         from = to;
+         step = -1.0;
+         break;
+      case 5:  // We have From and Step
+      case 7:  // We have From
+      case 9:  // We have To and Step
+      case 11: // We have To
+      case 12: // We have Step and N
+      case 13: // We have Step
+      case 14: // We have N
+      case 15: // We have nothing
+      default:
+         Calc_RaiseError("seq: Invalid combination of arguments. Valid combinations are: From+To+Step+N, From+To+Step, From+To+N, From+To, From+Step+N, From+N, To+Step+N and To+N\n");
+         return(0.0);
    }
-
-   // Get the number of values we'll generate
-   n = (int)((to-from)/step)+1;
 
    // Resize the result field to hold the values we'll generate
    if( !Def_Resize(Res,n,1,1) ) {
@@ -309,24 +393,29 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step) {
    return(n);
 }
 
-double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK) {
-   int ni,nj,nk;
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC) {
+   int ni=1,nj=1,nk=1,nc=1;
 
-   if( FSIZE3D(NI)!=1 )    Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
-   if( FSIZE3D(NJ)!=1 )    Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
-   if( FSIZE3D(NK)!=1 )    Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
-   if( FSIZE3D(Res)==0 )   Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
+   if( NI && FSIZE3D(NI)!=1 ) Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
+   if( NJ && FSIZE3D(NJ)!=1 ) Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
+   if( NK && FSIZE3D(NK)!=1 ) Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
+   if( NC && FSIZE3D(NC)!=1 ) Calc_RaiseError("reshape: The new dimension in C should be a scalar\n");
 
    if( !Calc_InError() ) {
-      Def_Get(NI,0,0,ni);
-      Def_Get(NJ,0,0,nj);
-      Def_Get(NK,0,0,nk);
+      if( NI ) Def_Get(NI,0,0,ni);
+      if( NJ ) Def_Get(NJ,0,0,nj);
+      if( NK ) Def_Get(NK,0,0,nk);
+      if( NC ) Def_Get(NC,0,0,nc);
 
-      if( FSIZE3D(Fld) == ni*nj*nk ) {
+      if( FSIZE3D(Fld)*Fld->NC == ni*nj*nk*nc ) {
+         // Two things can happen: either NC was already the same in which case nothing changes,
+         // or NC is different in which case NI or NJ or NK had to change (which guaranties it will be handled by Def_Resize)
+         Res->NC = nc;
          if( !Def_Resize(Res,ni,nj,nk) ) {
             Calc_RaiseError("reshape: An error occured when resizing.\n");
          }
-         memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*Res->NC*ni*nj*nk);
+         memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*ni*nj*nk*nc);
       } else {
          Calc_RaiseError("reshape: The new dimensions are invalid. They must match the current dimensions of the field.\n");
       }
@@ -335,12 +424,15 @@ double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK) {
    return(0.0);
 }
 
-double repeat(TDef *Res,TDef *Fld,TDef *N) {
-   size_t size;
-   int n,c,r,dim[3]={1,1,1},d=0;
+double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
+   char *datar,*dataf;
+   size_t size,nloops;
+   const int nd=4;
+   int n,r,i,dim[4]={Fld->NI,Fld->NJ,Fld->NK,Fld->NC},d,id;
 
-   if( FSIZE3D(N)!=1 )     Calc_RaiseError("repeat: The repeat number should be a scalar\n");
-   if( FSIZE3D(Fld)==0 )   Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
+   if( FSIZE3D(N)!=1 )        Calc_RaiseError("repeat: The repeat number should be a scalar\n");
+   if( D && FSIZE3D(D)!=1 )   Calc_RaiseError("repeat: The expanding dimension should be a scalar\n");
 
    if( Calc_InError() )
       return(0.0);
@@ -356,22 +448,157 @@ double repeat(TDef *Res,TDef *Fld,TDef *N) {
    }
 
    // Check in which dimension we'll expand
-   if( Fld->NI>1 )   dim[d++]=Fld->NI;
-   if( Fld->NJ>1 )   dim[d++]=Fld->NJ;
-   if( Fld->NK>1 )   dim[d++]=Fld->NK;
+   if( D ) {
+      Def_Get(D,0,0,d);
+      if( d<0 || d>=nd ) {
+         Calc_RaiseError("repeat: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+         return(0.0);
+      }
+   } else {
+      // Find the first unused dimension (dim==1) or select the last one
+      for(d=0; d<nd-1; ++d)
+         if( dim[d] == 1 )
+            break;
+   }
+
+   // Get the number of contiguous bytes we can copy per shot
+   for(id=0,size=(size_t)TDef_Size[Res->Type]; id<=d; ++id)
+      size *= (size_t)dim[id];
+
+   // Get the number of times we'll need to loop over the repeat
+   for(id=d+1,nloops=1; id<nd; ++id)
+      nloops *= (size_t)dim[id];
 
    // Resize the result field to hold the values we'll generate
-   dim[d>2?2:d] *= n;
+   dim[d] *= n;
+   if( d==3 && dim[3]>4 ) {
+      Calc_RaiseError("repeat: A maximum of 4 components are possible\n");
+      return(0.0);
+   }
+
+   // If we need to resize NC, make sure we trigger the resize by setting NI to 0
+   if( Res->NC != dim[3] ) {
+      Res->NC = dim[3];
+      Res->NI = 0;
+   }
    if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
       Calc_RaiseError("repeat: An error occured when resizing.\n");
       return(0.0);
    }
 
    // Set the values
-   size = (size_t)FSIZE3D(Fld)*(size_t)TDef_Size[Res->Type];
-   for(c=0; c<Res->NC; ++c) {
-      for(r=0; r<n; ++r) {
-         memcpy(Res->Data[c]+r*size,Fld->Data[c],size);
+   for(datar=Res->Data[0],dataf=Fld->Data[0]; nloops; --nloops,dataf+=size) {
+      for(r=0; r<n; ++r,datar+=size) {
+         memcpy(datar,dataf,size);
+      }
+   }
+
+   return(FSIZE3D(Res));
+}
+
+double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8) {
+   TDef *flds[8];
+   const int nd=4;
+   int i,d,id,n=0,dim[nd],dimf[nd],type;
+
+   if( FSIZE3D(D)!=1 )     Calc_RaiseError("join: The expanding dimension should be a scalar\n");
+
+   if( Calc_InError() )
+      return(0.0);
+
+   // Check in which dimension we'll expand
+   Def_Get(D,0,0,d);
+   if( d<0 || d>=nd ) {
+      Calc_RaiseError("join: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+      return(0.0);
+   }
+
+   // Compile the list of fields
+   if( F1 && FSIZE3D(F1)>0 ) flds[n++] = F1;
+   if( F2 && FSIZE3D(F2)>0 ) flds[n++] = F2;
+   if( F3 && FSIZE3D(F3)>0 ) flds[n++] = F3;
+   if( F4 && FSIZE3D(F4)>0 ) flds[n++] = F4;
+   if( F5 && FSIZE3D(F5)>0 ) flds[n++] = F5;
+   if( F6 && FSIZE3D(F6)>0 ) flds[n++] = F6;
+   if( F7 && FSIZE3D(F7)>0 ) flds[n++] = F7;
+   if( F8 && FSIZE3D(F8)>0 ) flds[n++] = F8;
+
+   if( !n ) {
+      Calc_RaiseError("join: No fields to join or all fields are empty\n");
+      return(0.0);
+   }
+
+   // Make sure the dimensions of the fields are compatible in the direction that is not expanding
+   // and calculate the final dimension
+   size_t size[n],nloops;
+
+   dim[0]=flds[0]->NI; dim[1]=flds[0]->NJ; dim[2]=flds[0]->NK; dim[3]=flds[0]->NC; dim[d]=0;
+   for(i=0; i<n; ++i) {
+      dimf[0]=flds[i]->NI; dimf[1]=flds[i]->NJ; dimf[2]=flds[i]->NK; dimf[3]=flds[i]->NC;
+
+      if( flds[0]->Type != flds[i]->Type ) {
+         Calc_RaiseError("join: Incompatible field type. The type of all fields to join must be the same\n");
+         return(0.0);
+      }
+
+      size[i] = (size_t)TDef_Size[flds[i]->Type];
+
+      // Loop over dimensions
+      for(id=0; id<nd; ++id) {
+         if( id == d ) {
+            // We expand in this direction
+            dim[d] += dimf[d];
+         } else if( dim[id] != dimf[id] ) {
+            // We don't expand in this direction, the dimension has to match
+            Calc_RaiseError("join: Incompatible field size. The size of all fields to join must match in the non-expanding dimension\n");
+            return(0.0);
+         }
+
+         // Get the number of contiguous bytes we can copy per shot for that field
+         if( id <= d ) {
+            size[i] *= (size_t)dimf[id];
+         }
+      }
+   }
+
+   // Max of 4 components
+   if( d==3 && dim[3]>4 ) {
+      Calc_RaiseError("join: A maximum of 4 components are possible\n");
+      return(0.0);
+   }
+
+   // Res has been created specifically for the result of this function, but would have been inspired by the first arg (D)
+   // So it is very possible that the type of the field is not the right one, but the good news is that we can do whatever we want to the field
+   // In this case, if the type is not compatible (same size), we'll reset the NI dimension to make sure the resize resets the whole thing
+   if( TDef_Size[Res->Type] != TDef_Size[flds[0]->Type] )
+      Res->NI=0;
+   Res->Type = flds[0]->Type;
+
+   // If we need to resize NC, make sure we trigger the resize by setting NI to 0
+   if( Res->NC != dim[3] ) {
+      Res->NC = dim[3];
+      Res->NI = 0;
+   }
+
+   // Resize the result field to hold the values we'll generate
+   if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
+      Calc_RaiseError("join: An error occured when resizing.\n");
+      return(0.0);
+   }
+
+   // Get the number of times we'll need to loop over to make the entire copy
+   for(id=d+1,nloops=1; id<=3; ++id)
+      nloops *= (size_t)dim[id];
+
+   // Init the data source
+   char *datar,*dataf[n];
+   for(i=0; i<n; ++i)
+      dataf[i] = flds[i]->Data[0];
+
+   // Join the fields
+   for(datar=Res->Data[0]; nloops; --nloops) {
+      for(i=0; i<n; datar+=size[i],dataf[i]+=size[i],++i) {
+         memcpy(datar,dataf[i],size[i]);
       }
    }
 

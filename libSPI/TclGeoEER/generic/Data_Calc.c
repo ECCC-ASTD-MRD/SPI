@@ -59,6 +59,7 @@ char         *curTok;
 int           GError;
 int           stopGuard;
 int           GExcept;
+int           GForceFld;
 
 /**
  * @author Jean-Philippe Gauthier
@@ -74,6 +75,11 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
    double     val;
    int        n,d,needcopy=1;
 
+#ifdef DEBUG
+   fprintf(stdout,"(DEBUG) Called Calc_Update(Interp:%p,Name:%s,Data:%p) GDataN:%d GMode:%d GType:%d GField:%p GBand:%p GLayer:%p GObs:%p GVec:%p GForceFld:%d\n",
+         (void*)Interp,Name,(void*)Data,GDataN,GMode,GType,(void*)GField,(void*)GBand,(void*)GLayer,(void*)GObs,(void*)GVec,GForceFld);
+#endif
+
    if (!Data) {
       Tcl_AppendResult(Interp,"Calc_Update: Invalid field",(char*)NULL);
       return;
@@ -81,7 +87,7 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
 
    n=FSIZE3D(Data);
 
-   if (n==1) {
+   if (n==1 && !GForceFld) {
       if (Calc_Validate(Interp)) {
          Def_Get(Data,0,0,val);
          if (Data->Type<10) {
@@ -106,6 +112,17 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
       } else {
 
          switch(GMode) {
+            case T_VAL:
+               // We are forcing a field but no template was specified (pure matrix creation)
+               // Setup the resulting field (note: we setup an empty def and make sure that the field deosn't exists, otherwise we may run into some problems)
+               GField = Data_Valid(Interp,Name,0,0,0,0,Data->Type);
+               FSTD_FieldSet(GField);
+               // Assign the Data
+               GField->Def = needcopy ? Def_Copy(Data) : Data;
+               // Create default field stuff (ZRef, GRef, etc.).
+               // This is definitely a hack, but the Def should not be overwritten as its dimensions are identical
+               GField = FSTD_FieldCreate(Interp,Name,Data->NI,Data->NJ,Data->NK,Data->Type);
+               break;
             case T_FLD:
                if (!(field=Data_Get(Name)) || field->Def!=Data) {
                   GField=Data_Copy(Interp,GField,Name,0,0);
@@ -251,6 +268,7 @@ int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TDef_Type Type,char* Exp
    GResult   = NULL;
    GExcept   = Except;
    GType     = Type;
+   GForceFld = 0;
 
    /* Interpreter initialization */
    Tcl_ResetResult(Interp);
