@@ -20,13 +20,12 @@ cat > ${profilePath} << EOF
 export SPI_PATH=${packageHome}
 
 #----- If within CMC environment and SPI_LIB not loaded, load only the profile
-
 if [[ -n \${ORDENV_VERSION} && -z \${SPI_LIB} && -d ${domainHome}/libSPI_${packageVersion}${COMP}_\${ORDENV_PLAT} ]]; then
    . ${domainHome}/libSPI_${packageVersion}_\${ORDENV_PLAT}/etc/profile.d/libSPI_${packageVersion}${COMP}_\${ORDENV_PLAT}.sh
 fi
 EOF
 
-#cat > ${loginPath} << EOF
-#
-#EOF
+cat > ${loginPath} << EOF
+setenv SPI_PATH ${packageHome}
+EOF
 
