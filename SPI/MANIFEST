@@ -1,5 +1,5 @@
 NAME       : SPI
-VERSION    : 8.2.1
+VERSION    : 8.3.0
 BUILD      : Release
 STATE      :
 DESCRIPTION: SPI (Spherical Projection Interface)
@@ -14,4 +14,4 @@ EER      : 4.1.0
 RMN      : 19.7.0
 VGRID    : 6.5.0
 GENPHYSX : 2.6.0
-CMDS_EXT : 20220202
+CMDS_EXT : 20220726

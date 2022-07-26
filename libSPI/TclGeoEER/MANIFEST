@@ -1,5 +1,5 @@
 NAME       : TclGeoEER
-VERSION    : 8.2.1
+VERSION    : 8.3.0
 BUILD      : Release
 DESCRIPTION: Tcl extensions to manage geospatial data
 SUMMARY    : Tcl extensions to manage geospatial data
