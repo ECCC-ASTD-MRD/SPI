@@ -26,13 +26,13 @@ export CPL_LOG=/dev/null
 EOF
 
 cat > ${loginPath} << EOF
-setenv SPI_LIB="${packageHome}"
-setenv EC_INCLUDE_PATH="${packageHome}/include \${EC_INCLUDE_PATH}"
-setenv EC_LD_LIBRARY_PATH="${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
+setenv SPI_LIB "${packageHome}"
+setenv EC_INCLUDE_PATH "${packageHome}/include \${EC_INCLUDE_PATH}"
+setenv EC_LD_LIBRARY_PATH "${packageHome}/lib \${EC_LD_LIBRARY_PATH}"
 
 #----- GDAL data
-setenv GDAL_PAM_ENABLED=NO
-setenv CPL_LOG=/dev/null
+setenv GDAL_PAM_ENABLED NO
+setenv CPL_LOG /dev/null
 
 EOF
 

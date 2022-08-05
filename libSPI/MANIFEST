@@ -1,5 +1,9 @@
 NAME       : libSPI
+<<<<<<< HEAD
 VERSION    : 8.2.2
+=======
+VERSION    : 8.3.0
+>>>>>>> dev
 BUILD      : Release
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API libraries

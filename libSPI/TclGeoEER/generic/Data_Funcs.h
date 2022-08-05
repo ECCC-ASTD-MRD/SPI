@@ -61,6 +61,7 @@ typedef struct TFuncDef {
 extern TFuncDef FuncF[];
 extern TFuncDef FuncM[];
 extern TFuncDef FuncD[];
+extern TFuncDef FuncC[];
 
 TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol);
 
@@ -99,9 +100,10 @@ double tbin(TDef *Res,TDef *Table,TDef *MB);
 double flipy(TDef *Res,TDef *MA);
 
 // Matrix creation/manipulation functions
-double seq(TDef *Res,TDef *From,TDef *To,TDef *Step);
-double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK);
-double repeat(TDef *Res,TDef *Fld,TDef *N);
+double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N);
+double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC);
+double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D);
+double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8);
 
 // Matrix reduction operations
 double stat_all(TDef *MA,TDef *MB);   // All stats 

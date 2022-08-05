@@ -709,31 +709,23 @@ proc Grid::CreateZPS { Lat Lon Res NI NJ Angle { ID MODELGRID } } {
       set dgrw   [expr ($dgrw-floor($dgrw))*360.0]
    }
    
-   set dd60 1.0
-   set dgrw [expr $dgrw+$Angle]
-   set xy  [fstdgrid xyfll $lat $lon $dd60 $dgrw $nhem]
-   set xg1 [expr ((($NI-1.0)/2.0) * $Res - [lindex $xy 0]) / $Res + 1.0]
-   set xg2 [expr ((($NJ-1.0)/2.0) * $Res - [lindex $xy 1]) / $Res + 1.0]
+   set dd60    1.0
+   set dgrw    [expr $dgrw+$Angle]
+   set xy      [fstdgrid xyfll $lat $lon $dd60 $dgrw $nhem]
+   set xg1     [expr ((($NI-1.0)/2.0) * $Res - [lindex $xy 0]) / $Res + 1.0]
+   set xg2     [expr ((($NJ-1.0)/2.0) * $Res - [lindex $xy 1]) / $Res + 1.0]
+   set ratio   [expr $Res*0.001]
 
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
-   fstdfield create ${ID}TIC $NI 1 1
-   fstdfield create ${ID}TAC 1 $NJ 1
+
+   #----- Compute tic/tac coordinates
+   vexpr ${ID}TIC (1.0+seq(0,NULL,1,$NI)-$xg1)*$ratio
+   vexpr ${ID}TAC reshape((1.0+seq(0,NULL,1,$NJ)-$xg2)*$ratio,1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
-
-   #----- Compute tic grid coordinates.
-   set ratio [expr $Res*0.001]
-   for { set i 0 } { $i < $NI } { incr i } {
-      fstdfield stats ${ID}TIC -gridvalue $i 0 [expr (1.0+$i-$xg1)*$ratio]
-   }
-
-   #----- Compute tac grid coordinates.
-   for { set j 0 } { $j < $NJ } { incr j } {
-      fstdfield stats ${ID}TAC -gridvalue 0 $j [expr (1.0+$j-$xg2)*$ratio]
-   }
    
-   #----- Create the grid ans assign the tic/tac
+   #----- Create the grid and assign the tic/tac
    fstdfield create ${ID} $NI $NJ 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP Z$grtyp
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
@@ -814,27 +806,15 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY Angle { ID MODELGRID } } {
    Grid::CheckNIJ
 
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
-   fstdfield create ${ID}TIC $Param(NI) 1 1
-   fstdfield create ${ID}TAC 1 $Param(NJ) 1
+
+   #----- Compute tic/tac coordinates
+   vexpr ${ID}TIC seq($Lon0,NULL,$ResX,$Param(NI))
+   vexpr ${ID}TAC reshape(seq($Lat0,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
-
-   #----- Compute tic grid coordinates.
-   set lon $Lon0
-   for { set i 0 } { $i < $Param(NI) } { incr i } {
-      fstdfield stats ${ID}TIC -gridvalue $i 0 $lon
-      set lon [expr $lon+$ResX]
-   }
-
-   #----- Compute tac grid coordinates.
-   set lat $Lat0
-   for { set j 0 } { $j < $Param(NJ) } { incr j } {
-      fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
-      set lat [expr $lat+$ResY]
-   }
    
-   #----- Create the grid ans assign the tic/tac
+   #----- Create the grid and assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZL
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
@@ -853,29 +833,17 @@ proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY Angle { ID MODELGRID }
 
    set Param(NI) $NI
    set Param(NJ) $NJ
-   
+
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
-   fstdfield create ${ID}TIC $Param(NI) 1 1
-   fstdfield create ${ID}TAC 1 $Param(NJ) 1
+
+   #----- Compute tic/tac coordinates
+   vexpr ${ID}TIC seq($LonC-$ResX*$Param(NI)/2,NULL,$ResX,$Param(NI))
+   vexpr ${ID}TAC reshape(seq($LatC-$ResY*$Param(NJ)/2,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
-
-   #----- Compute tic grid coordinates.
-   set lon [expr $LonC-$ResX*$Param(NI)/2]
-   for { set i 0 } { $i < $Param(NI) } { incr i } {
-      fstdfield stats ${ID}TIC -gridvalue $i 0 $lon
-      set lon [expr $lon+$ResX]
-   }
-
-   #----- Compute tac grid coordinates.
-   set lat [expr $LatC-$ResY*$Param(NJ)/2]
-   for { set j 0 } { $j < $Param(NJ) } { incr j } {
-      fstdfield stats ${ID}TAC -gridvalue 0 $j $lat
-      set lat [expr $lat+$ResY]
-   }
    
-   #----- Create the grid ans assign the tic/tac
+   #----- Create the grid and assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP ZL
    fstdfield define ${ID} -positional ${ID}TIC ${ID}TAC
@@ -1043,7 +1011,7 @@ proc Grid::CreateUTM { Lat0 Lon0 Lat1 Lon1 ResX ResY { ID MODELGRID } } {
 #    fstdfield define ${ID}MTRX -NOMVAR "MTRX" -ETIKET "GRID" -TYPVAR X -GRTYP X
 #    fstdfield define ${ID}MTRX -DATA [binary format f* $transform]
 
-   #----- Create the grid ans assign the tic/tac
+   #----- Create the grid and assign the tic/tac
    fstdfield create ${ID} $Param(NI) $Param(NJ) 1 $Param(Data)
    fstdfield define ${ID} -georef $ID -NOMVAR "GRID" -ETIKET "GRID" -TYPVAR X -GRTYP W
 

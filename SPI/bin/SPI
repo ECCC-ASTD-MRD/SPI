@@ -8,7 +8,7 @@ XVFB=0
 XSVR=${XSVR:=9999}
 SPI_DEBUG=()
 HOST=`hostname`
-PROG=("${SPI_LIB}/TCL/bin/wish${TCL_VERSION}" "${SPI_PATH}/tcl/SPI.tcl")
+PROG=("${SPI_LIB}/TCL/bin/wish${TCL_VERSION}" "${SPI_PATH}/tcl/SPI.tcl" --)
 
 #----- Check for VirtualGL
 # check if we need to start vglrun or whole session is started with vglrun (VGL_ISACTIVE)
@@ -53,6 +53,8 @@ while [[ $# -gt 0 ]]; do
       -tclsh)
          PROG=("${SPI_LIB}/TCL/bin/tclsh${TCL_VERSION}")
          SOFT=-1
+         shift
+         continue
          ;;
    esac
 
@@ -76,7 +78,7 @@ fi
 #xset fp+ ${SPI_PATH}/share/font
 
 #----- Command to execute
-cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" -- "${args[@]}")
+cmd=(${vg} "${SPI_DEBUG[@]}" "${PROG[@]}" "${args[@]}")
 
 
 #----- Let's start up the software

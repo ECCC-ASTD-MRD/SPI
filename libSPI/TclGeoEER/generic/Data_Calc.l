@@ -119,6 +119,14 @@ EXTCHAR [A-Za-z0-9_.:#]
       return T_FNCT_D;
    }
 
+   if((vexpr_lval.Func = FuncGet(FuncC,yytext)))  {
+#ifdef DEBUG
+      fprintf(stdout,"(DEBUG) Found a matrix creation/manipulation function token: %s\n", yytext);
+#endif
+      return T_FNCT_C;
+   }
+
+
    vexpr_lval.Data=NULL;
 
    if((vexpr_lval.Field=Data_Get(yytext))) {
