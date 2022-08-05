@@ -1,9 +1,5 @@
 NAME       : SPI
-<<<<<<< HEAD
-VERSION    : 8.2.2
-=======
 VERSION    : 8.3.0
->>>>>>> dev
 BUILD      : Release
 STATE      :
 DESCRIPTION: SPI (Spherical Projection Interface)
