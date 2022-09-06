@@ -1389,7 +1389,7 @@ proc CVText::Write { Frame File } {
          set t [$Frame.page.canvas itemcget CVTEXTEDIT$tag -text]
          
          puts $File "\n   catch { font create CVTEXTFONT }"
-         puts $File "   font configure CVTEXTFONT -family [font configure CVTEXTFONT -family] -weight [font configure CVTEXTFONT -weight] -size [font configure CVTEXTFONT -size]\
+         puts $File "   font configure CVTEXTFONT -family \"[font configure CVTEXTFONT -family]\" -weight [font configure CVTEXTFONT -weight] -size [font configure CVTEXTFONT -size]\
                   -slant [font configure CVTEXTFONT -slant] -underline [font configure CVTEXTFONT -underline] -overstrike [font configure CVTEXTFONT -overstrike]"
                   
          puts $File "   set CVText::Param(Justify) $Data(Justify$tag)"
