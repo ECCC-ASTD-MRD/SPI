@@ -22,25 +22,18 @@ export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
 
 #----- Dependencies (within CMC)
 if [[ -n \${ORDENV_VERSION} ]]; then
+   [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
    case `domainname -d` in
       *science.gc.ca | "")
          #----- On the SCIENCE side
-
-         [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
-         [[ -d ${GDB_PATH} ]]                                               || export GDB_PATH=/home/ords/prod/cmoe_ops/smco600/geo/DBGeo/data
+         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/home/ords/prod/cmoe_ops/smco600/geo/DBGeo/data
          ;;
       *ec.gc.ca)
          #----- On the EC side
-
-         [[ ${LD_LIBRARY_PATH} =~ cmds/ext/${CMDS_EXT_VERSION} ]] || . ssmuse-sh -d cmds/ext/${CMDS_EXT_VERSION}
-         [[ -d ${GDB_PATH} ]]                                     || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
-         ;;
-      *)
-         echo "(WARNING) Not running on GC network, external dependency package ${CMDS_EXT_VERSION} not loaded"
+         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
          ;;
    esac
 
    # If compiled with intel-19.0.3.199, need to load compilers
    [[ ${SPI_LIB} =~ .*intel-19.0.3.199.* && ! ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]] && . ssmuse-sh -d comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -d hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
-
 fi
