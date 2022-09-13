@@ -22,7 +22,7 @@ export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
 
 #----- Dependencies (within CMC)
 if [[ -n \${ORDENV_VERSION} ]]; then
-   [[ ${LD_LIBRARY_PATH} =~ eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
+   [[ ${LD_LIBRARY_PATH} =~ /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
    case `domainname -d` in
       *science.gc.ca | "")
          #----- On the SCIENCE side
