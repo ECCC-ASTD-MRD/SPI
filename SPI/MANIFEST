@@ -1,5 +1,5 @@
 NAME       : SPI
-VERSION    : 8.3.0
+VERSION    : 8.3.1
 BUILD      : Release
 STATE      :
 DESCRIPTION: SPI (Spherical Projection Interface)
@@ -10,8 +10,7 @@ URL        : https://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerSPI
 # Dependencies 
 
 TCL      : 8.6
-EER      : 4.1.0
+EER      : 4.1.2
 RMN      : 19.7.0
 VGRID    : 6.5.0
-GENPHYSX : 2.6.0
-CMDS_EXT : 20220726
+GENPHYSX : 2.6.4
