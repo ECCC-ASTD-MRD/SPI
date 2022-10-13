@@ -44,6 +44,12 @@
 #include "DistanceMetrics.h"
 #endif //HAVE_DISTANCEMETRICS
 
+#define GET_GREF(gref)  \
+   switch (ctx->GMode) { \
+      case T_BAND: (gref)=ctx->GBand->GRef; break; \
+      case T_FLD : (gref)=ctx->GField->GRef; break; \
+   }
+
 /**
  * @internal Implementation detail
  * @ref func_init_table
@@ -53,11 +59,13 @@
  * @see init_record
  */
 
+#if 0
 double Vnb,Vsumx,Vminx,Vmaxx,Vavgx,Vsumy,Vminy,Vmaxy,Vavgy,Vvarx,Vvary,Vssx,Vssy,Vssxy,Vrmse,Vcorr,Vcovar,
        Vregb,Vrega,Verra,Verrb,Vssxy,Vmb,Vnmb,Vnme,Vme,Vmnb,Vmaxb,Vmaxe,Vmre,Vmaxre,Vmedx,Vmedy,
        Vmne,Vmfb,Vmfe,Vlmnb,Vlmne,Vnrmse,Vna,Vrna,Vmse,Vnmse,Vgmb,Vgmv,Vfoex,Vfa2,Vfa5,Vfa10,Vfb,Vnad,
        Vfms,Vfmsi,Vfmsb,Vfmsn,Vosf,Vosfb,Vosfi,Vksp,Vrank,Vnbeq,Vnbgt,Vnblt,Vnbfa,Vnbmi,Vnbnp,
        Vaov,Vafn,Vafp,Vax,Vay;
+#endif
 
 /*Matrix Derivative Functions*/
 TFuncDef FuncD[] = {
@@ -247,7 +255,9 @@ typedef struct
    double c;
 } LUTentry;
 
-static int compare_lutE ( const void *va, const void *vb );
+static void stat_reset_core(StatCore *stat);
+static void stat_init_core (StatCore *stat);
+static int  compare_lutE   ( const void *va, const void *vb );
 
 /**
  * @author Jean-Philippe Gauthier
@@ -268,17 +278,17 @@ TFuncDef* FuncGet(TFuncDef *Funcs,char *Symbol) {
   return(NULL);
 }
 
-double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
+double seq(Calc_Ctx *ctx, TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    double from,to,step;
    int i,n;
 
    // Make sure we got scalars for the dimensions
-   if( From && FSIZE3D(From)!=1 )   Calc_RaiseError("seq: The start value of the sequence should be a scalar\n");
-   if( To && FSIZE3D(To)!=1 )       Calc_RaiseError("seq: The end value of the sequence should be a scalar\n");
-   if( Step && FSIZE3D(Step)!=1 )   Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
-   if( N && FSIZE3D(N)!=1 )         Calc_RaiseError("seq: The stepping value of the sequence should be a scalar\n");
+   if( From && FSIZE3D(From)!=1 )   Calc_RaiseError(ctx,"seq: The start value of the sequence should be a scalar\n");
+   if( To && FSIZE3D(To)!=1 )       Calc_RaiseError(ctx,"seq: The end value of the sequence should be a scalar\n");
+   if( Step && FSIZE3D(Step)!=1 )   Calc_RaiseError(ctx,"seq: The stepping value of the sequence should be a scalar\n");
+   if( N && FSIZE3D(N)!=1 )         Calc_RaiseError(ctx,"seq: The stepping value of the sequence should be a scalar\n");
 
-   if( Calc_InError() )
+   if( Calc_InError(ctx) )
       return(0.0);
 
    // Get the values from the fields
@@ -288,7 +298,7 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    if( Step ) {
       Def_Get(Step,0,0,step);
       if( step == 0.0 ) {
-         Calc_RaiseError("seq: The step can't be zero, that would make an infinite amount of values\n");
+         Calc_RaiseError(ctx,"seq: The step can't be zero, that would make an infinite amount of values\n");
          return(0.0);
       }
    }
@@ -296,7 +306,7 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    if( N ) {
       Def_Get(N,0,0,n);
       if( n <= 0 ) {
-         Calc_RaiseError("seq: The number of values in the sequence can't be negative nor 0\n");
+         Calc_RaiseError(ctx,"seq: The number of values in the sequence can't be negative nor 0\n");
          return(0.0);
       }
    }
@@ -306,15 +316,15 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
       case 0:
          // All values are given, make sure they are compatible
          if( ((to-from)<0.0) ^ (step<0.0) ) {
-            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            Calc_RaiseError(ctx,"seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
             return(0.0);
          }
          if( (n==1) ^ (to==from) ) {
-            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            Calc_RaiseError(ctx,"seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
             return(0.0);
          }
          if( n != (int)((to-from)/step)+1 ) {
-            Calc_RaiseError("seq: Incompatible To, From, Step and N values : the number of values that would be created is different from the requested number of values\n");
+            Calc_RaiseError(ctx,"seq: Incompatible To, From, Step and N values : the number of values that would be created is different from the requested number of values\n");
             return(0.0);
          }
          break;
@@ -322,7 +332,7 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
          // We have From, To and Step
          // Coherence check
          if( ((to-from)<0.0) ^ (step<0.0) ) {
-            Calc_RaiseError("seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
+            Calc_RaiseError(ctx,"seq: Incompatible to, from and step values : there is no way to reach the end from that starting point with that step\n");
             return(0.0);
          }
          // Calculate the number of values we'll generate
@@ -332,7 +342,7 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
          // We have From, To and N
          // Coherence check
          if( (n==1) ^ (to==from) ) {
-            Calc_RaiseError("seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
+            Calc_RaiseError(ctx,"seq: Incompatible From, To and N values : either N=1 but From!=To or From==To but N!=1\n");
             return(0.0);
          }
          // Calculate the step
@@ -375,13 +385,13 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
       case 14: // We have N
       case 15: // We have nothing
       default:
-         Calc_RaiseError("seq: Invalid combination of arguments. Valid combinations are: From+To+Step+N, From+To+Step, From+To+N, From+To, From+Step+N, From+N, To+Step+N and To+N\n");
+         Calc_RaiseError(ctx,"seq: Invalid combination of arguments. Valid combinations are: From+To+Step+N, From+To+Step, From+To+N, From+To, From+Step+N, From+N, To+Step+N and To+N\n");
          return(0.0);
    }
 
    // Resize the result field to hold the values we'll generate
    if( !Def_Resize(Res,n,1,1) ) {
-      Calc_RaiseError("seq: An error occured when resizing.\n");
+      Calc_RaiseError(ctx,"seq: An error occured when resizing.\n");
       return(0.0);
    }
 
@@ -393,16 +403,16 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N) {
    return(n);
 }
 
-double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC) {
+double reshape(Calc_Ctx *ctx, TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC) {
    int ni=1,nj=1,nk=1,nc=1;
 
-   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("reshape: The field to resize has as zeroed dimension\n");
-   if( NI && FSIZE3D(NI)!=1 ) Calc_RaiseError("reshape: The new dimension in I should be a scalar\n");
-   if( NJ && FSIZE3D(NJ)!=1 ) Calc_RaiseError("reshape: The new dimension in J should be a scalar\n");
-   if( NK && FSIZE3D(NK)!=1 ) Calc_RaiseError("reshape: The new dimension in K should be a scalar\n");
-   if( NC && FSIZE3D(NC)!=1 ) Calc_RaiseError("reshape: The new dimension in C should be a scalar\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError(ctx,"reshape: The field to resize has as zeroed dimension\n");
+   if( NI && FSIZE3D(NI)!=1 ) Calc_RaiseError(ctx,"reshape: The new dimension in I should be a scalar\n");
+   if( NJ && FSIZE3D(NJ)!=1 ) Calc_RaiseError(ctx,"reshape: The new dimension in J should be a scalar\n");
+   if( NK && FSIZE3D(NK)!=1 ) Calc_RaiseError(ctx,"reshape: The new dimension in K should be a scalar\n");
+   if( NC && FSIZE3D(NC)!=1 ) Calc_RaiseError(ctx,"reshape: The new dimension in C should be a scalar\n");
 
-   if( !Calc_InError() ) {
+   if( !Calc_InError(ctx) ) {
       if( NI ) Def_Get(NI,0,0,ni);
       if( NJ ) Def_Get(NJ,0,0,nj);
       if( NK ) Def_Get(NK,0,0,nk);
@@ -413,37 +423,37 @@ double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC) {
          // or NC is different in which case NI or NJ or NK had to change (which guaranties it will be handled by Def_Resize)
          Res->NC = nc;
          if( !Def_Resize(Res,ni,nj,nk) ) {
-            Calc_RaiseError("reshape: An error occured when resizing.\n");
+            Calc_RaiseError(ctx,"reshape: An error occured when resizing.\n");
          }
          memcpy(Res->Data[0],Fld->Data[0],TDef_Size[Res->Type]*ni*nj*nk*nc);
       } else {
-         Calc_RaiseError("reshape: The new dimensions are invalid. They must match the current dimensions of the field.\n");
+         Calc_RaiseError(ctx,"reshape: The new dimensions are invalid. They must match the current dimensions of the field.\n");
       }
    }
 
    return(0.0);
 }
 
-double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
+double repeat(Calc_Ctx *ctx, TDef *Res,TDef *Fld,TDef *N,TDef *D) {
    char *datar,*dataf;
    size_t size,nloops;
    const int nd=4;
    int n,r,i,dim[4]={Fld->NI,Fld->NJ,Fld->NK,Fld->NC},d,id;
 
-   if( FSIZE3D(Fld)==0 )      Calc_RaiseError("repeat: The field to repeat has as zeroed dimension\n");
-   if( FSIZE3D(N)!=1 )        Calc_RaiseError("repeat: The repeat number should be a scalar\n");
-   if( D && FSIZE3D(D)!=1 )   Calc_RaiseError("repeat: The expanding dimension should be a scalar\n");
+   if( FSIZE3D(Fld)==0 )      Calc_RaiseError(ctx,"repeat: The field to repeat has as zeroed dimension\n");
+   if( FSIZE3D(N)!=1 )        Calc_RaiseError(ctx,"repeat: The repeat number should be a scalar\n");
+   if( D && FSIZE3D(D)!=1 )   Calc_RaiseError(ctx,"repeat: The expanding dimension should be a scalar\n");
 
-   if( Calc_InError() )
+   if( Calc_InError(ctx) )
       return(0.0);
 
    // Get the number of times we'll repeat the sequence
    Def_Get(N,0,0,n);
    if( n < 0 ) {
-      Calc_RaiseError("repeat: Can't repeat a sequence a negative number of time\n");
+      Calc_RaiseError(ctx,"repeat: Can't repeat a sequence a negative number of time\n");
       return(0.0);
    } else if( !n ) {
-      Calc_RaiseError("repeat: Can't repeat a sequence a nul amount of time, the result would be empty\n");
+      Calc_RaiseError(ctx,"repeat: Can't repeat a sequence a nul amount of time, the result would be empty\n");
       return(0.0);
    }
 
@@ -451,7 +461,7 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
    if( D ) {
       Def_Get(D,0,0,d);
       if( d<0 || d>=nd ) {
-         Calc_RaiseError("repeat: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+         Calc_RaiseError(ctx,"repeat: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
          return(0.0);
       }
    } else {
@@ -472,7 +482,7 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
    // Resize the result field to hold the values we'll generate
    dim[d] *= n;
    if( d==3 && dim[3]>4 ) {
-      Calc_RaiseError("repeat: A maximum of 4 components are possible\n");
+      Calc_RaiseError(ctx,"repeat: A maximum of 4 components are possible\n");
       return(0.0);
    }
 
@@ -482,7 +492,7 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
       Res->NI = 0;
    }
    if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
-      Calc_RaiseError("repeat: An error occured when resizing.\n");
+      Calc_RaiseError(ctx,"repeat: An error occured when resizing.\n");
       return(0.0);
    }
 
@@ -496,20 +506,20 @@ double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D) {
    return(FSIZE3D(Res));
 }
 
-double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8) {
+double join(Calc_Ctx *ctx, TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8) {
    TDef *flds[8];
    const int nd=4;
    int i,d,id,n=0,dim[nd],dimf[nd],type;
 
-   if( FSIZE3D(D)!=1 )     Calc_RaiseError("join: The expanding dimension should be a scalar\n");
+   if( FSIZE3D(D)!=1 )     Calc_RaiseError(ctx,"join: The expanding dimension should be a scalar\n");
 
-   if( Calc_InError() )
+   if( Calc_InError(ctx) )
       return(0.0);
 
    // Check in which dimension we'll expand
    Def_Get(D,0,0,d);
    if( d<0 || d>=nd ) {
-      Calc_RaiseError("join: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
+      Calc_RaiseError(ctx,"join: The expanding dimension should be either 0 (I), 1 (J), 2 (K) or 3 (C)\n");
       return(0.0);
    }
 
@@ -524,7 +534,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
    if( F8 && FSIZE3D(F8)>0 ) flds[n++] = F8;
 
    if( !n ) {
-      Calc_RaiseError("join: No fields to join or all fields are empty\n");
+      Calc_RaiseError(ctx,"join: No fields to join or all fields are empty\n");
       return(0.0);
    }
 
@@ -537,7 +547,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
       dimf[0]=flds[i]->NI; dimf[1]=flds[i]->NJ; dimf[2]=flds[i]->NK; dimf[3]=flds[i]->NC;
 
       if( flds[0]->Type != flds[i]->Type ) {
-         Calc_RaiseError("join: Incompatible field type. The type of all fields to join must be the same\n");
+         Calc_RaiseError(ctx,"join: Incompatible field type. The type of all fields to join must be the same\n");
          return(0.0);
       }
 
@@ -550,7 +560,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
             dim[d] += dimf[d];
          } else if( dim[id] != dimf[id] ) {
             // We don't expand in this direction, the dimension has to match
-            Calc_RaiseError("join: Incompatible field size. The size of all fields to join must match in the non-expanding dimension\n");
+            Calc_RaiseError(ctx,"join: Incompatible field size. The size of all fields to join must match in the non-expanding dimension\n");
             return(0.0);
          }
 
@@ -563,7 +573,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
 
    // Max of 4 components
    if( d==3 && dim[3]>4 ) {
-      Calc_RaiseError("join: A maximum of 4 components are possible\n");
+      Calc_RaiseError(ctx,"join: A maximum of 4 components are possible\n");
       return(0.0);
    }
 
@@ -582,7 +592,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
 
    // Resize the result field to hold the values we'll generate
    if( !Def_Resize(Res,dim[0],dim[1],dim[2]) ) {
-      Calc_RaiseError("join: An error occured when resizing.\n");
+      Calc_RaiseError(ctx,"join: An error occured when resizing.\n");
       return(0.0);
    }
 
@@ -605,7 +615,7 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
    return(FSIZE3D(Res));
 }
 
-double flipy(TDef *Res,TDef *MA) {
+double flipy(Calc_Ctx *ctx, TDef *Res,TDef *MA) {
 
    double        v;
    unsigned long i,j0,j1,idx0,idx1;
@@ -629,7 +639,7 @@ double flipy(TDef *Res,TDef *MA) {
    return(0.0);
 }
 
-double tcount(TDef *Res,TDef *Table,TDef *MB) {
+double tcount(Calc_Ctx *ctx, TDef *Res,TDef *Table,TDef *MB) {
 
    double        v,vb,va;
    unsigned long i,j,idx,idxi,k,nt;
@@ -668,7 +678,7 @@ double tcount(TDef *Res,TDef *Table,TDef *MB) {
    return(0.0);
 }
 
-double fpeel(TDef *Res,TDef *MA) {
+double fpeel(Calc_Ctx *ctx, TDef *Res,TDef *MA) {
 
    double        v,va;
    unsigned long i,j,idx,idxi;
@@ -743,7 +753,7 @@ double fpeel(TDef *Res,TDef *MA) {
    return(0.0);
 }
 
-double fkernel(TDef *Res,TDef *MA,TDef *MB) {
+double fkernel(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB) {
 
    double        va,vb,s,w,dw;
    unsigned long i,j,fi,fj,idx,idxf;
@@ -805,7 +815,7 @@ double fkernel(TDef *Res,TDef *MA,TDef *MB) {
    return(0.0);
 }
 
-double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
+double fcentile(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        *vs,va,vb,vc;
    unsigned long i,j,fi,fj,idx;
@@ -860,7 +870,7 @@ double fcentile(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
-double in(TDef *Res,TDef *MA,TDef *MB) {
+double in(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB) {
 
    double        va,vb,vr;
    unsigned long i,n;
@@ -885,7 +895,7 @@ double in(TDef *Res,TDef *MA,TDef *MB) {
    return(0.0);
 }
 
-double win(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
+double win(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        va,vb,vc;
    unsigned long i,j,n;
@@ -911,7 +921,7 @@ double win(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
-double slut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
+double slut(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double va,vb,vc;
    long   i,i0,i1,n,m;
@@ -958,7 +968,7 @@ static int compare_lutE (const void *va,const void *vb) {
 }
 
 
-double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
+double lut(Calc_Ctx *ctx, TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
 
    double        va,vb,vc;
    double        last_va;
@@ -1022,62 +1032,55 @@ double lut(TDef *Res,TDef *MA,TDef *MB,TDef *MC) {
    return(0.0);
 }
 
-double dslopedeg(TDef *Res,TDef *Def) {
+double dslopedeg(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DSLOPEDEG));
+   return(dcore(ctx,Res,Def,DSLOPEDEG));
 }
-double dslope100(TDef *Res,TDef *Def) {
+double dslope100(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DSLOPE100));
+   return(dcore(ctx,Res,Def,DSLOPE100));
 }
-double daspect(TDef *Res,TDef *Def) {
+double daspect(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DASPECT));
+   return(dcore(ctx,Res,Def,DASPECT));
 }
-double ddxfirst(TDef *Res,TDef *Def) {
+double ddxfirst(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DDX));
+   return(dcore(ctx,Res,Def,DDX));
 }
-double ddyfirst(TDef *Res,TDef *Def) {
+double ddyfirst(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DDY));
+   return(dcore(ctx,Res,Def,DDY));
 }
-double ddxsecond(TDef *Res,TDef *Def) {
+double ddxsecond(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DDXX));
+   return(dcore(ctx,Res,Def,DDXX));
 }
-double ddysecond(TDef *Res,TDef *Def) {
+double ddysecond(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DDYY));
+   return(dcore(ctx,Res,Def,DDYY));
 }
-double ddxysecond(TDef *Res,TDef *Def) {
+double ddxysecond(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DDXY));
+   return(dcore(ctx,Res,Def,DDXY));
 }
-double dprofcurve(TDef *Res,TDef *Def) {
+double dprofcurve(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DPCURVE));
+   return(dcore(ctx,Res,Def,DPCURVE));
 }
-double dtangcurve(TDef *Res,TDef *Def) {
+double dtangcurve(Calc_Ctx *ctx, TDef *Res,TDef *Def) {
 
-   return(dcore(Res,Def,DTCURVE));
+   return(dcore(ctx,Res,Def,DTCURVE));
 }
 
-double darea(TDef *Res,TDef *Def,int Mode) {
+double darea(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long idx;
    unsigned int  nid;
    float        *a=NULL;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) 
       return(0.0);
@@ -1102,20 +1105,13 @@ double darea(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double dcoriolis(TDef *Res,TDef *Def,int Mode) {
+double dcoriolis(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
  
    unsigned long i,j,idx;
    double        lat,lon,cor,omega=7.292e-5;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) 
       return(0.0);
@@ -1136,20 +1132,13 @@ double dcoriolis(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double dangle(TDef *Res,TDef *Def,int Mode) {
+double dangle(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        d,lat[2],lon[2];
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1175,20 +1164,13 @@ double dangle(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double dlat(TDef *Res,TDef *Def,int Mode) {
+double dlat(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1208,20 +1190,13 @@ double dlat(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double dlon(TDef *Res,TDef *Def,int Mode) {
+double dlon(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx;
    double        lat,lon;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1241,20 +1216,13 @@ double dlon(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double ddx(TDef *Res,TDef *Def,int Mode) {
+double ddx(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,k,idx,sk;
    double        d;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1277,20 +1245,13 @@ double ddx(TDef *Res,TDef *Def,int Mode) {
    return(1.0);
 }
 
-double ddy(TDef *Res,TDef *Def,int Mode) {
+double ddy(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,k,idx,sk;
    double        d;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1314,21 +1275,14 @@ double ddy(TDef *Res,TDef *Def,int Mode) {
 }
 
 /* Derived form GRASS */
-double dcore(TDef *Res,TDef *Def,int Mode) {
+double dcore(Calc_Ctx *ctx, TDef *Res,TDef *Def,int Mode) {
 
    unsigned long i,j,idx,d;
    double  b[9]={0.0};
    double  mx,my,dx,dy,dxy,dx2,dy2,dxy2,slp100,slpdeg,asp,s3,s4,s5,s6,dvx,dvy,dvxy,dvxy2,norm,pcurv,tcurv;
    TGeoRef *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return(0.0);
@@ -1492,34 +1446,60 @@ static inline double ecdf(double val, double* vals, unsigned int* cums, unsigned
    return (double)cums[max]/(double)cums[n-1];
 }
 
-void stat_core(TDef *MA,TDef *MB) {
+static void stat_reset_core(StatCore *stat) {
 
-   double va,vb,t,nblok=0;
+   stat->Vcorr=stat->Vsumx=stat->Vsumy=stat->Vavgx=stat->Vavgy=stat->Vssx=stat->Vssy=stat->Vssxy=stat->Vrmse=0.0;
+   stat->Vmb=stat->Vnmb=stat->Vnme=stat->Vvarx=stat->Vvary=stat->Vcovar=stat->Vme=stat->Vmnb=stat->Vmne=stat->Vmfb=0.0;
+   stat->Vmfe=stat->Vlmnb=stat->Vlmne=stat->Vnrmse=0.0;
+   stat->Vmse=stat->Vnmse=stat->Vgmb=stat->Vgmv=stat->Vfoex=stat->Vfa2=stat->Vfa5=stat->Vfa10=stat->Vfb=stat->Vnad=0.0;
+   stat->Vfms=stat->Vfmsb=stat->Vfmsi=stat->Vosf=stat->Vosfb=stat->Vosfi=stat->Vksp=stat->Vrank=0.0;
+   stat->Vnbeq=stat->Vnbgt=stat->Vnblt=stat->Vnbfa=stat->Vnbmi=stat->Vnbnp=0.0;
+   stat->Vaov=stat->Vafn=stat->Vafp=stat->Vax=stat->Vay=0.0;
+
+}
+
+static void stat_init_core(StatCore *stat) {
+
+   stat->Vna=stat->Vrna=stat->Vmre=stat->Vnb=0.0;
+   stat->Vminy=stat->Vminx=HUGE_VAL;
+   stat->Vmaxy=stat->Vmaxx=-HUGE_VAL;
+   stat->Vmaxe=stat->Vmaxb=stat->Vmaxre=-HUGE_VAL;
+   stat->Vmedx=stat->Vmedy=nan("NaN");
+   stat->withMA = stat->withMB = NULL;
+
+}
+
+void stat_core(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
+
+   double va=0,vb=0,t,nblok=0;
    double ratio,sum,dif,adif;
    unsigned long i,n,nx=0,ny=0,d=0,gi,gj;
    double *vx,*vy;
    unsigned int *cx,*cy;
    TGeoRef *gref=NULL;
+   StatCore   *stat;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
+   if (ctx->stat == NULL) {
+      stat = ctx->stat = (StatCore *)malloc( sizeof(StatCore) );
+      stat_init_core( stat );
+      stat_reset_core( stat );
+      if (MA == NULL) return;
+   } else {
+      stat = ctx->stat;
+      n = FSIZE3D(MA);
+      if ((stat->withMA == MA)&&(stat->withMB = MB)&&(stat->sizeMA == n)) return;
+   }
 
-   Vcorr=Vnb=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=Vna=Vrna=Vmre=va=vb=0.0;
-   Vmse=Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
-   Vminy=Vminx=HUGE_VAL;
-   Vmaxy=Vmaxx=-HUGE_VAL;
-   Vmaxe=Vmaxb=Vmaxre=-HUGE_VAL;
-   Vmedx=Vmedy=nan("NaN");
-
+   stat_reset_core( stat );
    if ((n=FSIZE3D(MA))==0) {
       return;
    }
 
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   stat->sizeMA = n;
+   stat->withMA = MA;
+   stat->withMB = MB;
+
+   GET_GREF(gref);
 
    // Init fields that will be used later on for ksp
 
@@ -1546,7 +1526,7 @@ void stat_core(TDef *MA,TDef *MB) {
       if (MA) {
          Def_Get(MA,0,i,va);
          if (!DEFVALID(MA,va)) {
-            Vna++;
+            stat->Vna++;
             continue;
          }
       }
@@ -1554,109 +1534,108 @@ void stat_core(TDef *MA,TDef *MB) {
       if (MB) {
          Def_Get(MB,0,i,vb);
          if (!DEFVALID(MB,vb)) {
-            Vna++;
+            stat->Vna++;
             continue;
          }
       }
 
-      Vminx=va<Vminx?va:Vminx;
-      Vmaxx=va>Vmaxx?va:Vmaxx;
+      stat->Vminx=va<stat->Vminx?va:stat->Vminx;
+      stat->Vmaxx=va>stat->Vmaxx?va:stat->Vmaxx;
 
-      Vsumx+=va;
-      Vssx+=va*va;
+      stat->Vsumx+=va;
+      stat->Vssx+=va*va;
 
       if (MB) {
          sum=vb+va;
          dif=vb-va;
          adif=fabs(dif);
 
-         Vminy=vb<Vminy?vb:Vminy;
-         Vmaxy=vb>Vmaxy?vb:Vmaxy;
-         Vsumy+=vb;
-         Vssy+=vb*vb;
-         Vssxy+=va*vb;
-         Vme+=adif;
-         Vmaxb=dif>Vmaxb?dif:Vmaxb;
-         Vmaxe=adif>Vmaxe?adif:Vmaxe;
-         Vosfi+=va<=vb?va:vb;
+         stat->Vminy=vb<stat->Vminy?vb:stat->Vminy;
+         stat->Vmaxy=vb>stat->Vmaxy?vb:stat->Vmaxy;
+         stat->Vsumy+=vb;
+         stat->Vssy+=vb*vb;
+         stat->Vssxy+=va*vb;
+         stat->Vme+=adif;
+         stat->Vmaxb=dif>stat->Vmaxb?dif:stat->Vmaxb;
+         stat->Vmaxe=adif>stat->Vmaxe?adif:stat->Vmaxe;
+         stat->Vosfi+=va<=vb?va:vb;
 
          vx[d]=va;
          vy[d]=vb;
          ++d;
 
-         if (va==vb) Vnbeq++;
-         else if (vb>va) Vnbgt++;
-         else Vnblt++;
+         if (va==vb) stat->Vnbeq++;
+         else if (vb>va) stat->Vnbgt++;
+         else stat->Vnblt++;
 
          if (gref && (va!=0.0 || vb!=0.0)) {
             gi=i%MA->NI;
             gj=i/MA->NI;
             t=gref->Distance(gref,gi-0.5,gj,gi+0.5,gj) * gref->Distance(gref,gi,gj-0.5,gi,gj+0.5);
-            Vfms+=t;
+            stat->Vfms+=t;
 
             if (va!=0 && vb!=0) {
-                Vaov+=t;
-                Vax+=t;
-                Vay+=t;
+                stat->Vaov+=t;
+                stat->Vax+=t;
+                stat->Vay+=t;
             } else if (va!=0) {
-                Vax+=t;
+                stat->Vax+=t;
             } else {
-                Vay+=t;
+                stat->Vay+=t;
             }
          }
 
          if (va!=0.0f) {
             t=dif/va;
-            Vmnb+=t;
-            Vmne+=fabs(t);
+            stat->Vmnb+=t;
+            stat->Vmne+=fabs(t);
 
             ratio=vb/va;
             if (ratio>0.0f) {
                ++nblok;
                t=log(ratio);
 
-               Vlmnb+=t;
-               Vlmne+=fabs(t);
+               stat->Vlmnb+=t;
+               stat->Vlmne+=fabs(t);
 
-               Vgmb+=t;
-               Vgmv+=t*t;
+               stat->Vgmb+=t;
+               stat->Vgmv+=t*t;
             }
 
             if (0.5<=ratio && ratio<=2.0) {
-               ++Vfa2; ++Vfa5; ++Vfa10;
+               ++stat->Vfa2; ++stat->Vfa5; ++stat->Vfa10;
             } else if (0.2<=ratio && ratio<=5.0) {
-               ++Vfa5; ++Vfa10;
+               ++stat->Vfa5; ++stat->Vfa10;
             } else if (0.1<=ratio && ratio<=10.0)
-               ++Vfa10;
+               ++stat->Vfa10;
 
             t=fabs(1.0-ratio);
-            Vmre+=t;
-            Vmaxre=t>Vmaxre?t:Vmaxre;
+            stat->Vmre+=t;
+            stat->Vmaxre=t>stat->Vmaxre?t:stat->Vmaxre;
 
             if (vb==0.0f) {
-               ++Vnbmi;
+               ++stat->Vnbmi;
             }
          } else {
             if (vb==0.0f) {
-               ++Vnbnp;
+               ++stat->Vnbnp;
             } else {
-               ++Vnbfa;
+               ++stat->Vnbfa;
             }
          }
 
          if (sum!=0.0f) {
-            Vmfb+=dif/sum;
-            Vmfe+=adif/sum;
+            stat->Vmfb+=dif/sum;
+            stat->Vmfe+=adif/sum;
          }
       }
-      Vnb++;
+      stat->Vnb++;
    }
 
-   Vrna=Vnb/n;
+   stat->Vrna=stat->Vnb/n;
 
-   if (Vnb==0) {
-      Vcorr=Vsumx=Vsumy=Vavgx=Vavgy=Vssx=Vssy=Vssxy=Vrmse=Vmb=Vnmb=Vnme=Vvarx=Vvary=Vcovar=Vme=Vmnb=Vmne=Vmfb=Vmfe=Vlmnb=Vlmne=Vnrmse=0.0;
-      Vmse=Vnmse=Vgmb=Vgmv=Vfoex=Vfa2=Vfa5=Vfa10=Vfb=Vnad=Vfms=Vfmsb=Vfmsi=Vosf=Vosfb=Vosfi=Vksp=Vrank=Vnbeq=Vnbgt=Vnblt=Vnbfa=Vnbmi=Vnbnp=Vaov=Vafn=Vafp=Vax=Vay=0.0;
+   if (stat->Vnb==0) {
+      stat_reset_core( stat );
 
       if( vx ) free(vx);
       if( vy ) free(vy);
@@ -1674,8 +1653,8 @@ void stat_core(TDef *MA,TDef *MB) {
 
       // We might as well use the sorted values to calculate the median
       i=d>>1;
-      Vmedx=(d&1)?vx[i]:(vx[i-1]+vx[i])*0.5;
-      Vmedy=(d&1)?vy[i]:(vy[i-1]+vy[i])*0.5;
+      stat->Vmedx=(d&1)?vx[i]:(vx[i-1]+vx[i])*0.5;
+      stat->Vmedy=(d&1)?vy[i]:(vy[i-1]+vy[i])*0.5;
 
       // Eliminate duplicate values, but keep the number of occurrences in the c[xy] array
       for(nx=0,ny=0,i=1;i<d;++i) {
@@ -1698,69 +1677,69 @@ void stat_core(TDef *MA,TDef *MB) {
       // Calculate KSP = Max|D(Xk) - D(Yk)|
 
       for(i=0;i<nx;++i)
-         Vksp = fmax(Vksp, fabs((double)cx[i]/(double)cx[nx-1] - ecdf(vx[i],vy,cy,ny)));
+         stat->Vksp = fmax(stat->Vksp, fabs((double)cx[i]/(double)cx[nx-1] - ecdf(vx[i],vy,cy,ny)));
       for(i=0;i<ny;++i)
-         Vksp = fmax(Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
+         stat->Vksp = fmax(stat->Vksp, fabs(ecdf(vy[i],vx,cx,nx) - (double)cy[i]/(double)cy[ny-1]));
    }
 
-   Vfmsn=Vsumx==0.0?0.0:100.0*0.5*(1.0+(Vsumy-Vme)/Vsumx);
+   stat->Vfmsn=stat->Vsumx==0.0?0.0:100.0*0.5*(1.0+(stat->Vsumy-stat->Vme)/stat->Vsumx);
 
-   Vafn  = Vax-Vaov;
-   Vafp  = Vay-Vaov;
+   stat->Vafn  = stat->Vax-stat->Vaov;
+   stat->Vafp  = stat->Vay-stat->Vaov;
 
-   Vmb   = Vsumy-Vsumx;
-   Vnmb  = Vsumx!=0.0?Vmb/Vsumx*100:0;
-   Vmb   /= Vnb;
+   stat->Vmb   = stat->Vsumy-stat->Vsumx;
+   stat->Vnmb  = stat->Vsumx!=0.0?stat->Vmb/stat->Vsumx*100:0;
+   stat->Vmb   /= stat->Vnb;
 
-   Vnad  = (Vsumx+Vsumy==0.0)?0.0:Vme/(Vsumx+Vsumy);
-   Vnme  = Vsumx!=0.0?Vme/Vsumx*100.0:0.0;
-   Vme   /= Vnb;
+   stat->Vnad  = (stat->Vsumx+stat->Vsumy==0.0)?0.0:stat->Vme/(stat->Vsumx+stat->Vsumy);
+   stat->Vnme  = stat->Vsumx!=0.0?stat->Vme/stat->Vsumx*100.0:0.0;
+   stat->Vme   /= stat->Vnb;
 
-   Vavgx = Vsumx/Vnb;
-   Vavgy = Vsumy/Vnb;
+   stat->Vavgx = stat->Vsumx/stat->Vnb;
+   stat->Vavgy = stat->Vsumy/stat->Vnb;
 
-   Vvarx    = fmax(Vssx/Vnb-Vavgx*Vavgx,0.0);
-   Vvary    = fmax(Vssy/Vnb-Vavgy*Vavgy,0.0);
-   Vcovar   = Vssxy/Vnb-Vavgx*Vavgy;
+   stat->Vvarx    = fmax(stat->Vssx/stat->Vnb-stat->Vavgx*stat->Vavgx,0.0);
+   stat->Vvary    = fmax(stat->Vssy/stat->Vnb-stat->Vavgy*stat->Vavgy,0.0);
+   stat->Vcovar   = stat->Vssxy/stat->Vnb-stat->Vavgx*stat->Vavgy;
 
-   Vcorr=(Vvarx==0.0 || Vvary==0.0)?0.0:Vcovar/(sqrt(Vvarx*Vvary));
+   stat->Vcorr=(stat->Vvarx==0.0 || stat->Vvary==0.0)?0.0:stat->Vcovar/(sqrt(stat->Vvarx*stat->Vvary));
 
-   Vmse=(Vssy-Vssxy*2.0+Vssx)/Vnb;
-   Vnmse=Vmse/(Vavgx*Vavgy);
-   Vrmse=sqrt(Vmse);
-   Vnrmse=Vrmse/Vavgx;
+   stat->Vmse=(stat->Vssy-stat->Vssxy*2.0+stat->Vssx)/stat->Vnb;
+   stat->Vnmse=stat->Vmse/(stat->Vavgx*stat->Vavgy);
+   stat->Vrmse=sqrt(stat->Vmse);
+   stat->Vnrmse=stat->Vrmse/stat->Vavgx;
 
-   Vregb=Vcovar/Vvarx;
-   Vrega=Vavgy-Vregb*Vavgx;
-   Verrb=sqrt((Vnb*Vssy-Vsumy*Vsumy-Vregb*Vregb*(Vnb*Vssx-Vsumx*Vsumx))/((Vnb-2.0)*(Vnb*Vssx-Vsumx*Vsumx)));
-   Verra=Verrb*sqrt(Vssx/Vnb);
+   stat->Vregb=stat->Vcovar/stat->Vvarx;
+   stat->Vrega=stat->Vavgy-stat->Vregb*stat->Vavgx;
+   stat->Verrb=sqrt((stat->Vnb*stat->Vssy-stat->Vsumy*stat->Vsumy-stat->Vregb*stat->Vregb*(stat->Vnb*stat->Vssx-stat->Vsumx*stat->Vsumx))/((stat->Vnb-2.0)*(stat->Vnb*stat->Vssx-stat->Vsumx*stat->Vsumx)));
+   stat->Verra=stat->Verrb*sqrt(stat->Vssx/stat->Vnb);
 
-   Vmre/=Vnb;
-   Vmne/=Vnb;
-   Vmnb/=Vnb;
-   Vmfb=2.0*Vmfb/Vnb*100.0;
-   Vmfe=2.0*Vmfe/Vnb*100.0;
-   Vlmnb=exp(Vlmnb/Vnb)-1.0;
-   Vlmne=exp(Vlmne/Vnb)-1.0;
+   stat->Vmre/=stat->Vnb;
+   stat->Vmne/=stat->Vnb;
+   stat->Vmnb/=stat->Vnb;
+   stat->Vmfb=2.0*stat->Vmfb/stat->Vnb*100.0;
+   stat->Vmfe=2.0*stat->Vmfe/stat->Vnb*100.0;
+   stat->Vlmnb=exp(stat->Vlmnb/stat->Vnb)-1.0;
+   stat->Vlmne=exp(stat->Vlmne/stat->Vnb)-1.0;
 
-   t=nblok+Vnbnp;
-   Vgmb=t?exp(Vgmb/t):0;
-   Vgmv=t?exp(Vgmv/t):0;
+   t=nblok+stat->Vnbnp;
+   stat->Vgmb=t?exp(stat->Vgmb/t):0;
+   stat->Vgmv=t?exp(stat->Vgmv/t):0;
 
-   Vfoex=((Vnbgt+Vnbeq/2.0)/Vnb-0.5)*100.0;
-   Vfa2=((Vfa2+Vnbnp)/Vnb)*100.0;
-   Vfa5=((Vfa5+Vnbnp)/Vnb)*100.0;
-   Vfa10=((Vfa10+Vnbnp)/Vnb)*100.0;
-   Vfb=(Vavgy==0 || Vavgx==0)?0:2.0*(Vavgy-Vavgx)/(Vavgy+Vavgx);
-   Vfms=Vfms!=0?Vaov/Vfms*100.0:0;
-   Vfmsb=(Vnb-Vnbmi-Vnbfa-Vnbnp)/(Vnb-Vnbnp)*100.0;
-   Vfmsi=(1.0-Vnad)/(1.0+Vnad)*100.0;
-   Vosf=(Vax==0 || Vay==0)?0.0:sqrt(pow(Vafn/Vax,2)+pow(Vafp/Vay,2));
-   Vosfb=((Vnb-Vnbnp-Vnbfa)==0 || (Vnb-Vnbnp-Vnbmi)==0)?0:sqrt(pow(Vnbmi/(Vnb-Vnbnp-Vnbfa),2)+pow(Vnbfa/(Vnb-Vnbnp-Vnbmi),2));
-   Vosfi=(Vsumx==0 || Vsumy==0)?0:sqrt(pow(1-Vosfi/Vsumx,2.0)+pow(1-Vosfi/Vsumy,2.0));
-   Vksp*=100.0;
+   stat->Vfoex=((stat->Vnbgt+stat->Vnbeq/2.0)/stat->Vnb-0.5)*100.0;
+   stat->Vfa2=((stat->Vfa2+stat->Vnbnp)/stat->Vnb)*100.0;
+   stat->Vfa5=((stat->Vfa5+stat->Vnbnp)/stat->Vnb)*100.0;
+   stat->Vfa10=((stat->Vfa10+stat->Vnbnp)/stat->Vnb)*100.0;
+   stat->Vfb=(stat->Vavgy==0 || stat->Vavgx==0)?0:2.0*(stat->Vavgy-stat->Vavgx)/(stat->Vavgy+stat->Vavgx);
+   stat->Vfms=stat->Vfms!=0?stat->Vaov/stat->Vfms*100.0:0;
+   stat->Vfmsb=(stat->Vnb-stat->Vnbmi-stat->Vnbfa-stat->Vnbnp)/(stat->Vnb-stat->Vnbnp)*100.0;
+   stat->Vfmsi=(1.0-stat->Vnad)/(1.0+stat->Vnad)*100.0;
+   stat->Vosf=(stat->Vax==0 || stat->Vay==0)?0.0:sqrt(pow(stat->Vafn/stat->Vax,2)+pow(stat->Vafp/stat->Vay,2));
+   stat->Vosfb=((stat->Vnb-stat->Vnbnp-stat->Vnbfa)==0 || (stat->Vnb-stat->Vnbnp-stat->Vnbmi)==0)?0:sqrt(pow(stat->Vnbmi/(stat->Vnb-stat->Vnbnp-stat->Vnbfa),2)+pow(stat->Vnbfa/(stat->Vnb-stat->Vnbnp-stat->Vnbmi),2));
+   stat->Vosfi=(stat->Vsumx==0 || stat->Vsumy==0)?0:sqrt(pow(1-stat->Vosfi/stat->Vsumx,2.0)+pow(1-stat->Vosfi/stat->Vsumy,2.0));
+   stat->Vksp*=100.0;
    //Vrank=Vcorr*Vcorr+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-fabs(Vfoex/50.0))+(1-Vksp/100.0)+(1-Vnad);
-   Vrank=Vcorr*Vcorr+(1-fabs(Vfb/2.0))+(Vfms/100.0)+(Vfa2/100.0)+(1-Vksp/100.0)+(1-Vnad);
+   stat->Vrank=stat->Vcorr*stat->Vcorr+(1-fabs(stat->Vfb/2.0))+(stat->Vfms/100.0)+(stat->Vfa2/100.0)+(1-stat->Vksp/100.0)+(1-stat->Vnad);
 
    if( vx ) free(vx);
    if( vy ) free(vy);
@@ -1768,460 +1747,460 @@ void stat_core(TDef *MA,TDef *MB) {
    if( cy ) free(cy);
 }
 
-double stat_all(TDef *MA,TDef *MB) {
+double stat_all(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vnb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnb);
 }
 
-double stat_mse(TDef *MA,TDef *MB) {
+double stat_mse(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmse);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmse);
 }
 
-double stat_nmse(TDef *MA,TDef *MB) {
+double stat_nmse(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnmse);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnmse);
 }
 
-double stat_gmb(TDef *MA,TDef *MB) {
+double stat_gmb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vgmb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vgmb);
 }
 
-double stat_gmv(TDef *MA,TDef *MB) {
+double stat_gmv(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vgmv);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vgmv);
 }
 
-double stat_foex(TDef *MA,TDef *MB) {
+double stat_foex(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfoex);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfoex);
 }
 
-double stat_fa2(TDef *MA,TDef *MB) {
+double stat_fa2(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfa2);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfa2);
 }
 
-double stat_fa5(TDef *MA,TDef *MB) {
+double stat_fa5(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfa5);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfa5);
 }
 
-double stat_fa10(TDef *MA,TDef *MB) {
+double stat_fa10(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfa10);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfa10);
 }
 
-double stat_fb(TDef *MA,TDef *MB) {
+double stat_fb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfb);
 }
 
-double stat_nad(TDef *MA,TDef *MB) {
+double stat_nad(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnad);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnad);
 }
 
-double stat_fms(TDef *MA,TDef *MB) {
+double stat_fms(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfms);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfms);
 }
 
-double stat_fmsb(TDef *MA,TDef *MB) {
+double stat_fmsb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfmsb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfmsb);
 }
 
-double stat_fmsi(TDef *MA,TDef *MB) {
+double stat_fmsi(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfmsi);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfmsi);
 }
 
-double stat_fmsn(TDef *MA,TDef *MB) {
+double stat_fmsn(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vfmsn);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vfmsn);
 }
 
-double stat_osf(TDef *MA,TDef *MB) {
+double stat_osf(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vosf);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vosf);
 }
 
-double stat_osfb(TDef *MA,TDef *MB) {
+double stat_osfb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vosfb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vosfb);
 }
 
-double stat_osfi(TDef *MA,TDef *MB) {
+double stat_osfi(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vosfi);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vosfi);
 }
 
-double stat_ksp(TDef *MA,TDef *MB) {
+double stat_ksp(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vksp);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vksp);
 }
 
-double stat_rank(TDef *MA,TDef *MB) {
+double stat_rank(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vrank);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vrank);
 }
 
-double stat_nbeq(TDef *MA,TDef *MB) {
+double stat_nbeq(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnbeq);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnbeq);
 }
 
-double stat_nbgt(TDef *MA,TDef *MB) {
+double stat_nbgt(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnbgt);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnbgt);
 }
 
-double stat_nblt(TDef *MA,TDef *MB) {
+double stat_nblt(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnblt);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnblt);
 }
 
-double stat_nbfa(TDef *MA,TDef *MB) {
+double stat_nbfa(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnbfa);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnbfa);
 }
 
-double stat_nbmi(TDef *MA,TDef *MB) {
+double stat_nbmi(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnbmi);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnbmi);
 }
 
-double stat_nbnp(TDef *MA,TDef *MB) {
+double stat_nbnp(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnbnp);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnbnp);
 }
 
-double stat_aov(TDef *MA,TDef *MB) {
+double stat_aov(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vaov);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vaov);
 }
 
-double stat_afn(TDef *MA,TDef *MB) {
+double stat_afn(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vafn);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vafn);
 }
 
-double stat_afp(TDef *MA,TDef *MB) {
+double stat_afp(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vafp);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vafp);
 }
 
-double stat_ax(TDef *MA,TDef *MB) {
+double stat_ax(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vax);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vax);
 }
 
-double stat_ay(TDef *MA,TDef *MB) {
+double stat_ay(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vay);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vay);
 }
 
-double stat_na(TDef *MA,TDef *MB) {
+double stat_na(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vna);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vna);
 }
 
-double stat_rna(TDef *MA,TDef *MB) {
+double stat_rna(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vrna);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vrna);
 }
 
-double stat_mb(TDef *MA,TDef *MB) {
+double stat_mb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmb);
 }
 
-double stat_me(TDef *MA,TDef *MB) {
+double stat_me(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vme);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vme);
 }
 
-double stat_nmb(TDef *MA,TDef *MB) {
+double stat_nmb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnmb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnmb);
 }
 
-double stat_nme(TDef *MA,TDef *MB) {
+double stat_nme(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnme);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnme);
 }
 
-double stat_mnb(TDef *MA,TDef *MB) {
+double stat_mnb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmnb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmnb);
 }
 
-double stat_mne(TDef *MA,TDef *MB) {
+double stat_mne(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmne);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmne);
 }
 
-double stat_lmne(TDef *MA,TDef *MB) {
+double stat_lmne(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vlmne);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vlmne);
 }
 
-double stat_lmnb(TDef *MA,TDef *MB) {
+double stat_lmnb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vlmnb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vlmnb);
 }
 
-double stat_mfb(TDef *MA,TDef *MB) {
+double stat_mfb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmfb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmfb);
 }
 
-double stat_mfe(TDef *MA,TDef *MB) {
+double stat_mfe(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmfe);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmfe);
 }
 
-double stat_mre(TDef *MA,TDef *MB) {
+double stat_mre(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmre);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmre);
 }
 
-double stat_maxb(TDef *MA,TDef *MB) {
+double stat_maxb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmaxb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmaxb);
 }
 
-double stat_maxe(TDef *MA,TDef *MB) {
+double stat_maxe(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmaxe);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmaxe);
 }
 
-double stat_maxre(TDef *MA,TDef *MB) {
+double stat_maxre(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmaxre);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmaxre);
 }
 
-double stat_rmse(TDef *MA,TDef *MB) {
+double stat_rmse(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vrmse);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vrmse);
 }
 
-double stat_nrmse(TDef *MA,TDef *MB) {
+double stat_nrmse(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vnrmse);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vnrmse);
 }
 
-double stat_corr(TDef *MA,TDef *MB) {
+double stat_corr(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vcorr);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vcorr);
 }
 
-double stat_covar(TDef *MA,TDef *MB) {
+double stat_covar(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vcovar);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vcovar);
 }
 
-double stat_varx(TDef *MA,TDef *MB) {
+double stat_varx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vvarx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vvarx);
 }
 
-double stat_vary(TDef *MA,TDef *MB) {
+double stat_vary(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vvary);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vvary);
 }
 
-double stat_sumx(TDef *MA,TDef *MB) {
+double stat_sumx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vsumx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vsumx);
 }
 
-double stat_sumy(TDef *MA,TDef *MB) {
+double stat_sumy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vsumy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vsumy);
 }
 
-double stat_avgx(TDef *MA,TDef *MB) {
+double stat_avgx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vavgx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vavgx);
 }
 
-double stat_avgy(TDef *MA,TDef *MB) {
+double stat_avgy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vavgy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vavgy);
 }
 
-double stat_minx(TDef *MA,TDef *MB) {
+double stat_minx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vminx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vminx);
 }
 
-double stat_miny(TDef *MA,TDef *MB) {
+double stat_miny(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vminy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vminy);
 }
 
-double stat_maxx(TDef *MA,TDef *MB) {
+double stat_maxx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vmaxx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmaxx);
 }
 
-double stat_maxy(TDef *MA,TDef *MB) {
+double stat_maxy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmaxy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmaxy);
 }
 
-double stat_regb(TDef *MA,TDef *MB) {
+double stat_regb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vregb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vregb);
 }
 
-double stat_rega(TDef *MA,TDef *MB) {
+double stat_rega(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vrega);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vrega);
 }
 
-double stat_erra(TDef *MA,TDef *MB) {
+double stat_erra(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Verra);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Verra);
 }
 
-double stat_errb(TDef *MA,TDef *MB) {
+double stat_errb(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Verrb);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Verrb);
 }
 
-double stat_ssx(TDef *MA,TDef *MB) {
+double stat_ssx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
-   return(Vssx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vssx);
 }
 
-double stat_ssy(TDef *MA,TDef *MB) {
+double stat_ssy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vssy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vssy);
 }
 
-double stat_ssxy(TDef *MA,TDef *MB) {
+double stat_ssxy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vssxy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vssxy);
 }
 
-double stat_sdevx(TDef *MA,TDef *MB) {
+double stat_sdevx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA)
-      stat_core(MA,MB);
+      stat_core(ctx,MA,MB);
 
-   return(sqrt(Vvarx));
+   return(sqrt(ctx->stat->Vvarx));
 }
 
-double stat_sdevy(TDef *MA,TDef *MB) {
+double stat_sdevy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
+      stat_core(ctx,MA,MB);
 
-   return(sqrt(Vvary));
+   return(sqrt(ctx->stat->Vvary));
 }
 
-double stat_medx(TDef *MA,TDef *MB) {
+double stat_medx(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmedx);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmedx);
 }
 
-double stat_medy(TDef *MA,TDef *MB) {
+double stat_medy(Calc_Ctx *ctx, TDef *MA,TDef *MB) {
    if (MA&&MB)
-      stat_core(MA,MB);
-   return(Vmedy);
+      stat_core(ctx,MA,MB);
+   return(ctx->stat->Vmedy);
 }
 
-double stat_nb(TDef *MA) {
+double stat_nb(Calc_Ctx *ctx, TDef *MA) {
    if (MA)
-      stat_core(MA,NULL);
-   return(Vnb);
+      stat_core(ctx,MA,NULL);
+   return(ctx->stat->Vnb);
 }
 
-double stat_sdev(TDef *MA) {
+double stat_sdev(Calc_Ctx *ctx, TDef *MA) {
    if (MA)
-      stat_core(MA,NULL);
+      stat_core(ctx,MA,NULL);
 
-   return(sqrt(Vvarx));
+   return(sqrt(ctx->stat->Vvarx));
 }
 
-double stat_var(TDef *MA) {
+double stat_var(Calc_Ctx *ctx, TDef *MA) {
    if (MA)
-      stat_core(MA,NULL);
-   return(Vvarx);
+      stat_core(ctx,MA,NULL);
+   return(ctx->stat->Vvarx);
 }
 
-double stat_med(TDef *M) {
+double stat_med(Calc_Ctx *ctx, TDef *M) {
 
    int     n,nb,t=0;
    double *v,med=0;
@@ -2245,7 +2224,7 @@ double stat_med(TDef *M) {
    return(med);
 }
 
-double stat_unique(TDef *M) {
+double stat_unique(Calc_Ctx *ctx, TDef *M) {
 
    int     n,nb,uniq=0,t=0;
    double *v;
@@ -2273,7 +2252,7 @@ double stat_unique(TDef *M) {
    return(uniq);
 }
 
-double stat_sum(TDef *M) {
+double stat_sum(Calc_Ctx *ctx, TDef *M) {
 
    double        sum=0,v=0;
    unsigned long i;
@@ -2286,7 +2265,7 @@ double stat_sum(TDef *M) {
    return sum;
 }
 
-double stat_min(TDef *M) {
+double stat_min(Calc_Ctx *ctx, TDef *M) {
 
    double        min=HUGE_VAL,v=0;
    unsigned long i;
@@ -2299,7 +2278,7 @@ double stat_min(TDef *M) {
    return min;
 }
 
-double stat_max(TDef *M) {
+double stat_max(Calc_Ctx *ctx, TDef *M) {
 
    double        max=-HUGE_VAL,v=0;
    unsigned long i;
@@ -2312,7 +2291,7 @@ double stat_max(TDef *M) {
    return max;
 }
 
-double stat_avg(TDef *M) {
+double stat_avg(Calc_Ctx *ctx, TDef *M) {
 
    double        sum=0,v=0;
    unsigned long i,n=0;
@@ -2327,7 +2306,7 @@ double stat_avg(TDef *M) {
    return sum/n;
 }
 
-double initrand(TDef *M) {
+double initrand(Calc_Ctx *ctx, TDef *M) {
    unsigned int seed;
 
    if( M ) {
@@ -2418,45 +2397,38 @@ double bor(double a,double b) {
    return(((int)a)| ((int)b));
 }
 
-double min(double a,double b) {
+double min(Calc_Ctx *ctx, double a,double b) {
    return(a<=b?a:b);
 }
 
-double max(double a,double b) {
+double max(Calc_Ctx *ctx, double a,double b) {
    return(a>=b?a:b);
 }
 
-double clamp(double a,double b,double c) {
+double clamp(Calc_Ctx *ctx, double a,double b,double c) {
    return(a<=b?b:(a>=c?c:a));
 }
 
-double within(double a,double b,double c) {
+double within(Calc_Ctx *ctx, double a,double b,double c) {
    return(a>=b && a<=c);
 }
 
-double ifelse(double a,double b,double c) {
+double ifelse(Calc_Ctx *ctx, double a,double b,double c) {
    return(a!=0.0?b:c);
 }
 
-double frand(double a,double b,double c) {
+double frand(Calc_Ctx *ctx, double a,double b,double c) {
    return(b+((c-b)*(rand()/(RAND_MAX+1.0))));
 }
 
-static void ddxy(TDef *Fld,double **restrict DX,double **restrict DY) {
+static void ddxy(Calc_Ctx *ctx, TDef *Fld,double **restrict DX,double **restrict DY) {
    unsigned long i,j;
    double        *dx,*dy;
    TGeoRef      *gref=NULL;
 
-   extern TData     *GField;
-   extern GDAL_Band *GBand;
-   extern int        GMode;
-
    *DX = *DY = NULL;
 
-   switch (GMode) {
-      case T_BAND: gref=GBand->GRef; break;
-      case T_FLD : gref=GField->GRef; break;
-   }
+   GET_GREF(gref);
 
    if (!gref) {
       return;
@@ -2465,7 +2437,7 @@ static void ddxy(TDef *Fld,double **restrict DX,double **restrict DY) {
    dx = malloc(Fld->NI*sizeof(*dx));
    dy = malloc(Fld->NJ*sizeof(*dy));
    if( !dx || !dy ) {
-      Calc_RaiseError("ddxy: Could not allocate memory\n");
+      Calc_RaiseError(ctx,"ddxy: Could not allocate memory\n");
       free(dx);
       free(dy);
       return;
@@ -2487,7 +2459,7 @@ static void ddxy(TDef *Fld,double **restrict DX,double **restrict DY) {
    *DY = dy;
 }
 
-static int* toint(TDef *Fld) {
+static int* toint(Calc_Ctx *ctx, TDef *Fld) {
    int      *a;
    size_t   idx,n=FSIZE2D(Fld);
    double   v;
@@ -2496,7 +2468,7 @@ static int* toint(TDef *Fld) {
    // Note that even though IEEE754 floats agree that 0 is all zeroes, negative 0 also exists and needs to be covered
    if( Fld->Type!=TD_Int32 && Fld->Type!=TD_UInt32 ) {
       if( !(a=malloc(n*sizeof(*a))) ) {
-         Calc_RaiseError("toint: Could not allocate memory\n");
+         Calc_RaiseError(ctx,"toint: Could not allocate memory\n");
          return NULL;
       }
 
@@ -2512,28 +2484,28 @@ static int* toint(TDef *Fld) {
    }
 }
 
-double dt(TDef *Res,TDef *Fld) {
+double dt(Calc_Ctx *ctx, TDef *Res,TDef *Fld) {
 #ifdef HAVE_DISTANCEMETRICS
    double n=-1.0,*dx,*dy;
    int *a;
 
-   if( Res->Type!=TD_Float64 )   Calc_RaiseError("dt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
-   if( Fld->NK!=1 )              Calc_RaiseError("dt: Field's NK should be 1\n");
+   if( Res->Type!=TD_Float64 )   Calc_RaiseError(ctx,"dt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
+   if( Fld->NK!=1 )              Calc_RaiseError(ctx,"dt: Field's NK should be 1\n");
 
-   if( Calc_InError() ) return -1.0;
+   if( Calc_InError(ctx) ) return -1.0;
 
    // Get the relative distance of points w.r.t eachother
-   ddxy(Fld,&dx,&dy);
+   ddxy(ctx,Fld,&dx,&dy);
 
    // Make sure we have int-compatible values
-   a = toint(Fld);
+   a = toint(ctx,Fld);
 
-   if( Calc_InError() ) {
+   if( Calc_InError(ctx) ) {
       goto end;
    }
 
    if( !(n=DM_DT_Meijster(a,dx,dy,Fld->NI,Fld->NJ,(double*)Res->Data[0],DM_DT_EDT)) ) {
-      Calc_RaiseError("dt: Could not calculate any distance as there is no non-null values in the field\n");
+      Calc_RaiseError(ctx,"dt: Could not calculate any distance as there is no non-null values in the field\n");
    }
 
 end:
@@ -2544,31 +2516,31 @@ end:
 
    return n;
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("dt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"dt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double gdt(TDef *Res,TDef *Fld,TDef *Q) {
+double gdt(Calc_Ctx *ctx, TDef *Res,TDef *Fld,TDef *Q) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx,*dy;
    int      *a;
    double   n=-1.0,q=-2.0;
 
    // Error check
-   if( Res->Type!=TD_Float64 )   Calc_RaiseError("gdt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
-   if( Q && FSIZE3D(Q)!=1 )      Calc_RaiseError("gdt: Q should be a scalar\n");
-   if( Fld->NK!=1 )              Calc_RaiseError("gdt: Field's NK should be 1\n");
+   if( Res->Type!=TD_Float64 )   Calc_RaiseError(ctx,"gdt: Resulting field has to be Float64. This might happen if the data provided is from an unsupported type.\n");
+   if( Q && FSIZE3D(Q)!=1 )      Calc_RaiseError(ctx,"gdt: Q should be a scalar\n");
+   if( Fld->NK!=1 )              Calc_RaiseError(ctx,"gdt: Field's NK should be 1\n");
 
-   if( Calc_InError() ) return -1.0;
+   if( Calc_InError(ctx) ) return -1.0;
 
    // Get the relative distance of points w.r.t eachother
-   ddxy(Fld,&dx,&dy);
+   ddxy(ctx,Fld,&dx,&dy);
 
    // Make sure we have int-compatible values
-   a = toint(Fld);
+   a = toint(ctx,Fld);
 
-   if( Calc_InError() ) {
+   if( Calc_InError(ctx) ) {
       goto end;
    }
 
@@ -2576,7 +2548,7 @@ double gdt(TDef *Res,TDef *Fld,TDef *Q) {
    if( Q ) Def_Get(Q,0,0,q);
 
    if( !(n=DM_GDT(a,dx,dy,Fld->NI,Fld->NJ,(double*)Res->Data[0],q)) ) {
-      Calc_RaiseError("gdt: Could not calculate any distance as there is no non-null values in the field\n");
+      Calc_RaiseError(ctx,"gdt: Could not calculate any distance as there is no non-null values in the field\n");
    }
 
 end:
@@ -2587,20 +2559,20 @@ end:
 
    return n;
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("gdt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"gdt: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double dmnp(TDef *N) {
+double dmnp(Calc_Ctx *ctx, TDef *N) {
 #ifdef HAVE_DISTANCEMETRICS
 #ifdef _OPENMP
    double n;
 
    // Error check
-   if( FSIZE3D(N)!=1 )     Calc_RaiseError("dmnp: The number of threads should be a scalar\n");
+   if( FSIZE3D(N)!=1 )     Calc_RaiseError(ctx,"dmnp: The number of threads should be a scalar\n");
 
-   if( Calc_InError() )
+   if( Calc_InError(ctx) )
       return -1.0;
 
    Def_Get(N,0,0,n);
@@ -2608,36 +2580,36 @@ double dmnp(TDef *N) {
 
    return n;
 #else //_OPENMP
-    Calc_RaiseError("dmnp: vexpr was not compiled with thread support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"dmnp: vexpr was not compiled with thread support, this function is unavailable\n");
     return -1.0;
 #endif //_OPENMP
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("dmnp: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"dmnp: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double hausdorff(TDef *A,TDef *B,TDef *Algo) {
+double hausdorff(Calc_Ctx *ctx, TDef *A,TDef *B,TDef *Algo) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
    double   r=-1.0;
    int      algo=0;
 
-   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError("hausdorff: Algo should be a scalar\n");
-   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("hausdorff: NK should be 1 for both fields\n");
-   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("hausdorff: Both fields should have the same dimensions\n");
+   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError(ctx,"hausdorff: Algo should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError(ctx,"hausdorff: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError(ctx,"hausdorff: Both fields should have the same dimensions\n");
 
-   if( Calc_InError() ) return -1.0;
+   if( Calc_InError(ctx) ) return -1.0;
 
    // Get the relative distance of points w.r.t eachother
-   ddxy(A,&dx,&dy);
+   ddxy(ctx,A,&dx,&dy);
 
    // Make sure we have int-compatible values
-   a = toint(A);
-   b = toint(B);
+   a = toint(ctx,A);
+   b = toint(ctx,B);
 
-   if( Calc_InError() ) goto end;
+   if( Calc_InError(ctx) ) goto end;
 
    // Apply parameters
    if( Algo ) Def_Get(Algo,0,0,algo);
@@ -2647,11 +2619,11 @@ double hausdorff(TDef *A,TDef *B,TDef *Algo) {
       case 0:  r=DM_Hausdorff_optimized(a,b,dx,dy,A->NI,B->NJ);  break;
       case 1:  r=DM_Hausdorff_DT(a,b,dx,dy,A->NI,B->NJ);  break;
       case 2:  r=DM_Hausdorff_naive(a,b,dx,dy,A->NI,B->NJ);  break;
-      default: Calc_RaiseError("hausdorff: Invalid algorithm selected. Can be 0 for 'optimized' (default), 1 for 'DT' or 2 for 'naive'.\n"); goto end;
+      default: Calc_RaiseError(ctx,"hausdorff: Invalid algorithm selected. Can be 0 for 'optimized' (default), 1 for 'DT' or 2 for 'naive'.\n"); goto end;
    }
 
    if( r < 0.0 ) {
-      Calc_RaiseError("hausdorff: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+      Calc_RaiseError(ctx,"hausdorff: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
    }
 
 end:
@@ -2664,39 +2636,39 @@ end:
 
    return r;
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("hausdorff: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"hausdorff: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double baddeley(TDef *A,TDef *B,TDef *P) {
+double baddeley(Calc_Ctx *ctx, TDef *A,TDef *B,TDef *P) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
    double   p=2.0,r=-1.0;
 
    // Error check
-   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError("baddeley: P should be a scalar\n");
-   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("baddeley: NK should be 1 for both fields\n");
-   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("baddeley: Both fields should have the same dimensions\n");
+   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError(ctx,"baddeley: P should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError(ctx,"baddeley: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError(ctx,"baddeley: Both fields should have the same dimensions\n");
 
-   if( Calc_InError() ) return -1.0;
+   if( Calc_InError(ctx) ) return -1.0;
 
    // Get the relative distance of points w.r.t eachother
-   ddxy(A,&dx,&dy);
+   ddxy(ctx,A,&dx,&dy);
 
    // Make sure we have int-compatible values
-   a = toint(A);
-   b = toint(B);
+   a = toint(ctx,A);
+   b = toint(ctx,B);
 
-   if( Calc_InError() ) goto end;
+   if( Calc_InError(ctx) ) goto end;
 
    // Apply parameters
    if( P ) Def_Get(P,0,0,p);
 
    // Make the actual calculations
    if( (r=DM_Baddeley(a,b,dx,dy,A->NI,B->NJ,p)) == -DBL_MAX ) {
-      Calc_RaiseError("baddeley: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+      Calc_RaiseError(ctx,"baddeley: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
    }
 
 end:
@@ -2709,12 +2681,12 @@ end:
 
    return r;
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("baddeley: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"baddeley: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
 
-double gdm(TDef *A,TDef *B,TDef *P,TDef *Q,TDef *Algo,TDef *BS,TDef *C) {
+double gdm(Calc_Ctx *ctx, TDef *A,TDef *B,TDef *P,TDef *Q,TDef *Algo,TDef *BS,TDef *C) {
 #ifdef HAVE_DISTANCEMETRICS
    double   *dx=NULL,*dy=NULL;
    int      *a=NULL,*b=NULL;
@@ -2722,24 +2694,24 @@ double gdm(TDef *A,TDef *B,TDef *P,TDef *Q,TDef *Algo,TDef *BS,TDef *C) {
    double   p=2.0,q=-2.0,c=0.0,r=-1.0;
 
    // Error check
-   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError("gdm: P should be a scalar\n");
-   if( Q && FSIZE3D(Q)!=1 )            Calc_RaiseError("gdm: Q should be a scalar\n");
-   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError("gdm: Algo should be a scalar\n");
-   if( BS && FSIZE3D(BS)!=1 )          Calc_RaiseError("gdm: BS should be a scalar\n");
-   if( C && FSIZE3D(C)!=1 )            Calc_RaiseError("gdm: C should be a scalar\n");
-   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError("gdm: NK should be 1 for both fields\n");
-   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError("gdm: Both fields should have the same dimensions\n");
+   if( P && FSIZE3D(P)!=1 )            Calc_RaiseError(ctx,"gdm: P should be a scalar\n");
+   if( Q && FSIZE3D(Q)!=1 )            Calc_RaiseError(ctx,"gdm: Q should be a scalar\n");
+   if( Algo && FSIZE3D(Algo)!=1 )      Calc_RaiseError(ctx,"gdm: Algo should be a scalar\n");
+   if( BS && FSIZE3D(BS)!=1 )          Calc_RaiseError(ctx,"gdm: BS should be a scalar\n");
+   if( C && FSIZE3D(C)!=1 )            Calc_RaiseError(ctx,"gdm: C should be a scalar\n");
+   if( A->NK!=1 || B->NK!=1 )          Calc_RaiseError(ctx,"gdm: NK should be 1 for both fields\n");
+   if( A->NI!=B->NI || A->NJ!=B->NJ )  Calc_RaiseError(ctx,"gdm: Both fields should have the same dimensions\n");
 
-   if( Calc_InError() ) return -1.0;
+   if( Calc_InError(ctx) ) return -1.0;
 
    // Get the relative distance of points w.r.t eachother
-   ddxy(A,&dx,&dy);
+   ddxy(ctx,A,&dx,&dy);
 
    // Make sure we have int-compatible values
-   a = toint(A);
-   b = toint(B);
+   a = toint(ctx,A);
+   b = toint(ctx,B);
 
-   if( Calc_InError() ) goto end;
+   if( Calc_InError(ctx) ) goto end;
 
    // Apply parameters
    if( P )     Def_Get(P,0,0,p);
@@ -2753,11 +2725,11 @@ double gdm(TDef *A,TDef *B,TDef *P,TDef *Q,TDef *Algo,TDef *BS,TDef *C) {
       case 0:  r=DM_GDM(a,b,dx,dy,A->NI,B->NJ,p,q);         break;
       case 1:  r=DM_GDMaf(a,b,dx,dy,A->NI,B->NJ,p,q,bs,c);  break;
       case 2:  r=DM_GDMak(a,b,dx,dy,A->NI,B->NJ,p,q,bs,c);  break;
-      default: Calc_RaiseError("gdm: Invalid algorithm selected. Can be 0 for 'exact' (default), 1 for 'approx fast' or 2 for 'approx kernel'.\n"); goto end;
+      default: Calc_RaiseError(ctx,"gdm: Invalid algorithm selected. Can be 0 for 'exact' (default), 1 for 'approx fast' or 2 for 'approx kernel'.\n"); goto end;
    }
 
    if( r == -DBL_MAX ) {
-      Calc_RaiseError("gdm: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
+      Calc_RaiseError(ctx,"gdm: Could not calculate any distance as there is no non-null values in at least one of the fields\n");
    }
 
 end:
@@ -2770,7 +2742,7 @@ end:
 
    return r;
 #else // HAVE_DISTANCEMETRICS
-    Calc_RaiseError("gdm: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
+    Calc_RaiseError(ctx,"gdm: vexpr was not compiled with DistanceMetrics support, this function is unavailable\n");
     return -1.0;
 #endif // HAVE_DISTANCEMETRICS
 }
