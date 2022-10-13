@@ -43,23 +43,9 @@
 #include "Data_Calc.h"
 #include "Data_Funcs.h"
 
-Tcl_Interp   *GInterp;
-TDef_Type     GType;
-TData        *GField,*GFieldP;
-GDAL_Band    *GBand;
-OGR_Layer    *GLayer;
-TObs         *GObs;
-TVector      *GVec;
-TDef     *GResult;
-TDef     *GData[1024];
-int           GDataN;
-int           GMode;
-char         *curPos;
-char         *curTok;
-int           GError;
-int           stopGuard;
-int           GExcept;
-int           GForceFld;
+static void Calc_Init_Context  (Calc_Ctx *ctx, int Except, TDef_Type Type, char* Expr);
+static void Calc_Empty_Context (Calc_Ctx *ctx);
+static void Calc_Destroy_Context (ClientData clientData, Tcl_Interp *interp);
 
 /**
  * @author Jean-Philippe Gauthier
@@ -67,17 +53,20 @@ int           GForceFld;
  * @param Name Grammar structure for champ
  * @param Field Values from the math side
  */
-void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
+void Calc_Update(Tcl_Interp* Interp,char* Name,Calc_Ctx *ctx) {
 
    TData     *field;
    GDAL_Band *band;
    TObs      *obs;
    double     val;
    int        n,d,needcopy=1;
+   TDef*      Data;
 
+   Data = ctx->GResult;
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Called Calc_Update(Interp:%p,Name:%s,Data:%p) GDataN:%d GMode:%d GType:%d GField:%p GBand:%p GLayer:%p GObs:%p GVec:%p GForceFld:%d\n",
-         (void*)Interp,Name,(void*)Data,GDataN,GMode,GType,(void*)GField,(void*)GBand,(void*)GLayer,(void*)GObs,(void*)GVec,GForceFld);
+         (void*)Interp,Name,(void*)Data,ctx->GDataN,ctx->GMode,ctx->GType,(void*)ctx->GField,(void*)ctx->GBand,(void*)ctx->GLayer,(void*)ctx->GObs,
+	 (void*)ctx->GVec,ctx->GForceFld);
 #endif
 
    if (!Data) {
@@ -87,8 +76,8 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
 
    n=FSIZE3D(Data);
 
-   if (n==1 && !GForceFld) {
-      if (Calc_Validate(Interp)) {
+   if (n==1 && !ctx->GForceFld) {
+      if (Calc_Validate(Interp,ctx)) {
          Def_Get(Data,0,0,val);
          if (Data->Type<10) {
             Tcl_SetObjResult(Interp,Tcl_NewLongObj(val));
@@ -98,10 +87,11 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
       }
       /*Free the DataDef since it won't be passed to the script side*/
       Def_Free(Data);
+      ctx->GResult = NULL;
    } else {
       /*See if we need to copy the Data (when it's not resulted from computation)*/
-      for(d=0;d<=GDataN;d++) {
-         if (GData[d]==Data) {
+      for(d=0;d<=ctx->GDataN;d++) {
+         if (ctx->GData[d]==Data) {
              needcopy=0;
              break;
          }
@@ -111,80 +101,80 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
       if (!Name || !strlen(Name) || (Name[0]=='-' && Name[1]=='\0')) { 
       } else {
 
-         switch(GMode) {
-            case T_VAL:
+         switch(ctx->GMode) {
                // We are forcing a field but no template was specified (pure matrix creation)
                // Setup the resulting field (note: we setup an empty def and make sure that the field deosn't exists, otherwise we may run into some problems)
-               GField = Data_Valid(Interp,Name,0,0,0,0,Data->Type);
-               FSTD_FieldSet(GField);
+               ctx->GField = Data_Valid(Interp,Name,0,0,0,0,Data->Type);
+               FSTD_FieldSet(ctx->GField);
                // Assign the Data
-               GField->Def = needcopy ? Def_Copy(Data) : Data;
+               ctx->GField->Def = needcopy ? Def_Copy(Data) : Data;
                // Create default field stuff (ZRef, GRef, etc.).
                // This is definitely a hack, but the Def should not be overwritten as its dimensions are identical
-               GField = FSTD_FieldCreate(Interp,Name,Data->NI,Data->NJ,Data->NK,Data->Type);
-               break;
+               ctx->GField = FSTD_FieldCreate(Interp,Name,Data->NI,Data->NJ,Data->NK,Data->Type);
             case T_FLD:
                if (!(field=Data_Get(Name)) || field->Def!=Data) {
-                  GField=Data_Copy(Interp,GField,Name,0,0);
+                  ctx->GField=Data_Copy(Interp,ctx->GField,Name,0,0);
 
-                  if (GField->Stat) {
-                     Data_StatFree(GField->Stat);
-                     GField->Stat=NULL;
+                  if (ctx->GField->Stat) {
+                     Data_StatFree(ctx->GField->Stat);
+                     ctx->GField->Stat=NULL;
                   }
-                  GField->Def= needcopy ? Def_Copy(Data) : Data;
+                  ctx->GField->Def= needcopy ? Def_Copy(Data) : Data;
    #ifdef HAVE_RMN
-                  if (GField->GRef && GField->GRef->Grid[0]=='U') {
-                     FSTD_FieldSubBuild(GField);
+                  if (ctx->GField->GRef && ctx->GField->GRef->Grid[0]=='U') {
+                     FSTD_FieldSubBuild(ctx->GField);
                   }
    #endif
                   // Force RPN DATYP update at write time
-                  if (GField->Type==TD_RPN) {
-                     ((TRPNHeader*)GField->Head)->DATYP=-1;
+                  if (ctx->GField->Type==TD_RPN) {
+                     ((TRPNHeader*)ctx->GField->Head)->DATYP=-1;
                   }
                }
                break;
 
             case T_BAND:
                if (!(band=GDAL_BandGet(Name)) || band->Def!=Data) {
-                  GBand=GDAL_BandCopy(Interp,GBand,Name,0);
-                  if (GBand->Stat) {
-                     Data_StatFree(GBand->Stat);
-                     GBand->Stat=NULL;
+                  ctx->GBand=GDAL_BandCopy(Interp,ctx->GBand,Name,0);
+                  if (ctx->GBand->Stat) {
+                     Data_StatFree(ctx->GBand->Stat);
+                     ctx->GBand->Stat=NULL;
                   }
-                  GBand->Def= needcopy ? Def_Copy(Data) : Data;
+                  ctx->GBand->Def= needcopy ? Def_Copy(Data) : Data;
                }
                break;
 
             case T_LAYER:
-               if ((GLayer=OGR_LayerGet(Name))) {
-                  GLayer=OGR_LayerFromDef(GLayer,rindex(Name,'.')+1,Data);
+               if ((ctx->GLayer=OGR_LayerGet(Name))) {
+                  ctx->GLayer=OGR_LayerFromDef(ctx->GLayer,rindex(Name,'.')+1,Data);
                }
                /*For layers, we copy back the data so we don't need the Def anymore*/
                Def_Free(Data);
+               ctx->GResult = NULL;
                break;
 
             case T_OBS:
                if (!(obs=Obs_Get(Name)) || obs->Def!=Data) {
-                  GObs=Obs_Copy(Interp,GObs,Name,0);
-                  GObs->Def= needcopy ? Def_Copy(Data) : Data;
+                  ctx->GObs=Obs_Copy(Interp,ctx->GObs,Name,0);
+                  ctx->GObs->Def= needcopy ? Def_Copy(Data) : Data;
                }
                break;
 
             case T_VEC:
-               GVec=Vector_Copy(Interp,GVec,Name);
-               if (GVec->Cp) {
-                  for(n=0;n<GVec->N;n++) {
-                     memcpy(GVec->Cp[n]->V,&Data->Data[0][TDef_Size[GVec->Def->Type]*Data->NJ*n],GVec->Cp[n]->N*TDef_Size[GVec->Def->Type]);
+               ctx->GVec=Vector_Copy(Interp,ctx->GVec,Name);
+               if (ctx->GVec->Cp) {
+                  for(n=0;n<ctx->GVec->N;n++) {
+                     memcpy(ctx->GVec->Cp[n]->V,&Data->Data[0][TDef_Size[ctx->GVec->Def->Type]*Data->NJ*n],ctx->GVec->Cp[n]->N*TDef_Size[ctx->GVec->Def->Type]);
                   }
                } else {
-                  memcpy(GVec->V,Data->Data[0],n*TDef_Size[GVec->Def->Type]);
+                  memcpy(ctx->GVec->V,Data->Data[0],n*TDef_Size[ctx->GVec->Def->Type]);
                }
                // For vectors, we copy back the data so we don't need the Def anymore
                Def_Free(Data);
+               ctx->GResult = NULL;
                break;
          }
       }
-      if (Calc_Validate(Interp)) {
+      if (Calc_Validate(Interp,ctx)) {
          Tcl_SetObjResult(Interp,Tcl_NewStringObj(Name,-1));
       }
    }
@@ -196,9 +186,9 @@ void Calc_Update(Tcl_Interp* Interp,char* Name,TDef* Data) {
  * @param Interp TCL interpreter
  * @return Boolean validity code
  */
-int Calc_Validate(Tcl_Interp* Interp) {
+int Calc_Validate(Tcl_Interp* Interp, Calc_Ctx *ctx) {
 
-   if (GExcept) {
+   if (ctx->GExcept) {
       if (fetestexcept(FE_DIVBYZERO)) {
          Tcl_AppendResult(Interp,"infinity",(char*)NULL);
          return 0;
@@ -222,21 +212,21 @@ int Calc_Validate(Tcl_Interp* Interp) {
  * @param s (Sub-)String that caused the error
  * @return Ignored
  */
-int vexpr_error(char *Error){
+int vexpr_error(yyscan_t scan, Calc_Ctx *ctx, char *Error){
 
-   GError=TCL_ERROR;
-   Tcl_AppendResult(GInterp,"Parser error, ",Error,": ",curTok,(char*)NULL);
+   ctx->GError=TCL_ERROR;
+   Tcl_AppendResult(ctx->GInterp,"Parser error, ",Error,": ",ctx->curTok,(char*)NULL);
 
    return 0;
 }
 
-void Calc_RaiseError(const char *Error) {
-   GError=TCL_ERROR;
-   Tcl_AppendResult(GInterp,"(ERROR) ",Error,(char*)NULL);
+void Calc_RaiseError(Calc_Ctx *ctx,const char *Error) {
+   ctx->GError=TCL_ERROR;
+   Tcl_AppendResult(ctx->GInterp,"(ERROR) ",Error,(char*)NULL);
 }
 
-int Calc_InError() {
-    return GError != TCL_OK;
+int Calc_InError(Calc_Ctx *ctx) {
+    return ctx->GError != TCL_OK;
 }
 
 /**
@@ -250,51 +240,113 @@ int Calc_InError() {
  */
 int Calc_Parse(Tcl_Interp* Interp,int Except,char* Data,TDef_Type Type,char* Expr) {
 
-   int  i;
+   int     i;
+   yyscan_t scanner;
+   Calc_Ctx *ctx;
 
    /* Set per thread data */
-   curPos    = Expr;
-   GInterp   = Interp;
-   GError    = TCL_OK;
-   GMode     = T_VAL;
-   GDataN    = -1;
-   stopGuard = 0;
-   GField    = NULL;
-   GFieldP   = NULL;
-   GBand     = NULL;
-   GObs      = NULL;
-   GVec      = NULL;
-   GLayer    = NULL;
-   GResult   = NULL;
-   GExcept   = Except;
-   GType     = Type;
-   GForceFld = 0;
+   ctx = Tcl_GetAssocData( Interp, "CALC", NULL);
+   if (ctx == NULL) {
+      ctx = Calc_Create_Context(Interp);
+      Tcl_SetAssocData( Interp, "CALC", Calc_Destroy_Context, (ClientData)ctx );
+   } 
+
+   Calc_Init_Context( ctx, Except, Type, Expr );
 
    /* Interpreter initialization */
    Tcl_ResetResult(Interp);
 
    /* Reset exception flags */
-   if (GExcept) {
+   if (ctx->GExcept) {
       feclearexcept(FE_ALL_EXCEPT);
    }
 
    /* Parse, return value in GResult */
-   vexpr_parse();
+   vexpr_lex_init( &scanner );
+   vexpr_set_extra( ctx, scanner );
+   vexpr_parse( scanner, ctx );
 
    /* Update the upstream values */
-   if (GError==TCL_OK)
-      Calc_Update(Interp,Data,GResult);
+   if (ctx->GError==TCL_OK)
+      Calc_Update(Interp,Data,ctx);
 
    /* Free temporary data */
-   for(i=0;i<=GDataN;i++) {
-      if (GData[i] && GData[i]!=GResult)
-         Def_Free(GData[i]);
-      GData[i]=NULL;
-   }
+   Calc_Empty_Context( ctx );
 
    /* Free temporary field used in fld() func*/
    Data_FreeHash(Interp,"TMPCALCXXXXXX");
 
+   vexpr_lex_destroy( scanner );
+
    /* Error code */
-   return(GError);
+   return(ctx->GError);
+}
+
+Calc_Ctx  *Calc_Create_Context( Tcl_Interp *Interp )
+{
+   Calc_Ctx *ctx;
+   int       i;
+
+   ctx = (Calc_Ctx *)malloc( sizeof(Calc_Ctx) );
+
+   ctx->stat      = NULL;
+   ctx->GInterp   = Interp;
+   Calc_Init_Context( ctx, 0, TD_Unknown, NULL );
+
+   ctx->STACKN    = 0;
+   ctx->STACKPN   = 0;
+
+   for ( i = 0; i < STACK_MAX ; i++ )
+      ctx->STACK[i] =  NULL;
+
+   for ( i = 0; i < STACKP_MAX ; i++ )
+      ctx->STACKP[i] =  0;
+
+   return ctx;
+}
+
+static void Calc_Init_Context (Calc_Ctx *ctx, int Except, TDef_Type Type, char* Expr)
+{
+   ctx->curPos    = Expr;
+   ctx->GExcept   = Except;
+   ctx->GType     = Type;
+
+   ctx->GError    = TCL_OK;
+   ctx->GMode     = T_VAL;
+   ctx->GDataN    = -1;
+   ctx->stopGuard = 0;
+   ctx->GField    = NULL;
+   ctx->GFieldP   = NULL;
+   ctx->GBand     = NULL;
+   ctx->GObs      = NULL;
+   ctx->GVec      = NULL;
+   ctx->GLayer    = NULL;
+   ctx->GResult   = NULL;
+   ctx->GForceFld = 0;
+}
+
+static void Calc_Destroy_Context (ClientData clientData, Tcl_Interp *interp)
+{
+   Calc_Ctx  *ctx = (Calc_Ctx *)clientData;
+
+   Calc_Empty_Context( ctx );
+
+   free( ctx );
+}
+
+static void Calc_Empty_Context (Calc_Ctx *ctx)
+{
+   int   i;
+
+   /* Free temporary data */
+   for(i=0;i<=ctx->GDataN;i++) {
+      if (ctx->GData[i] && ctx->GData[i]!=ctx->GResult)
+         Def_Free(ctx->GData[i]);
+      ctx->GData[i]=NULL;
+   }
+
+   if (ctx->stat) {
+      free( ctx->stat );
+      ctx->stat = NULL;
+   }
 }

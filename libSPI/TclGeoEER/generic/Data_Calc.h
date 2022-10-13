@@ -50,10 +50,18 @@
 #define T_BAND  4
 #define T_LAYER 5
 
-void Calc_RaiseError(const char *Error);
-int  Calc_InError();
+
+typedef void* yyscan_t;
+
+
+Calc_Ctx  *Calc_Create_Context( Tcl_Interp * );
+
+void Calc_RaiseError(Calc_Ctx *ctx, const char *Error);
+int  Calc_InError(Calc_Ctx *ctx);
 int  Calc_Parse(Tcl_Interp* Interp,int Except,char* Champ,TDef_Type Type,char* Expr);
-int  Calc_Validate(Tcl_Interp* Interp);
-int  vexpr_parse(void);
+int  Calc_Validate(Tcl_Interp* Interp, Calc_Ctx *ctx);
+int  vexpr_parse(void *scanner, Calc_Ctx *ctx);
+int  vexpr_lex_destroy(void *scanner);
+
 
 #endif
