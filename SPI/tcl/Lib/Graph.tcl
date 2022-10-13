@@ -143,7 +143,7 @@ namespace eval Graph {
    set Data(ToolMode)     Data
    set Data(Update)       True
    set Data(IP3)          False                  ;#Valider les IP3
-   set Data(TYPVAR)       False                  ;#Valider les TYPVAR
+   set Data(TYPVAR)       True                   ;#Valider les TYPVAR
    set Data(Item)         ""
    set Data(Pos)          ""
    set Data(PosNo)        -1
