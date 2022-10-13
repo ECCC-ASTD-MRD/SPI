@@ -143,6 +143,7 @@ namespace eval Graph {
    set Data(ToolMode)     Data
    set Data(Update)       True
    set Data(IP3)          False                  ;#Valider les IP3
+   set Data(TYPVAR)       False                  ;#Valider les TYPVAR
    set Data(Item)         ""
    set Data(Pos)          ""
    set Data(PosNo)        -1
@@ -229,6 +230,7 @@ namespace eval Graph {
    set Lbl(From)       { "De" "From" }
    set Lbl(Hour)       { "Heure" "Hour" }
    set Lbl(IP3)        { "Valider IP3" "Validate IP3" }
+   set Lbl(TYPVAR)     { "Valider TYPVAR" "Validate TYPVAR" }
    set Lbl(Level)      { "Niveau" "Level" }
    set Lbl(Limit)      { "Délimitation" "Limiting range" }
    set Lbl(Lin)        { "Linéaire" "Linear" }
@@ -302,6 +304,7 @@ namespace eval Graph {
    set Bubble(Select)    { "Affichage d'un interval de sélection" "Displays an interval of selection" }
    set Bubble(Stat)      { "Affichage de statistiques relatives au graph" "Displays graph statistics" }
    set Bubble(IP3)       { "Validation du IP3 lors de la recherche des champs temporels" "Validate IP3 when looking ro temporal fields" }
+   set Bubble(TYPVAR)    { "Validation du TYPVAR lors de la recherche des champs temporels" "Validate TYPVAR when looking ro temporal fields" }
    set Bubble(Date0)     { "Spécification de la date de début\nformat: YYYMMDD HHMMSS" "Specify the start date\nformat: YYYMMDD HHMMSS" }
    set Bubble(Date1)     { "Spécification de la date de fin\nformat: YYYMMDD HHMMSS" "Specify the end date\nformat: YYYMMDD HHMMSS" }
    set Bubble(Uniform)   { "Permet de fixer l'échelle des deux axes aux mêmes intervals" "Fix the two scales to the same intervals" }
@@ -2003,7 +2006,11 @@ proc Graph::ParamsGraph { Parent } {
          checkbutton  $Parent.graph.ip3.sel -text [lindex $Lbl(IP3) $GDefs(Lang)] -indicatoron false \
             -command "" -bd 1 -variable Graph::Data(IP3) -onvalue True -offvalue False
          pack $Parent.graph.ip3.sel -side left -fill x -expand true
-      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 -side top  -fill x
+      frame $Parent.graph.typvar -relief sunken -bd 1
+         checkbutton  $Parent.graph.typvar.sel -text [lindex $Lbl(TYPVAR) $GDefs(Lang)] -indicatoron false \
+            -command "" -bd 1 -variable Graph::Data(TYPVAR) -onvalue True -offvalue False
+         pack $Parent.graph.typvar.sel -side left -fill x -expand true
+      pack $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 $Parent.graph.typvar -side top  -fill x
 
       Bubble::Create $Parent.graph.info   $Bubble(Info)
       Bubble::Create $Parent.graph.select $Bubble(Pick)
@@ -2011,9 +2018,10 @@ proc Graph::ParamsGraph { Parent } {
       Bubble::Create $Parent.graph.frame  $Bubble(Frame)
       Bubble::Create $Parent.graph.update $Bubble(Update)
       Bubble::Create $Parent.graph.ip3    $Bubble(IP3)
+      Bubble::Create $Parent.graph.typvar $Bubble(TYPVAR)
    } else {
       $Parent.graphtoggle configure -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
-      destroy $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3
+      destroy $Parent.graph.info $Parent.graph.axis $Parent.graph.select $Parent.graph.color $Parent.graph.frame $Parent.graph.update $Parent.graph.ip3 $Parent.graph.typvar
       label $Parent.graph.lbl -text "" -width 12 -anchor w
       pack $Parent.graph.lbl -side left
    }
