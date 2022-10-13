@@ -10,37 +10,28 @@
 #include "tclVector.h"
 #include "Data_Funcs.h"
 #include "Data_Matrix.h"
-#include "Data_Parser.h"
 #include "Data_Calc.h"
+#include "Data_Parser.h"
 
-int vexpr_lex(void);
+#define YY_DECL  int vexpr_lex \
+		(YYSTYPE * yylval_param , yyscan_t yyscanner , Calc_Ctx *ctx)
 
-extern char      *curPos;
-extern char      *curTok;
-extern int        stopGuard;
-extern TData     *GField,*GFieldP;
-extern GDAL_Band *GBand;
-extern OGR_Layer *GLayer;
-extern TObs      *GObs;
-extern TVector   *GVec;
-extern TDef_Type  GType;
-extern int        GMode;
-extern TDef      *GData[1024];
-extern int        GDataN;
+YY_DECL ;
 
 /*
  * This macro redefines input for flex, iterating over a global
  * string given in the parse() call.
  */
 #define YY_INPUT(buf,result,max_size) \
+  Calc_Ctx *ctx=(Calc_Ctx *)vexpr_get_extra(yyscanner); \
   result = 0; \
-  while(*curPos != '\0' && result < max_size) \
-  { buf[result] = *(curPos++); \
+  while(*(ctx->curPos) != '\0' && result < max_size) \
+  { buf[result] = *((ctx->curPos)++); \
     result++; } \
-  if(*curPos == '\0' && stopGuard != 1) \
+  if(*(ctx->curPos) == '\0' && ctx->stopGuard != 1) \
   { buf[result] = ';'; \
     result++; \
-    stopGuard = 1; }
+    ctx->stopGuard = 1; }
 
 #define _POSIX_SOURCE 1
 
@@ -52,9 +43,10 @@ CHAR    [A-Za-z_]
 EXTCHAR [A-Za-z0-9_.:#]
 
 %option noyywrap
+%option reentrant bison-bridge
 
 %%
-   curTok=yytext;
+   ctx->curTok=yytext;
 
 "field" {
    return T_FIELD_FUNC;
@@ -64,17 +56,17 @@ EXTCHAR [A-Za-z0-9_.:#]
    int i;
 
    sscanf(yytext,"%i",&i);
-   vexpr_lval.Num = i;
+   yylval->Num = i;
    return T_INT;
 }
 
 "NAN" {
-   vexpr_lval.Num = nan("NaN");
+   yylval->Num = nan("NaN");
    return T_FLOAT;
 }
 
 "INFINITY" {
-   vexpr_lval.Num = INFINITY;
+   yylval->Num = INFINITY;
    return T_FLOAT;
 }
 
@@ -83,43 +75,43 @@ EXTCHAR [A-Za-z0-9_.:#]
 }
 
 {DIGIT}+ {
-   vexpr_lval.Num = atof(yytext);
+   yylval->Num = atof(yytext);
    return T_INT;
 }
 
 {DIGIT}+("."{DIGIT}+)?(("e"|"E")("-"|"+")?{DIGIT}+)? {
-   vexpr_lval.Num = atof(yytext);
+   yylval->Num = atof(yytext);
    return T_FLOAT;
 }
 
 ("."{DIGIT}+)?(("e"|"E")("-"|"+")?{DIGIT}+)? {
-   vexpr_lval.Num = atof(yytext);
+   yylval->Num = atof(yytext);
    return T_FLOAT;
 }
 
 {CHAR}+{EXTCHAR}* {
-   if((vexpr_lval.Func = FuncGet(FuncF,yytext)))  {
+   if((yylval->Func = FuncGet(FuncF,yytext)))  {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Found a matrix to float function token: %s\n", yytext);
 #endif
       return T_FNCT_F;
    }
 
-   if((vexpr_lval.Func = FuncGet(FuncM,yytext)))  {
+   if((yylval->Func = FuncGet(FuncM,yytext)))  {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Found a matrix to matrix function token: %s\n", yytext);
 #endif
       return T_FNCT_M;
    }
 
-   if((vexpr_lval.Func = FuncGet(FuncD,yytext)))  {
+   if((yylval->Func = FuncGet(FuncD,yytext)))  {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Found a matrix derivative function token: %s\n", yytext);
 #endif
       return T_FNCT_D;
    }
 
-   if((vexpr_lval.Func = FuncGet(FuncC,yytext)))  {
+   if((yylval->Func = FuncGet(FuncC,yytext)))  {
 #ifdef DEBUG
       fprintf(stdout,"(DEBUG) Found a matrix creation/manipulation function token: %s\n", yytext);
 #endif
@@ -127,13 +119,13 @@ EXTCHAR [A-Za-z0-9_.:#]
    }
 
 
-   vexpr_lval.Data=NULL;
+   yylval->Data=NULL;
 
-   if((vexpr_lval.Field=Data_Get(yytext))) {
-      GFieldP=vexpr_lval.Field;
-      GField=GField?GField:vexpr_lval.Field;
-      GMode=GMode==T_VAL?T_FLD:GMode;
-      if((vexpr_lval.Data=(vexpr_lval.Field->SDef?vexpr_lval.Field->SDef[0]:vexpr_lval.Field->Def))) {
+   if((yylval->Field=Data_Get(yytext))) {
+      ctx->GFieldP=yylval->Field;
+      ctx->GField=ctx->GField?ctx->GField:yylval->Field;
+      ctx->GMode=(ctx->GMode==T_VAL)?T_FLD:ctx->GMode;
+      if((yylval->Data=(yylval->Field->SDef?yylval->Field->SDef[0]:yylval->Field->Def))) {
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(Field) token: %s\n", yytext);
 #endif
@@ -141,11 +133,11 @@ EXTCHAR [A-Za-z0-9_.:#]
       }
    }
 
-   if((vexpr_lval.Band=GDAL_BandGet(yytext))) {
-      GBand=GBand?GBand:vexpr_lval.Band;
-      GMode=GMode==T_VAL?T_BAND:GMode;
+   if((yylval->Band=GDAL_BandGet(yytext))) {
+      ctx->GBand=ctx->GBand?ctx->GBand:yylval->Band;
+      ctx->GMode=(ctx->GMode==T_VAL)?T_BAND:ctx->GMode;
 
-      if((vexpr_lval.Data=vexpr_lval.Band->Def)) {
+      if((yylval->Data=yylval->Band->Def)) {
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(Band) token: %s\n", yytext);
 #endif
@@ -153,13 +145,13 @@ EXTCHAR [A-Za-z0-9_.:#]
       }
    }
 
-   if((vexpr_lval.Obs=Obs_Get(yytext))) {
-      GObs=GObs?GObs:vexpr_lval.Obs;
-      GMode=GMode==T_VAL?T_OBS:GMode;
+   if((yylval->Obs=Obs_Get(yytext))) {
+      ctx->GObs=ctx->GObs?ctx->GObs:yylval->Obs;
+      ctx->GMode=(ctx->GMode==T_VAL)?T_OBS:ctx->GMode;
       /*Force type to float since observations are only in float*/
-      if (GMode==T_OBS) GType=TD_Float32;
+      if (ctx->GMode==T_OBS) ctx->GType=TD_Float32;
 
-      if((vexpr_lval.Data=vexpr_lval.Obs->Def)) {
+      if((yylval->Data=yylval->Obs->Def)) {
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(Obs) token: %s\n", yytext);
 #endif
@@ -167,13 +159,13 @@ EXTCHAR [A-Za-z0-9_.:#]
       }
    }
 
-   if((vexpr_lval.Vec=Vector_Get(yytext))) {
-      GVec=GVec?GVec:vexpr_lval.Vec;
-      GMode=GMode==T_VAL?T_VEC:GMode;
+   if((yylval->Vec=Vector_Get(yytext))) {
+      ctx->GVec=ctx->GVec?ctx->GVec:yylval->Vec;
+      ctx->GMode=(ctx->GMode==T_VAL)?T_VEC:ctx->GMode;
       /*Force type to double since vectors are only in double*/
-      if (GMode==T_VEC) GType=TD_Float64;
+      if (ctx->GMode==T_VEC) ctx->GType=TD_Float64;
 
-      if((vexpr_lval.Data=Vector_GetDef(vexpr_lval.Vec))) {
+      if((yylval->Data=Vector_GetDef(yylval->Vec))) {
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(Vector) token: %s\n", yytext);
 #endif
@@ -181,14 +173,14 @@ EXTCHAR [A-Za-z0-9_.:#]
       }
    }
 
-   if((vexpr_lval.Layer=OGR_LayerGet(yytext))) {
-      GLayer=GLayer?GLayer:vexpr_lval.Layer;
-      GMode=GMode==T_VAL?T_LAYER:GMode;
+   if((yylval->Layer=OGR_LayerGet(yytext))) {
+      ctx->GLayer=ctx->GLayer?ctx->GLayer:yylval->Layer;
+      ctx->GMode=ctx->GMode==T_VAL?T_LAYER:ctx->GMode;
 
-      if (rindex(yytext,'.') && (vexpr_lval.Data=OGR_LayerToDef(vexpr_lval.Layer,rindex(yytext,'.')+1))) {
+      if (rindex(yytext,'.') && (yylval->Data=OGR_LayerToDef(yylval->Layer,rindex(yytext,'.')+1))) {
          /*Add it to the temp arrays to be freed*/
-         GDataN++;
-         GData[GDataN]=vexpr_lval.Data;
+         (ctx->GDataN)++;
+         ctx->GData[ctx->GDataN]=yylval->Data;
 #ifdef DEBUG
         fprintf(stdout,"(DEBUG) Found a T_DATA(OGR) token: %s\n", yytext);
 #endif
@@ -202,140 +194,140 @@ EXTCHAR [A-Za-z0-9_.:#]
 }
 
 "!=" {
-   vexpr_lval.Operator = OP_NEQ;
+   yylval->Operator = OP_NEQ;
    return T_NEQ;
 }
 
 "==" {
-   vexpr_lval.Operator = OP_EQU;
+   yylval->Operator = OP_EQU;
    return T_EQU;
 }
 
 ">=" {
-   vexpr_lval.Operator = OP_GRQ;
+   yylval->Operator = OP_GRQ;
    return T_GRQ;
 }
 
 ">" {
-   vexpr_lval.Operator = OP_GRE;
+   yylval->Operator = OP_GRE;
    return T_GRE;
 }
 
 "<=" {
-   vexpr_lval.Operator = OP_SMQ;
+   yylval->Operator = OP_SMQ;
    return T_SMQ;
 }
 
 "<" {
-   vexpr_lval.Operator = OP_SMA;
+   yylval->Operator = OP_SMA;
    return T_SMA;
 }
 
 "+" {
-   vexpr_lval.Operator = OP_ADD;
+   yylval->Operator = OP_ADD;
    return T_ADD;
 }
 
 "-" {
-   vexpr_lval.Operator = OP_SUB;
+   yylval->Operator = OP_SUB;
    return T_SUB;
 }
 
 "*" {
-   vexpr_lval.Operator = OP_MUL;
+   yylval->Operator = OP_MUL;
    return T_MUL;
 }
 
 "/" {
-   vexpr_lval.Operator = OP_DIV;
+   yylval->Operator = OP_DIV;
    return T_DIV;
 }
 
 "%" {
-   vexpr_lval.Operator = OP_MOD;
+   yylval->Operator = OP_MOD;
    return T_MOD;
 }
 
 "^" {
-   vexpr_lval.Operator = OP_EXP;
+   yylval->Operator = OP_EXP;
    return T_EXP;
 }
 
 "!" {
-   vexpr_lval.Operator = OP_NOT;
+   yylval->Operator = OP_NOT;
    return T_NOT;
 }
 
 "=" {
-   vexpr_lval.Operator = OP_ASSIGN;
+   yylval->Operator = OP_ASSIGN;
    return T_ASSIGN;
 }
 
 "&&" {
-   vexpr_lval.Operator = OP_AND;
+   yylval->Operator = OP_AND;
    return T_AND;
 }
 
 "||" {
-   vexpr_lval.Operator = OP_OR;
+   yylval->Operator = OP_OR;
    return T_OR;
 }
 
 "~" {
-   vexpr_lval.Operator = OP_BNOT;
+   yylval->Operator = OP_BNOT;
    return T_BNOT;
 }
 
 "&" {
-   vexpr_lval.Operator = OP_BND;
+   yylval->Operator = OP_BND;
    return T_BND;
 }
 
 "|" {
-   vexpr_lval.Operator = OP_BOR;
+   yylval->Operator = OP_BOR;
    return T_BOR;
 }
 
 ";" {
-   vexpr_lval.Operator = LINE_TERMINATOR;
+   yylval->Operator = LINE_TERMINATOR;
    return T_LINE_TERMINATOR;
 }
 
 "@" {
-   vexpr_lval.Operator = OP_AROB;
+   yylval->Operator = OP_AROB;
    return T_AROB;
 }
 "," {
-   vexpr_lval.Operator = OP_COMMA;
+   yylval->Operator = OP_COMMA;
    return T_COMMA;
 }
 
 "(" {
-   vexpr_lval.Operator = OPEN_PAR;
+   yylval->Operator = OPEN_PAR;
    return T_OPEN_PAR;
 }
 
 ")" {
-   vexpr_lval.Operator = CLOSE_PAR;
+   yylval->Operator = CLOSE_PAR;
    return T_CLOSE_PAR;
 }
 
 "[" {
-   vexpr_lval.Operator = OPEN_BRA;
+   yylval->Operator = OPEN_BRA;
    return T_OPEN_BRA;
 }
 
 "]" {
-   vexpr_lval.Operator = CLOSE_BRA;
+   yylval->Operator = CLOSE_BRA;
    return T_CLOSE_BRA;
 }
 
 "<<" {
-   vexpr_lval.Operator = OP_INTERP2;
+   yylval->Operator = OP_INTERP2;
    return T_INTERP2;
 }
 
 "<<<" {
-   vexpr_lval.Operator = OP_INTERP3;
+   yylval->Operator = OP_INTERP3;
    return T_INTERP3;
 }
