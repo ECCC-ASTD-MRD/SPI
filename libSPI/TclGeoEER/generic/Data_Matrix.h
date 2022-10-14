@@ -37,17 +37,17 @@
 #include "Data_Funcs.h"
 
 TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect);
-TDef* Calc_Length(TDef* A);
-TDef* Calc_Dir(TDef* A);
-TDef* Calc_Index(TDef* A,int Index);
-TDef* Calc_IndexValue(TDef* A,int I,int J,int K);
-TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1);
-TDef* Calc_Slice(TDef* A,int N,int D);
-TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1);
-TDef* Calc_MatrixInt(long Val);
-TDef* Calc_MatrixFloat(double Val);
-TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]);
-TDef* Calc_Matrixv(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...);
-TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree);
+TDef* Calc_Length(Calc_Ctx *ctx,TDef* A);
+TDef* Calc_Dir(Calc_Ctx *ctx,TDef* A);
+TDef* Calc_Index(Calc_Ctx *ctx,TDef* A,int Index);
+TDef* Calc_IndexValue(Calc_Ctx *ctx,TDef* A,int I,int J,int K);
+TDef* Calc_RangeValue(Calc_Ctx *ctx,TDef* A,int I0,int I1,int J0,int J1,int K0,int K1);
+TDef* Calc_Slice(Calc_Ctx *ctx,TDef* A,int N,int D);
+TDef* Calc_Set(Calc_Ctx *ctx,TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1);
+TDef* Calc_MatrixInt(Calc_Ctx *ctx,long Val);
+TDef* Calc_MatrixFloat(Calc_Ctx *ctx,double Val);
+TDef* Calc_Matrix(Calc_Ctx *ctx,TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]);
+TDef* Calc_Matrixv(Calc_Ctx *ctx,TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...);
+TDef* Calc_MatrixTo(Calc_Ctx *ctx,TDef* A,TDef* B,char Degree);
 
 #endif

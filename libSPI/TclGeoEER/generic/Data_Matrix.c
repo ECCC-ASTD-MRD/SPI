@@ -38,30 +38,24 @@
 #include "Data_Matrix.h"
 #include "Data_Calc.h"
 
-extern Tcl_Interp *GInterp;
-extern TData      *GField,*GFieldP;
-extern TDef       *GData[1024];
-extern TDef_Type  GType;
-extern int        GDataN;
-
-static double Calc_CallFunc(TFunc *Func,const int NFlds,TDef *Flds[]) {
+static double Calc_CallFunc(Calc_Ctx *ctx,TFunc *Func,const int NFlds,TDef *Flds[]) {
    switch( NFlds ) {
-      case 0:  return Func();
-      case 1:  return Func(Flds[0]);
-      case 2:  return Func(Flds[0],Flds[1]);
-      case 3:  return Func(Flds[0],Flds[1],Flds[2]);
-      case 4:  return Func(Flds[0],Flds[1],Flds[2],Flds[3]);
-      case 5:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4]);
-      case 6:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5]);
-      case 7:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6]);
-      case 8:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7]);
-      case 9:  return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8]);
-      case 10: return Func(Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8],Flds[9]);
-      default: Calc_RaiseError("(Calc_CallFunc) Too many arguments to function\n"); return 0.0;
+      case 0:  return Func(ctx);
+      case 1:  return Func(ctx,Flds[0]);
+      case 2:  return Func(ctx,Flds[0],Flds[1]);
+      case 3:  return Func(ctx,Flds[0],Flds[1],Flds[2]);
+      case 4:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3]);
+      case 5:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4]);
+      case 6:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5]);
+      case 7:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6]);
+      case 8:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7]);
+      case 9:  return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8]);
+      case 10: return Func(ctx,Flds[0],Flds[1],Flds[2],Flds[3],Flds[4],Flds[5],Flds[6],Flds[7],Flds[8],Flds[9]);
+      default: Calc_RaiseError(ctx,"(Calc_CallFunc) Too many arguments to function\n"); return 0.0;
    }
 }
 
-static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
+static void Calc_Iterate(Calc_Ctx *ctx,TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
    size_t idx,n,nc,imsk[NFlds],cmsk[NFlds];
    double v[NFlds];
    int f;
@@ -79,17 +73,17 @@ static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
             Def_Get(Flds[f],nc&cmsk[f],idx&imsk[f],v[f]);
          }
          switch (NFlds) {
-            case 1:  v[0]=Func(v[0]);                                                  break;
-            case 2:  v[0]=Func(v[0],v[1]);                                             break;
-            case 3:  v[0]=Func(v[0],v[1],v[2]);                                        break;
-            case 4:  v[0]=Func(v[0],v[1],v[2],v[3]);                                   break;
-            case 5:  v[0]=Func(v[0],v[1],v[2],v[3],v[4]);                              break;
-            case 6:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5]);                         break;
-            case 7:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6]);                    break;
-            case 8:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7]);               break;
-            case 9:  v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8]);          break;
-            case 10: v[0]=Func(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]);     break;
-            default: Calc_RaiseError("(Calc_Iterate) Too many arguments to function\n"); return;
+            case 1:  v[0]=Func(ctx,v[0]);                                                  break;
+            case 2:  v[0]=Func(ctx,v[0],v[1]);                                             break;
+            case 3:  v[0]=Func(ctx,v[0],v[1],v[2]);                                        break;
+            case 4:  v[0]=Func(ctx,v[0],v[1],v[2],v[3]);                                   break;
+            case 5:  v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4]);                              break;
+            case 6:  v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4],v[5]);                         break;
+            case 7:  v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4],v[5],v[6]);                    break;
+            case 8:  v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7]);               break;
+            case 9:  v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8]);          break;
+            case 10: v[0]=Func(ctx,v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7],v[8],v[9]);     break;
+            default: Calc_RaiseError(ctx,"(Calc_Iterate) Too many arguments to function\n"); return;
          }
          Def_Set(R,nc,idx,v[0]);
       }
@@ -108,7 +102,7 @@ static void Calc_Iterate(TDef *R,TFunc *Func,const int NFlds,TDef *Flds[]) {
 TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
 
 #ifdef DEBUG
-   fprintf(stdout,"(DEBUG) Called Calc_Compat(A:%p,B:%p,Dim:%d,Vect:%d)\n",(void*)A,(void*)B,Dim,Vect);
+   fprintf(stdout,"(DEBUG) Called Calc_Compat(A:%p,B:%p)\n",(void*)A,(void*)B);
 #endif
 
    /* Something would be DEFINITELY wrong here */
@@ -152,21 +146,21 @@ TDef *Calc_Compat(Tcl_Interp *Interp,TDef *A,TDef *B,int Dim,int Vect) {
  * prevent new code from segfaulting, you get a Calc_Compat error
  * instead)
  */
-TDef* Calc_MatrixFloat(double Val) {
+TDef* Calc_MatrixFloat(Calc_Ctx *ctx,double Val) {
 
    TDef_Type type;
 
-   GDataN++;
+   ctx->GDataN++;
 
    type=TD_Float32;
    if (Val!=0.0 && fabs(log(fabs(Val)))>35) {
       type=TD_Float64;
    }
 
-   GData[GDataN]=Def_New(1,1,1,1,(GType?GType:type));
-   Def_Set(GData[GDataN],0,0,Val);
+   ctx->GData[ctx->GDataN]=Def_New(1,1,1,1,(ctx->GType?ctx->GType:type));
+   Def_Set(ctx->GData[ctx->GDataN],0,0,Val);
 
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
 /**
@@ -181,11 +175,11 @@ TDef* Calc_MatrixFloat(double Val) {
  * prevent new code from segfaulting, you get a Calc_Compat error
  * instead)
  */
-TDef* Calc_MatrixInt(long Val) {
+TDef* Calc_MatrixInt(Calc_Ctx *ctx,long Val) {
 
    TDef_Type type;
 
-   GDataN++;
+   (ctx->GDataN)++;
 
    type=TD_Byte;
 
@@ -200,9 +194,9 @@ TDef* Calc_MatrixInt(long Val) {
    }
    type=TD_Int32;
 
-   GData[GDataN]=Def_New(1,1,1,1,(GType?GType:type));
-   Def_Set(GData[GDataN],0,0,Val);
-   return(GData[GDataN]);
+   ctx->GData[ctx->GDataN]=Def_New(1,1,1,1,(ctx->GType?ctx->GType:type));
+   Def_Set(ctx->GData[ctx->GDataN],0,0,Val);
+   return(ctx->GData[ctx->GDataN]);
 }
 
 /**
@@ -213,7 +207,7 @@ TDef* Calc_MatrixInt(long Val) {
  * @param Degree Interpolation degree
  * @return New TDef containing the results
  */
-TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
+TDef* Calc_MatrixTo(Calc_Ctx *ctx,TDef* A,TDef* B,char Degree) {
 
    unsigned long k;
    int           n=0;
@@ -223,34 +217,34 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
    fprintf(stdout,"(DEBUG) Called Calc_MatrixTo(A:%p,B:%p,Degree:%i)\n",(void*)A,(void*)B,Degree);
 #endif
 
-   GDataN++;
-   GData[GDataN]=Def_New(A->NI,A->NJ,B->NK,B->NC,(GType?GType:A->Type));
+   (ctx->GDataN)++;
+   ctx->GData[ctx->GDataN]=Def_New(A->NI,A->NJ,B->NK,B->NC,(ctx->GType?ctx->GType:A->Type));
 
 #ifdef HAVE_RMN
-   if (FSIZE3D(GData[GDataN])==1) {
+   if (FSIZE3D(ctx->GData[ctx->GDataN])==1) {
       Def_Get(B,0,0,v);
-      Def_Set(GData[GDataN],0,0,v);
+      Def_Set(ctx->GData[ctx->GDataN],0,0,v);
    } else if (FSIZE3D(B)==1) {
-      while (GData[GDataN]->Data[n]) {
-         for(k=0;k<FSIZE3D(GData[GDataN]);k++) {
+      while (ctx->GData[ctx->GDataN]->Data[n]) {
+         for(k=0;k<FSIZE3D(ctx->GData[ctx->GDataN]);k++) {
             Def_Get(B,0,0,v);
-            Def_Set(GData[GDataN],n,k,v);
+            Def_Set(ctx->GData[ctx->GDataN],n,k,v);
          }
          n++;
       }
    } else {
-      if (!GField || !GFieldP || GField->GRef->Type&GRID_VERTICAL || GFieldP->GRef->Type&GRID_VERTICAL) {
+      if (!ctx->GField || !ctx->GFieldP || ctx->GField->GRef->Type&GRID_VERTICAL || ctx->GFieldP->GRef->Type&GRID_VERTICAL) {
          return(NULL);
       }
 
-      if (!Def_GridInterp(GField->GRef,GData[GDataN],GFieldP->GRef,B,'L')) {
+      if (!Def_GridInterp(ctx->GField->GRef,ctx->GData[ctx->GDataN],ctx->GFieldP->GRef,B,'L')) {
          return(NULL);
       }
-      GeoRef_Incr(GField->GRef);
+      GeoRef_Incr(ctx->GField->GRef);
    }
 
 #endif
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
 /**
@@ -260,7 +254,7 @@ TDef* Calc_MatrixTo(TDef* A,TDef* B,char Degree) {
  * @param Index Index of the composant
  * @return New TDef* containing the results
  */
-TDef* Calc_Index(TDef* A,int Index) {
+TDef* Calc_Index(Calc_Ctx *ctx,TDef* A,int Index) {
 
 #ifdef DEBUG
    fprintf(stdout,"(DEBUG) Calc_Index(A:%p,%i)\n",(void*)A,Index);
@@ -271,11 +265,11 @@ TDef* Calc_Index(TDef* A,int Index) {
       return(NULL);
    }
    
-   GDataN++;
-   GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+   (ctx->GDataN)++;
+   ctx->GData[ctx->GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(ctx->GType?ctx->GType:A->Type));
 
-   memcpy(GData[GDataN]->Data[0],A->Data[Index],FSIZE3D(A)*TDef_Size[A->Type]);
-   return(GData[GDataN]);
+   memcpy(ctx->GData[ctx->GDataN]->Data[0],A->Data[Index],FSIZE3D(A)*TDef_Size[A->Type]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
 /**
@@ -285,7 +279,7 @@ TDef* Calc_Index(TDef* A,int Index) {
  * @param Index Index of the composant
  * @return New TDef* containing the results
  */
-TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
+TDef* Calc_IndexValue(Calc_Ctx *ctx,TDef* A,int I,int J,int K) {
 
    double v=0;
    int    n=0;
@@ -299,19 +293,19 @@ TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
       return(NULL);
    }
    
-   GDataN++;
+   (ctx->GDataN)++;
 
-   GData[GDataN]=Def_New(1,1,1,A->NC,(GType?GType:A->Type));
+   ctx->GData[ctx->GDataN]=Def_New(1,1,1,A->NC,(ctx->GType?ctx->GType:A->Type));
 
    while(A->Data[n]) {
       Def_Get(A,n,(FSIZE2D(A)*K)+J*A->NI+I,v);
-      Def_Set(GData[GDataN],n,0,v);
+      Def_Set(ctx->GData[ctx->GDataN],n,0,v);
       n++;
    }
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
-TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
+TDef* Calc_RangeValue(Calc_Ctx *ctx,TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
 
    unsigned int  n,j,jn,k,kn;
    void *p0,*p1;
@@ -329,25 +323,25 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
       return(NULL);
    }
    
-   GDataN++;
-   GData[GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,A->NC,A->Type);
+   (ctx->GDataN)++;
+   ctx->GData[ctx->GDataN]=Def_New(I1-I0+1,J1-J0+1,K1-K0+1,A->NC,A->Type);
 
    for(k=K0,kn=0;k<=K1;k++,kn++) {
 //      GData[GDataN]->GridLevels[kn]=A->GridLevels[k];
       for(j=J0,jn=0;j<=J1;j++,jn++) {
          n=0;
          while(A->Data[n]) {
-            Def_Pointer(GData[GDataN],n,FSIZE2D(GData[GDataN])*kn+jn*GData[GDataN]->NI,p0);
+            Def_Pointer(ctx->GData[ctx->GDataN],n,FSIZE2D(ctx->GData[ctx->GDataN])*kn+jn*ctx->GData[ctx->GDataN]->NI,p0);
             Def_Pointer(A,n,FSIZE2D(A)*k+j*A->NI+I0,p1);
-            memcpy(p0,p1,GData[GDataN]->NI*TDef_Size[A->Type]);
+            memcpy(p0,p1,ctx->GData[ctx->GDataN]->NI*TDef_Size[A->Type]);
             n++;
          }
       }
    }
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
-TDef* Calc_Slice(TDef* A,int N,int D) {
+TDef* Calc_Slice(Calc_Ctx *ctx,TDef* A,int N,int D) {
 
    unsigned int  n,i,j,k,idx;
    //void  *p;
@@ -364,13 +358,13 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
             App_Log(ERROR,"%s: Dimensions out of bound of grid A (NI=%d)\n",__func__,A->NI);
             return(NULL);
          }
-         GData[++GDataN]=Def_New(A->NJ,A->NK,1,A->NC,(GType?GType:A->Type));
+         ctx->GData[++(ctx->GDataN)]=Def_New(A->NJ,A->NK,1,A->NC,(ctx->GType?ctx->GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
                for(j=0;j<A->NJ;j++) {
                   Def_Get(A,n,FSIZE2D(A)*k+j*A->NI+i,v);
-                  Def_Set(GData[GDataN],n,k*GData[GDataN]->NI+j,v);
+                  Def_Set(ctx->GData[ctx->GDataN],n,k*ctx->GData[ctx->GDataN]->NI+j,v);
                }
             }
             n++;
@@ -383,13 +377,13 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
             return(NULL);
          }
          j=N;
-         GData[++GDataN]=Def_New(A->NI,A->NK,1,A->NC,(GType?GType:A->Type));
+         ctx->GData[++(ctx->GDataN)]=Def_New(A->NI,A->NK,1,A->NC,(ctx->GType?ctx->GType:A->Type));
          n=0;
          while(A->Data[n]) {
             for(k=0;k<A->NK;k++) {
                for(i=0;i<A->NI;i++) {
                   Def_Get(A,n,FSIZE2D(A)*k+j*A->NI+i,v);
-                  Def_Set(GData[GDataN],n,k*GData[GDataN]->NI+i,v);
+                  Def_Set(ctx->GData[ctx->GDataN],n,k*ctx->GData[ctx->GDataN]->NI+i,v);
                }
             }
             n++;
@@ -403,14 +397,14 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
          }
          k=N;
          n=0;
-         GData[++GDataN]=Def_New(A->NI,A->NJ,1,A->NC,(GType?GType:A->Type));
+         ctx->GData[++(ctx->GDataN)]=Def_New(A->NI,A->NJ,1,A->NC,(ctx->GType?ctx->GType:A->Type));
 //         GData[GDataN]->GridLevels[0]=A->GridLevels[k];
          while(A->Data[n]) {
             idx=FSIZE2D(A)*k;
             for(j=0;j<A->NJ;j++) {
                for(i=0;i<A->NI;i++) {
                   Def_Get(A,n,idx,v);
-                  Def_Set(GData[GDataN],n,j*GData[GDataN]->NI+i,v);
+                  Def_Set(ctx->GData[ctx->GDataN],n,j*ctx->GData[ctx->GDataN]->NI+i,v);
                   idx++;
                }
             }
@@ -420,10 +414,10 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
          }
          break;
    }
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
-TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
+TDef* Calc_Set(Calc_Ctx *ctx,TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
 
    unsigned int  n=0,i,j,k,bidx,uni=0;
    double  v=0.0;
@@ -442,7 +436,7 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
    }
    
    if (FSIZE3D(A)==1) {
-      if (!Calc_Compat(GInterp,A,B,2,1))
+      if (!Calc_Compat(ctx->GInterp,A,B,2,1))
          return(NULL);
       Def_Get(B,0,0,v);
       Def_Set(A,0,0,v);
@@ -488,7 +482,7 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
  * @param A Def to work on
  * @return New TDef* containing the results
  */
-TDef* Calc_Length(TDef* A) {
+TDef* Calc_Length(Calc_Ctx *ctx,TDef* A) {
 
    unsigned long i;
    double        v[3]= { 0.0, 0.0, 0.0 };
@@ -496,28 +490,28 @@ TDef* Calc_Length(TDef* A) {
    fprintf(stdout,"(DEBUG) Calc_Length(A:%p)\n",(void*)A);
 #endif
 
-   GDataN++;
+   ctx->GDataN++;
 
    if (!A->Data[1]) {
-      GData[GDataN]=Def_Copy(A);
+      ctx->GData[ctx->GDataN]=Def_Copy(A);
    } else {
-      GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+      ctx->GData[ctx->GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(ctx->GType?ctx->GType:A->Type));
 
       for(i=0;i<FSIZE3D(A);i++) {
          Def_Get(A,0,i,v[0]);
          Def_Get(A,1,i,v[1]);
          if (A->Data[2]) {
             Def_Get(A,2,i,v[2]);
-            Def_Set(GData[GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]));
+            Def_Set(ctx->GData[ctx->GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]));
          } else {
-            Def_Set(GData[GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]));
+            Def_Set(ctx->GData[ctx->GDataN],0,i,sqrt(v[0]*v[0]+v[1]*v[1]));
          }
       }
    }
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
-TDef* Calc_Dir(TDef* A) {
+TDef* Calc_Dir(Calc_Ctx *ctx,TDef* A) {
 
    unsigned int i,j,k;
    float       *x,*y,*fx,*fy,*spd;
@@ -528,17 +522,17 @@ TDef* Calc_Dir(TDef* A) {
 #endif
 
 #ifdef HAVE_RMN
-   if (!GField || GField->GRef->Grid[0]=='V') {
+   if (!ctx->GField || ctx->GField->GRef->Grid[0]=='V') {
       App_Log(ERROR,"%s: Invalid grid while calculating direction\n",__func__);
       return(NULL);
    }
 
-   GDataN++;
+   (ctx->GDataN)++;
 
    if (!A->Data[1]) {
-      GData[GDataN]=Def_Copy(A);
+      ctx->GData[ctx->GDataN]=Def_Copy(A);
    } else {
-      GData[GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(GType?GType:A->Type));
+      ctx->GData[ctx->GDataN]=Def_New(A->NI,A->NJ,A->NK,1,(ctx->GType?ctx->GType:A->Type));
 
       spd=(float*)malloc(FSIZE2D(A)*sizeof(float));
       x=fx=(float*)malloc(FSIZE2D(A)*sizeof(float));
@@ -558,10 +552,10 @@ TDef* Calc_Dir(TDef* A) {
 
 //      RPN_IntLock();
       for(k=0;k<A->NK;k++) {
-         Def_Pointer(GData[GDataN],0,FSIZE2D(GData[GDataN])*k,p);
+         Def_Pointer(ctx->GData[ctx->GDataN],0,FSIZE2D(ctx->GData[ctx->GDataN])*k,p);
          Def_Pointer(A,0,FSIZE2D(A)*k,p0);
          Def_Pointer(A,1,FSIZE2D(A)*k,p1);
-         c_gdxywdval(GField->GRef->Ids[GField->GRef->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
+         c_gdxywdval(ctx->GField->GRef->Ids[ctx->GField->GRef->NId],spd,p,p0,p1,fx,fy,FSIZE2D(A));
       }
 //      RPN_IntUnlock();
 
@@ -574,7 +568,7 @@ TDef* Calc_Dir(TDef* A) {
    return(NULL);
 #endif
 
-   return(GData[GDataN]);
+   return(ctx->GData[ctx->GDataN]);
 }
 
 /**
@@ -584,7 +578,7 @@ TDef* Calc_Dir(TDef* A) {
  * @param func Float to float function to apply
  * @return New TDef* containing the results
  */
-TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]) {
+TDef* Calc_Matrix(Calc_Ctx *ctx,TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TDef *Flds[]) {
    int i;
 
 #ifdef DEBUG
@@ -603,35 +597,35 @@ TDef* Calc_Matrix(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,TD
       // Select the field that will be used for master (m) and type (t)
       m=t=Flds[0];
       for(i=1; i<NFlds; ++i) {
-         m=Calc_Compat(GInterp,m,Flds[i],3,(Func!=(TFunc*)ifelse)?1:0);
+         m=Calc_Compat(ctx->GInterp,m,Flds[i],3,(Func!=(TFunc*)ifelse)?1:0);
          t=DEFSELECTTYPE(t,Flds[i]);
       }
       if( !t || !m )
          return(NULL);
 
       // Make the new field
-      ++GDataN;
-      GData[GDataN]=Def_CopyPromote(m,(GType?GType:(Type?Type:DEFSIGNEDTYPE(t))));
-      Calc_Iterate(GData[GDataN],Func,NFlds,Flds);
+      ++(ctx->GDataN);
+      ctx->GData[ctx->GDataN]=Def_CopyPromote(m,(ctx->GType?ctx->GType:(Type?Type:DEFSIGNEDTYPE(t))));
+      Calc_Iterate(ctx,ctx->GData[ctx->GDataN],Func,NFlds,Flds);
    } else if( Matrix ) {
       TDef *flds[NFlds+1];
       if( NFlds <= 0 )
          return(NULL);
-      ++GDataN;
-      GData[GDataN]=Def_CopyPromote(Flds[0],(GType?GType:(Type?Type:Flds[0]->Type)));
-      flds[0]=GData[GDataN];
+      ++(ctx->GDataN);
+      ctx->GData[ctx->GDataN]=Def_CopyPromote(Flds[0],(ctx->GType?ctx->GType:(Type?Type:Flds[0]->Type)));
+      flds[0]=ctx->GData[ctx->GDataN];
       memcpy(flds+1,Flds,NFlds*sizeof(*Flds));
-      Calc_CallFunc(Func,NFlds+1,flds);
+      Calc_CallFunc(ctx,Func,NFlds+1,flds);
    } else {
-      ++GDataN;
-      GData[GDataN]=Def_New(1,1,1,1,TD_Float64);
-      Def_Set(GData[GDataN],0,0,Calc_CallFunc(Func,NFlds,Flds));
+      ++(ctx->GDataN);
+      ctx->GData[ctx->GDataN]=Def_New(1,1,1,1,TD_Float64);
+      Def_Set(ctx->GData[ctx->GDataN],0,0,Calc_CallFunc(ctx,Func,NFlds,Flds));
    }
 
-   return(Calc_InError() ? NULL : GData[GDataN]);
+   return(Calc_InError(ctx) ? NULL : ctx->GData[ctx->GDataN]);
 }
 
-TDef* Calc_Matrixv(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...) {
+TDef* Calc_Matrixv(Calc_Ctx *ctx,TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,...) {
    TDef *flds[NFlds];
    va_list v;
    int i;
@@ -642,5 +636,5 @@ TDef* Calc_Matrixv(TFunc *Func,int Iterate,int Matrix,TDef_Type Type,int NFlds,.
    }
    va_end(v);
 
-   return Calc_Matrix(Func,Iterate,Matrix,Type,NFlds,flds);
+   return Calc_Matrix(ctx,Func,Iterate,Matrix,Type,NFlds,flds);
 }
