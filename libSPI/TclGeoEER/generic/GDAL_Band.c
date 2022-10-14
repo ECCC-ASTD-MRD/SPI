@@ -56,7 +56,7 @@ static int get_num_threads(void);
 
 static DiscreetGrid      *dscg_create(int nk, int nij);
 static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int *new );
-static void               dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double toNodata, int Mode );
+static int                dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double toNodata, int Mode );
 static void               dscg_free_grid( DiscreetGrid  *dscg );
 
 /*----------------------------------------------------------------------------------------------------------
@@ -2911,6 +2911,7 @@ int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand
    int           nthreads, nmemalloc;
    DiscreetGrid  **Tdsgrid, *dsgrid;
    DiscreetGridPoint  *dgp;
+   int           *thread_pos, cnt;
    int             new;
    TDef          *ToDef, *PosDef, *FromDef;
    char          buffer[256];
@@ -2980,19 +2981,21 @@ int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand
       }
 
    nthreads = get_num_threads();
-   omp_set_num_threads( nthreads );
+//   omp_set_num_threads( nthreads );
 /*
  * each thread have to maintain its own output grid to avoid stepping on each other
  */
    nmemalloc = nthreads;
    Tdsgrid  = (DiscreetGrid **)malloc( nmemalloc*sizeof(DiscreetGrid *));
+   thread_pos = (int *)malloc( nthreads * sizeof(int) );
    for (i = 0; i < nmemalloc ; i++)
       {
       Tdsgrid[i] = dscg_create(toNK,nij);
+      thread_pos[i] = 0;
       }
 
 #pragma omp parallel \
-   shared(sNI,sNJ,posNodata,srcNodata,PosDef,ToDef,Mode,Tdsgrid)\
+   shared(sNI,sNJ,posNodata,srcNodata,PosDef,ToDef,Mode,Tdsgrid,thread_pos)\
    private(tid,i,j,offset,dxi,dyi,ndi,ndj,idxt,vx,dsgrid,new,dgp)
 {
 #ifdef DEBUG
@@ -3008,7 +3011,7 @@ int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand
 #else //_OPENMP
       nthreads = 1;
 #endif //_OPENMP
-      fprintf( stderr, "Number of Threads = %d\n", nthreads );
+      fprintf( stderr, "OpenMP Number of Threads = %d\n", nthreads );
       }
 #endif
 #pragma omp for schedule(static)
@@ -3019,6 +3022,7 @@ int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand
 #else //_OPENMP
       tid = 0;
 #endif //_OPENMP
+      thread_pos[tid] += 1;
       dsgrid = Tdsgrid[tid];
       offset = j*sNI;
       for (i = 0; i < sNI ; i++)
@@ -3072,10 +3076,12 @@ int GDAL_BandToFieldWithPos(Tcl_Interp *Interp,TData *ToGrid,GDAL_Band *FromBand
  */
    for (i = 0; i < nmemalloc ; i++)
       {
-      dscg_reduce_sum( Interp, Tdsgrid[i], fld, acc, fldInitValue, toNodata, Mode );
+      cnt = dscg_reduce_sum( Interp, Tdsgrid[i], fld, acc, fldInitValue, toNodata, Mode );
+//      fprintf( stderr, "Thread = %d  contains %d points,  thread_pos[%d]=%d\n", i , cnt, i, thread_pos[i] );
       dscg_free_grid( Tdsgrid[i] );
       }
    free( Tdsgrid );
+   free( thread_pos );
 #endif
    return(TCL_OK);
 }
@@ -3141,17 +3147,19 @@ static DiscreetGridPoint *dscg_fetch( DiscreetGrid *dscg, unsigned long key, int
    return(dgp);
 }
 
-static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double Nodata, int Mode ) {
+static int dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fld, int *acc, double initValue, double Nodata, int Mode ) {
 
    DiscreetGridPoint  *dgp;
    Tcl_HashEntry      *entry;
    Tcl_HashSearch     searchPtr;
    unsigned long      idxt;
    int                tot_acc=0;
+   int                cnt=0;
    char               buffer[256];
 
    entry = Tcl_FirstHashEntry( &(dscg->table), &searchPtr );
    while ( entry ) {
+      ++cnt;
       dgp = (DiscreetGridPoint *)Tcl_GetHashValue( entry );
       idxt = dgp->key;
       if (fld[idxt] == Nodata) fld[idxt] = initValue;
@@ -3169,6 +3177,7 @@ static void dscg_reduce_sum( Tcl_Interp *Interp, DiscreetGrid  *dscg, double *fl
    }
 
    Tcl_AppendResult(Interp, buffer,(char*)NULL);
+   return cnt;
 }
 
 static void dscg_free_grid( DiscreetGrid *dscg ) {
