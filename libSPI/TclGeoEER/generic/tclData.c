@@ -1306,6 +1306,7 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
    char      expr[PARSE_LEN],*fld;
    int       i,len,tlen=0;
    TDef_Type type=TD_Unknown;
+   char      *mutexlock;
 
    /*Clear the expression*/
    memset(expr,0,PARSE_LEN);
@@ -1345,9 +1346,12 @@ static int Data_Cmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *C
       }
    }
 
-   Tcl_MutexLock(&MUTEX_DATACALC);
+   mutexlock = getenv("MUTEX_DATACALC");
+   if (mutexlock)
+      Tcl_MutexLock(&MUTEX_DATACALC);
    len=Calc_Parse(Interp,0,fld,type,expr);  /*Lexing and Parsing yeyeye*/
-   Tcl_MutexUnlock(&MUTEX_DATACALC);
+   if (mutexlock)
+      Tcl_MutexUnlock(&MUTEX_DATACALC);
 
    return(len);
 }
