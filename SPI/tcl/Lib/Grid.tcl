@@ -63,6 +63,7 @@ namespace eval Grid {
    set Data(SizeWarn)     [expr [info exists ::tk_version]?True:False]             ;# Warn for large grid (Only in interactive mode)
       
    set Param(Id)         "User"                                                    ;# Grid identification (name)
+   set Param(DataDesc)   Float32                                                   ;# Data format of descriptor fields
    set Param(Data)       Float32                                                   ;# Data format of GRID field
    set Param(Type)       "ZE"                                                      ;# Current grid type
    set Param(Types)      { "PS" "PS_N" "PS_S" "ZPS" "LL" "ZL" "ZE" "UTM" }         ;# List of grid types
@@ -719,8 +720,8 @@ proc Grid::CreateZPS { Lat Lon Res NI NJ Angle { ID MODELGRID } } {
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
 
    #----- Compute tic/tac coordinates
-   vexpr ${ID}TIC (1.0+seq(0,NULL,1,$NI)-$xg1)*$ratio
-   vexpr ${ID}TAC reshape((1.0+seq(0,NULL,1,$NJ)-$xg2)*$ratio,1,$Param(NJ))
+   vexpr ($Param(DataDesc))${ID}TIC (1.0+seq(0,NULL,1,$NI)-$xg1)*$ratio
+   vexpr ($Param(DataDesc))${ID}TAC reshape((1.0+seq(0,NULL,1,$NJ)-$xg2)*$ratio,1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP $grtyp 0.0 0.0 1000.0 $dgrw
@@ -808,8 +809,8 @@ proc Grid::CreateZL { Lat0 Lon0 Lat1 Lon1 ResX ResY Angle { ID MODELGRID } } {
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
 
    #----- Compute tic/tac coordinates
-   vexpr ${ID}TIC seq($Lon0,NULL,$ResX,$Param(NI))
-   vexpr ${ID}TAC reshape(seq($Lat0,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
+   vexpr ($Param(DataDesc))${ID}TIC seq($Lon0,NULL,$ResX,$Param(NI))
+   vexpr ($Param(DataDesc))${ID}TAC reshape(seq($Lat0,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
@@ -837,8 +838,8 @@ proc Grid::CreateZLFromCenter { LatC LonC NI NJ ResX ResY Angle { ID MODELGRID }
    fstdfield free ${ID} ${ID}TIC ${ID}TAC
 
    #----- Compute tic/tac coordinates
-   vexpr ${ID}TIC seq($LonC-$ResX*$Param(NI)/2,NULL,$ResX,$Param(NI))
-   vexpr ${ID}TAC reshape(seq($LatC-$ResY*$Param(NJ)/2,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
+   vexpr ($Param(DataDesc))${ID}TIC seq($LonC-$ResX*$Param(NI)/2,NULL,$ResX,$Param(NI))
+   vexpr ($Param(DataDesc))${ID}TAC reshape(seq($LatC-$ResY*$Param(NJ)/2,NULL,$ResY,$Param(NJ)),1,$Param(NJ))
 
    fstdfield define ${ID}TIC -NOMVAR ">>" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
    fstdfield define ${ID}TAC -NOMVAR "^^" -ETIKET "GRID" -TYPVAR X -GRTYP L 0 0 1.0 1.0
