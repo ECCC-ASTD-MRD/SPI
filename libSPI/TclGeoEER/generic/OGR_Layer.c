@@ -550,8 +550,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    char          buf[32],*str;
 
    static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-invalid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-lupdate","-lintersection","-lunion","-lsymdifference","-lidentity","-lclip","-lerase","-buffer","-difference","-intersection",
-                                 "-clip","-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,LUPDATE,LINTERSECTION,LUNION,LSYMDIFFERENCE,LIDENTITY,LCLIP,LERASE,BUFFER,DIFFERENCE,INTERSECTION,CLIP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL };
+                                 "-clip","-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull","-splittile",NULL };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,LUPDATE,LINTERSECTION,LUNION,LSYMDIFFERENCE,LIDENTITY,LCLIP,LERASE,BUFFER,DIFFERENCE,INTERSECTION,CLIP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL,SPLITTILE };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -1356,6 +1356,94 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             Tcl_SetVar2Ex(Interp,Tcl_GetString(Objv[1]),buf,Tcl_NewStringObj(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(layer->Def,j)),-1),0x0);
          }
          break;
+
+      case SPLITTILE:
+         {
+            int npts;
+            OGRGeometryH *geoms,geom;
+            OGRFeatureH feature;
+
+            if (Objc<2 || Objc>3) {
+               Tcl_WrongNumArgs(Interp,0,Objv,"result [MaxPoints]");
+               return(TCL_ERROR);
+            }
+
+            // Process MaxPoints (arg 2)
+            if( Objc<3 ) {
+               // Default value
+               npts = 100;
+            } else if( Tcl_GetIntFromObj(Interp,Objv[2],&npts)!=TCL_OK ) {
+               Tcl_AppendResult(Interp,"\n   ",__func__,": Expected integer for 'MaxPoints' but got \"",Tcl_GetString(Objv[2]),"\"",(char *)NULL);
+               return(TCL_ERROR);
+            }
+
+            // Allocate the memory for the geometries
+            if( !(geoms=malloc(layer->NFeature*sizeof(*geoms))) ) {
+               Tcl_AppendResult(Interp,"\n   ",__func__,": Could not allocate memory for geometries",NULL);
+               return(TCL_ERROR);
+            }
+
+            // Loop on the selected features, split the polygons into tiles and count the number of resulting features
+            n = 0;
+            for(f=0; f<layer->NFeature; ++f) {
+               if( layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f])) ) {
+                  switch( OGR_G_GetGeometryType(geom) ) {
+                     case wkbPolygon:
+                     case wkbMultiPolygon:
+                        if( (geoms[f]=OGM_PolySplitTile(geom,npts,NULL)) ) {
+                           n += OGR_G_GetGeometryType(geoms[f])==wkbMultiPolygon ? OGR_G_GetGeometryCount(geoms[f]) : 1;
+                        } else {
+                           geoms[f] = OGR_G_Clone(geom);
+                           ++n;
+                        }
+                        break;
+                     default:
+                        geoms[f] = NULL;
+                        ++n;
+                        break;
+                  }
+               }
+            }
+
+            // Create the resulting layer with our calculated number of resulting features
+            if( !(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),n)) ) {
+               Tcl_AppendResult(Interp,"\n   ",__func__,": Could not allocate memory for features",NULL);
+               free(geoms);
+               return(TCL_ERROR);
+            }
+
+            // Copy the selected features (cloned as many times as need be) to the result layer
+            for(f=0; f<layer->NFeature; ++f) {
+               if( layer->Select[f] && layer->Feature[f] && OGR_F_GetGeometryRef(layer->Feature[f]) ) {
+                  if( !geoms[f] ) {
+                     // Copy the feature and keep the original geometry
+                     layerres->Feature[layerres->NFeature++] = OGR_F_Clone(layer->Feature[f]);
+                  } else if( OGR_G_GetGeometryType(geoms[f]) == wkbMultiPolygon ) {
+                     // No need to clone geometries many times that we will just overwrite
+                     feature = OGR_F_Clone(layer->Feature[f]);
+                     OGR_F_SetGeometry(feature,NULL);
+
+                     // Copy the feature as many times as we need be for each tile (sub-polygon)
+                     for(j=OGR_G_GetGeometryCount(geoms[f])-1; j>=0; --j) {
+                        layerres->Feature[layerres->NFeature] = OGR_F_Clone(feature);
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],OGR_G_GetGeometryRef(geoms[f],j));
+                        OGR_G_RemoveGeometry(geoms[f],j,0);
+                     }
+
+                     OGR_F_Destroy(feature);
+                     OGR_G_DestroyGeometry(geoms[f]);
+                  } else {
+                     layerres->Feature[layerres->NFeature] = OGR_F_Clone(layer->Feature[f]);
+                     OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],geoms[f]);
+                  }
+               }
+            }
+
+            // Note that the geometries themselves have been assigned directly, so we do not want to free them
+            free(geoms);
+         }
+         break;
+
    }
 #else
    App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
