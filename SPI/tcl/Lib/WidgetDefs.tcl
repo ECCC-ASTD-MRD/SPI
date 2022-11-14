@@ -788,6 +788,20 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
    return $frm
 }
 
+#================================ DOCUMENTER ================================
+# Nom      : <UnitOption::EntryKeyReleaseEventManager>
+# Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Widget's entry key release event manager
+#
+# Parametres :
+#  <path> : Widget path
+#
+# Retour :
+#
+# Remarques :
+#
+#================================ DOCUMENTER ================================
 proc UnitOption::EntryKeyReleaseEventManager { path } {
    variable Textvar
 
@@ -872,6 +886,20 @@ proc UnitOption::SetTextvar { path value } {
    puts "SetTextvar : $textvar = [set $textvar]"
 }
 
+#================================ DOCUMENTER ================================
+# Nom      : <UnitOption::SetTextvarTrace>
+# Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Set trace on widget's textvar
+#
+# Parametres :
+#  <path> : Widget path
+#
+# Retour :
+#
+# Remarques :
+#
+#================================ DOCUMENTER ================================
 proc UnitOption::SetTextvarTrace { path } {
    variable Data
 
@@ -900,6 +928,20 @@ proc UnitOption::TextvarTraceEventManager { path args } {
    UpdateEntry $path
 }
 
+#================================ DOCUMENTER ================================
+# Nom      : <UnitOption::UnsetTextvarTrace>
+# Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Unset trace on widget's textvar
+#
+# Parametres :
+#  <path> : Widget path
+#
+# Retour :
+#
+# Remarques :
+#
+#================================ DOCUMENTER ================================
 proc UnitOption::UnsetTextvarTrace { path } {
    variable Data
 
