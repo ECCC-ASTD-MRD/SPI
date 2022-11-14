@@ -692,7 +692,17 @@ proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
 
    set correlationFrom [lindex $correlations $fromUnitIdx]
    set correlationTo [lindex $correlations $toUnitIdx]
-   if { [catch {set value [FormatNumber [expr double($value)/$correlationFrom*$correlationTo]]} fid] } {
+
+   if { [catch {
+      #----- Different operation orders can give differing results due to precision.
+      #-----   This way, we maximize the precision of the outcome
+      set value1 [FormatNumber [expr 1.0*$correlationTo/$correlationFrom*$value]]
+      set value2 [FormatNumber [expr 1.0*$correlationTo*$value/$correlationFrom]]
+      set value $value1
+      if { [string length $value1] > [string length $value2] } {
+         set value $value2
+      }
+   } fid] } {
       #----- Not doing anything. The procedure will return the faulty input value.
    }
 
