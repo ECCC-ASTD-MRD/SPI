@@ -777,15 +777,23 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
       }
 
       entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight)
-      bind $path.ent <KeyRelease> [subst -novariables {UnitOption::SetTextvar [format $path] $UnitOption::Textvar([format $path].ent)}]
+      bind $path.ent <KeyRelease> [list UnitOption::EntryKeyReleaseEventManager $path]
       grid $path.ent -row 0 -column 3 -sticky nswe
 
       grid columnconfigure $path 3 -weight 1
 
    #----- Trace
-   trace add variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
+   SetTextvarTrace $path
 
    return $frm
+}
+
+proc UnitOption::EntryKeyReleaseEventManager { path } {
+   variable Textvar
+
+   UnsetTextvarTrace $path
+   SetTextvar $path $Textvar($path.ent)
+   SetTextvarTrace $path
 }
 
 #================================ DOCUMENTER ================================
@@ -864,6 +872,15 @@ proc UnitOption::SetTextvar { path value } {
    puts "SetTextvar : $textvar = [set $textvar]"
 }
 
+proc UnitOption::SetTextvarTrace { path } {
+   variable Data
+
+   #----- Shorthands
+   set textvar $Data(${path}Textvar)
+
+   trace add variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
+}
+
 #================================ DOCUMENTER ================================
 # Nom      : <UnitOption::TextvarTraceEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
@@ -881,6 +898,15 @@ proc UnitOption::SetTextvar { path value } {
 #================================ DOCUMENTER ================================
 proc UnitOption::TextvarTraceEventManager { path args } {
    UpdateEntry $path
+}
+
+proc UnitOption::UnsetTextvarTrace { path } {
+   variable Data
+
+   #----- Shorthands
+   set textvar $Data(${path}Textvar)
+
+   trace remove variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
 }
 
 #================================ DOCUMENTER ================================
