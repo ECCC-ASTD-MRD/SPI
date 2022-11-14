@@ -953,6 +953,11 @@ proc UnitOption::UpdateMenuItems { path } {
    variable Data
    variable Textvar
 
+   #----- Early stopping
+   if { [winfo exists $path] } {
+      return
+   }
+
    #----- Shorthands
    set values $Data(${path}Values)
    set valuesUnitIdx $Data(${path}ValuesUnitIdx)
