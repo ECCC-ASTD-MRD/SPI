@@ -883,7 +883,7 @@ proc UnitOption::SetTextvar { path value } {
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
    set $textvar [Convert $path $value $currentUnitIdx $textvarUnitIdx]
-   puts "SetTextvar : $textvar = [set $textvar]"
+   #puts "SetTextvar : $textvar = [set $textvar]"
 }
 
 #================================ DOCUMENTER ================================
@@ -996,7 +996,7 @@ proc UnitOption::UpdateMenuItems { path } {
    variable Textvar
 
    #----- Early stopping
-   if { [winfo exists $path] } {
+   if { [winfo exists $path.mbtn] == 0 } {
       return
    }
 
