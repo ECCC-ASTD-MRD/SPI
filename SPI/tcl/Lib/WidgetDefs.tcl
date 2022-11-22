@@ -783,7 +783,6 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
 
       grid columnconfigure $path 3 -weight 1
 
-
    #----- Trace
    SetTextvarTrace $path
 
