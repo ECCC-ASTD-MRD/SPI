@@ -778,9 +778,11 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
 
       entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight)
       bind $path.ent <KeyRelease> [list UnitOption::EntryKeyReleaseEventManager $path]
+      bind $path.ent <Destroy> [list UnitOption::UnsetTextvarTrace $path]
       grid $path.ent -row 0 -column 3 -sticky nswe
 
       grid columnconfigure $path 3 -weight 1
+
 
    #----- Trace
    SetTextvarTrace $path
