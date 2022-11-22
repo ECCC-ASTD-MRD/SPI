@@ -632,7 +632,7 @@ proc IcoMenu::Set { Frame Value } {
    eval set $Data(Var$Frame) \"$Value\"
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::ButtonEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -645,7 +645,7 @@ proc IcoMenu::Set { Frame Value } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::ButtonEventManager { path } {
    variable Data
    variable Textvar
@@ -665,7 +665,7 @@ proc UnitOption::ButtonEventManager { path } {
    UpdateMenuItems $path
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::Convert>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -682,7 +682,7 @@ proc UnitOption::ButtonEventManager { path } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
    variable Data
    variable Textvar
@@ -709,7 +709,7 @@ proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
    return $value
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::Create>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -730,7 +730,7 @@ proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} } {
    global GDefs
    variable Data
@@ -788,7 +788,7 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
    return $frm
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::EntryKeyReleaseEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -801,7 +801,7 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::EntryKeyReleaseEventManager { path } {
    variable Textvar
 
@@ -810,7 +810,7 @@ proc UnitOption::EntryKeyReleaseEventManager { path } {
    SetTextvarTrace $path
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::FormatNumber>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -824,7 +824,7 @@ proc UnitOption::EntryKeyReleaseEventManager { path } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::FormatNumber { value } {
    #----- Remove trailing zeros
    set value [expr $value*1]
@@ -837,7 +837,7 @@ proc UnitOption::FormatNumber { value } {
    return $value
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::FormatNumberLabel>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -851,7 +851,7 @@ proc UnitOption::FormatNumber { value } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::FormatNumberLabel { value } {
    #----- Force 4 decimals
    set value [format "%.4f" $value]
@@ -859,7 +859,7 @@ proc UnitOption::FormatNumberLabel { value } {
    return [FormatNumber $value]
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::SetTextvar>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -873,7 +873,7 @@ proc UnitOption::FormatNumberLabel { value } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::SetTextvar { path value } {
    variable Data
 
@@ -883,10 +883,9 @@ proc UnitOption::SetTextvar { path value } {
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
    set $textvar [Convert $path $value $currentUnitIdx $textvarUnitIdx]
-   #puts "SetTextvar : $textvar = [set $textvar]"
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::SetTextvarTrace>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -899,7 +898,7 @@ proc UnitOption::SetTextvar { path value } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::SetTextvarTrace { path } {
    variable Data
 
@@ -909,7 +908,7 @@ proc UnitOption::SetTextvarTrace { path } {
    trace add variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::TextvarTraceEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -923,12 +922,12 @@ proc UnitOption::SetTextvarTrace { path } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::TextvarTraceEventManager { path args } {
    UpdateEntry $path
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::UnsetTextvarTrace>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -941,7 +940,7 @@ proc UnitOption::TextvarTraceEventManager { path args } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::UnsetTextvarTrace { path } {
    variable Data
 
@@ -951,7 +950,7 @@ proc UnitOption::UnsetTextvarTrace { path } {
    trace remove variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::UpdateEntry>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -964,7 +963,7 @@ proc UnitOption::UnsetTextvarTrace { path } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::UpdateEntry { path } {
    variable Data
    variable Textvar
@@ -977,7 +976,7 @@ proc UnitOption::UpdateEntry { path } {
    set Textvar($path.ent) [Convert $path [set $textvar] $textvarUnitIdx $currentUnitIdx]
 }
 
-#================================ DOCUMENTER ================================
+#============================================================================
 # Nom      : <UnitOption::UpdateMenuItems>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -990,7 +989,7 @@ proc UnitOption::UpdateEntry { path } {
 #
 # Remarques :
 #
-#================================ DOCUMENTER ================================
+#============================================================================
 proc UnitOption::UpdateMenuItems { path } {
    variable Data
    variable Textvar
