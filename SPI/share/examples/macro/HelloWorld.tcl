@@ -18,8 +18,21 @@ proc Macro::HelloWorld::Execute { } {
 
    Macro::Info { "Bonjour le monde" "Hello world" }
    
-   PrintBox::Image $Page::Data(Frame) png HelloWorld
-   SPI::Quit
+   set f    1
+   set size -18
+   set fonts { charter courier fix helvetica arial lucida "new century schoolbook" terminal times }
+
+   foreach font $fonts {
+    
+      font create Font$f -family $font -weight bold -size $size
+      $Page::Data(Canvas) create text 10 [expr $f*20] -text "Hello World ($font $size)" -font Font$f -anchor nw
+      incr f
+   }
+   
+   if { $SPI::Param(Batch) } {
+      PrintBox::Image $Page::Data(Frame) png HelloWorld
+      SPI::Quit
+   }
 }
 
 proc Macro::HelloWorld::Clean { } {

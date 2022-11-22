@@ -90,8 +90,11 @@ if [[ $XVFB -ne 0 ]]; then
    else
       FONTDIR=/usr/share/fonts/X11
    fi
-
    fp_set="-fp ${FONTDIR}/misc,${FONTDIR}/cyrillic,${FONTDIR}/Type1,${FONTDIR}/100dpi,${FONTDIR}/75dpi"
+
+   if [[ -d /etc/X11/fontpath.d ]]; then
+      fp_set="-fp catalogue:/etc/X11/fontpath.d"
+   fi
 
    xdummy=`ls -1  /usr/lib*/xorg/modules/drivers/dummy_drv.so 2>/dev/null`
    if [[ -f ${xdummy} && $XVFB -eq 1 ]]; then
