@@ -903,8 +903,13 @@ proc Graph::Time::Data { GR { Data { } } { Files { } } } {
             set ip3 -1
          }
 
+         if { $Graph::Data(TYPVAR) } {
+            set typvar [fstdfield define $item -TYPVAR]
+         } else {
+            set typvar ""
+         }
          set data(Data$item) [MetData::FindAll TIME$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
-            -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
+            -1 $ip3 $typvar [fstdfield define $item -NOMVAR]]
          eval lappend data(Tmp) $data(Data$item)
 
          #----- Check if number of time setp correspond when the calculatro is used

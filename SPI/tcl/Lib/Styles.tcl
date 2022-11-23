@@ -360,7 +360,7 @@ proc Styles::Write { Channel Spec { Style "" } } {
       if { [lsearch -exact $fonts FONT$Style]==-1 } {
          lappend fonts $font
          puts $Channel "\ncatch { font create FONT$Style }"
-         puts $Channel "font configure FONT$Style -family [font configure $font -family] -weight [font configure $font -weight] -size [font configure $font -size]\
+         puts $Channel "font configure FONT$Style -family \"[font configure $font -family]\" -weight [font configure $font -weight] -size [font configure $font -size]\
                -slant [font configure $font -slant] -underline [font configure $font -underline] -overstrike [font configure $font -overstrike]"
       }
       set dfont "-font \"FONT$Style\""

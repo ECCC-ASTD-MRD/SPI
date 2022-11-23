@@ -179,11 +179,6 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
             } else {
                int  prec,width;
 
-               if (strlen(Tcl_GetString(Objv[1]))>10) {
-                  Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field name too long (max 10 char)",(char*)NULL);
-                  return(TCL_ERROR);
-               }
-
                j=OGR_FD_GetFieldIndex(layer->Def,Tcl_GetString(Objv[1]));
                if (j!=-1) {
                   Tcl_AppendResult(Interp,"\n   OGR_LayerDefine: field already exists",(char*)NULL);

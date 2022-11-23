@@ -993,9 +993,15 @@ proc Graph::TimeSection::Data { GR { Data { } } { Files { } } } {
             set ip3 -1
          }
 
+         if { $Graph::Data(TYPVAR) } {
+            set typvar [fstdfield define $item -TYPVAR]
+         } else {
+            set typvar ""
+         }
+
          SPI::Progress 0 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
          set lst [MetData::FindAll TIMESECTION$GR$item $fids -1 [fstdfield define $item -ETIKET] [fstdfield define $item -IP1] \
-            -1 $ip3 [fstdfield define $item -TYPVAR] [fstdfield define $item -NOMVAR]]
+            -1 $ip3 $typvar [fstdfield define $item -NOMVAR]]
          SPI::Progress 5 [lindex $Graph::Msg(Reading) $GDefs(Lang)]
          set nb [expr 95.0/[llength $lst]]
 
