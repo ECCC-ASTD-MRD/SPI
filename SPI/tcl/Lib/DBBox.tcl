@@ -253,8 +253,6 @@ proc DBBox::ReadDB { DB } {
       return -code error $err
    }
 
-   puts "CMB : [lmap db [array names Param *File] {string range $db 0 end-4}]"
-   puts "$Param(${DB}File)"
    #----- Read the DB
 
    set idxs $Param(${DB}Idx)
