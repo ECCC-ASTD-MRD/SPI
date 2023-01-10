@@ -83,9 +83,6 @@ int TclFSTD_Init(Tcl_Interp *Interp) {
 
    if (!FSTDInit++) {
       Tcl_InitHashTable(&FSTD_FileTable,TCL_STRING_KEYS);
-
-      c_fstopc("MSGLVL","WARNIN",0);
-      c_fstopc("TOLRNC","SYSTEM",0);
       c_ezsetopt("VERBOSE","NO");
 
    }
