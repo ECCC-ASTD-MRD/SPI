@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 #----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../cmake_rpn)
-foreach(PATH $ENV{EC_CMAKE_MODULE_PATH})
-   list(APPEND CMAKE_MODULE_PATH ${PATH})
-endforeach()
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
 
 set(EC_NO_BUILD true)      # No build necessary
 include(ec_init)           # Initialise compilers and ec specific functions

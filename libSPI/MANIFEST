@@ -1,5 +1,5 @@
 NAME       : libSPI
-VERSION    : 8.3.1
+VERSION    : 8.3.2
 BUILD      : Release
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API libraries
@@ -13,8 +13,8 @@ FLT    >= 1.0.0
 URP    >= 2.16.0
 GDB    >= 1.0.0
 EER    >= 4.1.0
-RMN   ~>= 19.6.0
-VGRID  ~= 6.5.0
+rmn   ~>= 20.0.0
+vgrid  ~= 6.9.0
 DistanceMetrics ~>= 1.0.0
 
 # External dependencies
