@@ -19,7 +19,7 @@ DistanceMetrics ~>= 1.0.0
 
 # External dependencies
 TCL     = 8.6.6
-TCLLIB  = 1.18.0
+TCLLIB  = 1.21.0
 TCLTLS  = 1.7.12
 TKTABLE = 2.10.0
 TKDND   = 2.8.0
