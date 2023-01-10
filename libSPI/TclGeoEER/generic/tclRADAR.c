@@ -313,7 +313,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
 
    // In debug mode, print radar data
-   if (App_LogLevel(NULL)==DEBUG) 
+   if (App_LogLevel(NULL)==APP_DEBUG) 
       Radar_FileParse(&file->Data);
    
    for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            // Loop on the Sweeps
