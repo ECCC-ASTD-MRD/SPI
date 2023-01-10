@@ -81,18 +81,18 @@ int Model_LoadFLT(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    NMT=0;
    GCOL[0]=GCOL[1]=GCOL[2]=GCOL[3]=0.0;
 
-   App_Log(DEBUG,"%s: Projection Type %i\n",__func__,flt->header->projectionType);
-   App_Log(DEBUG,"%s: Ellipsoid Type %i\n",__func__,flt->header->earthEllipsoidModel);
-   App_Log(DEBUG,"%s: Coordinates units %i\n",__func__,flt->header->coordUnits);
-   App_Log(DEBUG,"%s: Origin %f,%f\n",__func__,flt->header->originDBLatitude,flt->header->originDBLongitude);
-   App_Log(DEBUG,"%s: Extent %f,%f - %f,%f\n",__func__,flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
+   App_Log(APP_DEBUG,"%s: Projection Type %i\n",__func__,flt->header->projectionType);
+   App_Log(APP_DEBUG,"%s: Ellipsoid Type %i\n",__func__,flt->header->earthEllipsoidModel);
+   App_Log(APP_DEBUG,"%s: Coordinates units %i\n",__func__,flt->header->coordUnits);
+   App_Log(APP_DEBUG,"%s: Origin %f,%f\n",__func__,flt->header->originDBLatitude,flt->header->originDBLongitude);
+   App_Log(APP_DEBUG,"%s: Extent %f,%f - %f,%f\n",__func__,flt->header->swDBLatitude,flt->header->swDBLongitude,flt->header->neDBLatitude,flt->header->neDBLongitude);
 
    nobj=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_OBJECT);
-   App_Log(DEBUG,"%s: Found %i object\n",__func__,nobj);
+   App_Log(APP_DEBUG,"%s: Found %i object\n",__func__,nobj);
    Model_ObjectAdd(M,nobj);
 
    M->NMt=ModelFLT_NodeCount((FltNode*)(flt->header),FLTRECORD_MATERIAL);
-   App_Log(DEBUG,"%s: Found %i material\n",__func__,M->NMt);
+   App_Log(APP_DEBUG,"%s: Found %i material\n",__func__,M->NMt);
    M->NMt=1024;
    M->Mt=(TMaterial*)calloc(M->NMt,sizeof(TMaterial));
 
@@ -139,11 +139,11 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
    /*create instance definitions*/
    switch (Node->type) {
       case FLTRECORD_COMMENT:
-         App_Log(DEBUG,"%s: FLTRECORD_COMMENT (%s)\n",__func__,((FltComment*)Node)->text);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_COMMENT (%s)\n",__func__,((FltComment*)Node)->text);
          break;
 
       case FLTRECORD_EXTERNALREFERENCE:
-         App_Log(DEBUG,"%s: FLTRECORD_EXTERNALREFERENCE\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_EXTERNALREFERENCE\n",__func__);
          /*Check for older software that did not append ".flt" to the DB name*/
          path[0]=0;
          strcat(path,ext->path);
@@ -152,7 +152,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             strcat(path,".flt");
 
          if (fltFindFile(FLT,path,file)) {
-            App_Log(DEBUG,"%s: External reference (%s)\n",__func__,file);
+            App_Log(APP_DEBUG,"%s: External reference (%s)\n",__func__,file);
 /*
             e = (sglNode *)loadModelFLT(filepath, 0 );
             if(!e)
@@ -205,13 +205,13 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
                parent->addChild(ext_group);
          } else {
             delete ext_group;
-            App_Log(ERROR,"%s: External reference (%s) not found\n",__func__,file);
+            App_Log(APP_ERROR,"%s: External reference (%s) not found\n",__func__,file);
 */
          }
          break;
 
       case FLTRECORD_MATRIX:
-         App_Log(DEBUG,"%s: FLTRECORD_MATRIX\n,__func__");
+         App_Log(APP_DEBUG,"%s: FLTRECORD_MATRIX\n,__func__");
 /*
          glMatrixMode(GL_MODELVIEW);
          glPushMatrix();
@@ -220,11 +220,11 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_MESH:
-         App_Log(DEBUG,"%s: FLTRECORD_MESH\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_MESH\n",__func__);
          break;
 
       case FLTRECORD_FACE:
-         App_Log(DEBUG,"%s: FLTRECORD_FACE\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_FACE\n",__func__);
 
          /*Skip hidden faces*/
          if (!GOBJ->Fc || (face->miscFlags & FLTFACEMF_HIDDEN)) {
@@ -234,7 +234,7 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          NFCE++;
 
          if (NFCE>GOBJ->NFc) {
-            App_Log(ERROR,"%s: Too many faces (%i>%i)\n",__func__,NFCE,GOBJ->NFc);
+            App_Log(APP_ERROR,"%s: Too many faces (%i>%i)\n",__func__,NFCE,GOBJ->NFc);
             ok=0;
             break;
          }
@@ -295,14 +295,14 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_VERTEXLIST:
-         App_Log(DEBUG,"%s: FLTRECORD_VERTEXLIST (%i)\n",__func__,vert->numVerts);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_VERTEXLIST (%i)\n",__func__,vert->numVerts);
 
          if (!GOBJ->Fc || !GOBJ->Vr || NSW) {
             break;
          }
 
          if (NVR+vert->numVerts>GOBJ->NVr) {
-            App_Log(ERROR,"%s: Too many vertices (%i>%i)\n",__func__,NVR+vert->numVerts,GOBJ->NVr);
+            App_Log(APP_ERROR,"%s: Too many vertices (%i>%i)\n",__func__,NVR+vert->numVerts,GOBJ->NVr);
             ok=0;
             break;
          }
@@ -330,9 +330,9 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
             if (GOBJ->Vr) {
                GOBJ->Vr[i][0]=vert->list[v]->x;GOBJ->Vr[i][1]=vert->list[v]->y;GOBJ->Vr[i][2]=vert->list[v]->z;
             } else {
-               App_Log(ERROR,"%s: Object vertices list has not been initialized (%i)\n",__func__,GOBJ->NVr);
+               App_Log(APP_ERROR,"%s: Object vertices list has not been initialized (%i)\n",__func__,GOBJ->NVr);
             }
-            App_Log(DEBUG,"%s: Vertex(%i) (%f,%f,%f)\n",__func__,v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
+            App_Log(APP_DEBUG,"%s: Vertex(%i) (%f,%f,%f)\n",__func__,v,vert->list[v]->x,vert->list[v]->y,vert->list[v]->z);
 
             GOBJ->Fc[NFCE].Idx[v]=i;
          }
@@ -353,49 +353,49 @@ int ModelFLT_NodeProcess(T3DModel *M,FltNode *Node,FltFile *FLT) {
          break;
 
       case FLTRECORD_INSTANCEDEFINITION:
-         App_Log(DEBUG,"%s: FLTRECORD_INSTANCEDEFINITION\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_INSTANCEDEFINITION\n",__func__);
         break;
       case FLTRECORD_INSTANCEREFERENCE:
-         App_Log(DEBUG,"%s: FLTRECORD_INSTANCEREFERENCE\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_INSTANCEREFERENCE\n",__func__);
          break;
       case FLTRECORD_LOD:
-         App_Log(DEBUG,"%s: FLTRECORD_LOD\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_LOD\n",__func__);
          break;
       case FLTRECORD_SWITCH:
-         App_Log(DEBUG,"%s: FLTRECORD_SWITCH\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_SWITCH\n",__func__);
          /*We have to bypass the switch (no clue what they're used for*/
          NSW=1;
          break;
       case FLTRECORD_DOF:
-         App_Log(DEBUG,"%s: FLTRECORD_DOF\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_DOF\n",__func__);
          break;
 
       case FLTRECORD_OBJECT:
          NOBJ++;
          NSW=0;
-         App_Log(DEBUG,"%s: FLTRECORD_OBJECT (%i)\n",__func__,NOBJ);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_OBJECT (%i)\n",__func__,NOBJ);
          GOBJ=&(M->Obj[NOBJ]);
 
          if (NOBJ>M->NObj) {
             ok=0;
-            App_Log(ERROR,"%s: Too many objects (%i>%i)\n",__func__,NOBJ,M->NObj);    
+            App_Log(APP_ERROR,"%s: Too many objects (%i>%i)\n",__func__,NOBJ,M->NObj);    
             break;
          }
          NFCE=ModelFLT_NodeCount(Node,FLTRECORD_FACE);
          Model_ObjectFaceAdd(GOBJ,NFCE);
          NFCE=-1;
-         App_Log(DEBUG,"%s: Found %i Face\n",__func__,GOBJ->NFc);
+         App_Log(APP_DEBUG,"%s: Found %i Face\n",__func__,GOBJ->NFc);
          NVR=0;
          GOBJ->NVr=ModelFLT_NodeCount(Node,FLTRECORD_VERTEXLIST);
          GOBJ->Vr=(Vect3f*)calloc(GOBJ->NVr,sizeof(Vect3f));
-         App_Log(DEBUG,"%s: Found %i Vertex\n",__func__,GOBJ->NVr);
+         App_Log(APP_DEBUG,"%s: Found %i Vertex\n",__func__,GOBJ->NVr);
          break;
 
       case FLTRECORD_GROUP:
-         App_Log(DEBUG,"%s: FLTRECORD_GROUP\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_GROUP\n",__func__);
          break;
       case FLTRECORD_BSP:
-         App_Log(DEBUG,"%s: FLTRECORD_BSP\n",__func__);
+         App_Log(APP_DEBUG,"%s: FLTRECORD_BSP\n",__func__);
          break;
    }
 

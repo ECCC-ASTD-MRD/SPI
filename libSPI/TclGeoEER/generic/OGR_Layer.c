@@ -469,7 +469,7 @@ int OGR_LayerDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
       }
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1024,7 +1024,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
                         layer->Changed=1; 
                      }
                   } else {
-                     App_Log(ERROR,"%s: Bad Buffer on feature %li\n",__func__,f);
+                     App_Log(APP_ERROR,"%s: Bad Buffer on feature %li\n",__func__,f);
                   }
                }
             }
@@ -1353,7 +1353,7 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -3263,7 +3263,7 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
    extern TIcon IconList[];
 
    if (!Layer || !spec) {
-      App_Log(ERROR,"%s: Invalid layer object\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid layer object\n",__func__);
       return(0);
    }
 
@@ -3277,14 +3277,14 @@ int OGR_LayerRender(Tcl_Interp *Interp,Projection *Proj,ViewportItem *VP,OGR_Lay
 
    /*Check for invalid georeference*/
    if (!GeoRef_Valid(Layer->GRef)) {
-      App_Log(ERROR,"%s: Invalid georeference\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid georeference\n",__func__);
       return(0);
    }
 
    if (!Layer->LFeature) {
       Layer->LFeature=glGenLists(Layer->NFeature);
       if (!Layer->LFeature) {
-         App_Log(ERROR,"%s: Unable to allocate display list\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate display list\n",__func__);
          return(0);
       }
    }

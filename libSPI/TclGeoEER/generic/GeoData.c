@@ -92,7 +92,7 @@ Vect3d* VBuffer_Copy(Vect3d *To,unsigned int Size) {
    if (vbuf->Buffer && Size<=vbuf->Size) {
       return((Vect3d*)memcpy(To,vbuf->Buffer,Size*sizeof(Vect3d)));
    } else {
-      App_Log(ERROR,"%s: Invalid size (%i>%i)\n",__func__,Size,vbuf->Size);
+      App_Log(APP_ERROR,"%s: Invalid size (%i>%i)\n",__func__,Size,vbuf->Size);
       return(NULL);
    }
 }
@@ -121,7 +121,7 @@ Vect3d* VBuffer_Alloc(unsigned int Size) {
          vbuf->Buffer=buf;
          vbuf->Size=Size;
       } else {
-         App_Log(ERROR,"%s: Could not allocate coordinate buffer VBuffer (%i)\n",__func__,Size);
+         App_Log(APP_ERROR,"%s: Could not allocate coordinate buffer VBuffer (%i)\n",__func__,Size);
       }
    }
    return(buf);
@@ -900,7 +900,7 @@ void GDB_GeoTess(Tcl_Interp *Interp,GDB_Geo *Geo) {
          }
       }
    } else {
-      App_Log(WARNING,"%s: Unable to obtain valid tesselator\n",__func__);
+      App_Log(APP_WARNING,"%s: Unable to obtain valid tesselator\n",__func__);
    }
 }
 
@@ -2346,7 +2346,7 @@ GLuint Texture_Read(char *File) {
    char           *map=NULL;
 
    if (!(set=GDALOpen(File,GA_ReadOnly))) {
-      App_Log(ERROR,"%s: Unable to open texture file %s\n",__func__,File);
+      App_Log(APP_ERROR,"%s: Unable to open texture file %s\n",__func__,File);
       return(-1);
    }
 
@@ -2359,7 +2359,7 @@ GLuint Texture_Read(char *File) {
 
    n=n>3?3:n;
    if (!(buf=(char*)malloc(w*h*n*s))) {
-      App_Log(ERROR,"%s: Unable to alocate system memory for texture\n",__func__);
+      App_Log(APP_ERROR,"%s: Unable to alocate system memory for texture\n",__func__);
       GDALClose(set);
       return(-1);
    }
@@ -2368,7 +2368,7 @@ GLuint Texture_Read(char *File) {
    for(i=0;i<n;i++) {
       hband=GDALGetRasterBand(set,i+1);
       if (GDALRasterIOEx(hband,GF_Read,0,0,w,h,buf+i*s,w,h,t,s*n,0,NULL)==CE_Failure) {
-         App_Log(ERROR,"%s: Unable to read texture data\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to read texture data\n",__func__);
          return(-1);
       }
    }

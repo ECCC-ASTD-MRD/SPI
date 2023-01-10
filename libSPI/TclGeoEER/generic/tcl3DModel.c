@@ -748,7 +748,7 @@ T3DScene *Model_SceneAdd(T3DModel *Model,T3DScene *Parent,int Nb) {
    } else {
       if (!Parent) {
          if (Nb>1 || Model->Scn) {
-            App_Log(ERROR,"%s: Root scene count must be 0",__func__);
+            App_Log(APP_ERROR,"%s: Root scene count must be 0",__func__);
          }
          if (!(Model->Scn=(T3DScene*)malloc(sizeof(T3DScene)))) {
             return(NULL);
@@ -1206,7 +1206,7 @@ void Model_ExtentObj(T3DModel *Model) {
 
             /*Test for overflow, should not happend but I've seen it on some models*/
             if (idx>obj->NVr) {
-               App_Log(WARNING,"%s: Vertex overflow\n",__func__);
+               App_Log(APP_WARNING,"%s: Vertex overflow\n",__func__);
                break;
             }
 
@@ -1519,7 +1519,7 @@ int Model_Render(Projection *Proj,ViewportItem *VP,T3DModel *M) {
    extern GLint Texture_Read(char *File);
 
    if (!M || !M->Spec) {
-      App_Log(ERROR,"%s: Invalid model object\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid model object\n",__func__);
       return(0);
    }
 
@@ -1829,7 +1829,7 @@ int Model_GridObject(TData *Data,T3DModel *M,T3DObject *Obj,TDef_InterpV Mode) {
 
             // Test for overflow, should not happend but I've seen it on some models
             if (idx>Obj->NVr) {
-               App_Log(WARNING,"%s: Wrong number of vertices (%i>%i)\n",__func__,idx,Obj->NVr);
+               App_Log(APP_WARNING,"%s: Wrong number of vertices (%i>%i)\n",__func__,idx,Obj->NVr);
                break;
             }
             

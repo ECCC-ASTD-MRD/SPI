@@ -93,19 +93,19 @@ int MetObs_LoadSQLite(Tcl_Interp *Interp, const char *Filename, TMetObs *Obs)
    struct SQLiteHelper sqlh;
 
    if(sqlite_helper_init(&sqlh, Filename)){
-      App_Log(ERROR, "Could not initialize SQLite for %s\n", Filename);
+      App_Log(APP_ERROR, "Could not initialize SQLite for %s\n", Filename);
       retval = TCL_ERROR;
       goto out_close;
    }
 
    if(loop_over_observations(Obs, &sqlh)){
-      App_Log(ERROR, "Something went wrong with loop_over_observations()\n");
+      App_Log(APP_ERROR, "Something went wrong with loop_over_observations()\n");
       retval = TCL_ERROR;
       goto out_close;
    }
 
    if(set_obs_elements(Interp, Obs, &sqlh)){
-      App_Log(ERROR, "Somthing went wrong when setting Obs->Elems\n");
+      App_Log(APP_ERROR, "Somthing went wrong when setting Obs->Elems\n");
       retval = TCL_ERROR;
       goto out_close;
    }
@@ -131,7 +131,7 @@ static int sqlite_helper_finalize(struct SQLiteHelper *this)
    sqlite3_finalize(this->obs_stmt);
    sqlite3_finalize(this->elem_stmt);
    if(sqlite3_close(this->db) == SQLITE_BUSY){
-      App_Log(ERROR, "Couldn't close database connection\n");
+      App_Log(APP_ERROR, "Couldn't close database connection\n");
       retval = TCL_ERROR;
    }
    free(this->obs_query);
@@ -174,17 +174,17 @@ static int sqlite_helper_init(struct SQLiteHelper *this, const char *Filename)
 
   this->cfg_file = (char *)CONFIG_FILE;
   if(MetObsSQLite_GetQueries(this->cfg_file, key,(char **)&(this->obs_query), (char **)&(this->elem_query))){
-     App_Log(ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
+     App_Log(APP_ERROR, "Could not find the right query for your database based on the filename %s\n", Filename);
      return TCL_ERROR;
   }
 
   if(sqlite3_prepare_v2(this->db, this->obs_query, -1, &this->obs_stmt, NULL)){
-     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->obs_query, sqlite3_errmsg(this->db));
+     App_Log(APP_ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->obs_query, sqlite3_errmsg(this->db));
      return TCL_ERROR;
   }
 
   if(sqlite3_prepare_v2(this->db, this->elem_query, -1, &this->elem_stmt, NULL)){
-     App_Log(ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->elem_query, sqlite3_errmsg(this->db));
+     App_Log(APP_ERROR, "Could not compile query %s\nSQL_ERROR_MESSAGE:%s\n", this->elem_query, sqlite3_errmsg(this->db));
      return TCL_ERROR;
   }
 
@@ -235,7 +235,7 @@ static int add_obs_element(Tcl_Interp *Interp, TMetObs *Obs, sqlite3_stmt *Eleme
    unsigned int code = atoi((const char *)sqlite3_column_text(Element, 0));
 
    if((eb = MetObs_BUFRFindTableCode(code)) == NULL){
-      App_Log(ERROR, "%s(): MetObs_BUFRFindTableCode(%u) failed\n", __func__, code);
+      App_Log(APP_ERROR, "%s(): MetObs_BUFRFindTableCode(%u) failed\n", __func__, code);
       return TCL_ERROR;
    }
 
@@ -328,7 +328,7 @@ static int read_observation(TMetObs *Obs, sqlite3_stmt *Row)
    TMetLoc *loc;
 
    if((loc = get_loc(Obs, Row)) == NULL){
-      App_Log(ERROR, "Could not find or create a TMetLoc matching Row's data\n");
+      App_Log(APP_ERROR, "Could not find or create a TMetLoc matching Row's data\n");
       return TCL_ERROR;
    }
 
@@ -360,7 +360,7 @@ static int read_observation(TMetObs *Obs, sqlite3_stmt *Row)
    }
 
    if(TMetElem_Insert(loc, dt, time, fam, type, stype, ne, nv, nt, fval, val, ebCodes) == NULL){
-      App_Log(DEBUG,
+      App_Log(APP_DEBUG,
               "No data inserted, possibly \"same data\" in %s()\n"
               "     loc=%p\n"
               "     time=%lu\n"
@@ -393,11 +393,11 @@ static int get_eb_code(sqlite3_stmt *Row, EntryTableB **Eb_out)
    const char *ebCodeStr = (const char *)sqlite3_column_text(Row, SPI_ELEMENT);
    unsigned int ebCode;
    if(sscanf(ebCodeStr, "%u", &ebCode) != 1){
-      App_Log(ERROR, "could not convert element code string %s to integer with sscanf\n", ebCodeStr);
+      App_Log(APP_ERROR, "could not convert element code string %s to integer with sscanf\n", ebCodeStr);
       return TCL_ERROR;
    }
    if((eb = MetObs_BUFRFindTableCode(ebCode)) == NULL){
-      App_Log(ERROR, "Could not obtain EntryTableB* for ebCode=%u\n", ebCode);
+      App_Log(APP_ERROR, "Could not obtain EntryTableB* for ebCode=%u\n", ebCode);
       return TCL_ERROR;
    }
    *Eb_out = eb;

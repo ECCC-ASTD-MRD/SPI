@@ -190,7 +190,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          // Skip if empty
          if ((nelem*nval*nt)==0) {
-            App_Log(WARNING,"%s: Found empty report\n",__func__);
+            App_Log(APP_WARNING,"%s: Found empty report\n",__func__);
             continue;
          }
          // Resize temporary buffers if needed
@@ -223,9 +223,9 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          // Test for superobs ..... ta daaaaaaa
          if (stnid[0]=='^') {
-            App_Log(DEBUG,"%s: MetObs_LoadBURP: Found grouped obs %i (%i x %i x %i)\n",__func__,bknat,nelem,nval,nt);
+            App_Log(APP_DEBUG,"%s: MetObs_LoadBURP: Found grouped obs %i (%i x %i x %i)\n",__func__,bknat,nelem,nval,nt);
             if (stnid[1]=='^') {
-               App_Log(DEBUG,"%s: MetObs_LoadBURP: Found super duper obs\n",__func__);
+               App_Log(APP_DEBUG,"%s: MetObs_LoadBURP: Found super duper obs\n",__func__);
             } else {
 
             }
@@ -255,7 +255,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
                }
                c=1;
             } else {
-               App_Log(WARNING,"%s: Found invalid code (%i)\n",__func__,c);
+               App_Log(APP_WARNING,"%s: Found invalid code (%i)\n",__func__,c);
                c=0;
                break;
             }

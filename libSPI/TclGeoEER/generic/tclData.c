@@ -1105,7 +1105,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                      Def_Set(cut->Def,0,idx,vij*cos(zeta));
                      Def_Set(cut->Def,1,idx,vij*sin(zeta));
                      
-                     App_Log(DEBUG,"%s: Reprojected angle=%f ll=(%f,%f) ij=[%f,%f] orig=%f %f (%f) project=%f %f (%f)\n",__func__,theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
+                     App_Log(APP_DEBUG,"%s: Reprojected angle=%f ll=(%f,%f) ij=[%f,%f] orig=%f %f (%f) project=%f %f (%f)\n",__func__,theta*57.295779,Lat[n],Lon[n],i,j,vi,vj,vij,
                         vij*cos(zeta),vij*sin(zeta),hypot(vij*cos(zeta),vij*sin(zeta)));
                   } else {
                      // This is a profile
@@ -1133,7 +1133,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
       }
    }
    
-   App_Log(DEBUG,"%s: Vertical grid size (%i,%i)\n",__func__,cut->Def->NI,cut->Def->NJ);
+   App_Log(APP_DEBUG,"%s: Vertical grid size (%i,%i)\n",__func__,cut->Def->NI,cut->Def->NJ);
 
 #endif
   return(TCL_OK);
@@ -3559,7 +3559,7 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
             if (!index || !len) {
                *Obj=NULL;
                index=NULL;
-               App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+               App_Log(APP_WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
             } else {
                index[0]=DEF_INDEX_EMPTY;
                *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
@@ -3567,7 +3567,7 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
             }
          } else {
             *Obj=NULL;
-            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+            App_Log(APP_WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
          }
       } else {
          // Got a filled variable, will use it's index
@@ -3595,7 +3595,7 @@ char** Data_IndexInitPtr(Tcl_Interp *Interp,Tcl_Obj **Obj) {
              Tcl_IncrRefCount(*Obj);
          } else {
             *Obj=NULL;
-            App_Log(WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
+            App_Log(APP_WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
          }
       } else {
          // Got a filled variable, will use it's index

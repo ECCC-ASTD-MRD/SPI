@@ -345,7 +345,7 @@ int Tkgeoeer_Init(Tcl_Interp *Interp) {
    /*In batch mode, bypass the geodata thread mechanism and execute in master thread*/
    if (GLRender->UseThreads && !GLRender->XBatch) {
       if (Tcl_CreateThread(&tid,GDB_ThreadProc,NULL,TCL_THREAD_STACK_DEFAULT,TCL_THREAD_NOFLAGS)==TCL_ERROR) {
-         App_Log(WARNING,"%s: Unable to initiate GDB thread\n",__func__);
+         App_Log(APP_WARNING,"%s: Unable to initiate GDB thread\n",__func__);
       }
    }
 
@@ -1413,7 +1413,7 @@ static void ViewportDisplay(Tk_Canvas Canvas,Tk_Item *Item,Display *Disp,Drawabl
          sec=clock();
          while (((clock()-sec)<(vp->TimeOut*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
          if ((clock()-sec)>=(vp->TimeOut*CLOCKS_PER_SEC)) {
-            App_Log(WARNING,"%s: Waited too long for data, rendering anyway\n",__func__);
+            App_Log(APP_WARNING,"%s: Waited too long for data, rendering anyway\n",__func__);
          }
          vp->Update=TRUE;
       }
@@ -2156,7 +2156,7 @@ static int ViewportToPostscript(Tcl_Interp *Interp,Tk_Canvas Canvas,Tk_Item *Ite
    sec=clock();
    while (((clock()-sec)<(vp->TimeOut*CLOCKS_PER_SEC)) && (!GDB_ThreadQueueIsEmpty(0x0) || (vp->Loading+proj->Loading)));
    if ((clock()-sec)>=(vp->TimeOut*CLOCKS_PER_SEC)) {
-      App_Log(WARNING,"%s: Warning, waited too long for data, rendering anyway\n",__func__);
+      App_Log(APP_WARNING,"%s: Warning, waited too long for data, rendering anyway\n",__func__);
    }
 
    /* Setup the tile rendering engine */

@@ -485,7 +485,7 @@ int OGR_GeometryDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Obj
       }
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1020,7 +1020,7 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1629,7 +1629,7 @@ void OGR_GeometryRender(Projection *Proj,TGeoRef *Ref,OGR_Layer *Layer,OGRGeomet
       case 0: mode=Extrude!=0.0?GL_LINES:GL_POINTS; break;
       case 1: mode=Extrude!=0.0?GL_QUAD_STRIP:GL_LINE_STRIP; break;
       case 2: mode=GL_POLYGON; break;
-      default: App_Log(ERROR,"%s: Unable to render shape\n",__func__); return; break;
+      default: App_Log(APP_ERROR,"%s: Unable to render shape\n",__func__); return; break;
    }
 
    if (mode==GL_POLYGON) {

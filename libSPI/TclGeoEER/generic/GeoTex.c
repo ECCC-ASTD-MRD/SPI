@@ -195,7 +195,7 @@ int GeoTex_Texture(GDAL_Band *Band,TGeoTexTile *Tile) {
    // Create OpenGL texture
    glGenTextures(1,&Tile->Tx);
    if (Tile->Tx<=0) {
-      App_Log(ERROR,"%s: Unable to allocate texture memory\n",__func__);
+      App_Log(APP_ERROR,"%s: Unable to allocate texture memory\n",__func__);
       Tile->Tx=0;
    } else {
       glBindTexture(GL_TEXTURE_2D,Tile->Tx);
@@ -354,12 +354,12 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
    Tile->Tly=Tile->Tlx=(tlx%2?tlx:tlx+1);
 
    if (!(tl=(Vect3d*)malloc(Tile->Tlx*Tile->Tly*sizeof(Vect3d)))) {
-      App_Log(ERROR,"%s: Unable to allocate sub tile coordinates matrix\n",__func__);
+      App_Log(APP_ERROR,"%s: Unable to allocate sub tile coordinates matrix\n",__func__);
       return;
    }
 
    if (!(Tile->Nr=(Vect3d*)malloc(Tile->Tlx*Tile->Tly*sizeof(Vect3d)))) {
-      App_Log(ERROR,"%s: Unable to allocate sub tile normal coordinates matrix\n",__func__);
+      App_Log(APP_ERROR,"%s: Unable to allocate sub tile normal coordinates matrix\n",__func__);
    }
 
    nlx=(double)Tile->Rx/(Tile->Tlx-1);
@@ -379,10 +379,10 @@ void GeoTex_Sample(GDAL_Band *Band,TGeoTexTile *Tile,Projection *Proj) {
             tl[j][1]=dy;
          } else {
             if (!Band->GRef->Project(Band->GRef,dx,dy,&tl[j][1],&tl[j][0],1,1)) {
-               App_Log(ERROR,"%s: Error transforming sub tile coordinates\n",__func__);
+               App_Log(APP_ERROR,"%s: Error transforming sub tile coordinates\n",__func__);
             }
             if (tl[j][1]>91.0 || tl[j][1]<-91.0 || tl[j][0]<-361 || tl[j][0]>361) {
-               App_Log(ERROR,"%s: Invalid transformation\n",__func__);
+               App_Log(APP_ERROR,"%s: Invalid transformation\n",__func__);
                free(tl);
                free(Tile->Nr);Tile->Nr=NULL;
                Tile->Tl=NULL;
@@ -587,14 +587,14 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
    // Allocate tile buffer if not already done
    if (!Tile->Data) {
       if (!(data=Tile->Data=(char*)malloc((Tile->Nx+2)*(Tile->Ny+2)*Band->Def->NC*TDef_Size[Band->Def->Type]))) {
-         App_Log(ERROR,"%s: Unable to allocate temporaty buffer\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate temporaty buffer\n",__func__);
          return(0);
       }
       
       // Size might not fit texture so allocate data input buffer to be copied into texture after read
       if (nx!=2 || ny!=2) {
          if (!(data=(char*)malloc((Tile->Nx+nx)*(Tile->Ny+ny)*Band->Def->NC*TDef_Size[Band->Def->Type]))) {
-            App_Log(ERROR,"%s: Unable to allocate temporaty buffer\n",__func__);
+            App_Log(APP_ERROR,"%s: Unable to allocate temporaty buffer\n",__func__);
             free(Tile->Data);
             Tile->Data=NULL;
             return(0);
@@ -612,7 +612,7 @@ int GeoTex_Get(GDAL_Band *Band,TGeoTexTile *Tile) {
          free(Tile->Data);
          if  (data && Tile->Data!=data) free(data);
          Tile->Data=data=NULL;
-         App_Log(ERROR,"%s: Unable to read tile data from band %i\n",__func__,c);
+         App_Log(APP_ERROR,"%s: Unable to read tile data from band %i\n",__func__,c);
          return(0);
       }
    }
@@ -653,7 +653,7 @@ TGeoTexTile *GeoTex_New(GDAL_Band *Band,int Resolution,int X0,int Y0) {
    TGeoTexTile *tile;
 
    if (!(tile=(TGeoTexTile*)calloc(1,sizeof(TGeoTexTile)))) {
-      App_Log(ERROR,"%s: Could not allocate subimage tile\n",__func__);
+      App_Log(APP_ERROR,"%s: Could not allocate subimage tile\n",__func__);
       return(NULL);
    }
    tile->Flag=GEOTEX_NEW;
@@ -707,14 +707,14 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
       /*Check for resolution cleanup*/
       if (Band->Tex.Tile->Flag&GEOTEX_CLRDTA) {
          if (GLRender->GLDebug)
-            App_Log(DEBUG,"%s: Clearing up to resolution %i\n",__func__,Band->Tex.Res);
+            App_Log(APP_DEBUG,"%s: Clearing up to resolution %i\n",__func__,Band->Tex.Res);
          GeoTex_Clear(&Band->Tex,GEOTEX_CLRDTA,Band->Tex.Res,GeoTex_TileNbMax);
       }
 
       /*Check for coordinate cleanup*/
       if (Band->Tex.Tile->Flag&GEOTEX_CLRCOO) {
          if (GLRender->GLDebug)
-            App_Log(DEBUG,"%s: Clearing coordinates\n",__func__);
+            App_Log(APP_DEBUG,"%s: Clearing coordinates\n",__func__);
          GeoTex_Clear(&Band->Tex,GEOTEX_CLRCOO,0,0);
       }
    }
@@ -737,7 +737,7 @@ int GeoTex_Parse(GDAL_Band* Band,TGeoTexTile **Tile,Projection *Proj,ViewportIte
          if (!(*Tile)->Data) {
             r=1;
             if (GLRender->GLDebug)
-               App_Log(DEBUG,"%s: Reading tile (%i) %i - %i\n",__func__,Resolution,X0,Y0);
+               App_Log(APP_DEBUG,"%s: Reading tile (%i) %i - %i\n",__func__,Resolution,X0,Y0);
             GeoTex_Get(Band,*Tile);
          }
 

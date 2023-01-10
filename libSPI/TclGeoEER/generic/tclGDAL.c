@@ -787,7 +787,7 @@ static int GDAL_BandCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1351,7 +1351,7 @@ static int GDAL_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1635,7 +1635,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
 
    /*Is this an IOAPI file*/
    if (meta && CSLFetchNameValue(meta,"NC_GLOBAL#IOAPI_VERSION")) {
-      App_Log(DEBUG,"%s: Found IOAPI reference\n",__func__);
+      App_Log(APP_DEBUG,"%s: Found IOAPI reference\n",__func__);
 
       projdef=(char*)alloca(1024*sizeof(char));
 
@@ -1687,7 +1687,7 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
       tran[0]=xorig;tran[1]=xcell;tran[2]=0.0;
       tran[3]=ny*ycell+yorig;tran[4]=0.0;tran[5]=-ycell;
       if (!GDALInvGeoTransform(tran,inv)) {
-         App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
+         App_Log(APP_WARNING,"%s: Unable to get inverse transform\n",__func__);
       }
       ref=GeoRef_Find(GeoRef_WKTSetup(GDALGetRasterBandXSize(Band),GDALGetRasterBandYSize(Band),NULL,0,0,0,0,projdef,tran,inv,NULL));
    } else {
@@ -1699,11 +1699,11 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          projdef=(char*)GDALGetGCPProjection(Set);
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
-         App_Log(DEBUG,"%s: Using GCPs to get transform\n",__func__);
+         App_Log(APP_DEBUG,"%s: Using GCPs to get transform\n",__func__);
 
          /*Try to create GPC trasnform*/
          if (!(ref->GCPTransform=(void*)GDALCreateGCPTransformer(NbGCPs,GCPs,3,FALSE))) {
-            App_Log(WARNING,"%s: Unable to fit control points with GDALCreateGCPTransformer\n",__func__);
+            App_Log(APP_WARNING,"%s: Unable to fit control points with GDALCreateGCPTransformer\n",__func__);
 
             /*If does not work, try to get a simple transform*/
             if (GDALGCPsToGeoTransform(NbGCPs,GCPs,tran,TRUE)) {
@@ -1711,10 +1711,10 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
                ref->InvTransform=(double*)calloc(6,sizeof(double));
                memcpy(ref->Transform,tran,6*sizeof(double));
                if (!GDALInvGeoTransform(ref->Transform,ref->InvTransform)) {
-                  App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
+                  App_Log(APP_WARNING,"%s: Unable to get inverse transform\n",__func__);
                }
             } else {
-               App_Log(WARNING,"%s: Unable to fit control points with GDALGCPsToGeoTransform\n",__func__);
+               App_Log(APP_WARNING,"%s: Unable to fit control points with GDALGCPsToGeoTransform\n",__func__);
             }
          }
       } else if (meta && 0) {
@@ -1722,15 +1722,15 @@ TGeoRef* GDAL_GeoRef(GDALDatasetH Set,GDALRasterBandH Band,GDAL_GCP *GCPs,int Nb
          /*Get the transform from RPCInfo*/
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,NULL,NULL,NULL));
 
-         App_Log(WARNING,"%s: Using RPC Info to get transform\n",__func__);
+         App_Log(APP_WARNING,"%s: Using RPC Info to get transform\n",__func__);
 
          if (!(ref->RPCTransform=(void*)GDALCreateRPCTransformer(&rpcinfo,FALSE,0.1,NULL))) {
-            App_Log(WARNING,"%s: Unable to fit RPC\n",__func__);
+            App_Log(APP_WARNING,"%s: Unable to fit RPC\n",__func__);
          }
       } else {
          GDALGetGeoTransform(Set,tran);
          if (!GDALInvGeoTransform(tran,inv)) {
-            App_Log(WARNING,"%s: Unable to get inverse transform\n",__func__);
+            App_Log(APP_WARNING,"%s: Unable to get inverse transform\n",__func__);
          }
          ref=GeoRef_Find(GeoRef_WKTSetup(Nx,Ny,NULL,0,0,0,0,projdef,tran,inv,NULL));
       }

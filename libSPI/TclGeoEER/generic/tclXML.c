@@ -62,7 +62,7 @@ void XML_CharHandler(void *Data,const char *Txt,int Len) {
       memcpy(data->Buf+data->BufLen,Txt,Len);
       data->Buf[data->BufLen+Len]='\0';
 
-      App_Log(DEBUG,"%s: (%i) .%s.\n",__func__,data->BufLen,data->Buf);
+      App_Log(APP_DEBUG,"%s: (%i) .%s.\n",__func__,data->BufLen,data->Buf);
 
       data->BufLen+=Len;
    }
@@ -136,7 +136,7 @@ int XML_ArrayCheck(void *Data,char Sep) {
          tok++;
       }
 
-      App_Log(DEBUG,"%s: Found %i items in array\n",__func__,n);
+      App_Log(APP_DEBUG,"%s: Found %i items in array\n",__func__,n);
    }
    return(n);
 }
@@ -223,26 +223,26 @@ int XML_ParseFile(Tcl_Interp *Interp,XML_Parser Parser,void *Data,char *Path) {
    /*Parse the XML by chunk*/
    for (;;) {
      if (!(buf=XML_GetBuffer(Parser,XML_BUFSIZE))) {
-         App_Log(ERROR,"%s: Could not allocate XML IO buffer\n",__func__);
+         App_Log(APP_ERROR,"%s: Could not allocate XML IO buffer\n",__func__);
          state=0;
          break;
       }
 
       len=fread(buf,1,XML_BUFSIZE,file);
       if (ferror(file)) {
-         App_Log(ERROR,"%s: Read error on %s\n",__func__,Path);
+         App_Log(APP_ERROR,"%s: Read error on %s\n",__func__,Path);
          state=0;
          break;
       }
 
      if (!XML_ParseBuffer(Parser,len,len==0)) {
-         App_Log(ERROR,"%s: Parse error at line %li:\n\t%s\n",__func__,XML_GetCurrentLineNumber(Parser),XML_ErrorString(XML_GetErrorCode(Parser)));
+         App_Log(APP_ERROR,"%s: Parse error at line %li:\n\t%s\n",__func__,XML_GetCurrentLineNumber(Parser),XML_ErrorString(XML_GetErrorCode(Parser)));
          state=0;
          break;
       }
 
      if (data.Bloc==XML_BAD) {
-         App_Log(ERROR,"%s: Wrong file format\n",__func__);
+         App_Log(APP_ERROR,"%s: Wrong file format\n",__func__);
          state=0;
          break;
       }

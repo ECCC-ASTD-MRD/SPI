@@ -1150,7 +1150,7 @@ int Data_RenderStream(TData *Field,ViewportItem *VP,Projection *Proj){
   
    if (!Field->GLId) {
       if (!(Field->GLId=glGenLists(1))) {
-         App_Log(ERROR,"%s: Unable to allocate display list\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate display list\n",__func__);
          return(0);
       }
       glEnableClientState(GL_VERTEX_ARRAY);
@@ -2186,7 +2186,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             ll=(float*)malloc(2*mem*sizeof(float));
 
             if (!ll) {
-               App_Log(ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
                return;
             }
 
@@ -2207,7 +2207,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             xy=(float*)malloc(3*n*sizeof(float));
 
             if (!xy) {
-               App_Log(ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
                return;
             }
 
@@ -2233,7 +2233,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             ll=(float*)malloc(2*mem*sizeof(float));
             
             if (!ll) {
-               App_Log(ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate temporary coordinate buffer\n",__func__);
                return;
             }
             c_gdll(Field->GRef->Ids[Field->GRef->NId],ll,&ll[mem]);
@@ -2255,7 +2255,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
             xy=(float*)malloc(n*3*sizeof(float));
 
             if (!xy) {
-               App_Log(ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
+               App_Log(APP_ERROR,"%s: Unable to allocate temporary projected buffer\n",__func__);
                return;
             }
          }
@@ -2302,7 +2302,7 @@ void Data_RenderVector(Tcl_Interp *Interp,TData *Field,ViewportItem *VP,Projecti
          free(ll);
          free(xy);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
 #endif
    }
 
@@ -2353,7 +2353,7 @@ int Data_RenderVolume(TData *Field,ViewportItem *VP,Projection *Proj){
                Field->Def->Segments=TList_Add(Field->Def->Segments,array);
                VBuffer_Copy(array->Data,len);
             } else {
-               App_Log(ERROR,"%s: Unable to alloc memory for volume data %f",__func__,Field->Spec->Inter[i]);
+               App_Log(APP_ERROR,"%s: Unable to alloc memory for volume data %f",__func__,Field->Spec->Inter[i]);
             }
          }
       }
