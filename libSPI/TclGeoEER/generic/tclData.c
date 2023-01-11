@@ -181,9 +181,6 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       DataVectorTableSize++;
    }
 
-   // Check the log parameters in the environment 
-   App_LogLevel(getenv("APP_VERBOSE"));
-
    // if OMP_NUM_THREADS not defined, set it as 0 or single thread
    if (getenv("OMP_NUM_THREADS")==NULL) {
       omp_set_num_threads(0);

@@ -350,9 +350,6 @@ int Tkgeoeer_Init(Tcl_Interp *Interp) {
    }
 
    memset(ViewportTable,0x0,VPMAX*sizeof(ViewportItem*));
-
-   // Check the log parameters in the environment 
-   App_LogLevel(getenv("APP_VERBOSE"));
    
    return(TCL_OK);
 }
