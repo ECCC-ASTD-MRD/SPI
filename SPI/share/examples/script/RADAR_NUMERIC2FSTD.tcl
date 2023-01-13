@@ -26,7 +26,7 @@ package require TclData
 package require Logger
 
 #----- This is where it all starts
-set Log::Param(Level) DEBUG      ;#Log level
+#set Log::Param(Level) DEBUG      ;#Log level
 set Log::Param(Time)  False      ;#Print the time
 set Log::Param(Proc)  False      ;#Print the calling proc
 

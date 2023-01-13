@@ -477,7 +477,7 @@ proc Bulletin::FXCN3X::ProcessRadii { Lat Lon Sec Force NE SE SW NW } {
 }
 
 #----- This is where it all starts
-set Log::Param(Level) DEBUG      ;#Log level
+#set Log::Param(Level) DEBUG      ;#Log level
 set Log::Param(Time)  False      ;#Print the time
 set Log::Param(Proc)  False      ;#Print the calling proc
 
