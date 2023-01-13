@@ -1113,33 +1113,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    for(k=0;k<FieldTo->Def->NK;k++) {
       FieldTo->ZRef->Levels[k]=FieldFrom->ZRef->Levels[k];
    }
-   
-   // Interpolate mask if needed
-   if (FieldFrom->Def->Mask && FieldTo->Def->Mask) {
-            
-      idx=0;  
-      for(k=0;k<FieldTo->Def->NK;k++) {
-         ip=Index;
-         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
 
-         for(j=0;j<FieldTo->Def->NJ;j++) {
-            for(i=0;i<FieldTo->Def->NI;i++,idx++) {
-
-               if (gotidx) {
-                  // Got the index, use coordinates from it
-                  di=*(ip++);
-                  dj=*(ip++);
-               } else {
-                  // No index, project coordinate
-                  FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
-                  FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
-               }
-               FieldTo->Def->Mask[idx]=(di>=0.0)?FieldFrom->Def->Mask[k*FieldFrom->Def->NIJ+ROUND(dj)*FieldFrom->Def->NI+ROUND(di)]:0;
-            }
-         }
-      }     
-   }
-  
    // In case of vectorial field, we have to recalculate the module
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
