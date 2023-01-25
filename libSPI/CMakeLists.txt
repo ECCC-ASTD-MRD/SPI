@@ -126,6 +126,8 @@ if(R_FOUND)
    target_compile_definitions(R::R INTERFACE R_DEFAULT_RHOME=\"${R_HOME}\")
 endif()
 
+link_libraries("-Wl,--disable-new-dtags")
+
 #----- Generate the libraries
 add_subdirectory(TclSystem)
 add_subdirectory(TkglCanvas)
