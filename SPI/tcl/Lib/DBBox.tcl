@@ -407,7 +407,25 @@ proc DBBox::Update { DB W } {
 
    #----- Sort based on the selected column (if necessary)
    if { $Param(Sort) >= 0 } {
-      set lst [lsort -index $Param(Sort) -nocase -$Param(SortOrder) $lst[set lst ""]]
+      #----- Seperate the list in two, depending on the sorted column's type (string or number)
+      set elementsWhereColumnValueIsString {}
+      set elementsWhereColumnValueIsNumber {}
+      foreach ele $lst {
+         set columnValue [lindex $ele $Param(Sort)]
+         if { [string is double $columnValue] } {
+            lappend elementsWhereColumnValueIsNumber $ele
+         } else {
+            lappend elementsWhereColumnValueIsString $ele
+         }
+      }
+
+      #----- Sort each list according to the sorted column's type
+      set elementsWhereColumnValueIsNumber [lsort -index $Param(Sort) -real -$Param(SortOrder) $elementsWhereColumnValueIsNumber[set elementsWhereColumnValueIsNumber ""]]
+      set elementsWhereColumnValueIsString [lsort -index $Param(Sort) -nocase -$Param(SortOrder) $elementsWhereColumnValueIsString[set elementsWhereColumnValueIsString ""]]
+
+      #----- Resulting list
+      #      Append elements where column value is number first, then those where column value is string.
+      set lst [list {*}$elementsWhereColumnValueIsNumber {*}$elementsWhereColumnValueIsString]
    }
 
    #----- Add the items that match the search criterias

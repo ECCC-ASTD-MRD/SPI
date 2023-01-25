@@ -522,10 +522,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    Vect3d        pt,ptp,vr;
 
    static CONST char *sopt[] = { "-sub","-transform","-distance","-area","-anglemin","-pointdist","-segmentdist","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-dissolve","-intersection","-union","-difference","-symmetricdifference","-segintersectionpts",
+                                 "-convexhull","-dissolve","-splittile","-intersection","-union","-difference","-symmetricdifference","-segintersectionpts",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-clean","-isempty","-isvalid","-issimple","-isring",NULL };
-   enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,INTERSECTION,
+   enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,SPLITTILE,INTERSECTION,
                              UNION,DIFFERENCE,SYMMETRICDIFFERENCE,SEGINTERSECTIONPTS,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,CLEAN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
@@ -744,7 +744,23 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
       case DISSOLVE:
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_GPCOnOGRGeometry(GPC_UNION,g0)));
          break;
-         
+
+      case SPLITTILE:
+         if( Objc>2 ) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"[MaxPoints]");
+            return(TCL_ERROR);
+         }
+         // Process MaxPoints
+         if( Objc<2 ) {
+            // Default value
+            n = 100;
+         } else if( Tcl_GetIntFromObj(Interp,Objv[1],&n)!=TCL_OK ) {
+            Tcl_AppendResult(Interp,"\n   ",__func__,": Expected integer for 'MaxPoints' but got \"",Tcl_GetString(Objv[1]),"\"",(char *)NULL);
+            return(TCL_ERROR);
+         }
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_PolySplitTile(g0,n,NULL)));
+         break;
+
       case DELAUNAY:
          if (Objc!=2) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance");
