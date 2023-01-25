@@ -624,7 +624,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                         err=0;
                         bufr_expand_node_descriptor(bseq->list,lst_prevnode(node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err,NULL);
                         if (err) {
-                           App_Log(WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
+                           App_Log(APP_WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
                            set->data_flag |= BUFR_FLAG_INVALID;
                         }
 
@@ -634,7 +634,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                            nb31=bufr_descriptor_get_ivalue(bcv);
                            if (nb31!=ddo->dpbm->nb_codes) {
-                              App_Log(WARNING,"%s: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",__func__,nb31,ddo->dpbm->nb_codes);
+                              App_Log(APP_WARNING,"%s: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",__func__,nb31,ddo->dpbm->nb_codes);
                            }
                         }
                      }
@@ -727,7 +727,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
                      err=0;
                      bufr_expand_node_descriptor(sset->BSeq->list,lst_prevnode(sset->Node),OP_EXPAND_DELAY_REPL|OP_ZDRC_IGNORE,set->tmplte->tables,&skip,&err,NULL);
                      if (err) {
-                        App_Log(WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
+                        App_Log(APP_WARNING,"%s: invalid node descriptor (err=%i)\n",__func__,err);
                         set->data_flag |= BUFR_FLAG_INVALID;
                      }
 
@@ -737,7 +737,7 @@ static int MetDataset_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CON
 
                         nb31=bufr_descriptor_get_ivalue(bcv);
                         if (nb31!=sset->BDDO->dpbm->nb_codes) {
-                           App_Log(WARNING,"%s: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",__func__,nb31,sset->BDDO->dpbm->nb_codes);
+                           App_Log(APP_WARNING,"%s: DP node rcount invalid for 31031 (DPBM 31001=%d NBCODES=%d)\n",__func__,nb31,sset->BDDO->dpbm->nb_codes);
                         }
                      }
                   }
@@ -1040,7 +1040,7 @@ int MetDataset_Obj2Code(Tcl_Interp *Interp,BufrDescriptor *BCV,Tcl_Obj *Obj) {
          Tcl_ListObjIndex(Interp,Obj,2,&obj);
          Tcl_GetLongFromObj(Interp,obj,&bits);
          BCV->value->af->bits=bits;
-         App_Log(DEBUG,"%s: AF bits=%li\n",__func__,BCV->value->af->bits);
+         App_Log(APP_DEBUG,"%s: AF bits=%li\n",__func__,BCV->value->af->bits);
      }
 
       /*?????*/

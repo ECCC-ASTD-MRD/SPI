@@ -297,7 +297,7 @@ static int OGR_GeometryCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -798,7 +798,7 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);
@@ -1297,7 +1297,7 @@ static int OGR_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj
          break;
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with GDAL\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);

@@ -267,7 +267,7 @@ TDef* Calc_Index(TDef* A,int Index) {
 #endif
 
    if (Index<0 || Index>A->NC-1) {
-      App_Log(ERROR,"%s: Component out of bound of grid A (%d)\n",__func__,A->NC);
+      App_Log(APP_ERROR,"%s: Component out of bound of grid A (%d)\n",__func__,A->NC);
       return(NULL);
    }
    
@@ -295,7 +295,7 @@ TDef* Calc_IndexValue(TDef* A,int I,int J,int K) {
 #endif
 
    if (I<0 || I>A->NI-1 || J<0 || J>A->NJ-1 || K<0 || K>A->NK-1) {
-      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
+      App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
    }
    
@@ -325,7 +325,7 @@ TDef* Calc_RangeValue(TDef* A,int I0,int I1,int J0,int J1,int K0,int K1) {
    if (K0>K1) { n=K0;K0=K1;K1=n; }
 
    if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1) {
-      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
+      App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
    }
    
@@ -361,7 +361,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
       case 0:
          i=N;
          if (N<0 || N>A->NI-1) {
-            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NI=%d)\n",__func__,A->NI);
+            App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (NI=%d)\n",__func__,A->NI);
             return(NULL);
          }
          GData[++GDataN]=Def_New(A->NJ,A->NK,1,A->NC,(GType?GType:A->Type));
@@ -379,7 +379,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
 
       case 1:
          if (N<0 || N>A->NJ-1) {
-            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NJ=%d)\n",__func__,A->NJ);
+            App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (NJ=%d)\n",__func__,A->NJ);
             return(NULL);
          }
          j=N;
@@ -398,7 +398,7 @@ TDef* Calc_Slice(TDef* A,int N,int D) {
 
       case 2:
          if (N<0 || N>A->NK-1) {
-            App_Log(ERROR,"%s: Dimensions out of bound of grid A (NK=%d)\n",__func__,A->NK);
+            App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (NK=%d)\n",__func__,A->NK);
             return(NULL);
          }
          k=N;
@@ -437,7 +437,7 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
    if (K0>K1) { n=K0;K0=K1;K1=n; }
 
    if (I0<0 || I1>A->NI-1 || J0<0 || J1>A->NJ-1 || K0<0 || K1>A->NK-1) {
-      App_Log(ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
+      App_Log(APP_ERROR,"%s: Dimensions out of bound of grid A (%d x %d x %d)\n",__func__,A->NI,A->NJ,A->NK);
       return(NULL);
    }
    
@@ -456,14 +456,14 @@ TDef* Calc_Set(TDef* A,TDef* B,int I0,int I1,int J0,int J1,int K0,int K1) {
          Def_Get(B,0,0,v);
          uni=1;
       } else if( (I1-I0+1)*(J1-J0+1)*(K1-K0+1) != FSIZE3D(B) ) {
-         App_Log(ERROR,"%s: Dimension to assign in grid A (%d) is different from number of values in grid B (%d)\n",__func__,(I1-I0+1)*(J1-J0+1)*(K1-K0+1),(int)FSIZE3D(B));
+         App_Log(APP_ERROR,"%s: Dimension to assign in grid A (%d) is different from number of values in grid B (%d)\n",__func__,(I1-I0+1)*(J1-J0+1)*(K1-K0+1),(int)FSIZE3D(B));
          return(NULL);
       }
 
       n=0;
       while(A->Data[n]) {
          if (!B->Data[n] && FSIZE3D(B)!=1) {
-            App_Log(ERROR,"%s: Grid B does not have a component %d\n",__func__,n);
+            App_Log(APP_ERROR,"%s: Grid B does not have a component %d\n",__func__,n);
             return(NULL);
          }
          for(k=K0,bidx=0;k<=K1;k++) {
@@ -529,7 +529,7 @@ TDef* Calc_Dir(TDef* A) {
 
 #ifdef HAVE_RMN
    if (!GField || GField->GRef->Grid[0]=='V') {
-      App_Log(ERROR,"%s: Invalid grid while calculating direction\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid grid while calculating direction\n",__func__);
       return(NULL);
    }
 
@@ -545,7 +545,7 @@ TDef* Calc_Dir(TDef* A) {
       y=fy=(float*)malloc(FSIZE2D(A)*sizeof(float));
 
       if (!spd || !x || !y) {
-         App_Log(ERROR,"%s: Unable to allocate temporary arrays\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate temporary arrays\n",__func__);
          return(NULL);
       }
       for (j=1;j<=A->NJ;j++) {
@@ -570,7 +570,7 @@ TDef* Calc_Dir(TDef* A) {
       free(spd);
    }
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
    return(NULL);
 #endif
 

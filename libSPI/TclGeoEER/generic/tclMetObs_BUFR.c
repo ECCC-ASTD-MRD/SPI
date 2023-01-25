@@ -97,7 +97,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
       for (i=0;i<bufr_count_datasubset(dts);i++) {
          if (!(subset=bufr_get_datasubset(dts,i))) {
-            App_Log(WARNING,"%s: Invalid subset",__func__);
+            App_Log(APP_WARNING,"%s: Invalid subset",__func__);
             continue;
          }
 
@@ -112,7 +112,7 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          
          for (j=0;j<bufr_datasubset_count_descriptor(subset);j++) {
             if (!(bcv=bufr_datasubset_get_descriptor(subset,j))) {
-               App_Log(WARNING,"%s: Invalid subset code",__func__);
+               App_Log(APP_WARNING,"%s: Invalid subset code",__func__);
                continue;
             }
 
@@ -126,13 +126,13 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
             }
 
             if (bcv->flags & FLAG_SKIPPED) {
-               App_Log(DEBUG,"%s: Skipped %.6d ",__func__,bcv->descriptor);
+               App_Log(APP_DEBUG,"%s: Skipped %.6d ",__func__,bcv->descriptor);
             } else {
 
                /*If this code has a value*/
                if (bcv->value) {
                   if (!(eb=MetObs_BUFRFindTableCode(bcv->descriptor))) {
-                     App_Log(WARNING,"%s: Could not find element code (%i) int tables",__func__,bcv->descriptor);
+                     App_Log(APP_WARNING,"%s: Could not find element code (%i) int tables",__func__,bcv->descriptor);
                   } else {
                      Tcl_SetIntObj(obj,eb->descriptor);
                      if (TclY_ListObjFind(Interp,Obs->Elems,obj)==-1) {
@@ -232,13 +232,13 @@ int MetObs_LoadBUFR(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 /*                        int   len;
 
                         char *str = bufr_descriptor_get_svalue(bcv,&len);
-                        App_Log(DEBUG,"%s: "VALUE=%s",__func__,str);
+                        App_Log(APP_DEBUG,"%s: "VALUE=%s",__func__,str);
 */
                            value=-999.0;
                         break;
                         
                      case VALTYPE_UNDEFINE:
-                        App_Log(WARNING,"%s: Found undefined value",__func__);
+                        App_Log(APP_WARNING,"%s: Found undefined value",__func__);
                         value=-999.0;
                         break;
                   }

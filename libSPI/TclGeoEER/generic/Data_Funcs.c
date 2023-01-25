@@ -1530,7 +1530,7 @@ void stat_core(TDef *MA,TDef *MB) {
       cy = malloc(n*sizeof(unsigned int));
 
       if (!vx || !vy || !cx || !cy) {
-         App_Log(ERROR,"%s: Could not allocate memory\n",__func__);
+         App_Log(APP_ERROR,"%s: Could not allocate memory\n",__func__);
          if( vx ) free(vx);
          if( vy ) free(vy);
          if( cx ) free(cx);

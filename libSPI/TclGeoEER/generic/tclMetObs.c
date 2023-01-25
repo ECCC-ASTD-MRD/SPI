@@ -1975,7 +1975,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       type = MET_SQLITE;
    }
 
-   App_Log(DEBUG,"%s: File type is %i\n",__func__,type);
+   App_Log(APP_DEBUG,"%s: File type is %i\n",__func__,type);
 
    switch (type) {
       case MET_BURP: res=MetObs_LoadBURP(Interp,File,Obs);  break;
@@ -2683,7 +2683,7 @@ int MetObs_Render(Tcl_Interp *Interp,TMetObs *Obs,ViewportItem *VP,Projection *P
    glDisable(GL_DEPTH_TEST);
 
    if (GLRender->GLDebug)
-      App_Log(DEBUG,"%s: Nb Loc=%i NbObs=%i\n",__func__,n,nobs);
+      App_Log(APP_DEBUG,"%s: Nb Loc=%i NbObs=%i\n",__func__,n,nobs);
 
    return(n);
 }

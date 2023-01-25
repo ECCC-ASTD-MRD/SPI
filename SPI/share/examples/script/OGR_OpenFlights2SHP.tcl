@@ -24,7 +24,7 @@ package require TclData
 #package require TclGeoEER
 package require Logger
 
-set Log::Param(Level) DEBUG
+#set Log::Param(Level) DEBUG
 
 Log::Start [info script] 0.1
 

@@ -627,7 +627,7 @@ int LUDecompose(double *Matrix,int N,int *Perm,int *d) {
             amax=dum;
       }
       if (amax<TINY_VALUE) {
-         App_Log(WARNING,"%s: Singular matrix",__func__);
+         App_Log(APP_WARNING,"%s: Singular matrix",__func__);
          return(0);
       }
       vv[i]=1.0/amax;
@@ -846,7 +846,7 @@ int FFKrigging(TGeoRef *GRef,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,
       krig.V=(double*)malloc(krig.N*sizeof(double));
 
       if (!krig.Matrix || !krig.Weight || !krig.V) {
-         App_Log(ERROR,"%s: Unable to allocate calculation matrices\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate calculation matrices\n",__func__);
          return(0);
       }
 
@@ -868,7 +868,7 @@ int FFKrigging(TGeoRef *GRef,TDef *Def,Vect3d *Pos,int NPos,double C0,double C1,
             krig.Weight[idx0]=hypot(d0,Pos[i][1]-Pos[j][1]);
 
             if (krig.Weight[idx0]==0 && i!=j) {
-               App_Log(ERROR,"%s: Two observations have the same location, krigging operation will not continue\n",__func__);
+               App_Log(APP_ERROR,"%s: Two observations have the same location, krigging operation will not continue\n",__func__);
                return(0);
             }
          }
@@ -1055,11 +1055,11 @@ int FFContourM(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj
                Def->Segments=list;
                VBuffer_Copy(array->Data,len);
             } else {
-               App_Log(ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
+               App_Log(APP_ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
                break;
             }
          } else {
-            App_Log(ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
+            App_Log(APP_ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
             break;
          }
       }
@@ -1148,11 +1148,11 @@ int FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,Projection *Proj,
                      Def->Segments=list;
                      VBuffer_Copy(array->Data,len);
                   } else {
-                     App_Log(ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
+                     App_Log(APP_ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
                      break;
                   }
                } else {
-                  App_Log(ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
+                  App_Log(APP_ERROR,"%s: Unable to allocate memory for contour %f",__func__,Inter[n]);
                   break;
                }
             }
@@ -1769,7 +1769,7 @@ int FFMarchingCube(TGeoPos *GPos,TDef *Def,Projection *Proj,double Value) {
       }
    }
 
-   App_Log(DEBUG,"%s: Done processing (%i Vertex)\n",__func__,vridx/2);
+   App_Log(APP_DEBUG,"%s: Done processing (%i Vertex)\n",__func__,vridx/2);
    
    return(vridx);
 }

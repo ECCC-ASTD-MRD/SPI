@@ -14,9 +14,6 @@ export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
 export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
 export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
 
-#----- Internal logging
-export APP_VERBOSE=INFO
-
 #----- GDAL 3.0+ honors an SRS axis order advertize that inverts coordinates in some cases
 export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
 

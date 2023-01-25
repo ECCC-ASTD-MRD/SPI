@@ -216,7 +216,7 @@ int MetObs_LoadSWOB(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    /*Create expat XML parser*/
    if (!(parser=XML_ParserCreate(NULL))) {
-      App_Log(ERROR,"%s: Couldn't initiate XML parser\n",__func__);
+      App_Log(APP_ERROR,"%s: Couldn't initiate XML parser\n",__func__);
       return(0);
    }
 

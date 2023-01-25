@@ -166,7 +166,7 @@ int HIRLAM_Export(Tcl_Interp *Interp,TData *Field,char* Desc,char *Info,char *Fi
 
    fclose(fid);
 #else
-   App_Log(ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
+   App_Log(APP_ERROR,"Function %s is not available, needs to be built with RMNLIB\n",__func__);
    return(TCL_ERROR);
 #endif
    return(TCL_OK);

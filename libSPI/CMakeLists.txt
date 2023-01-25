@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 #----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/../cmake_rpn)
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
 
 include(ec_init)      # Initialize compilers and ec specific functions
 include(ec_build_tcl_pkgindex)
@@ -92,8 +92,8 @@ find_package(eerUtils ${EER_REQ_VERSION} CONFIG REQUIRED)
 
 #----- Optional packages
 find_package(OpenMP COMPONENTS C)
-find_package(RMN ${RMN_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
-find_package(VGRID ${VGRID_REQ_VERSION} COMPONENTS SHARED OPTIONAL)
+find_package(rmn ${rmn_REQ_VERSION} COMPONENTS shared)
+find_package(vgrid ${vgrid_REQ_VERSION} COMPONENTS shared)
 find_package(GDB)
 find_package(ECCODES ${ECCODES_REQ_VERSION})
 find_package(ECBUFR ${ECBUFR_REQ_VERSION})

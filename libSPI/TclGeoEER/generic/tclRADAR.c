@@ -313,7 +313,7 @@ int Radar_FileOpen(Tcl_Interp *Interp,char *Id,char Mode,char *Name){
    }
 
    // In debug mode, print radar data
-   if (App_LogLevel(NULL)==DEBUG) 
+   if (App_LogLevel(NULL)==APP_DEBUG) 
       Radar_FileParse(&file->Data);
    
    for (v=0;v<file->Data.volScan[0]->numSweeps;v++) {            // Loop on the Sweeps
@@ -385,13 +385,13 @@ void Radar_FileParse(RADAR_DATA *Data) {
    int v,s,r;
 
    for(v=0;v<Data->numScans;v++) {
-      App_Log(DEBUG,"%s: Scan %i, MaxRay : %i\n",__func__,v,Data->volScan[v]->maxNumRaysInVolume);
+      App_Log(APP_DEBUG,"%s: Scan %i, MaxRay : %i\n",__func__,v,Data->volScan[v]->maxNumRaysInVolume);
 
       for(s=0;s<Data->volScan[v]->numSweeps;s++) {
-         App_Log(DEBUG,"%s:    Sweep %i, MaxBin : %i    Elevation Angle : %f\n",__func__,s,Data->volScan[v]->sweep[s]->maxNumBinsInSweep,Data->volScan[v]->sweep[s]->elevationAngle);
+         App_Log(APP_DEBUG,"%s:    Sweep %i, MaxBin : %i    Elevation Angle : %f\n",__func__,s,Data->volScan[v]->sweep[s]->maxNumBinsInSweep,Data->volScan[v]->sweep[s]->elevationAngle);
 
          for(r=0;r<Data->volScan[v]->sweep[s]->numRays;r++) {
-            App_Log(DEBUG,"%s:        Ray %i, Nb Bins : %i   Range : (%i - %i)   Azimuth : (%f - %f)\n",__func__,r,
+            App_Log(APP_DEBUG,"%s:        Ray %i, Nb Bins : %i   Range : (%i - %i)   Azimuth : (%f - %f)\n",__func__,r,
                Data->volScan[v]->sweep[s]->rays[r]->numBins,
                Data->volScan[v]->sweep[s]->rays[r]->startRange,
                Data->volScan[v]->sweep[s]->rays[r]->endRange,

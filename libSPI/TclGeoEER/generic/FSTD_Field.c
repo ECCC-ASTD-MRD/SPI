@@ -74,7 +74,7 @@ TDef_Type FSTD_TypeCheck(int Type,int Size) {
       case 1:
       case 6:
       case 5:  Type=Size>32?TD_Float64:TD_Float32;                                                       break;
-      default: App_Log(ERROR,"%s: Unknown data type (DATYP=%i)\n",__func__,Type);
+      default: App_Log(APP_ERROR,"%s: Unknown data type (DATYP=%i)\n",__func__,Type);
    }
    return(Type);
 }
@@ -183,7 +183,7 @@ int FSTD_FieldSubBuild(TData *Field) {
             }
          }
       } else {
-         App_Log(ERROR,"%s: Unable to allocate subgrid array\n",__func__);
+         App_Log(APP_ERROR,"%s: Unable to allocate subgrid array\n",__func__);
          return(0);
       }
    }
@@ -278,13 +278,13 @@ int FSTD_FieldReadComp(TRPNHeader *Head,float **Ptr,char *Var,int Grid,int Force
 
       if (key<0) {
          // Too many warnings so we catch it later
-         // App_Log(WARNING,"%s: Could not find component field %s (c_fstinf failed)\n",__func__,Var);
+         // App_Log(APP_WARNING,"%s: Could not find component field %s (c_fstinf failed)\n",__func__,Var);
          return(0);
       } else {
          if (!*Ptr) {
             //TODO: 64 bit descriptorspi++
             if (!(*Ptr=(float*)malloc(ni*nj*nk*sizeof(float)))) {
-               App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
+               App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
                return(0);
             }
          }
@@ -322,7 +322,7 @@ int FSTD_FieldReadVLevels(TData *Field) {
    // If we don't find any level definition, use level index
    if (!Field->ZRef->Levels) {
       if (!(Field->ZRef->Levels=(float*)malloc(Field->Def->NJ*sizeof(float)))) {
-         App_Log(ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
+         App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields\n",__func__);
       } else {
          for(nj=0;nj<Field->Def->NJ;nj++) {
             Field->ZRef->Levels[nj]=nj+1;
@@ -371,13 +371,13 @@ int FSTD_FieldReadMesh(TData *Field) {
             if (!Field->GRef->Idx) {
                key=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",head->IG1,head->IG2,head->IG3,"","##");
                if (key < 0) {
-                  App_Log(ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
+                  App_Log(APP_ERROR,"%s: Could not find index field %s (c_fstinf failed)",__func__,"##");
                   FSTD_FileUnset(NULL,head->File);
                   return(0);
                } else {
                   Field->GRef->NIdx=ni*nj*nk;
                   if (!(Field->GRef->Idx=(unsigned int*)malloc(Field->GRef->NIdx*sizeof(unsigned int)))) {
-                     App_Log(ERROR,"%s: Not enough memory to read coordinates fields",__func__);
+                     App_Log(APP_ERROR,"%s: Not enough memory to read coordinates fields",__func__);
                      FSTD_FileUnset(NULL,head->File);
                      return(0);
                   }
@@ -456,7 +456,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    float        *gz=NULL;
 
    if (!FSTD_FieldReadMesh(Field)) {
-      App_Log(WARNING,"%s: Could not find grid definition components\n",__func__);
+      App_Log(APP_WARNING,"%s: Could not find grid definition components\n",__func__);
       return(NULL);
    }
 
@@ -470,7 +470,7 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location\n",__func__);
+         App_Log(APP_ERROR,"%s: Not enough memory to calculate gridpoint location\n",__func__);
          return(NULL);
       }
    }
@@ -482,11 +482,11 @@ Vect3d** FSTD_FieldGetMesh(TData *Field,Projection *Proj,int Level) {
       RPN_FieldLock();
       idx=c_fstinf(head->File->Id,&i,&j,&k,head->DATEV,head->ETIKET,head->IP1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
       if (idx<0) {
-         App_Log(WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
+         App_Log(APP_WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
          idx=c_fstinf(head->File->Id,&i,&j,&k,-1,"",-1,-1,-1,"",Field->Spec->Topo);
       }
       if (idx<0) {
-         App_Log(WARNING,"%s: Could not load corresponding modulator (%s)\n",__func__,Field->Spec->Topo);
+         App_Log(APP_WARNING,"%s: Could not load corresponding modulator (%s)\n",__func__,Field->Spec->Topo);
       } else {
          if (!gz) gz=(float*)malloc(i*j*k*sizeof(float));
          if (gz)  c_fstluk(gz,idx,&i,&j,&k);
@@ -594,7 +594,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
    if (!Field->GPos->Pos[Level]) {
       Field->GPos->Pos[Level]=(Vect3d*)malloc(FSIZE2D(Field->Def)*sizeof(Vect3d));
       if (!Field->GPos->Pos[Level]) {
-         App_Log(ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
+         App_Log(APP_ERROR,"%s: Not enough memory to calculate gridpoint location",__func__);
          return(NULL);
       }
    }
@@ -606,7 +606,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
       FSTD_FieldReadMesh(Field);
 
       if (!Field->GRef->AY || !Field->GRef->AX) {
-         App_Log(ERROR,"%s: Section coordinates not defined",__func__);
+         App_Log(APP_ERROR,"%s: Section coordinates not defined",__func__);
          return(NULL);
       }
 
@@ -620,7 +620,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
             idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
                if (gz) { free(gz); gz=NULL; };
-               App_Log(WARNING,"%s:d: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[j],ip1);
+               App_Log(APP_WARNING,"%s:d: Could not load corresponding modulator (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[j],ip1);
             } else {
                if (!gz) gz=(float*)malloc(ni*nj*nk*sizeof(float));
                if (gz)  cs_fstluk(gz,idx,&ni,&nj,&nk);
@@ -653,7 +653,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          lon=(float*)malloc(FSIZE2D(def)*sizeof(float));
 
          if (!lat || !lon) {
-            App_Log(ERROR,"%s: Not enough memory to process gridpoint location",__func__);
+            App_Log(APP_ERROR,"%s: Not enough memory to process gridpoint location",__func__);
             free(Field->GPos->Pos[Level]);
             return(Field->GPos->Pos[Level]=NULL);
          }
@@ -669,7 +669,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          if (Field->Spec->Topo) {
             idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,head->TYPVAR,Field->Spec->Topo);
             if (idx<0) {
-               App_Log(WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
+               App_Log(APP_WARNING,"%s: Could not load corresponding topo field, trying for any (%s)\n",__func__,Field->Spec->Topo);
                idx=cs_fstinf(head->File->Id,&ni,&nj,&nk,-1,"",-1,-1,-1,"",Field->Spec->Topo);
             }
             if (!tile && (ni!=def->NI || nj!=def->NJ)) {
@@ -680,7 +680,7 @@ Vect3d* FSTD_Grid(TData *Field,void *Proj,int Level) {
          }
          if (idx<0) {
             if (gz) { free(gz); gz=NULL; };
-            App_Log(WARNING,"%s: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[Level],ip1);
+            App_Log(APP_WARNING,"%s: Could not load corresponding (%s) (%f(%i)), using constant pressure\n",__func__,Field->Spec->Topo,Field->ZRef->Levels[Level],ip1);
          } else {
             if (!gz) gz=(float*)malloc(def->NI*def->NJ*nk*sizeof(float));
             if (gz)  cs_fstlukt(gz,head->File->Id,idx,&tile,&ni,&nj,&nk);
@@ -1113,33 +1113,7 @@ int FSTD_FieldGridInterpolate(Tcl_Interp *Interp,TData *FieldTo,TData *FieldFrom
    for(k=0;k<FieldTo->Def->NK;k++) {
       FieldTo->ZRef->Levels[k]=FieldFrom->ZRef->Levels[k];
    }
-   
-   // Interpolate mask if needed
-   if (FieldFrom->Def->Mask && FieldTo->Def->Mask) {
-            
-      idx=0;  
-      for(k=0;k<FieldTo->Def->NK;k++) {
-         ip=Index;
-         gotidx=(Index && Index[0]!=DEF_INDEX_EMPTY);
 
-         for(j=0;j<FieldTo->Def->NJ;j++) {
-            for(i=0;i<FieldTo->Def->NI;i++,idx++) {
-
-               if (gotidx) {
-                  // Got the index, use coordinates from it
-                  di=*(ip++);
-                  dj=*(ip++);
-               } else {
-                  // No index, project coordinate
-                  FieldTo->GRef->Project(FieldTo->GRef,i,j,&lat,&lon,0,1);
-                  FieldFrom->GRef->UnProject(FieldFrom->GRef,&di,&dj,lat,lon,0,1);
-               }
-               FieldTo->Def->Mask[idx]=(di>=0.0)?FieldFrom->Def->Mask[k*FieldFrom->Def->NIJ+ROUND(dj)*FieldFrom->Def->NI+ROUND(di)]:0;
-            }
-         }
-      }     
-   }
-  
    // In case of vectorial field, we have to recalculate the module
    if (FieldTo->Def->NC>1) {
       Data_GetStat(FieldTo);
@@ -1516,7 +1490,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                Tcl_Free((char*)list);
                tm=tra;
                if (!GDALInvGeoTransform(tra,inv)) {
-                  App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
+                  App_Log(APP_WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                   im=NULL;
                } else {
                   im=inv;
@@ -2465,10 +2439,10 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
          } else {
             free(field->Def->Mask);
             field->Def->Mask=NULL;
-            App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
+            App_Log(APP_WARNING,"%s: Could not allocate memory to read mask",__func__);
          }
       } else {
-         App_Log(WARNING,"%s: Could not allocate memory for mask",__func__);
+         App_Log(APP_WARNING,"%s: Could not allocate memory for mask",__func__);
       }
    }
    
@@ -2726,7 +2700,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
    // Check for mask (TYPVAR==@@) 
    if (head->TYPVAR[0]!='@' && head->TYPVAR[1]=='@') {
       if (!(Field->Def->Mask=(char*)realloc(Field->Def->Mask,ni*nj*nk))) {
-         App_Log(WARNING,"%s: Could not allocate memory to read mask",__func__);
+         App_Log(APP_WARNING,"%s: Could not allocate memory to read mask",__func__);
       }
    }
 
@@ -2747,7 +2721,7 @@ int FSTD_FieldReadLevels(Tcl_Interp *Interp,TData *Field,int Invert,double Level
       if (Field->Def->Mask) {
          ok=cs_fstinf(head->File->Id,&ni,&nj,&idump,head->DATEV,head->ETIKET,ip1,head->IP2,head->IP3,"@@",head->NOMVAR);
          if (cs_fstlukt(p,head->File->Id,ok,&tile,&ni,&nj,&idump)<0) {
-            App_Log(WARNING,"%s: Could not read mask data (c_fstluk failed) ip1=%i",__func__,ip1);
+            App_Log(APP_WARNING,"%s: Could not read mask data (c_fstluk failed) ip1=%i",__func__,ip1);
          } else {
             for(i=0;i<ni*nj;i++) {
                Field->Def->Mask[idx+i]=((int*)p)[i]!=0x0;

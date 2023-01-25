@@ -591,7 +591,7 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   tm=tra;
                   if (!GDALInvGeoTransform(tra,inv)) {
-                     App_Log(WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
+                     App_Log(APP_WARNING,"%s: Unable to generate the inverse transform matrix\n",__func__);
                      im=NULL;
                   } else {
                      im=inv;
@@ -628,7 +628,7 @@ static int GeoRef_Define(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST O
                   }
                   im=inv;
                   if (!GDALInvGeoTransform(inv,tra)) {
-                     App_Log(WARNING,"%s: Unable to generate the transform matrix\n",__func__);
+                     App_Log(APP_WARNING,"%s: Unable to generate the transform matrix\n",__func__);
                      tm=NULL;
                   } else {
                      tm=tra;

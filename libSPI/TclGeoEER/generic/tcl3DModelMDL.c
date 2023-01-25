@@ -73,7 +73,7 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
       return(0);
    }
 
-   App_Log(DEBUG,"%s: M->NMt=%i\n",__func__,M->NMt);
+   App_Log(APP_DEBUG,"%s: M->NMt=%i\n",__func__,M->NMt);
 
    if (M->NMt<=0) {
       M->NMt=1;
@@ -106,14 +106,14 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    /*Vertex list*/
    /*Number of vertex*/
    f=fread(&obj->NVr,sizeof(int),1,file);
-   App_Log(DEBUG,"%s: M->NVr=%i\n",__func__,obj->NVr);
+   App_Log(APP_DEBUG,"%s: M->NVr=%i\n",__func__,obj->NVr);
 
    /*Format of vertex*/
    f=fread(&obj->Format,sizeof(int),1,file);
-   App_Log(DEBUG,"%s: M->Format=%i\n",__func__,obj->Format);
+   App_Log(APP_DEBUG,"%s: M->Format=%i\n",__func__,obj->Format);
 
    if (obj->NVr<=0 || obj->Format<=0) {
-      App_Log(ERROR,"%s: Invalid vertex format or number\n",__func__);
+      App_Log(APP_ERROR,"%s: Invalid vertex format or number\n",__func__);
       fclose(file);
       return(0);
    }
@@ -134,7 +134,7 @@ int Model_LoadMDL(Tcl_Interp* Interp,T3DModel *M,char *Path) {
    /*Number of faces*/
    f=fread(&obj->NFc,sizeof(int),1,file);
 
-   App_Log(DEBUG,"%s: M->NFc=%i\n",__func__,obj->NFc);
+   App_Log(APP_DEBUG,"%s: M->NFc=%i\n",__func__,obj->NFc);
 
    obj->Fc=(TFace*)malloc(obj->NFc*sizeof(TFace));
    for (i=0;i<obj->NFc;i++) {

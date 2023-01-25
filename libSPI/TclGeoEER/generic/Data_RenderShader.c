@@ -453,7 +453,7 @@ int Data_RenderShaderTexture(TData *Field,ViewportItem *VP,Projection *Proj){
          glTexImage2D(GL_TEXTURE_RECTANGLE_ARB,0,GL_ALPHA,Field->Def->NI,Field->Def->NJ,0,GL_ALPHA,GL_BYTE,Field->Def->Mask);         
       }
    } else {
-      App_Log(WARNING,"%s: Texture is too big to fit on GPU, switching to software renderer\n",__func__);
+      App_Log(APP_WARNING,"%s: Texture is too big to fit on GPU, switching to software renderer\n",__func__);
       glDeleteTextures(4,tx);
       glUseProgramObjectARB(0);
       if (buf) free(buf);
