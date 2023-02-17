@@ -1050,8 +1050,8 @@ proc FieldBox::Insert { No } {
          set level   [lrange $field 2 3]
          set ip2     [lrange $field 4 5]
          set ip3     [lrange $field 6 7]
-         set eticket [lindex $field 8]
-         set date    [lindex $field 9]
+         set eticket [string range $field 46 58]
+         set date    [string range $field 59 70]
 
          #----- Determiner la liste de selection
 
@@ -1245,7 +1245,7 @@ proc FieldBox::Restrict { No args } {
       set sip3 ([join $data(IP3) |])
    }
    if { $data(Eticket)=="" } {
-      set seti "\\S+"
+      set seti ".{13}"
    } else {
       set seti ([join [string map { + \\\\+ } $data(Eticket)] |])
    }
@@ -1261,7 +1261,7 @@ proc FieldBox::Restrict { No args } {
    }
 
    set str  "^$svar\\s+$styp\\s+$sip1\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat $sfid \\d+ \\d+ \\d+ \\d+ .+field$"
-   
+   puts $str
    .fieldbox$No.data.list delete 0 end
    set data(NbShow) 0
 
