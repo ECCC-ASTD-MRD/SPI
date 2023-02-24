@@ -158,12 +158,12 @@ int FSTD_FieldIPGet(Tcl_Interp *Interp,Tcl_Obj *Obj,Tcl_Obj *ObjType) {
 static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
 
    Tcl_Obj    *obj;
-   TData      *field,*p0=NULL;
+   TData      *field,*p0=NULL,*p0ls=NULL;
    TRPNHeader *head;
    float       dlat,dlon,dd60,dgrw,x,y,level=0.0;
    int         ip,n,kind;
    char        buf[50];
-   double      tmp;
+   double      tmp,tmpls;
    int         idx,idxk,i,j,k;
 
    double dxg1,dxg2,dxg3,dxg4;
@@ -255,7 +255,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          }
          
          if (field->ZRef->Type!=LVL_PRES) {
-            if (Objc!=4) {
+            if (Objc<4) {
                Tcl_WrongNumArgs(Interp,2,Objv,"field p0(mb)");
                return(TCL_ERROR);
             }
@@ -264,10 +264,21 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                Tcl_AppendResult(Interp,"invalid pressure field :",Tcl_GetString(Objv[3]),(char*)NULL);
                return(TCL_ERROR);
             }
+
+            if (Objc<5 && field->ZRef->SLEVE) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"field p0(mb) p0ls(mb)");
+               return(TCL_ERROR);
+            }
+            if (Objc==5) {
+               if (!(p0ls=Data_Get(Tcl_GetString(Objv[4])))) {
+                  Tcl_AppendResult(Interp,"invalid LS pressure field :",Tcl_GetString(Objv[4]),(char*)NULL);
+                  return(TCL_ERROR);
+               }
+            }
          }
 
          if (field->Def->Type==TD_Float32 && (!p0 || p0->Def->Type==TD_Float32)) {
-            ZRef_KCube2Pressure(field->ZRef,p0?(float*)(p0->Def->Data[0]):NULL,FSIZE2D(field->Def),FALSE,(float*)(field->Def->Data[0])); 
+            ZRef_KCube2Pressure(field->ZRef,p0?(float*)(p0->Def->Data[0]):NULL,p0ls?(float*)(p0ls->Def->Data[0]):NULL,FSIZE2D(field->Def),FALSE,(float*)(field->Def->Data[0])); 
          } else {
             for(k=0;k<field->Def->NK;k++) {
                idxk=k*FSIZE2D(field->Def);
@@ -275,7 +286,8 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
                for(j=0;j<field->Def->NJ;j++) {
                   for(i=0;i<field->Def->NI;i++) {
                      if (p0) Def_Get(p0->Def,0,idx,tmp);
-                     tmp=ZRef_K2Pressure(field->ZRef,tmp,k);
+                     if (p0ls) Def_Get(p0ls->Def,0,idx,tmpls);
+                     tmp=ZRef_K2Pressure(field->ZRef,tmp,tmpls,k);
                      Def_Set(field->Def,0,idxk+idx,tmp);
                      idx++;
                   }

@@ -1400,7 +1400,7 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    TObs    *obs=NULL;
    TLoc    *loc;
    FILE    *stream;
-   char    title[256],name[256];
+   char    buffer[256],name[256];
    char    *bytes=NULL,*head=NULL;
    int     sz,sk,nb,n,hd,k,min,sec,dt,hh,ms,ns;
    int     ntok,gntok,nltok;
@@ -1416,23 +1416,27 @@ int Obs_LoadASCII(Tcl_Interp *Interp,char *File,char *Token) {
    }
 
    /*Read the version*/
-   fgetskip(title,256,stream);
+   fgetskip(buffer,256,stream);
 
-   if (!strstr(title,"Obs 3.1")) {
+   if (!strstr(buffer,"Obs 3.1")) {
       Tcl_AppendResult(Interp,"\n   Obs_LoadASCII:  Wrong file version while reading ",File,(char*)NULL);
       fclose(stream);
       return(TCL_ERROR);
    }
 
    /*Read the title*/
-   fgetskip(title,256,stream);
+   nb=255;
+   while(nb==255) {
+      fgetskip(buffer,256,stream);
+      nb=strlen(buffer);
+   }
 
    /*Read the header*/
    nb=255;
    while(nb==255) {
-      fgetskip(title,256,stream);
-      head=strcatalloc(head,title);
-      nb=strlen(title);
+      fgetskip(buffer,256,stream);
+      head=strcatalloc(head,buffer);
+      nb=strlen(buffer);
    }
 
    sz=strlen(head)*64;
