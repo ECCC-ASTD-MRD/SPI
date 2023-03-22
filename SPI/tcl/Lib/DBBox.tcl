@@ -169,7 +169,7 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
       }
    }] %W %x %y $DB]
    if { $Cmd != "" } {
-      bind $tbl <ButtonRelease-1> [list apply [list {W X Y Cmd} {
+      bind $tbl <ButtonRelease-1> +[list apply [list {W X Y Cmd} {
          lassign [split [set idx [$W index @$X,$Y]] ,] row col
          if { $row >= 2 } {
             {*}$Cmd [$W get $row,0 $row,[$W cget -cols]]
