@@ -909,7 +909,7 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
    TData *cut;
    unsigned int  n,k,f,p,g,ip1;
    unsigned long idx,idxp;
-   double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0;
+   double  i,j,i0=-1.0,j0=-1.0,theta=0.0,zeta,vi,vj,vij,p0,p0ls;
    float   *fp;
 
    // Recuperer la grille dans l'espace des champs de base
@@ -1012,12 +1012,21 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
             // Read the corresponding ground pressure for level conversion, if already read, nothing will be done
             if (p && !Field[f]->Def->Pres && cut->GRef->Hgt) {
                if (FSTD_FileSet(NULL,((TRPNHeader*)Field[f]->Head)->File)>=0) {
-                 if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1,0))) {
-                     /*We won't be able to calculate pressure levels*/
+                  if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&Field[f]->Def->Pres,"P0",-1,0))) {
+                     /*We won't be able to calculate pressure levels P0 missing*/
                      free(cut->GRef->Hgt);
                      cut->GRef->Hgt=NULL;
                      p=0;
-                  }
+                  } else {
+                     if (Field[f]->ZRef->SLEVE) {
+                        if (!(FSTD_FieldReadComp(((TRPNHeader*)Field[f]->Head),&Field[f]->Def->PresLS,"P0LS",-1,0))) {
+                           /*We won't be able to calculate pressure levels P0LS missing*/
+                           free(cut->GRef->Hgt);
+                           cut->GRef->Hgt=NULL;
+                           p=0;
+                        }
+                     }
+		            }
                   FSTD_FileUnset(NULL,((TRPNHeader*)Field[f]->Head)->File);
                }
             }
@@ -1051,7 +1060,13 @@ int Data_Cut(Tcl_Interp *Interp,TData **Field,char *Cut,double *Lat,double *Lon,
                // Convert level to pressure
                if (p && cut->GRef->Hgt && Field[f]->Def->Pres) {
                   p0=((float*)Field[f]->Def->Pres)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
-                  cut->GRef->Hgt[idx]=ZRef_K2Pressure(Field[f]->ZRef,p0,k);
+                  if(Field[f]->ZRef->SLEVE){
+                     p0ls=((float*)Field[f]->Def->PresLS)[ROUND(j)*Field[f]->Def->NI+ROUND(i)];
+                  } else {
+                     // Note p0ls will not be used if not SLEVE.
+                     p0ls=-999.;
+                  }
+                  cut->GRef->Hgt[idx]=ZRef_K2Pressure(Field[f]->ZRef,p0,p0ls,k);
                }
 
                // Read the corresponding ground pressure for level conversion, if already read, nothing will be done
