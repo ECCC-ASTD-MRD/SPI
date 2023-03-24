@@ -30,8 +30,8 @@ target_link_libraries(${NAME} eerUtils::eerUtils)
 target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
 #----- Optional libs
-ec_target_link_library_if(${NAME} rmn_FOUND              rmn)
-ec_target_link_library_if(${NAME} vgrid_FOUND            vgrid)
+ec_target_link_library_if(${NAME} rmn_FOUND              rmn::rmn)
+ec_target_link_library_if(${NAME} vgrid_FOUND            vgrid::vgrid)
 ec_target_link_library_if(${NAME} GDAL_FOUND             GDAL::GDAL)
 ec_target_link_library_if(${NAME} SQLite3_FOUND          SQLite::SQLite3)
 ec_target_link_library_if(${NAME} GDB_FOUND              GDB::GDB)
