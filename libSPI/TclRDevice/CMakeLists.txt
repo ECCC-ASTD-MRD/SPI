@@ -23,9 +23,6 @@ target_link_libraries(${NAME} R::R)
 target_link_libraries(${NAME} TkglCanvas)
 target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
-#----- RPATH handling
-ec_target_rpath_from_libs(${NAME})
-
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/generic)

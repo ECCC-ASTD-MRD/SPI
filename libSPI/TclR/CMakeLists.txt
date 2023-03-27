@@ -21,9 +21,6 @@ set_target_properties(${NAME} PROPERTIES
 target_link_libraries(${NAME} TCL::TCL)
 target_link_libraries(${NAME} R::R)
 
-#----- RPATH handling
-ec_target_rpath_from_libs(${NAME})
-
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/generic)

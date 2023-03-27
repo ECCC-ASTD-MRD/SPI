@@ -42,9 +42,6 @@ ec_target_link_library_if(${NAME} URP_FOUND              URP::URP)
 ec_target_link_library_if(${NAME} OpenMP_FOUND           OpenMP::OpenMP_C)
 ec_target_link_library_if(${NAME} DistanceMetrics_FOUND  DistanceMetrics::DistanceMetrics)
 
-#----- RPATH handling
-ec_target_rpath_from_libs(${NAME})
-
 #----- Compilation  stuff
 target_compile_definitions(${NAME} PRIVATE PACKAGE_NAME=\"${NAME}\" PACKAGE_VERSION=\"${VERSION}\")
 target_include_directories(${NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/generic)

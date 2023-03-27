@@ -126,7 +126,15 @@ if(R_FOUND)
    target_compile_definitions(R::R INTERFACE R_DEFAULT_RHOME=\"${R_HOME}\")
 endif()
 
-link_libraries("-Wl,--disable-new-dtags")
+#----- Make sure RPATH is set at install step
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #----- Generate the libraries
 add_subdirectory(TclSystem)
