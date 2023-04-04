@@ -38,10 +38,10 @@ set subs(met)   {      { "" }        { "" }      { "" }           { "" }        
 set models(met) [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd ]
 
 #------ Liste des modèles Aquatiques
-set names(wet)  {     "RIOPS"     "CIOPS_WEST"     "CIOPS_EAST"    "SHOP"    "WCPS"    "SALISH"   "WEBTIDE" }
-set vars(wet)   {      GL          GL               GL              ""        ""        ""         M2       }
-set subs(wet)   {      { "" }      { "" }           { "" }          { "" }    { "" }    { "" }     { arctic9 ne_pac4 nwatl stle400 sshelf h3o } }
-set models(wet) [list  riops.fstd  ciops_west.fstd  ciops_east.fstd shop.txt  wcps.txt  salish.txt $env(WEBTIDE_DATA)]
+set names(wet)  {     "RIOPS"     "CIOPS_WEST"     "CIOPS_EAST"    "SHOP"    "SHOPSMALL"   "WCPS"    "SALISH"   "WEBTIDE" }
+set vars(wet)   {      GL          GL               GL              ""        ""            ""        ""         M2       }
+set subs(wet)   {      { "" }      { "" }           { "" }          { "" }    { ""}         { "" }    { "" }     { arctic9 ne_pac4 nwatl stle400 sshelf h3o } }
+set models(wet) [list  riops.fstd  ciops_west.fstd  ciops_east.fstd shop.txt  shopsmall.txt wcps.txt  salish.txt $env(WEBTIDE_DATA)]
 
 #------ Liste des modèles de vagues
 set names(waves)  {     "RDWPS (NEP)"  "RDWPS (SUP)"   "RDWPS (HUM)"    "RDWPS (ERI)"    "RDWPS (ONT)"   "RDWPS (NWA)"   }
@@ -77,7 +77,7 @@ foreach md $ModelDomain t $type {
 
    foreach model $models($t) sub $subs($t) var $vars($t) name $names($t) {
 
-      if {$name == "GLSOCE" || $name == "SHOP" || $name == "WCPS" || $name == "SALISH" || $name == "RDWPS (NEP)" || $name == "RDWPS (NWA)" } {
+      if {$name == "GLSOCE" || $name == "SHOP" || $name == "SHOPSMALL" || $name == "WCPS" || $name == "SALISH" || $name == "RDWPS (NEP)" || $name == "RDWPS (NWA)" } {
          Log::Print INFO "Processing $model $name"
 
          #------ Read lat/lon for glsoce model (Great Lakes)
