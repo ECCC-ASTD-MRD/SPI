@@ -13,25 +13,26 @@
 #
 # Fonctions:
 #
-#    ComboBox::Add        { W Item }
-#    ComboBox::AddList    { W List }
-#    ComboBox::Close      { W }
-#    ComboBox::Count      { W }
-#    ComboBox::Create     { W IVar Edit Type Mode Max List Width Height args }
-#    ComboBox::Del        { W Item }
-#    ComboBox::DelAll     { W }
-#    ComboBox::Destroy    { W }
-#    ComboBox::Disable    { W }
-#    ComboBox::Enable     { W }
-#    ComboBox::Exec       { W Pos }
-#    ComboBox::Index      { W Search Item }
-#    ComboBox::List       { W }
-#    ComboBox::Open       { W }
-#    ComboBox::Place      { W { Set True } }
-#    ComboBox::Select     { W }
-#    ComboBox::SelectNext { W Incr }
-#    ComboBox::Set        { W Pos }
-#    ComboBox::SetExec    { W }
+#    ComboBox::Add            { W Item }
+#    ComboBox::AddList        { W List }
+#    ComboBox::Close          { W }
+#    ComboBox::Count          { W }
+#    ComboBox::Create         { W IVar Edit Type Mode Max List Width Height args }
+#    ComboBox::Del            { W Item }
+#    ComboBox::DelAll         { W }
+#    ComboBox::Destroy        { W }
+#    ComboBox::Disable        { W }
+#    ComboBox::Enable         { W }
+#    ComboBox::Exec           { W Pos }
+#    ComboBox::Index          { W Search Item }
+#    ComboBox::ItemConfigure  { W index args }
+#    ComboBox::List           { W }
+#    ComboBox::Open           { W }
+#    ComboBox::Place          { W { Set True } }
+#    ComboBox::Select         { W }
+#    ComboBox::SelectNext     { W Incr }
+#    ComboBox::Set            { W Pos }
+#    ComboBox::SetExec        { W }
 #
 # Remarques :
 #    -Concu a partir de namespace donc utilisable seulement en TCL 8.0 et +
@@ -565,6 +566,36 @@ proc ComboBox::Invoke { W } {
    }
 
    ComboBox::Select $W
+}
+
+#-------------------------------------------------------------------------------
+# Nom      : <ComboBox::ItemConfigure>
+# Creation : Avril 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Récupérer ou modifier les options de configuration d'un ou plusieurs éléments de la listbox du combobox.
+#            Basé sur la commande itemconfigure d'une listbox
+#
+# Parametres :
+#   <W>        : Nom du widget ComboBox ou supprimer
+#   <indexes>  : Liste des indexes de la liste
+#   <args>     : Un option pour récupérer sa valeur; Une liste de paires d'option-valeur pour modifier ces options
+#
+#
+# Retour   :
+#  <Lst>   : Liste de tous les elements
+#
+# Remarques :
+#
+#-------------------------------------------------------------------------------
+
+proc ComboBox::ItemConfigure { W indexes args } {
+   upvar #0 ComboBox::${W}top Top
+
+   set results {}
+   foreach i $indexes {
+      lappend results [$Top.content itemconfigure $i {*}$args]
+   }
+   return $results
 }
 
 #-------------------------------------------------------------------------------
