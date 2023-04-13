@@ -214,7 +214,7 @@ foreach md $ModelDomain t $type {
              fstdfile close RPNFILE
 
              if { $s!="" } {
-                ogrlayer define INDEX($md) -feature $no NAME "$name ($s)"
+                ogrlayer define INDEX($md) -feature $no NAME "$name $s"
              } else {
                 ogrlayer define INDEX($md) -feature $no NAME $name
              }
