@@ -236,6 +236,7 @@ TFuncDef FuncC[] = {
   { "reshape"   , reshape   , 5, 3, TD_Unknown },
   { "repeat"    , repeat    , 3, 1, TD_Unknown },
   { "join"      , join      , 9, 7, TD_Unknown },
+  { "filter"    , filter    , 2, 0, TD_Unknown },
 
   { NULL        , NULL      , 0, 0, TD_Unknown }
 };
@@ -603,6 +604,82 @@ double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef 
    }
 
    return(FSIZE3D(Res));
+}
+
+double filter(TDef *Res,TDef *Fld,TDef *Msk) {
+   double   v;
+   int      n,c,cm,idx,idxm,idxr,nkeep,i,j,k;
+   int      repI=0,repJ=0,repK=0,repC=0;
+
+   if( FSIZE3D(Fld)==0 )                  Calc_RaiseError("filter: The field to filter has as zeroed dimension\n");
+   if( Msk->NI!=1 && Fld->NI!=Msk->NI )   Calc_RaiseError("filter: The mask to use as filter should have either NI=1 (meaning that the mask will be repeated in the NI dimension of the filtered field) or the same NI as the filtered field\n");
+   if( Msk->NJ!=1 && Fld->NJ!=Msk->NJ )   Calc_RaiseError("filter: The mask to use as filter should have either NJ=1 (meaning that the mask will be repeated in the NJ dimension of the filtered field) or the same NJ as the filtered field\n");
+   if( Msk->NK!=1 && Fld->NK!=Msk->NK )   Calc_RaiseError("filter: The mask to use as filter should have either NK=1 (meaning that the mask will be repeated in the NK dimension of the filtered field) or the same NK as the filtered field\n");
+   if( Msk->NC!=1 && Fld->NC!=Msk->NC )   Calc_RaiseError("filter: The mask to use as filter should have either only one component (to be repeated for each component of the filtered field) or the same number of components than the filtered field\n");
+
+   if( Calc_InError() )
+      return(0.0);
+
+   // Count the number of true value in Msk
+   n = FSIZE3D(Msk);
+   for(cm=0,nkeep=0; cm<Msk->NC; ++cm) {
+      for(idxm=0; idxm<n; ++idxm) {
+         Def_Get(Msk,cm,idxm,v);
+         if( v )
+            ++nkeep;
+      }
+   }
+
+   // Check if we repeat in some dimensions and multiply by the amount of time we will repeat if so
+   if( Msk->NI==1 && Fld->NI!=1 ) {repI=1; nkeep*=Fld->NI;}
+   if( Msk->NJ==1 && Fld->NJ!=1 ) {repJ=1; nkeep*=Fld->NJ;}
+   if( Msk->NK==1 && Fld->NK!=1 ) {repK=1; nkeep*=Fld->NK;}
+   if( Msk->NC==1 && Fld->NC!=1 ) {repC=1; nkeep*=Fld->NC;}
+
+   // If we need to resize NC, make sure we trigger the resize by setting NJ to 0
+   // Technically, Res would have been created based on Fld and this is not necessary
+   if( Res->NC != Fld->NC ) {
+      Res->NC = Fld->NC;
+      Res->NJ = 0;
+   }
+
+   // Resize the resulting field, putting everything in the I dimension but keeping the same number of components
+   if( !Def_Resize(Res,nkeep,1,1) ) {
+      Calc_RaiseError("filter: An error occured when resizing.\n");
+      return(0.0);
+   }
+
+   // Copy the values
+   n = FSIZE3D(Fld);
+   for(c=0,cm=0; c<Fld->NC; ++c) {
+      for(k=0,idx=0,idxr=0; k<Fld->NK; ++k) {
+         for(j=0; j<Fld->NJ; ++j) {
+            // Adjust the mask position based on repeating dimensions
+            idxm = (repK?0:k*Msk->NI*Msk->NJ) + (repJ?0:j*Msk->NI);
+
+            for(i=0; i<Fld->NI; ++i,++idx) {
+               // Check if the mask is true
+               Def_Get(Msk,cm,idxm,v);
+               if( v ) {
+                  // Copy the value
+                  Def_Get(Fld,c,idx,v);
+                  Def_Set(Res,c,idxr,v);
+                  ++idxr;
+               }
+
+               // Adjust the mask position based on repeating dimensions
+               if( !repI )
+                  ++idxm;
+            }
+         }
+      }
+
+      // Only increment the mask component if we don't repeat it
+      if( !repC )
+         ++cm;
+   }
+
+   return(Res->NI);
 }
 
 double flipy(TDef *Res,TDef *MA) {
