@@ -507,7 +507,7 @@ proc DBBox::Update { DB W } {
       set elementsWhereColumnValueIsNumber {}
       foreach ele $lst {
          set columnValue [lindex $ele $Param(Sort)]
-         if { [string is double $columnValue] } {
+         if { [string is double -strict $columnValue] } {
             lappend elementsWhereColumnValueIsNumber $ele
          } else {
             lappend elementsWhereColumnValueIsString $ele
