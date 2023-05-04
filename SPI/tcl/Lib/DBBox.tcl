@@ -190,11 +190,6 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
          return search
       }
    }]]
-   if { [info exists Param(${DB}Type)] } {
-      $tbl configure -coltagcommand [list apply [list {Fmts Col} {
-         return [lindex $Fmts $Col]
-      }] $Param(${DB}Type)]
-   }
 
    #----- Table formatting
    $tbl tag configure title -anchor center -relief raised -multiline 1 -justify center -bg $GDefs(ColorFrame) -fg black -bd 1
