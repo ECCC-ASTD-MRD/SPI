@@ -1050,7 +1050,7 @@ proc FieldBox::Insert { No } {
          set level   [lrange $field 2 3]
          set ip2     [lrange $field 4 5]
          set ip3     [lrange $field 6 7]
-         set eticket [string range $field 46 58]
+         set eticket [string range $field 46 57]
          set date    [string range $field 59 70]
 
          #----- Determiner la liste de selection
@@ -1219,15 +1219,17 @@ proc FieldBox::Restrict { No args } {
 
    #----- Creer la chaine de selection
 
+   set unsafe {[][($){}.*^?+|\\]}
+
    if { $data(Var)=="" } {
       set svar "\\S+"
    } else {
-      set svar ([join [string map { + \\\\+ ^ \\\\^ } $data(Var)] |])
+      set svar ([join [lmap f $data(Var) {regsub -all $unsafe $f {\\&}}] |])
    }
    if { $data(Type)=="" } {
       set styp "\\S+"
    } else {
-      set styp ([join $data(Type) |])
+      set styp ([join [lmap f $data(Type) {regsub -all $unsafe $f {\\&}}] |])
    }
    if { $data(Level)=="" } {
       set sip1 "\\S+ \\S+"
@@ -1245,9 +1247,9 @@ proc FieldBox::Restrict { No args } {
       set sip3 ([join $data(IP3) |])
    }
    if { $data(Eticket)=="" } {
-      set seti ".{13}"
+      set seti ".{12}"
    } else {
-      set seti ([join [string map { + \\\\+ } $data(Eticket)] |])
+      set seti ([join [lmap f $data(Eticket) {regsub -all $unsafe $f {\\&}}] |])
    }
    if { $data(Date)=="" } {
       set sdat "\\d+"
@@ -1261,12 +1263,11 @@ proc FieldBox::Restrict { No args } {
    }
 
    set str  "^$svar\\s+$styp\\s+$sip1\\s+$sip2\\s+$sip3\\s+$seti\\s+$sdat $sfid \\d+ \\d+ \\d+ \\d+ .+field$"
-   puts $str
    .fieldbox$No.data.list delete 0 end
    set data(NbShow) 0
 
    foreach fields $data(FieldList) {
-      eval .fieldbox$No.data.list insert end [lsearch -all -inline -regexp $fields $str]
+      .fieldbox$No.data.list insert end {*}[lsearch -all -inline -regexp $fields $str]
    }
    set data(NbShow) [.fieldbox$No.data.list index end]
    set data(ShowRead) "$data(NbShow)/$data(NbRead)"
