@@ -136,7 +136,7 @@ Parser $Data(Path)
 
 #----- That's it
 
-pLog::Print INFO "Processed $Data(Nb) valid file"
+Log::Print INFO "Processed $Data(Nb) valid file"
 
 ogrfile close INDEXFILE
 
