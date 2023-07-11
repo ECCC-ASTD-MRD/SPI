@@ -1234,7 +1234,10 @@ proc Animator::PlayWeb { } {
 
    #----- Get a name from user but default to current experiment if there is any
    if { [namespace exists ::Model] && $Model::Param(Show) && $Exp::Data(No)!="" && $Exp::Data(Name)!="" } {
-      set Play(Filename) $Exp::Data(No)_$Exp::Data(Name)
+      if { $Exp::Data(SelectSim) != "" } {
+         Info::Decode sim $Exp::Data(SelectSim)
+      }
+      set Play(Filename) $Exp::Data(No)[expr {[info exists sim(NoSim)] ? "_$sim(NoSim)" : ""}]_$Exp::Data(Name)
       set base [Exp::Path]/[Info::Path $Exp::Data(SelectSim)]/products
       set keep 1
    } else {
