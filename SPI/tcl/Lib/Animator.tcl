@@ -53,7 +53,7 @@ namespace eval Animator {
    variable Error
 
    set Param(Title)    { "Animateur" "Animator" }
-   set Param(Geom)     { 305x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
+   set Param(Geom)     { 345x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
    set Param(Version)  4.0
 
    set Param(WebHost)      0               ;#Hote pour leas animations web
@@ -70,6 +70,7 @@ namespace eval Animator {
    set Play(Cache)        0               ;#Cache des pixmaps de frame
    set Play(IP3)          1               ;#Validation du IP3 en recherche de champs
    set Play(Typvar)       1               ;#Validation du typvar en recherche de champs
+   set Play(Etiket)       1               ;#Validation de l'etiket en recherche de champs
    set Play(Cycle)        0               ;#Bouclage de l'animation
    set Play(Stop)         1               ;#Variable de surveillance de l'evenement d'arret
    set Play(Frame)        0               ;#Liste des frames temporel
@@ -228,8 +229,11 @@ proc Animator::Window { { Parent .} } {
          label $Data(Tab1).lbl.lbl1 -text "|"
          checkbutton $Data(Tab1).lbl.tvar -variable Animator::Play(Typvar) -text Typvar -onvalue 1 \
             -offvalue 0 -command "Animator::EmptyPlayList" -indicatoron false -relief flat -bd 1 -overrelief raised
-         label $Data(Tab1).lbl.lbl2 -text ")"
-         pack $Data(Tab1).lbl.lbl0 $Data(Tab1).lbl.ip3 $Data(Tab1).lbl.lbl1 $Data(Tab1).lbl.tvar $Data(Tab1).lbl.lbl2 -side left
+         label $Data(Tab1).lbl.lbl2 -text "|"
+         checkbutton $Data(Tab1).lbl.eti -variable Animator::Play(Etiket) -text Etiket -onvalue 1 \
+            -offvalue 0 -command "Animator::EmptyPlayList" -indicatoron false -relief flat -bd 1 -overrelief raised
+         label $Data(Tab1).lbl.lbl3 -text ")"
+         pack $Data(Tab1).lbl.lbl0 $Data(Tab1).lbl.ip3 $Data(Tab1).lbl.lbl1 $Data(Tab1).lbl.tvar $Data(Tab1).lbl.lbl2 $Data(Tab1).lbl.eti $Data(Tab1).lbl.lbl3 -side left
 
       labelframe $Data(Tab1).type -labelwidget $Data(Tab1).lbl
       frame  $Data(Tab1).type.f -relief sunken -bd 1
@@ -707,7 +711,6 @@ proc Animator::GetPlayListField { } {
             lappend filter $idxs(NOMVAR)  [fstdfield define $fld -NOMVAR]
             lappend filter $idxs(IP1)     [fstdfield define $fld -IP1]
             lappend filter $idxs(IP2)     [fstdfield define $fld -IP2]
-            lappend filter $idxs(ETIKET)  [fstdfield define $fld -ETIKET]
 
             #----- Sepcial case for seconds at 0
             if { [set sec [fstdstamp toseconds [fstdfield define $fld -DATEV]]] } {
@@ -718,6 +721,9 @@ proc Animator::GetPlayListField { } {
             lappend filter $idxs(DATEV) $date
 
             #----- Conditional criterias
+            if { $Play(Etiket) } {
+               lappend filter $idxs(ETIKET) [fstdfield define $fld -ETIKET]
+            }
             if { $Play(Typvar) } {
                lappend filter $idxs(TYPVAR) [fstdfield define $fld -TYPVAR]
             }
