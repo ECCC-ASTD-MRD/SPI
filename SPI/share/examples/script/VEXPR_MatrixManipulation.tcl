@@ -192,4 +192,52 @@ if { [TestCatch 0 vexpr JOIN join(1,FLD1,FLD2,FLD3)] && [TestDim JOIN 3 8 2] && 
     Log::Print INFO "==> TEST PASSED : joining 3 fields"
 }
 
+
+Log::Print MUST ""
+
+#----- Test filter
+Log::Print INFO "Testing filter..."
+
+fstdfield create FLD 3 4 2 Float64
+set vals {0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23}
+fstdfield define FLD -DATA [binary format d* $vals]
+
+fstdfield create MSK1 1 4 2 Int32
+set vals {0 0 1 1 1 0 0 1}
+fstdfield define MSK1 -DATA [binary format n* $vals]
+
+fstdfield create MSK2 3 1 2 Int32
+set vals {1 1 0 1 0 1}
+fstdfield define MSK2 -DATA [binary format n* $vals]
+
+fstdfield create MSK3 3 4 1 Int32
+set vals {0 1 0 1 0 1 1 1 1 0 0 0}
+fstdfield define MSK3 -DATA [binary format n* $vals]
+
+fstdfield create MSK4 1 1 2 Int32
+set vals {0 1}
+fstdfield define MSK4 -DATA [binary format n* $vals]
+
+set res {16 17 18 19 20 21 22 23}
+if { [TestCatch 0 vexpr FILTER filter(FLD,ifelse(FLD>15,1,0))] && [TestDim FILTER [llength $res] 1 1] && [TestVal 0 FILTER {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : filtering with ifelse"
+}
+set res {6 7 8 9 10 11 12 13 14 21 22 23}
+if { [TestCatch 0 vexpr FILTER filter(FLD,MSK1)] && [TestDim FILTER [llength $res] 1 1] && [TestVal 0 FILTER {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : filtering with repeating I dim"
+}
+set res {0 1 3 4 6 7 9 10 12 14 15 17 18 20 21 23}
+if { [TestCatch 0 vexpr FILTER filter(FLD,MSK2)] && [TestDim FILTER [llength $res] 1 1] && [TestVal 0 FILTER {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : filtering with repeating J dim"
+}
+set res {1 3 5 6 7 8 13 15 17 18 19 20}
+if { [TestCatch 0 vexpr FILTER filter(FLD,MSK3)] && [TestDim FILTER [llength $res] 1 1] && [TestVal 0 FILTER {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : filtering with repeating K dim"
+}
+set res {12 13 14 15 16 17 18 19 20 21 22 23}
+if { [TestCatch 0 vexpr FILTER filter(FLD,MSK4)] && [TestDim FILTER [llength $res] 1 1] && [TestVal 0 FILTER {*}$res] } {
+    Log::Print INFO "==> TEST PASSED : filtering with repeating I & J dim"
+}
+
+
 Log::End -1

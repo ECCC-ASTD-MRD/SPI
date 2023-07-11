@@ -104,6 +104,7 @@ double seq(TDef *Res,TDef *From,TDef *To,TDef *Step,TDef *N);
 double reshape(TDef *Res,TDef *Fld,TDef *NI,TDef *NJ,TDef *NK,TDef *NC);
 double repeat(TDef *Res,TDef *Fld,TDef *N,TDef *D);
 double join(TDef *Res,TDef *D,TDef *F1,TDef *F2,TDef *F3,TDef *F4,TDef *F5,TDef *F6,TDef *F7,TDef *F8);
+double filter(TDef *Res,TDef *Fld,TDef *Msk);
 
 // Matrix reduction operations
 double stat_all(TDef *MA,TDef *MB);   // All stats 
