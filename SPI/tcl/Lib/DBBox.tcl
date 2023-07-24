@@ -1,32 +1,33 @@
-#===============================================================================
+#============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
 # 2100 Trans-Canadienne
 # Dorval, Quebec
 #
-# Projet    : Interface d'affichage de base de données (Iso, Oil, etc.)
-# Fichier   : DBBox.tcl
-# Creation  : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
+# Projet   : Interface d'affichage de base de données (Iso, Oil, etc.)
+# Fichier  : DBBox.tcl
+# Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# Description:
+# Description :
 #
 #     Cette interface permet l'affichage et la sélection d'un item d'une base
 #     de données textuelle
 #
-# Fonctions:
-#     DBBox::Create                          { Parent DB {Command ""} }
-#     DBBox::CheckDB                         { DB }
-#     DBBox::ReadDB                          { DB }
-#     DBBox::Search                          { DB Column Pattern }
-#     DataTable::AdaptColumnWidthsToContent  {TODO}
-#     DataTable::Create                      {TODO}
-#     DataTable::CreateTransientWindow       {TODO}
-#     DataTable::CreateWindow                {TODO}
-#     DataTable::Sort                        {TODO}
-#     DataTable::Update                      {TODO}
+# Fonctions :
+#  DBBox::Create                         { Parent DB Cmd }
+#  DBBox::CheckDB                        { DB }
+#  DBBox::ReadDB                         { DB }
+#  DBBox::Search                         { DB Column Pattern }
+#  DataTable::Create                     { W Variable UseComboBoxFilters ComboBoxFilterSortOrders OnSelectCmd }
+#  DataTable::CreateWindow               { Parent Title Variable UseComboBoxFilters ComboBoxFilterSortOrders OnSelectCmd OnDestroyCmd }
+#  DataTable::CreateTransientWindow      { Parent Title Variable UseComboBoxFilters ComboBoxFilterSortOrders OnSelectCmd }
+#  DataTable::AdaptColumnWidthsToContent { Table }
+#  DataTable::Sort                       { Table Col }
+#  DataTable::Update                     { Table }
 #
-#
-#===============================================================================
+# Remarques :
+#  Aucune
+#============================================================================
 
 package provide DBBox 1.0
 
@@ -46,24 +47,24 @@ namespace eval DataTable {
    set Param(MaxWidthInCharacters) 250
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DBBox::Create>
 # Creation : Mai 1997 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Gere la fenetre de selection des isotopes
+# But : Gere la fenetre de selection des isotopes
 #
-# Parametres  :
-#   <Parent>   : Fenetre Parent
-#   <Cmd>      : Commande à exécuter pour chaque sélection
+# Parametres :
+#  <Parent> : Fenetre Parent
+#  <DB>     : BD à afficher
+#  <Cmd>    : Commande à exécuter pour chaque sélection
+#
+# Retour :
+#  <sel> : La fonction retourne la derniere ligne selectionnee
 #
 # Remarques :
 #   - Si une commande est passe en parametre, elle est execute pour chaque
 #     selection avec comme seul argument la ligne selectionnee.
-#
-# Retour:
-#   <sel>   : La fonction retourne la derniere ligne selectionnee
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DBBox::Create { Parent DB {Cmd ""} } {
    global   GDefs
    variable Lbl
@@ -78,21 +79,21 @@ proc DBBox::Create { Parent DB {Cmd ""} } {
    return [DataTable::CreateTransientWindow $Parent [lindex $Lbl(${DB}Title) $GDefs(Lang)] DBBox::Data(Variable) 0 "" $Cmd]
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DBBox::CheckDB>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Vérifie si la base de donnée est disponible et la rend disponible
+# But : Vérifie si la base de donnée est disponible et la rend disponible
 #            si tel n'est pas le cas (lazy loading)
 #
 # Parametres :
-#     <DB>  : La base de données à vérifier
+#  <DB> : La base de données à vérifier
 #
-# Retour:
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DBBox::CheckDB { DB } {
    variable Data
 
@@ -101,20 +102,20 @@ proc DBBox::CheckDB { DB } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DBBox::ReadDB>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Lit la base de données spécifiée
+# But : Lit la base de données spécifiée
 #
 # Parametres :
-#     <DB>  : La base de données à lire
+#  <DB> : La base de données à lire
 #
-# Retour:
+# Retour :
+#  <error> : Error code when DB not found
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DBBox::ReadDB { DB } {
    variable Param
    variable Data
@@ -163,23 +164,23 @@ proc DBBox::ReadDB { DB } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DBBox::Search>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Parmet à un script la recherche de données dans une base de données
+# But : Parmet à un script la recherche de données dans une base de données
 #
 # Parametres :
-#     <DB>     : La base de données à parcourir, préfixée de 'DB' pour la BD
+#  <DB>      : La base de données à parcourir, préfixée de 'DB' pour la BD
 #                complète ou 'View' pour la BD affichée. (Ex: ViewOil)
-#     <Column> : La colonne (nom ou index) où appliquer le pattern
-#     <Pattern>: Le pattern de recherche
+#  <Column>  : La colonne (nom ou index) où appliquer le pattern
+#  <Pattern> : Le pattern de recherche
 #
-# Retour:
+# Retour :
+#  <list> : Matched data
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DBBox::Search { DB Column Pattern } {
    variable Param
    variable Data
@@ -202,30 +203,29 @@ proc DBBox::Search { DB Column Pattern } {
    return [lsearch -glob -nocase -index $idx -inline -all $Data($DB) $Pattern]
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DataTable::Create>
 # Creation : Juillet 2023 - C. Mitron-Brazeau - CMC/CMOE
 #
-# But      : Créer et populer un table widget
+# But : Créer et populer un table widget
 #
-# Parametres  :
-#   <W>                          : Nom du widget DataTable
-#   <Variable>                   : Nom de la variable des données à affichées
+# Parametres :
+#  <W>                        : Nom du widget DataTable
+#  <Variable>                 : Nom de la variable des données à affichées
 #                                  La première entrée doit être les étiquettes des colonnes de la table
-#   <UseComboBoxFilters>         : Rendre les filtres des widgets ComboBox
-#   <ComboBoxFilterSortOrders>   : Type de tri des éléments des filtres ComboBox
+#  <UseComboBoxFilters>       : Rendre les filtres des widgets ComboBox
+#  <ComboBoxFilterSortOrders> : Type de tri des éléments des filtres ComboBox
 #                                  - Valeur  : sera appliqué globalement sur tous les filtres
 #                                  - Liste   : sera associé aux filtres individuellement
-#   <OnSelectCmd>                : Commande à exécuter pour chaque sélection
+#  <OnSelectCmd>              : Commande à exécuter pour chaque sélection
+#
+# Retour :
+#  <widget> : Retourne le nom du widget DataTable
 #
 # Remarques :
 #   - Si une commande est passe en parametre, elle est execute pour chaque
 #     selection avec comme seul argument la ligne selectionnee.
-#
-# Retour:
-#   <list> : La fonction retourne la derniere ligne selectionnee
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} } {
    global   GDefs
    variable Lbl
@@ -373,9 +373,32 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
    return $W
 }
 
-#----------
-#----------
-proc DataTable::CreateWindow { Title Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} {OnDestroyCmd ""} } {
+#----------------------------------------------------------------------------
+# Nom      : <DataTable::CreateWindow>
+# Creation : Juillet 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Créer une fenêtre pour l'affichage d'une table de données
+#
+# Parametres :
+#  <Parent>                   : Widget parent
+#  <Title>                    : Titre de la fenêtre
+#  <Variable>                 : Nom de la variable des données à affichées
+#                               La première entrée doit être les étiquettes des colonnes de la table
+#  <UseComboBoxFilters>       : Rendre les filtres des widgets ComboBox
+#  <ComboBoxFilterSortOrders> : Type de tri des éléments des filtres ComboBox
+#                               - Valeur  : sera appliqué globalement sur tous les filtres
+#                               - Liste   : sera associé aux filtres individuellement
+#  <OnSelectCmd>              : Commande à exécuter pour chaque sélection
+#  <OnDestroyCmd>             : Commande à exécuter lorsque la fenêtre est fermé par le X
+#
+# Retour :
+#  <Widget> : Nom de la fenêtre
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
+proc DataTable::CreateWindow { Parent Title Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} {OnDestroyCmd ""} } {
    global   GDefs
    variable Lbl
    variable Data
@@ -397,17 +420,45 @@ proc DataTable::CreateWindow { Title Variable {UseComboBoxFilters 0} {ComboBoxFi
 
    Create $w.table $Variable $UseComboBoxFilters $ComboBoxFilterSortOrders $OnSelectCmd
 
+   set toplevelParent [winfo toplevel $Parent]
+   #----- Destroy window if parent is destroyed
+   wm protocol $toplevelParent WM_DELETE_WINDOW "[wm protocol $toplevelParent WM_DELETE_WINDOW]; destroy $w"
+   #----- Center window on parent
+   update
+   wm geom $w +[expr [winfo rootx $toplevelParent]+[winfo width $toplevelParent]/2-[winfo width $w]/2]+[expr [winfo rooty $toplevelParent]+[winfo height $toplevelParent]/2-[winfo height $w]/2]
    return $w
 }
 
-#----------
-#----------
+#----------------------------------------------------------------------------
+# Nom      : <DataTable::CreateTransientWindow>
+# Creation : Juillet 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Créer une fenêtre pour l'affichage d'une table de données en tant que liste déroulante
+#
+# Parametres :
+#  <Parent>                   : Widget parent
+#  <Title>                    : Titre de la fenêtre
+#  <Variable>                 : Nom de la variable des données à affichées
+#                               La première entrée doit être les étiquettes des colonnes de la table
+#  <UseComboBoxFilters>       : Rendre les filtres des widgets ComboBox
+#  <ComboBoxFilterSortOrders> : Type de tri des éléments des filtres ComboBox
+#                               - Valeur  : sera appliqué globalement sur tous les filtres
+#                               - Liste   : sera associé aux filtres individuellement
+#  <OnSelectCmd>              : Commande à exécuter pour chaque sélection
+#
+# Retour :
+#  <Liste> : Ligne sélectionnée
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
 proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} } {
 
    $Parent config -cursor X_cursor
    update idletasks
 
-   set w [CreateWindow $Title $Variable $UseComboBoxFilters $ComboBoxFilterSortOrders $OnSelectCmd]
+   set w [CreateWindow $Parent $Title $Variable $UseComboBoxFilters $ComboBoxFilterSortOrders $OnSelectCmd]
    wm transient $w $Parent
    #----- Override on destroy
    #      Window is destroyed below
@@ -420,8 +471,10 @@ proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilter
    set Data(Result) ""
    tkwait variable [namespace current]::Data(Result)
 
-   catch { destroy $w }
-   $Parent config -cursor left_ptr
+   catch {
+      destroy $w
+      $Parent config -cursor left_ptr
+   }
 
    if { $prevgrab!="" } {
       grab $prevgrab
@@ -430,9 +483,22 @@ proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilter
    return $Data(Result)
 }
 
-#----------
-# But : Ajuster la taille des colonnes de la table selon leur contenu
-#----------
+#----------------------------------------------------------------------------
+# Nom      : <DataTable::AdaptColumnWidthsToContent>
+# Creation : Juillet 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Ajuster la taille des colonnes de la table selon leur contenu
+#
+# Parametres :
+#  <Table> : Nom du widget Table
+#
+# Retour :
+#  Aucun
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
 proc DataTable::AdaptColumnWidthsToContent { Table } {
    global GDefs
    variable Lbl
@@ -537,21 +603,21 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DataTable::Sort>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Sort sur une colone
+# But : Sort sur une colonne
 #
 # Parametres :
-#  <Table>  : Le widget (table) à updater
-#  <Col>    : La colone sur laquelle faire le trie
+#  <Table> : Le widget (table) à updater
+#  <Col>   : La colonne sur laquelle faire le trie
 #
-# Retour:
+# Retour :
+#  <Error> : Error code if invalid Col
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DataTable::Sort { Table Col } {
    variable Data
    variable Param
@@ -577,21 +643,21 @@ proc DataTable::Sort { Table Col } {
    Update $Table
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <DataTable::Update>
 # Creation : Avril 2016 - E. Legault-Ouellet - CMC/CMOE
 #
-# But      : Update la liste des items affichés en tenant compte des critères de
+# But : Update la liste des items affichés en tenant compte des critères de
 #            rechercheé.
 #
 # Parametres :
-#     <Table>   : Le widget (table) à updater
+#  <Table> : Le widget (table) à updater
 #
-# Retour:
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc DataTable::Update { Table } {
    variable Tbl
    variable Data
@@ -625,7 +691,6 @@ proc DataTable::Update { Table } {
 
    #----- Update ComboBox Filter items
    if { $Param(UseComboBoxFilters) } {
-      # TODO : Make sure current filter takes into account items still availabe if it changes
       for {set i 0} {$i<[llength [lindex $Var 0]]} {incr i} {
          set items [lmap row [lrange $Var 1 end] {lindex $row $i}]
          set sortOrder [lindex $Param(ComboBoxFilterSortOrders) $i]
@@ -637,7 +702,15 @@ proc DataTable::Update { Table } {
          ComboBox::AddList $Table.searchCol$i $items False
          set Tbl(1,$i) $current
 
-         set availItems [lsort -unique [lmap row $lst {lindex $row $i}]]
+         set availLst [lrange $Var 1 end]
+         foreach {idx val} [array get Tbl 1,*] {
+            set col [lindex [split $idx ,] 1]
+            if { $i != $col } {
+               set availLst [lsearch -glob -nocase -index $col -inline -all $availLst "*[join $val *]*[set availLst ""]"]
+            }
+         }
+
+         set availItems [lsort -unique [lmap row $availLst {lindex $row $i}]]
          set availItems [linsert $availItems 0 ""]
          set availItemIndexes [lmap idx [lsearch -all -regexp $items ""] item $items {expr {
                [lsearch -exact $availItems $item] != -1 ? $idx : [continue]
