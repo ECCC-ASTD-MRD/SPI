@@ -1,16 +1,23 @@
-#===============================================================================
+#============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
-# 2100 Trans-Canadienne
+# 2121 Trans-Canadienne
 # Dorval, Quebec
+# H9P 1J3
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.ctes
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Permettre de gerer des fichiers sur diverses machines.
+# Description :
+#  Permettre de gerer des fichiers sur diverses machines.
 #
-#===============================================================================
+# Fonctions :
+#  Aucune
+#
+# Remarques :
+#  Aucune
+#============================================================================
 
 namespace eval HFManager { } {
    global env

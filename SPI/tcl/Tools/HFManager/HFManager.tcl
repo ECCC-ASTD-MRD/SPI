@@ -1,16 +1,39 @@
-#===============================================================================
+#============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
-# 2100 Trans-Canadienne
+# 2121 Trans-Canadienne
 # Dorval, Quebec
+# H9P 1J3
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.tcl
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Permettre de gerer des fichiers sur diverses machines.
+# Description :
+#  Permettre de gerer des fichiers sur diverses machines.
 #
-#===============================================================================
+# Fonctions :
+#  HFManager::Close         {  }
+#  HFManager::FileGet       { Id }
+#  HFManager::FileDo        { Prefix Post Files }
+#  HFManager::FileCommand   { Id Command }
+#  HFManager::WeatherFileRM { Id files }
+#  HFManager::FilePopup     { Id X Y LY }
+#  HFManager::HostClose     { Id }
+#  HFManager::HostFiles     { Id }
+#  HFManager::WeatherFiles  { Id }
+#  HFManager::HostOpen      {  }
+#  HFManager::HostPath      { Id Y }
+#  HFManager::HostPathDel   { Id }
+#  HFManager::HostPathSave  { Id }
+#  HFManager::HostSelect    { Id Hostname Hostpath }
+#  HFManager::AsProject     { File }
+#  HFManager::HostRead      {  }
+#  HFManager::HostWrite     { Id }
+#
+# Remarques :
+#  Aucune
+#============================================================================
 
 #----- Lire les sources d'execution
 
@@ -18,20 +41,22 @@ source $GDefs(Dir)/tcl/Tools/HFManager/HFManager.ctes
 source $GDefs(Dir)/tcl/Tools/HFManager/HFManager.int
 source $GDefs(Dir)/tcl/Tools/HFManager/HFManager.txt
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::Close>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Quitter l'interface.
+# But :
+#  Quitter l'interface.
 #
-# Parametres:
+# Parametres :
+#  Aucun
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::Close { } {
    variable Data
 
@@ -41,22 +66,22 @@ proc HFManager::Close { } {
    if { !$SPI::Param(Window) } { SPI::Quit }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::FileGet>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Recuperer la selection de fichier de l'usager.
+# But :
+#  Recuperer la selection de fichier de l'usager.
 #
-# Parametres:
-#   <Id>    : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
-#   <Files> : Liste des fichiers avec leur path complet
+# Retour :
+#  <List> : Liste des fichiers avec leur path complet
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::FileGet { Id } {
    variable Host
    variable Save
@@ -76,25 +101,25 @@ proc HFManager::FileGet { Id } {
    return $files
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::FileDo>
 # Creation : Decembre 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Executer la commande sur les fichiers un a la fois.
+# But :
+#  Executer la commande sur les fichiers un a la fois.
 #
-# Parametres:
+# Parametres :
 #  <Prefix> : Prefixe de la commande
 #  <Post>   : Postfixe de la commande
 #  <Files>  : Liste des fichiers
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#   -Du a la limitation du nombre de caractere de rsh, on doit effectuer les commandes
-#    sur un fichier a la fois afin d'etre sur de ne pas depasser la limite
-#
-#-------------------------------------------------------------------------------
-
+#  -Du a la limitation du nombre de caractere de rsh, on doit effectuer les commandes
+#   sur un fichier a la fois afin d'etre sur de ne pas depasser la limite
+#----------------------------------------------------------------------------
 proc HFManager::FileDo { Prefix Post Files } {
 
    foreach file $Files {
@@ -102,22 +127,23 @@ proc HFManager::FileDo { Prefix Post Files } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::FileCommand>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Executer les commandes possibles sur les fichiers.
+# But :
+#  Executer les commandes possibles sur les fichiers.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
-#  <Command>: Commande a effectuer
+# Parametres :
+#  <Id>      : Identificateur de la boite
+#  <Command> : Commande a effectuer
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::FileCommand { Id Command } {
    global GDefs env
    variable Host
@@ -279,6 +305,23 @@ proc HFManager::FileCommand { Id Command } {
    .hfman config -cursor left_ptr
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <HFManager::WeatherFileRM>
+# Creation : Août 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Supprimer des fichiers de weather office
+#
+# Parametres :
+#  <Id>    : Identificateur de la boite
+#  <files> : Liste des fichiers
+#
+# Retour :
+#  Aucun
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::WeatherFileRM { Id files } {
    global env
    global GDefs
@@ -328,20 +371,25 @@ proc HFManager::WeatherFileRM { Id files } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::FilePopup>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Activer et desactiver les options selon le cas.
+# But :
+#  Activer et desactiver les options selon le cas.
 #
-# Parametres:
+# Parametres :
+#  <Id> : Identificateur de la boite
+#  <X>  : TODO
+#  <Y>  : TODO
+#  <LY> : TODO
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::FilePopup { Id X Y LY } {
    variable Host
    variable Save
@@ -428,20 +476,22 @@ proc HFManager::FilePopup { Id X Y LY } {
    tk_popup .hfmanpopup$Id $X $Y 0
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostClose>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Ferme une fenetre d'hote.
+# But :
+#  Ferme une fenetre d'hote.
 #
-# Parametres:
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostClose { Id } {
    variable Host
 
@@ -458,21 +508,22 @@ proc HFManager::HostClose { Id } {
    destroy .hfman.host.$Id
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostFiles>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Recuperer le contenu du repertoire de l'hote.
+# But :
+#  Recuperer le contenu du repertoire de l'hote.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostFiles { Id } {
    global GDefs env
    variable Host
@@ -528,6 +579,22 @@ proc HFManager::HostFiles { Id } {
    .hfman config -cursor left_ptr
 }
 
+#----------------------------------------------------------------------------
+# Nom      : <HFManager::WeatherFiles>
+# Creation : Août 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Recuperer le contenu du repertoire de weather office.
+#
+# Parametres :
+#  <Id> : Identificateur de la boite
+#
+# Retour :
+#  Aucun
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::WeatherFiles { Id } {
    variable Host
    variable Weather
@@ -557,20 +624,22 @@ proc HFManager::WeatherFiles { Id } {
    set Host(File$Id) [lsort -index end [lsort -unique $Host(File$Id)]]
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostOpen>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Creer une nouvelle fenetre d'hote.
+# But :
+#  Creer une nouvelle fenetre d'hote.
 #
-# Parametres:
+# Parametres :
+#  Aucun
 #
-# Retour    :
+# Retour :
+#  <String> : Host Id
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostOpen { } {
    variable Host
 
@@ -593,22 +662,23 @@ proc HFManager::HostOpen { } {
    return host$no
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostPath>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Effectuer le changement de repertoire.
+# But :
+#  Effectuer le changement de repertoire.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
-#  <Y>      : Coornonne du curseur dans la liste  de fichiers
+# Parametres :
+#  <Id> : Identificateur de la boite
+#  <Y>  : Coornonne du curseur dans la liste  de fichiers
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostPath { Id Y } {
    global GDefs
    variable Host
@@ -657,21 +727,22 @@ proc HFManager::HostPath { Id Y } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostPathDel>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Supprimer le repertoire courant.
+# But :
+#  Supprimer le repertoire courant.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostPathDel { Id } {
    variable Host
    variable Save
@@ -691,21 +762,22 @@ proc HFManager::HostPathDel { Id } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostPathSave>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Sauvegarder le repertoire courant.
+# But :
+#  Sauvegarder le repertoire courant.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostPathSave { Id } {
    variable Host
    variable Save
@@ -725,23 +797,24 @@ proc HFManager::HostPathSave { Id } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostSelect>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Changer l'hote
+# But :
+#  Changer l'hote
 #
-# Parametres:
-#  <Id>        : Identificateur de la boite
-#  <Hostnamne> : Nom de l'hote
-#  <Hostpath>  : Path sur l'hote
+# Parametres :
+#  <Id>       : Identificateur de la boite
+#  <Hostname> : Nom de l'hote
+#  <Hostpath> : Path sur l'hote
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    global GDefs
    variable Host
@@ -791,21 +864,23 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    HFManager::HostFiles $Id
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::AsProject>
 # Creation : Aout 2006 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Sauvegarder l'etat de l'outils dans un projet SPI.
+# But :
+#  Sauvegarder l'etat de l'outils dans un projet SPI.
 #
 # Parametres :
-#   <File>   : Descripteur de fichier ou ecrire les commandes
+#  <File> : Descripteur de fichier ou ecrire les commandes
+#
+# Retour :
+#  Aucun
 #
 # Remarques :
-#    - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
-#      afin de re-instaurer l'outils dans son etat actuel.
-#
-#-------------------------------------------------------------------------------
-
+#  - Le fichier est deja ouvert, il suffit d'y ecrire les commandes a executer
+#    afin de re-instaurer l'outils dans son etat actuel.
+#----------------------------------------------------------------------------
 proc HFManager::AsProject { File } {
    variable Host
    variable Param
@@ -824,19 +899,22 @@ proc HFManager::AsProject { File } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostRead>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Lire les definitions des hotes sauvegarder par l'usager.
+# But :
+#  Lire les definitions des hotes sauvegarder par l'usager.
 #
-# Parametres:
+# Parametres :
+#  Aucun
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
 #  - The read data would benefit being saved inside a dictionary
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 proc HFManager::HostRead { } {
    global env
    global GDefs
@@ -878,20 +956,22 @@ proc HFManager::HostRead { } {
    }
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::HostWrite>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Ecrire les definitions des hotes sauvegarder par l'usager.
+# But :
+#  Ecrire les definitions des hotes sauvegarder par l'usager.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::HostWrite { Id } {
    global env
    global GDefs
