@@ -59,20 +59,15 @@ proc HFManager::Close { } {
 
 proc HFManager::FileGet { Id } {
    variable Host
+   variable Save
 
    set idxs [.hfman.host.$Id.file.sel.list curselection]
    set files ""
 
    eval set params \$HFManager::Host(\$HFManager::Host(Name$Id))
 
-   if { [lindex $params 1]=="wget" } {
-      set fileindex 3
-   } else {
-      set fileindex end
-   }
-
    foreach idx $idxs {
-      set file [file tail [lindex [.hfman.host.$Id.file.sel.list get $idx] $fileindex]]
+      set file [file tail [lindex [.hfman.host.$Id.file.sel.list get $idx] end]]
       if { [string length $file]>0 } {
          lappend files $HFManager::Host(Path$Id)/$file
       }
@@ -128,6 +123,7 @@ proc HFManager::FileCommand { Id Command } {
    variable Host
    variable Lbl
    variable Txt
+   variable Save
 
    .hfman config -cursor watch
    .hfman.host.$Id.file.sel.list config -cursor watch
@@ -154,7 +150,7 @@ proc HFManager::FileCommand { Id Command } {
             set info [HFManager::GetInfo $Lbl(ModeT) $Lbl(Mode)]
 
             if { $info != "" } {
-               HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "chmod $info" $file
+               HFManager::FileDo "$prefix [lindex $params $Save(ConnexionTypeIdx)] $HFManager::Host(Name$Id)"  "chmod $info" $file
             } else {
                .hfman config -cursor left_ptr
                .hfman.host.$Id.file.sel.list config -cursor left_ptr
@@ -165,7 +161,7 @@ proc HFManager::FileCommand { Id Command } {
             set info [HFManager::GetInfo $Lbl(OwnerT) $Lbl(Owner)]
 
             if { $info != "" } {
-               HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "chown $info" $file
+               HFManager::FileDo "$prefix [lindex $params $Save(ConnexionTypeIdx)] $HFManager::Host(Name$Id)"  "chown $info" $file
             } else {
                .hfman config -cursor left_ptr
                .hfman.host.$Id.file.sel.list config -cursor left_ptr
@@ -176,7 +172,7 @@ proc HFManager::FileCommand { Id Command } {
             set info [HFManager::GetInfo $Lbl(GroupT) $Lbl(Group)]
 
             if { $info != "" } {
-               FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "chgrp $info" $file
+               FileDo "$prefix [lindex $params $Save(ConnexionTypeIdx)] $HFManager::Host(Name$Id)"  "chgrp $info" $file
             } else {
                .hfman config -cursor left_ptr
                .hfman.host.$Id.file.sel.list config -cursor left_ptr
@@ -185,14 +181,10 @@ proc HFManager::FileCommand { Id Command } {
         }
         "RM" {
             if { [Dialog::Default .hfman 350 WARNING $Txt(Delete) "" 0 $Lbl(No) $Lbl(Yes)] } {
-               if { [lindex $params 1]=="wget" } {
-                  #----- send a file to pds
-                  set err [catch { exec $env(EER_DIRSCRIPT)/HFdel.ksh $Host(Name$Id) $file $GDefs(FrontEnd) $GDefs(TransmitHost) } msg]
-                  if { $err } {
-                     Log::Print ERROR "Problems while calling HFdel.ksh :\n\n\t$msg"
-                  }
+               if { [lindex $params $Save(ConnexionTypeIdx)]=="weather" } {
+                  HFManager::WeatherFileRM $Id $file
                } else {
-                  HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f" $file
+                  HFManager::FileDo "$prefix [lindex $params $Save(ConnexionTypeIdx)] $HFManager::Host(Name$Id)"  "rm -f" $file
                }
             } else {
                .hfman config -cursor left_ptr
@@ -202,7 +194,7 @@ proc HFManager::FileCommand { Id Command } {
          }
          "RMDIR" {
             if { [Dialog::Default .hfman 350 WARNING $Txt(DeleteD) "" 0 $Lbl(No) $Lbl(Yes)] } {
-                HFManager::FileDo "$prefix [lindex $params 1] $HFManager::Host(Name$Id)"  "rm -f -r" $file
+                HFManager::FileDo "$prefix [lindex $params $Save(ConnexionTypeIdx)] $HFManager::Host(Name$Id)"  "rm -f -r" $file
             } else {
                .hfman config -cursor left_ptr
                .hfman.host.$Id.file.sel.list config -cursor left_ptr
@@ -213,7 +205,7 @@ proc HFManager::FileCommand { Id Command } {
             set info [HFManager::GetInfo $Lbl(NameT) $Lbl(Name)]
 
             if { $info != "" } {
-               eval exec $prefix [lindex $params 1] -n $HFManager::Host(Name$Id) \"mv [lindex $file 0] $HFManager::Host(Path$Id)/$info\"
+               eval exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $HFManager::Host(Name$Id) \"mv [lindex $file 0] $HFManager::Host(Path$Id)/$info\"
             } else {
                .hfman config -cursor left_ptr
                .hfman.host.$Id.file.sel.list config -cursor left_ptr
@@ -221,7 +213,7 @@ proc HFManager::FileCommand { Id Command } {
             }
          }
          "STAT" {
-            eval Dialog::Text .stat Stat \[exec $prefix [lindex $params 1] -n $HFManager::Host(Name$Id) \"stat $file\"\] 75 10
+            eval Dialog::Text .stat Stat \[exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $HFManager::Host(Name$Id) \"stat $file\"\] 75 10
             return
          }
          "COPY" {
@@ -252,7 +244,7 @@ proc HFManager::FileCommand { Id Command } {
       set info [HFManager::GetInfo $Lbl(MkDirT) $Lbl(MkDir)]
 
       if { $info != "" } {
-         eval exec $prefix [lindex $params 1] -n $HFManager::Host(Name$Id) \"mkdir $HFManager::Host(Path$Id)/$info\"
+         eval exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $HFManager::Host(Name$Id) \"mkdir $HFManager::Host(Path$Id)/$info\"
          HFManager::HostFiles $Id
       }
    }
@@ -264,18 +256,18 @@ proc HFManager::FileCommand { Id Command } {
          switch $Host(Format) {
             "TGZ" {
                exec tar -C [file dirname $file] -cf - $filename | gzip > /tmp/$filename[pid].tgz
-               eval exec $prefix [lindex $params 2] $Host(From):/tmp/$filename[pid].tgz $Host(Name$Id):$Host(Path$Id)/$filename.tgz
+               eval exec $prefix [lindex $params $Save(ConnexionTypeIdx)] $Host(From):/tmp/$filename[pid].tgz $Host(Name$Id):$Host(Path$Id)/$filename.tgz
                file delete -force /tmp/$filename[pid].tgz
             }
 
             "CMC" {
                cd [file dirname $file]
                exec cmcarc -a $file -f /tmp/$filename[pid].cmc
-               eval exec $prefix [lindex $params 2] $Host(From):/tmp/$filename[pid].cmc $Host(Name$Id):$Host(Path$Id)/$filename.cmc
+               eval exec $prefix [lindex $params $Save(ConnexionTypeIdx)] $Host(From):/tmp/$filename[pid].cmc $Host(Name$Id):$Host(Path$Id)/$filename.cmc
                file delete -force /tmp/$filename[pid].cmc
 
             }
-            default { eval exec $prefix [lindex $params 2] $Host(From):$file $Host(Name$Id):$Host(Path$Id)/$filename }
+            default { eval exec $prefix [lindex $params $Save(CopyCmdIdx)] $Host(From):$file $Host(Name$Id):$Host(Path$Id)/$filename }
          }
       }
       cd $dir
@@ -285,6 +277,55 @@ proc HFManager::FileCommand { Id Command } {
 
    .hfman.host.$Id.file.sel.list config -cursor left_ptr
    .hfman config -cursor left_ptr
+}
+
+proc HFManager::WeatherFileRM { Id files } {
+   global env
+   global GDefs
+   variable Host
+   variable Weather
+
+   if { ![file exists $Weather(MustExist)] } {
+      Dialog::Error .hfman [format [lindex $Error(MustExist) $GDefs(Lang)] $Weather(MustExist)]
+      return
+   }
+
+   #----- Folder strucutre
+   set date [clock format [clock seconds] -format "%Y%m%dT%H%M%SZ"]
+   set rmFolder $Weather(TraceDir)/RM
+   set datedRmFolder $rmFolder/$date
+   file mkdir $datedRmFolder
+   set cleanupFileLink $rmFolder/realtime_eer_cleanup.txt
+   set cleanupFile $datedRmFolder/realtime_eer_cleanup.txt
+   set folderSnapshotFile $datedRmFolder/folder_snapshot.txt
+   set transferLog $datedRmFolder/transfer.log
+
+   set filepaths [lmap x $files {string range $x [expr [string first $Weather(BasePath) $Host(Path$Id)]+[string length $Weather(BasePath)]] end}]
+
+   set f [open $cleanupFile w]
+   foreach filepath $filepaths {
+      puts $f $filepath
+   }
+   close $f
+
+   exec chmod 644 $cleanupFile
+   file delete -force $cleanupFileLink
+   file link $cleanupFileLink $cleanupFile
+
+   set f [open $folderSnapshotFile w]
+   puts $f "$Host(Path$Id):"
+   foreach fileinfo $Host(File$Id) {
+      puts $f $fileinfo
+   }
+   close $f
+
+   set err [catch { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $cleanupFileLink eer/data/vaac/realtime_eer_cleanup.txt $GDefs(TransmitHost) 2>$transferLog } msg]
+
+   if { $err } {
+      Log::Print ERROR "Problemes avec la copie vers le PDS !!!"
+   } else {
+      Log::Print INFO "Les fichiers ( $filepaths ) seront effaces sous $Host(Name$Id) !"
+   }
 }
 
 #-------------------------------------------------------------------------------
@@ -303,39 +344,85 @@ proc HFManager::FileCommand { Id Command } {
 
 proc HFManager::FilePopup { Id X Y LY } {
    variable Host
+   variable Save
+
+   eval set params \$Host(\$Host(Name$Id))
 
    #----- If no selection is made, select the one under the mouse
    if { ![llength [.hfman.host.$Id.file.sel.list curselection]] } {
       .hfman.host.$Id.file.sel.list selection set [.hfman.host.$Id.file.sel.list nearest $LY] [.hfman.host.$Id.file.sel.list nearest $LY]
    }
 
+   #----- Reset feature states
+   #-----   Enable Update Host
+   .hfmanpopup$Id entryconfigure 0 -state normal
+   #-----   Enable Action
+   .hfmanpopup$Id entryconfigure 1 -state normal
+   #-----   Enable Copy
+   .hfmanpopup$Id entryconfigure 3 -state normal
+   #-----   Enable Paste
+   .hfmanpopup$Id entryconfigure 4 -state normal
+   .hfmanpopup$Id entryconfigure 5 -state normal
+   .hfmanpopup$Id entryconfigure 6 -state normal
+   #-----   Enable Close Host
+   .hfmanpopup$Id entryconfigure 9 -state normal
+
+   #-----   Enable actions but RM
+   .hfmanpopup$Id.action entryconfigure 0 -state normal
+   .hfmanpopup$Id.action entryconfigure 1 -state normal
+   .hfmanpopup$Id.action entryconfigure 2 -state normal
+   .hfmanpopup$Id.action entryconfigure 5 -state normal
+   .hfmanpopup$Id.action entryconfigure 6 -state normal
+   .hfmanpopup$Id.action entryconfigure 7 -state normal
+   .hfmanpopup$Id.action entryconfigure 9 -state normal
+   .hfmanpopup$Id.action entryconfigure 11 -state normal
+
+   #----- Toggle off host related features
    if { "$Host(Name$Id)"=="" || "$Host(Path$Id)"=="" } {
+      #----- Disable Update Host
       .hfmanpopup$Id entryconfigure 0 -state disabled
+      #----- Disable Action
       .hfmanpopup$Id entryconfigure 1 -state disabled
+      #----- Disable Copy
       .hfmanpopup$Id entryconfigure 3 -state disabled
+      #----- Disable Paste
       .hfmanpopup$Id entryconfigure 4 -state disabled
       .hfmanpopup$Id entryconfigure 5 -state disabled
       .hfmanpopup$Id entryconfigure 6 -state disabled
    } else {
-      if { "$Host(From)"=="" || "$Host(FromFiles)"=="" } {
+      #----- Copy Paste Feature
+      if { [lindex $params $Save(CopyCmdIdx)] == "-" } {
+         #----- Disable Copy
+         .hfmanpopup$Id entryconfigure 3 -state disabled
+         #----- Disable Paste
          .hfmanpopup$Id entryconfigure 4 -state disabled
          .hfmanpopup$Id entryconfigure 5 -state disabled
          .hfmanpopup$Id entryconfigure 6 -state disabled
-      } else {
-         .hfmanpopup$Id entryconfigure 4 -state normal
-         .hfmanpopup$Id entryconfigure 5 -state normal
-         .hfmanpopup$Id entryconfigure 6 -state normal
+      } elseif { "$Host(From)"=="" || "$Host(FromFiles)"=="" } {
+         #----- Disable Paste
+         .hfmanpopup$Id entryconfigure 4 -state disabled
+         .hfmanpopup$Id entryconfigure 5 -state disabled
+         .hfmanpopup$Id entryconfigure 6 -state disabled
       }
 
-      .hfmanpopup$Id entryconfigure 0 -state normal
-      .hfmanpopup$Id entryconfigure 1 -state normal
-      .hfmanpopup$Id entryconfigure 3 -state normal
+      #----- Actions
+      if { [lindex $params $Save(ConnexionTypeIdx)] == "weather" } {
+         #----- Disable actions but RM
+         .hfmanpopup$Id.action entryconfigure 0 -state disabled
+         .hfmanpopup$Id.action entryconfigure 1 -state disabled
+         .hfmanpopup$Id.action entryconfigure 2 -state disabled
+         .hfmanpopup$Id.action entryconfigure 5 -state disabled
+         .hfmanpopup$Id.action entryconfigure 6 -state disabled
+         .hfmanpopup$Id.action entryconfigure 7 -state disabled
+         .hfmanpopup$Id.action entryconfigure 9 -state disabled
+         .hfmanpopup$Id.action entryconfigure 11 -state disabled
+      }
    }
 
+   #----- Toggle off window related features
    if { [llength $Host(Ids)]==1 } {
+      #----- Disable Close Host
       .hfmanpopup$Id entryconfigure 9 -state disabled
-   } else {
-      .hfmanpopup$Id entryconfigure 9 -state normal
    }
 
    tk_popup .hfmanpopup$Id $X $Y 0
@@ -389,64 +476,85 @@ proc HFManager::HostClose { Id } {
 proc HFManager::HostFiles { Id } {
    global GDefs env
    variable Host
+   variable Save
 
-   if { $Host(Name$Id)!="" } {
-      .hfman config -cursor watch
-      .hfman.host.$Id.file.sel.list config -cursor watch
-
-      .hfman.host.$Id.file.sel.list selection clear 0 end
-      set Host(File$Id) ""
-
-      update idletasks
-
-      eval set params \$Host(\$Host(Name$Id))
-      eval set prefix \$Host(Prefix\$Host(Name$Id))
-
-      set X11Forwarding ""
-
-      if { $Host(Path$Id) == "" } {
-
-         #----- Dans le cas d'un ssh on limite l'acces aux path sauvergardees
-
-         if { [lindex $params 1] == "ssh" } {
-            set Host(Path$Id) [lindex [lindex $params 3] 0]
-
-            #----- disables X11 forwarding ( bug pour l'usager ops@polaris, ... )
-
-            set X11Forwarding "-x"
-
-         } elseif { [lindex $params 1]!="wget" } {
-            eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) pwd\]
-         } else {
-            Log::Print DEBUG "on regarde sur site web meteo ... "
-            set Host(Path$Id) [lindex [lindex $params 3] 0]
-         }
-      }
-
-      if { [lindex $params 1]=="wget" } {
-         set err [catch { exec $env(EER_DIRSCRIPT)/HFwget.ksh $Host(Name$Id) $Host(Path$Id) /tmp/index[pid].res } msg]
-         if { $err } {
-            Log::Print ERROR "Problems while calling HFwget.ksh :\n\n\t$msg"
-         }
-
-         if { $Host(Wild$Id) != "" } {
-            Log::Print DEBUG "egrep $Host(Wild$Id) /tmp/index[pid].res"
-            catch { eval set Host(File$Id) \[split \[exec egrep $Host(Wild$Id) /tmp/index[pid].res ] \\n\] }
-         } else {
-            catch { eval set Host(File$Id) \[split \[exec cat /tmp/index[pid].res ] \\n\] }
-         }
-         file delete -force /tmp/index[pid].res
-      } else {
-         if { $Host(Wild$Id) != "" } {
-            set path  $Host(Path$Id)/$Host(Wild$Id)
-         } else {
-            set path  $Host(Path$Id)
-         }
-         catch { eval set Host(File$Id) \[split \[exec $prefix [lindex $params 1] -n $X11Forwarding $Host(Name$Id) ls -lap $path\] \\n\] }
-      }
-      .hfman.host.$Id.file.sel.list config -cursor left_ptr
-      .hfman config -cursor left_ptr
+   if { $Host(Name$Id)=="" } {
+      return
    }
+
+   .hfman config -cursor watch
+   .hfman.host.$Id.file.sel.list config -cursor watch
+
+   .hfman.host.$Id.file.sel.list selection clear 0 end
+   set Host(File$Id) ""
+
+   update idletasks
+
+   eval set params \$Host(\$Host(Name$Id))
+   eval set prefix \$Host(Prefix\$Host(Name$Id))
+
+   set X11Forwarding ""
+
+   if { $Host(Path$Id) == "" } {
+
+      #----- Dans le cas d'un ssh on limite l'acces aux path sauvergardees
+
+      if { [lindex $params $Save(ConnexionTypeIdx)] == "ssh" } {
+         set Host(Path$Id) [lindex [lindex $params $Save(PathsIdx)] 0]
+
+         #----- disables X11 forwarding ( bug pour l'usager ops@polaris, ... )
+
+         set X11Forwarding "-x"
+
+      } elseif { [lindex $params $Save(ConnexionTypeIdx)]=="weather" } {
+         Log::Print DEBUG "on regarde sur site web meteo ... "
+         set Host(Path$Id) [lindex [lindex $params $Save(PathsIdx)] 0]
+      } else {
+         eval set Host(Path$Id) \[exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $Host(Name$Id) pwd\]
+      }
+   }
+
+   if { [lindex $params $Save(ConnexionTypeIdx)]=="weather" } {
+      HFManager::WeatherFiles $Id
+   } else {
+      if { $Host(Wild$Id) != "" } {
+         set path  $Host(Path$Id)/$Host(Wild$Id)
+      } else {
+         set path  $Host(Path$Id)
+      }
+      catch { eval set Host(File$Id) \[split \[exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $X11Forwarding $Host(Name$Id) ls -lap $path\] \\n\] }
+   }
+   .hfman.host.$Id.file.sel.list config -cursor left_ptr
+   .hfman config -cursor left_ptr
+}
+
+proc HFManager::WeatherFiles { Id } {
+   variable Host
+   variable Weather
+
+   set Host(File$Id) {}
+
+   foreach filepath [glob $Weather(HostFilesGlobPattern)] {
+      set f [open $filepath r]
+      set folders [split [string map "{\n\n} {\u0080}" [read $f]] "\u0080"]
+      close $f
+
+      for {set i 0} {$i < [llength $folders]} {incr i} {
+         set folder [split [string trim [lindex $folders $i]] "\n"]
+         set folderPath [string range [lindex $folder 0] 0 end-1]
+         set files [lrange $folder 2 end]
+
+         set currentRelativePath [string range $folderPath [expr [string first $Weather(BasePath) $folderPath]+[string length $Weather(BasePath)]] end]
+         set relativePath [string range $Host(Path$Id) [expr [string first $Weather(BasePath) $Host(Path$Id)]+[string length $Weather(BasePath)]] end]
+         if { $currentRelativePath == $relativePath } {
+            lappend Host(File$Id) {*}$files
+            break
+         }
+      }
+   }
+
+   #----- Lsort -unique as second operation to avoid combining items by -index only
+   set Host(File$Id) [lsort -index end [lsort -unique $Host(File$Id)]]
 }
 
 #-------------------------------------------------------------------------------
@@ -504,6 +612,7 @@ proc HFManager::HostOpen { } {
 proc HFManager::HostPath { Id Y } {
    global GDefs
    variable Host
+   variable Save
    variable Error
 
    if { $Host(Name$Id)!="" } {
@@ -535,10 +644,10 @@ proc HFManager::HostPath { Id Y } {
 
             #----- Restriction des repertoires pour un acces ssh
 
-            if { [lindex $params 1] == "ssh" } {
-               eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n -x $Host(Name$Id) \"cd $path\; pwd\" \]
+            if { [lindex $params $Save(ConnexionTypeIdx)] == "ssh" } {
+               eval set Host(Path$Id) \[exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n -x $Host(Name$Id) \"cd $path\; pwd\" \]
             } else {
-               eval set Host(Path$Id) \[exec $prefix [lindex $params 1] -n $Host(Name$Id) \"cd $path \; pwd\" \]
+               eval set Host(Path$Id) \[exec $prefix [lindex $params $Save(ConnexionTypeIdx)] -n $Host(Name$Id) \"cd $path \; pwd\" \]
             }
             HFManager::HostFiles $Id
          }
@@ -565,16 +674,17 @@ proc HFManager::HostPath { Id Y } {
 
 proc HFManager::HostPathDel { Id } {
    variable Host
+   variable Save
 
    if { $Host(Name$Id)!="" } {
 
       eval upvar #0 HFManager::Host(\$HFManager::Host(Name$Id)) params
 
-      set paths [lindex $params 3]
+      set paths [lindex $params $Save(PathsIdx)]
       set idx [lsearch -exact $paths $Host(Path$Id)]
 
       if { $idx != -1 } {
-         set params "[lindex $params 0] [lindex $params 1] [lindex $params 2] {[lreplace $paths $idx $idx]}"
+         lset params $Save(PathsIdx) [lreplace $paths $idx $idx]
       }
 
       HFManager::HostWrite $Id
@@ -598,71 +708,20 @@ proc HFManager::HostPathDel { Id } {
 
 proc HFManager::HostPathSave { Id } {
    variable Host
+   variable Save
 
    if { $Host(Name$Id)!="" } {
 
       eval upvar #0 HFManager::Host(\$HFManager::Host(Name$Id)) params
 
-      set paths [lindex $params 3]
+      set paths [lindex $params $Save(PathsIdx)]
 
       if { $Host(Path$Id)!="" && [lsearch -exact $paths $Host(Path$Id)] == -1 } {
          lappend paths $Host(Path$Id)
-         set params "[lindex $params 0] [lindex $params 1] [lindex $params 2] {$paths}"
+         lset params $Save(PathsIdx) $paths
       }
 
       HFManager::HostWrite $Id
-   }
-}
-
-#-------------------------------------------------------------------------------
-# Nom      : <HFManager::HostRead>
-# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
-#
-# But      : Lire les definitions des hotes sauvegarder par l'usager.
-#
-# Parametres:
-#
-# Retour    :
-#
-# Remarques :
-#
-#-------------------------------------------------------------------------------
-
-proc HFManager::HostRead { } {
-   global env
-   global GDefs
-   variable Host
-
-   set Host(List) {}
-
-   if { [file exists $env(HOME)/.spi/HFManager] } {
-
-      set f [open $env(HOME)/.spi/HFManager r]
-
-      while { ![eof $f] } {
-
-         gets $f line
-
-         if { $line != "" && [string range $line 0 0] != "#" } {
-            set host [lindex $line 0]
-            lappend Host(List) $host
-
-            set Host($host) [lrange $line 1 end]
-
-            if { [lindex $line 1] != "-" } {
-               set Host(Prefix$host) "udo [lindex $line 1]"
-            } else {
-               set Host(Prefix$host) ""
-            }
-         }
-      }
-      close $f
-   }
-
-   if { [lsearch -exact $Host(List) $GDefs(Host)]==-1 } {
-      set Host($GDefs(Host)) [list - ssh scp {}]
-      set Host(Prefix$GDefs(Host)) ""
-      lappend Host(List) $GDefs(Host)
    }
 }
 
@@ -686,6 +745,7 @@ proc HFManager::HostRead { } {
 proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    global GDefs
    variable Host
+   variable Save
    variable Error
 
    if { $Hostname!="" } {
@@ -715,7 +775,7 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
 
    #----- On limites les fonctions pour les acces ssh
 
-   if { [lindex $params 1] == "ssh" } {
+   if { [lindex $params $Save(ConnexionTypeIdx)] == "ssh" } {
       .hfman.host.$Id.path.save configure -state disabled
       .hfman.host.$Id.path.del  configure -state disabled
    } else {
@@ -724,7 +784,7 @@ proc HFManager::HostSelect { Id { Hostname "" } { Hostpath "" } } {
    }
 
    ComboBox::DelAll  .hfman.host.$Id.path.sel
-   ComboBox::AddList .hfman.host.$Id.path.sel [lindex $params 3]
+   ComboBox::AddList .hfman.host.$Id.path.sel [lindex $params $Save(PathsIdx)]
 
    set Host(Path$Id) $Hostpath
 
@@ -765,6 +825,60 @@ proc HFManager::AsProject { File } {
 }
 
 #-------------------------------------------------------------------------------
+# Nom      : <HFManager::HostRead>
+# Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
+#
+# But      : Lire les definitions des hotes sauvegarder par l'usager.
+#
+# Parametres:
+#
+# Retour    :
+#
+# Remarques :
+#  - The read data would benefit being saved inside a dictionary
+#-------------------------------------------------------------------------------
+proc HFManager::HostRead { } {
+   global env
+   global GDefs
+   variable Host
+   variable Save
+
+   set Host(List) {}
+
+   if { [file exists $Save(Path)] } {
+
+      set f [open $Save(Path) r]
+
+      while { ![eof $f] } {
+
+         gets $f line
+
+         if { $line != "" && [string range $line 0 0] != "#" } {
+            set host [lindex $line $Save(DomainNameIdx)]
+            lappend Host(List) $host
+
+            set Host($host) $line
+
+            set udoCmdOptions [lindex $line $Save(UdoCmdOptionsIdx)]
+            if { $udoCmdOptions != "-" } {
+               set Host(Prefix$host) "udo $udoCmdOptions"
+            } else {
+               set Host(Prefix$host) ""
+            }
+         }
+      }
+      close $f
+   }
+
+   if { [lsearch -exact $Host(List) $GDefs(Host)]==-1 } {
+      set Host($GDefs(Host)) $Save(DefaultValues)
+      lset Host($GDefs(Host)) 0 $GDefs(Host)
+      set Host(Prefix$GDefs(Host)) ""
+      lappend Host(List) $GDefs(Host)
+   }
+}
+
+#-------------------------------------------------------------------------------
 # Nom      : <HFManager::HostWrite>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
@@ -778,36 +892,50 @@ proc HFManager::AsProject { File } {
 # Remarques :
 #
 #-------------------------------------------------------------------------------
-
 proc HFManager::HostWrite { Id } {
    global env
+   global GDefs
    variable Host
+   variable Save
+   variable Error
 
-   if { ![file exists $env(HOME)/.spi] } {
-      file mkdir $env(HOME)/.spi
+   if { ![file exists $Save(MustExist)] } {
+      Dialog::Error .hfman [format [lindex $Error(MustExist) $GDefs(Lang)] $Save(MustExist)]
+      return
    }
 
-   if { [file exists $env(HOME)/.spi/HFManager] } {
-      file rename -force $env(HOME)/.spi/HFManager $env(HOME)/.spi/HFManager.old
+   if { [file exists $Save(Path)] } {
+      file rename -force $Save(Path) $Save(Path)$Save(BackupExtension)
    }
 
-   set f [open $env(HOME)/.spi/HFManager w]
+   #----- Create formatString for data
+   set columnHeaders $Save(ColumnHeaders)
+   lset columnHeaders 0 "#[lindex $columnHeaders 0]"
+   set maxLengths [lmap x $columnHeaders {string length $x}]
+   foreach host $Host(List) {
+      eval set params \$Host($host)
+      set paramLengths [lmap x $params {string length $x}]
+      set maxLengths [lmap max $maxLengths current $paramLengths {expr $current > $max ? $current : $max}]
+   }
+   lset maxLengths end 1
+   set formatString [lmap max $maxLengths {set tmp "%-${max}s"}]
+   set formatString [string map "{ } {  }" $formatString]
 
-   puts $f "# Liste des hotes pour HFManager"
-   puts $f "#"
-   puts $f "#Domain complet           udo      Connnexion Copy  Paths"
-   puts $f "#"
+   set f [open $Save(Path) w]
+   puts $f $Save(Header)
+   puts $f [format $formatString {*}$columnHeaders]
 
    foreach host $Host(List) {
-
       eval set params \$Host($host)
-      puts $f "[format "%-25s %-7s  %-10s %-5s" $host [lindex $params 0] [lindex $params 1] [lindex $params 2]] {[lindex $params 3]}"
+      set params [string map [list "\{" "\{\{" "\}" "\}\}"] $params]
+      puts $f "[format $formatString {*}$params]"
    }
+
    close $f
 
    eval set params \$Host(\$Host(Name$Id))
 
    ComboBox::DelAll  .hfman.host.$Id.path.sel
-   ComboBox::AddList .hfman.host.$Id.path.sel [lindex $params 3]
+   ComboBox::AddList .hfman.host.$Id.path.sel [lindex $params $Save(PathsIdx)]
 }
 

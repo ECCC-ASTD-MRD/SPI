@@ -58,6 +58,7 @@ namespace eval HFManager { } {
 
    set Error(Host)  { "Hôte inconnu" "Unknowk host" }
    set Error(SSH)   { "L'accès a ce répertoire est restreint" "Restricted acces to this directory" }
+   set Error(MustExist)   { "Répertoire inexistant : '%s'" "Non existant folder : '%s'" }
 
    #----- Definition des bulles d'aides
 
