@@ -365,8 +365,6 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
       }] %W %x %y $OnSelectCmd]
    }
 
-   update
-
    #----- Fill the table
    Update $tbl
 
@@ -410,6 +408,8 @@ proc DataTable::CreateWindow { Parent Title Variable {UseComboBoxFilters 0} {Com
       return
    }
 
+   set toplevelParent [winfo toplevel $Parent]
+
    toplevel $w -bg $GDefs(ColorLight)
    wm title $w $Title
    wm resizable $w 1 1
@@ -420,9 +420,9 @@ proc DataTable::CreateWindow { Parent Title Variable {UseComboBoxFilters 0} {Com
 
    Create $w.table $Variable $UseComboBoxFilters $ComboBoxFilterSortOrders $OnSelectCmd
 
-   set toplevelParent [winfo toplevel $Parent]
    #----- Destroy window if parent is destroyed
    wm protocol $toplevelParent WM_DELETE_WINDOW "[wm protocol $toplevelParent WM_DELETE_WINDOW]; destroy $w"
+
    #----- Center window on parent
    update
    wm geom $w +[expr [winfo rootx $toplevelParent]+[winfo width $toplevelParent]/2-[winfo width $w]/2]+[expr [winfo rooty $toplevelParent]+[winfo height $toplevelParent]/2-[winfo height $w]/2]
