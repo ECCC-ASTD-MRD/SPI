@@ -6,17 +6,6 @@ if [ -z $SPI_LIB ]; then
    printf -- "(ERROR) Unable to find SPI librairies. Either define SPI_LIB to the location of SPI's librairies or source the correct cmoe/base domain\n"
 fi
 
-#----- If not within EC environment
-[ -z $CMCPROD ] && export CMCPROD=""
-[ -z $AFSISIO ] && export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
-
-export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
-export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
-export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
-
-#----- GDAL 3.0+ honors an SRS axis order advertize that inverts coordinates in some cases
-export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
-
 #----- Dependencies (within CMC)
 if [[ -n \${ORDENV_VERSION} ]]; then
    [[ ${LD_LIBRARY_PATH} =~ /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION} ]]  || . ssmuse-sh -d /fs/ssm/eccc/cmd/cmds/ext/${CMDS_EXT_VERSION}
@@ -34,3 +23,14 @@ if [[ -n \${ORDENV_VERSION} ]]; then
    # If compiled with intel-19.0.3.199, need to load compilers
    [[ ${SPI_LIB} =~ .*intel-19.0.3.199.* && ! ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]] && . ssmuse-sh -d comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -d hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
 fi
+
+#----- If not within EC environment
+[ -z $CMCPROD ] && export CMCPROD=""
+[ -z $AFSISIO ] && export MA_TABLEBURP_PERSONNELLE=${SPI_LIB}/share/rmn/table_b_bufr
+
+export LD_LIBRARY_PATH=${SPI_LIB}/lib:${SPI_LIB}/TCL/lib:$LD_LIBRARY_PATH
+export TCLLIBPATH="${SPI_LIB}/TCL/lib ${SPI_LIB}/TCL/lib/tcl${TCL_VERSION} ${SPI_LIB}/TCL/lib/tk${TCL_VERSION} ${SPI_PATH}/tcl/Lib ${TCLLIBPATH}"
+export TCL_LIBRARY="${SPI_LIB}/TCL/lib/tcl${TCL_VERSION}"
+
+#----- GDAL 3.0+ honors an SRS axis order advertize that inverts coordinates in some cases
+export OGR_CT_FORCE_TRADITIONAL_GIS_ORDER=YES
