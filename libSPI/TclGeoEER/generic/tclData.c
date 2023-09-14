@@ -219,7 +219,7 @@ int Tclgeoeer_Init(Tcl_Interp *Interp) {
 */
 int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type){
 
-   int          idx,n,bool=0;
+   int          idx,n,b=0;
    TData       *field0,*field1;
    TDataSpec   *spec;
    TDataVector *uvw;
@@ -293,7 +293,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
          
       case ALIAS:
-         bool=1;
+         b=1;
          
       case COPY:
          if (Objc!=4 && Objc!=5) {
@@ -301,10 +301,10 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
          if (Objc==5) {
-            Tcl_GetBooleanFromObj(Interp,Objv[4],&bool);
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&b);
          }
          
-         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,bool)) {
+         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,b)) {
             return(TCL_ERROR);
          } else {
             return(TCL_OK);
@@ -457,10 +457,10 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
          if (Objc>3) {
-            Tcl_GetBooleanFromObj(Interp,Objv[3],&bool);
+            Tcl_GetBooleanFromObj(Interp,Objv[3],&b);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (field0 && (bool || field0->Type==Type)) {
+         if (field0 && (b || field0->Type==Type)) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
