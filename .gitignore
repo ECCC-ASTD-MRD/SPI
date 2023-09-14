@@ -7,24 +7,6 @@
 *.sw[po]
 *~
 
-#----- Lib/bin directory at the root path
-/bin/
-/lib/
-
-#----- Lexer-generated files
-/libSPI/TclGeoEER/lex.vexpr_.c
-/libSPI/TclGeoEER/y.tab.c
-/libSPI/TclGeoEER/y.tab.h
-
-#----- Autoconf and other automatically generated files
-/libSPI/*/Makefile
-/libSPI/*/autom4te.cache/
-/libSPI/*/config.log
-/libSPI/*/config.status
-/libSPI/*/configure
-/libSPI/*/pkgIndex.tcl
-/libSPI/build
-
 #----- To run the tests
 /SPI/share/examples/script/DataIn
 /SPI/share/examples/script/DataOut
