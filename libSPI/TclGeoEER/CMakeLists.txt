@@ -26,7 +26,7 @@ set_target_properties(${NAME} PROPERTIES
 #----- Required libs
 target_link_libraries(${NAME} TkglCanvas)
 target_link_libraries(${NAME} TCL::TCL TCL::TK)
-target_link_libraries(${NAME} eerUtils::eerUtils)
+target_link_libraries(${NAME} eerUtils::eerUtils-ompi)
 target_link_libraries(${NAME} OpenGL::GL OpenGL::GLU)
 
 #----- Optional libs
