@@ -1,17 +1,43 @@
-#===============================================================================
+#============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
-# 2100 Trans-Canadienne
+# 2121 Trans-Canadienne
 # Dorval, Quebec
+# H9P 1J3
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.int
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Permettre de gerer des fichiers sur diverses machines.
+# Description :
+#  Permettre de gerer des fichiers sur diverses machines.
 #
-#===============================================================================
+# Fonctions :
+#  HFManager::Window      {  }
+#  HFManager::CreatePopup { Id }
+#  HFManager::CreateHost  { Id }
+#  HFManager::GetInfo     { Title Txt }
+#
+# Remarques :
+#  Aucune
+#============================================================================
 
+#----------------------------------------------------------------------------
+# Nom      : <HFManager::Window>
+# Creation : Août 2023 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But :
+#  Créer la fenêtre du widget
+#
+# Parametres :
+#  Aucun
+#
+# Retour :
+#  Aucun
+#
+# Remarques :
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::Window { } {
    global GDefs
    variable Lbl
@@ -58,21 +84,22 @@ proc HFManager::Window { } {
    HFManager::HostSelect [HFManager::HostOpen] $GDefs(Host)
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::CreatePopup>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Creer le menu de commande sur les fichiers.
+# But :
+#  Creer le menu de commande sur les fichiers.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::CreatePopup { Id } {
    global GDefs
    variable Lbl
@@ -110,21 +137,22 @@ proc HFManager::CreatePopup { Id } {
 
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::CreateHost>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Creer une fenetre dur un hote.
+# But :
+#  Creer une fenetre dur un hote.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Id> : Identificateur de la boite
 #
-# Retour    :
+# Retour :
+#  Aucun
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::CreateHost { Id } {
    global GDefs
    variable Host
@@ -185,21 +213,23 @@ proc HFManager::CreateHost { Id } {
    bind .hfman.host.$Id.path.wild <Key-Return>               "HFManager::HostFiles $Id"
 }
 
-#-------------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 # Nom      : <HFManager::GetInfo>
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# But      : Recuperer un champ de l'usager.
+# But :
+#  Recuperer un champ de l'usager.
 #
-# Parametres:
-#  <Id>     : Identificateur de la boite
+# Parametres :
+#  <Title> : TODO
+#  <Txt>   : TODO
 #
-# Retour    :
+# Retour :
+#  <TODO> : TODO
 #
 # Remarques :
-#
-#-------------------------------------------------------------------------------
-
+#  Aucune
+#----------------------------------------------------------------------------
 proc HFManager::GetInfo { Title Txt } {
    global GDefs
    variable Host
