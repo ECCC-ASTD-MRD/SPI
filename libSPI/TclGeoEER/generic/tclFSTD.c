@@ -836,7 +836,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      obj=Objv[7];
                   }
                   // Check for index array
-                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*1024);
+                  // Define the max size of the indexes
+                  isize=1024;
+                  if ((c=getenv("INTERP_INDEX_SIZE_HINT"))) {
+                     isize=atoi(c);
+                  }
+                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*isize);
 
                   // Check compatibility between source and destination
                   if (!Def_Compat(field0->Def,field1->Def)) {

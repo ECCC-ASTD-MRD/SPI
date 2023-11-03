@@ -3071,6 +3071,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                ring=OGR_G_CreateGeometry(wkbLinearRing);
                OGR_G_AddGeometryDirectly(cell,ring);
             }
+            
             // Tranform gridpoint into OGR quad projected into layer's referential
             if (!Def_GridCell2OGR(ring,Layer->GRef,FromRef,i,j,Prec)) {
                continue;
@@ -3082,7 +3083,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
                OGR_G_GetEnvelope(ring,&env0);
 
-               // Append feature into index
+               // Allocate local index
                lp=NULL;
                if (ip) {
                   if (!(index[nidx]=(float*)malloc((Layer->NFeature*2+1)*sizeof(float)))) {
