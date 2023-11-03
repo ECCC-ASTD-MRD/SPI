@@ -3574,7 +3574,7 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
                App_Log(APP_WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
             } else {
                index[0]=DEF_INDEX_EMPTY;
-               *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+               Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
                Tcl_IncrRefCount(*Obj);
             }
          } else {

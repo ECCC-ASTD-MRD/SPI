@@ -1095,13 +1095,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                
                // Check for index array
                // Define the max size of the indexes
- /*
                isize=500;
                if ((c=getenv("INTERP_INDEX_SIZE_HINT"))) {
                   isize=atoi(c);
                }
-*/
-               index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
+
+               index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*isize);
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   ok=TCL_ERROR;

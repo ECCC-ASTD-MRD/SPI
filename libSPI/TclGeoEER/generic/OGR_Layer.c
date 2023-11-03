@@ -2968,14 +2968,14 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
    int           nt=0;
 
 #ifdef HAVE_GDAL
-   int           i,j,n=0,rw=0;
+   int           i,j,n=0,error=0,nidx=0;
    unsigned int  f;
    double        val0,val1,area,*accum=NULL,r,rt,dp;
-   OGRGeometryH  cell,ring,inter,geom;
+   OGRGeometryH  cell=NULL,ring=NULL,inter,geom;
    OGREnvelope   env0,*env1=NULL;
    Vect3d        vr;
    Coord         co;
-   float       *ip=NULL;
+   float        *ip=NULL,*lp=NULL,**index=NULL;
 
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid layer",(char*)NULL);
@@ -2986,10 +2986,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid Field",(char*)NULL);
       return(0);
    }
-
-   cell=OGR_G_CreateGeometry(wkbPolygon);
-   ring=OGR_G_CreateGeometry(wkbLinearRing);
-   OGR_G_AddGeometryDirectly(cell,ring);
 
    if (Mode=='N' || Mode=='A') {
       accum=(double*)calloc(Layer->NFeature,sizeof(double));
@@ -3048,6 +3044,10 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
 
       // Damn, we dont have the index
       if (Index && Index[0]==DEF_INDEX_EMPTY) {
+         if (!(index=(float**)malloc(FSIZE2D(FromDef)*sizeof(float*)))) {
+            Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate local index arrays\n",__func__);
+            return(0);
+         }
          ip=Index;
       }
 
@@ -3058,28 +3058,46 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
 
       // Loop on gridpoints
+      #pragma omp parallel for collapse(2) firstprivate(cell,ring) private(nidx,f,geom,dp,r,rt,vr,co,val0,i,j,env0,area,val1,n,lp) shared(Field,FromRef,FromDef,Mode,env1,cell,error,accum,Layer,Prec,index) reduction(+:nt)
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
+
+            nidx=j*FromDef->NI+i;
+            index[nidx]=NULL;
+            if (error) continue;
             
+            if (!cell) {
+               cell=OGR_G_CreateGeometry(wkbPolygon);
+               ring=OGR_G_CreateGeometry(wkbLinearRing);
+               OGR_G_AddGeometryDirectly(cell,ring);
+            }
             // Tranform gridpoint into OGR quad projected into layer's referential
             if (!Def_GridCell2OGR(ring,Layer->GRef,FromRef,i,j,Prec)) {
                continue;
             }
-            rt=n=rw=0;
+            rt=n=0;
             
             // If this cell's area is valid
             if ((area=OGR_G_Area(cell))>0.0) {
                Def_Get(FromDef,0,FIDX2D(FromDef,i,j),val1);
                OGR_G_GetEnvelope(ring,&env0);
 
-               // Append gridpoint to the index
+               // Append feature into index
+               lp=NULL;
                if (ip) {
-                  *(ip++)=i;
-                  *(ip++)=j;
+                  if (!(index[nidx]=(float*)malloc((Layer->NFeature*2+1)*sizeof(float)))) {
+                     Lib_Log(APP_LIBEER,APP_ERROR,"%s: Unable to allocate local index memory (%i)\n",__func__,f);
+                     error=1;
+                     continue;
+                  } 
+                  index[nidx][0]=DEF_INDEX_EMPTY;
+                  lp=index[nidx];
                }
-
+               
                // Check which feature intersects with the cell
                for(f=0;f<Layer->NFeature;f++) {
+                  if (error) continue;
+
                   if (Layer->Feature[f]) {
                      geom=OGR_F_GetGeometryRef(Layer->Feature[f]);
                      r=0.0;
@@ -3088,7 +3106,8 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                      if (wkbFlatten(OGR_G_GetGeometryType(geom))==wkbPoint) {
                         if (Mode!='N' && Mode!='L') {
                            Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  NEAREST or LINEAR",(char*)NULL);
-                           return(0);
+                           error=1;
+                           continue;
                         }
 
                         OGR_G_GetPoint(geom,n,&vr[0],&vr[1],&vr[2]);
@@ -3096,7 +3115,6 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                         FromRef->UnProject(FromRef,&vr[0],&vr[1],co.Lat,co.Lon,1,1);
                         FromRef->Value(FromRef,FromDef,Mode,0,vr[0],vr[1],FromDef->Level,&val0,&val1);
                         OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
-                        rw++;
                         nt++;
                      } else {
 
@@ -3131,43 +3149,61 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
                                           break;
                                  default:
                                     Tcl_AppendResult(Interp,"OGR_LayerInterp: Invalid interpolation method, must be  WITHIN, INTERSECT, AVERAGE, CONSERVATIVE or NORMALIZED_CONSERVATIVE",(char*)NULL);
-                                    return(0);
+                                    error=1;
+                                    continue;
                               }
                               OGR_F_SetFieldDouble(Layer->Feature[f],Field,val0);
                            }
-                        }
 
-                        // Append intersection info to the list
-                        if (ip && r>0.0) {
-                           n++;
-                           *(ip++)=f;
-                           *(ip++)=r;
+                           // Append intersection info to the list
+                           if (lp && r>0.0) {
+                              n++;
+                              *(lp++)=f;
+                              *(lp++)=r;
+                           }
                         }
 
                         // If this model gridcell is fully distributed, select next cell
                         if (rt>0.999) {
-                           break;
+                           continue;
                         }
                      }
                   }
                }
 
-               // Append this gridpoint intersections to the index
-               if (ip) {
-                  if (n) {
-                     *(ip++)=DEF_INDEX_SEPARATOR; // End the list for this gridpoint
-                  } else {
-                     ip-=2;                       // No intersection found, removed previously inserted gridpoint
-                  }
+               // End the list for this gridpoint
+               if (lp && n) {
+                  *(lp++)=DEF_INDEX_SEPARATOR; 
                }
             }
-            if (rw==Layer->NFeature) break;
          }
-         if (rw==Layer->NFeature) break;
       }
-      if (ip) *(ip++)=DEF_INDEX_END;
+
+      // Merge indexes
+      n=0;
+      if (ip && nt && !error) {
+         for(j=0;j<FromDef->NJ;j++) {
+            for(i=0;i<FromDef->NI;i++) {
+               nidx=j*FromDef->NI+i;
+
+               if ((lp=index[nidx]) && *lp!=DEF_INDEX_EMPTY) {
+                  // Append gridpoint to the index
+                  *(ip++)=i;
+                  *(ip++)=j;
+                  while(*lp!=DEF_INDEX_SEPARATOR) {
+                     *(ip++)=*(lp++);
+                  }
+                  *(ip++)=DEF_INDEX_SEPARATOR;
+               }
+               if (index[nidx]) free(index[nidx]);
+            }
+         }
+         *(ip++)=DEF_INDEX_END;
+         free(index);
+      }
+
       free(env1);
-  }
+   }
 
    // Finalize and reassign
    if (Final && (Mode=='N' || Mode=='A')) {
