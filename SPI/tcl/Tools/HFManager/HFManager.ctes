@@ -1,21 +1,30 @@
-#===============================================================================
+#============================================================================
 # Environnement Canada
 # Centre Meteorologique Canadian
-# 2100 Trans-Canadienne
+# 2121 Trans-Canadienne
 # Dorval, Quebec
+# H9P 1J3
 #
 # Projet   : Boite a Outils.
 # Fichier  : HFManager.ctes
 # Creation : Mai 2001 - J.P. Gauthier - CMC/CMOE
 #
-# Description: Permettre de gerer des fichiers sur diverses machines.
+# Description :
+#  Permettre de gerer des fichiers sur diverses machines.
 #
-#===============================================================================
+# Fonctions :
+#  Aucune
+#
+# Remarques :
+#  Aucune
+#============================================================================
 
 namespace eval HFManager { } {
+   global env
    variable Host
    variable Data
    variable Param
+   variable Save
 
    set Param(Title)   { "Gestion de fichiers" "File Manager" }
    set Param(Version) 1.1
@@ -35,4 +44,22 @@ namespace eval HFManager { } {
    set Host(FromFiles) ""
    set Host(FromDel)   0
    set Host(FromTGZ)   0
+
+   set Save(MustExist)           $env(HOME)/.spi
+   set Save(Path)                $Save(MustExist)/HFManager
+   set Save(BackupExtension)     ".old"
+   set Save(Header)              "# Liste des hotes pour HFManager\n"
+   append Save(Header)           "#"
+   set Save(ColumnHeaders)       { "Domain Name" "Udo Cmd Options" "Connexion Type" "Copy Cmd" "Paths" }
+   set Save(DefaultValues)       { "" - ssh scp {} }
+   set Save(DomainNameIdx)       0
+   set Save(UdoCmdOptionsIdx)    1
+   set Save(ConnexionTypeIdx)    2
+   set Save(CopyCmdIdx)          3
+   set Save(PathsIdx)            4
+
+   set Weather(MustExist)              $env(HOME)/.spi
+   set Weather(TraceDir)               $Weather(MustExist)/Trace/HFManager/Weather
+   set Weather(BasePath)               eer/vaac/
+   set Weather(HostFilesGlobPattern)   /home/smco600/projets/vaac/wxo/eer_vaac_wxo*
 }
