@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 #----- Append EC specific module path
-list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake_rpn/modules)
+list(APPEND CMAKE_MODULE_PATH $ENV{EC_CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/../cmake_rpn/modules)
 
 include(ec_init)      # Initialize compilers and ec specific functions
 include(ec_build_tcl_pkgindex)
@@ -13,7 +13,7 @@ set(PROJECT_VERSION ${VERSION})
 
 message(STATUS "Build architecture ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
 
-enable_language(C)
+enable_language(C Fortran)
 include(ec_compiler_presets)
 include(ec_shared_lib)
 include(ec_doxygen)           # Doxygen target
@@ -58,9 +58,9 @@ ec_parse_config(${CMAKE_INSTALL_PREFIX}/TCL/lib/tclConfig.sh)
 ec_parse_config(${CMAKE_INSTALL_PREFIX}/TCL/lib/tkConfig.sh)
 
 #----- Add intel library dir to RPATH if needed
-if(COMPILER_SUITE MATCHES intel)
-   add_link_options(-lintlc -lifcore -lifport -limf)
-endif()
+#if(COMPILER_SUITE MATCHES intel)
+#   add_link_options(-lintlc -lifcore -lifport -limf)
+#endif()
 
 #----- Required packages
 find_package(TCL ${TCL_REQ_VERSION} REQUIRED)
