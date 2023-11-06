@@ -10,7 +10,7 @@ URL        : https://gitlab.science.gc.ca/ECCC_CMOE_APPS/eerSPI
 # Dependencies 
 
 TCL      : 8.6
-EER      : 5.0.0
+EER      : 5.0.1
 rmn      : 20.0.0
 vgrid    : 6.9.0
 GENPHYSX : 2.6.4

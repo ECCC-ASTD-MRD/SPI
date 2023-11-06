@@ -327,9 +327,9 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
 #ifdef HAVE_GDAL
    double             x,y,lat,lon;
    float             *index;
-   int                idx,idxfi,all,n,side;
+   int                idx,idxfi,all,n,side,isize;
    char               mode;
-   const char       **options=NULL;
+   const char       **options=NULL,*c;
    unsigned int       f;
    GDAL_Band         *band;
    TData             *field;
@@ -531,27 +531,21 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          }
          
          // Check for index array
-         index=NULL;
-         if (obj) {
-            item=Tcl_ObjGetVar2(Interp,obj,NULL,0x0);
-            if (!item) {
-               // Got an empty variable, will fill it with index
-               item=Tcl_NewByteArrayObj(NULL,def->NIJ*100*sizeof(float));
-               index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-               index[0]=DEF_INDEX_EMPTY;
-               obj=Tcl_ObjSetVar2(Interp,obj,NULL,item,0x0);
-            } else {
-               // Got a filled variable, will use it's index
-               obj=NULL;
-               index=(float*)Tcl_GetByteArrayFromObj(item,NULL);
-            }
+         // Define the max size of the indexes
+         isize=50;
+         if ((c=getenv("INTERP_INDEX_SIZE_HINT"))) {
+            isize=atoi(c);
          }
+
+         index=Data_IndexInit(Interp,&obj,def->NIJ*isize);
+
          if (!(n=OGR_LayerInterp(Interp,layer,f,ref,def,Tcl_GetString(Objv[5])[0],all,n,index))) {
             return(TCL_ERROR);
          }
          
          // Make index object persistent and of the right size
-         if (obj) { Tcl_SetByteArrayLength(item,n*sizeof(float)); Tcl_IncrRefCount(obj); }
+         Data_IndexResize(Interp,&obj,n);
+
          return(TCL_OK);
          
          break;

@@ -394,12 +394,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
 
    int           id,datev,ip1,ip2,ip3,npack,rewrite,ni,nj,nk,halo,key,n,m,k,compress=0,nid,pnid;
    unsigned long dk;
-   int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok,imode=0;
+   int           i0=-1,j0=-1,i1=-1,j1=-1,npos,ok,imode=0,isize;
    long          time;
    double        tmpd,*table=NULL;
    double        c0,c1,a,x;
    float        *index=NULL;
-   char         **indexptr=NULL;
+   char         **indexptr=NULL,*c;
    TDef         **lutdefs=NULL;
 
    TObs        *obs;
@@ -836,7 +836,12 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                      obj=Objv[7];
                   }
                   // Check for index array
-                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*1024);
+                  // Define the max size of the indexes
+                  isize=1024;
+                  if ((c=getenv("INTERP_INDEX_SIZE_HINT"))) {
+                     isize=atoi(c);
+                  }
+                  index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*isize);
 
                   // Check compatibility between source and destination
                   if (!Def_Compat(field0->Def,field1->Def)) {
@@ -1094,7 +1099,13 @@ int FSTD_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
                }
                
                // Check for index array
-               index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*100);
+               // Define the max size of the indexes
+               isize=500;
+               if ((c=getenv("INTERP_INDEX_SIZE_HINT"))) {
+                  isize=atoi(c);
+               }
+
+               index=Data_IndexInit(Interp,&obj,field0->Def->NIJ*isize);
                if (!(nk=Def_GridInterpOGR(field0->Def,field0->GRef,layer,layer->GRef,imode,1,field,x,m,index))) {
                   Tcl_AppendResult(Interp,App_ErrorGet(),(char*)NULL);
                   ok=TCL_ERROR;

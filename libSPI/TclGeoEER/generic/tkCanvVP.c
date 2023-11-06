@@ -490,7 +490,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
    TData        *data;
    Tcl_Obj      *obj;
 
-   int           nco,idx,i,b,n,np,pick,ix,iy;
+   int           nco,idx,i,bcheck,n,np,pick,ix,iy;
    Vect3d        pt,pt0,pt1;
    Coord         loc,loc0,loc1,co[1000];
    double        x,y,h,d;
@@ -571,9 +571,9 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Tcl_GetDoubleFromObj(Interp,Objv[2],&pt0[0]);
             Tcl_GetDoubleFromObj(Interp,Objv[3],&pt0[1]);
             if (Objc==5) {
-               Tcl_GetBooleanFromObj(Interp,Objv[5],&b);
+               Tcl_GetBooleanFromObj(Interp,Objv[5],&bcheck);
             } else {
-               b=0;
+               bcheck=0;
             }
 
             if (proj->Ref) {
@@ -587,7 +587,7 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
                pt0[0]=pt0[1]=-1.0;
                h=0.0;
              }
-            Tcl_SetObjResult(Interp,proj->Type->ProjectPoint(Interp,vp,proj,loc0,b));
+            Tcl_SetObjResult(Interp,proj->Type->ProjectPoint(Interp,vp,proj,loc0,bcheck));
             break;
 
          case UNPROJECT:
@@ -642,11 +642,11 @@ static int ViewportCommand(ClientData Data,Tcl_Interp *Interp,int Objc,Tcl_Obj *
             Tcl_GetDoubleFromObj(Interp,Objv[3],&loc0.Lon);
             Tcl_GetDoubleFromObj(Interp,Objv[4],&loc0.Elev);
             if (Objc==6) {
-               Tcl_GetBooleanFromObj(Interp,Objv[5],&b);
+               Tcl_GetBooleanFromObj(Interp,Objv[5],&bcheck);
             } else {
-               b=0;
+               bcheck=0;
             }
-            Tcl_SetObjResult(Interp,proj->Type->ProjectPoint(Interp,vp,proj,loc0,b));
+            Tcl_SetObjResult(Interp,proj->Type->ProjectPoint(Interp,vp,proj,loc0,bcheck));
             break;
 
          case PROJECTLINE:

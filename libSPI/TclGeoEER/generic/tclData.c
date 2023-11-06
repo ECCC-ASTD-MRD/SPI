@@ -219,7 +219,7 @@ int Tclgeoeer_Init(Tcl_Interp *Interp) {
 */
 int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[],TDataType Type){
 
-   int          idx,n,b=0;
+   int          idx,n,bcheck=0;
    TData       *field0,*field1;
    TDataSpec   *spec;
    TDataVector *uvw;
@@ -293,7 +293,7 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
          break;
          
       case ALIAS:
-         b=1;
+         bcheck=1;
          
       case COPY:
          if (Objc!=4 && Objc!=5) {
@@ -301,10 +301,10 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
          if (Objc==5) {
-            Tcl_GetBooleanFromObj(Interp,Objv[4],&b);
+            Tcl_GetBooleanFromObj(Interp,Objv[4],&bcheck);
          }
          
-         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,b)) {
+         if (!Data_Copy(Interp,Data_Get(Tcl_GetString(Objv[3])),Tcl_GetString(Objv[2]),1,bcheck)) {
             return(TCL_ERROR);
          } else {
             return(TCL_OK);
@@ -457,10 +457,10 @@ int Data_FieldCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CON
             return(TCL_ERROR);
          }
          if (Objc>3) {
-            Tcl_GetBooleanFromObj(Interp,Objv[3],&b);
+            Tcl_GetBooleanFromObj(Interp,Objv[3],&bcheck);
          }
          field0=Data_Get(Tcl_GetString(Objv[2]));
-         if (field0 && (b || field0->Type==Type)) {
+         if (field0 && (bcheck || field0->Type==Type)) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(0));
@@ -3574,8 +3574,8 @@ float* Data_IndexInit(Tcl_Interp *Interp,Tcl_Obj **Obj,unsigned long Size) {
                App_Log(APP_WARNING,"%s: Unable to allocate index array, will not produce and index",__func__);
             } else {
                index[0]=DEF_INDEX_EMPTY;
-               *Obj=Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
-                Tcl_IncrRefCount(*Obj);
+               Tcl_ObjSetVar2(Interp,*Obj,NULL,item,0x0);
+               Tcl_IncrRefCount(*Obj);
             }
          } else {
             *Obj=NULL;
