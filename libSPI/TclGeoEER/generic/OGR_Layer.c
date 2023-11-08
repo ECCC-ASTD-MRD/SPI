@@ -3063,7 +3063,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
          for(i=0;i<FromDef->NI;i++) {
 
             nidx=j*FromDef->NI+i;
-            index[nidx]=NULL;
+            if (index) index[nidx]=NULL;
             if (error) continue;
             
             if (!cell) {
