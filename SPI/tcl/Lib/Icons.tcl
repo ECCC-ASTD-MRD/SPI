@@ -204,6 +204,7 @@ image create photo ICO_BIO     -file $GDefs(Dir)/share/image/Symbol/Icon/Type_BI
 image create photo ICO_SPILL   -file $GDefs(Dir)/share/image/Symbol/Icon/Type_SPILL.gif
 image create photo ICO_THERE   -file $GDefs(Dir)/share/image/Symbol/Icon/Type_THERE.gif
 image create photo ICO_PLANE   -file $GDefs(Dir)/share/image/Symbol/Icon/Type_PLANE.gif
+image create photo ICO_DRIFT   -file $GDefs(Dir)/share/image/Symbol/Icon/Type_DRIFT.gif
 
 image create photo BAD_VOLC    -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_VOLCANO.gif
 image create photo BAD_NUCL    -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_NUCLEAR.gif
@@ -214,6 +215,7 @@ image create photo BAD_BIO     -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_BIO
 image create photo BAD_SPILL   -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_SPILL.gif
 image create photo BAD_THERE   -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_THERE.gif
 image create photo BAD_PLANE   -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_PLANE.gif
+image create photo BAD_DRIFT   -file $GDefs(Dir)/share/image/Symbol/Icon/Bad_DRIFT.gif
 
 image create photo ACT_VOLC    -file $GDefs(Dir)/share/image/Symbol/Icon/Active_VOLCANO.gif
 image create photo ACT_NUCL    -file $GDefs(Dir)/share/image/Symbol/Icon/Active_NUCLEAR.gif
@@ -224,6 +226,7 @@ image create photo ACT_BIO     -file $GDefs(Dir)/share/image/Symbol/Icon/Active_
 image create photo ACT_SPILL   -file $GDefs(Dir)/share/image/Symbol/Icon/Active_SPILL.gif
 image create photo ACT_THERE   -file $GDefs(Dir)/share/image/Symbol/Icon/Active_THERE.gif
 image create photo ACT_PLANE   -file $GDefs(Dir)/share/image/Symbol/Icon/Active_PLANE.gif
+image create photo ACT_DRIFT   -file $GDefs(Dir)/share/image/Symbol/Icon/Active_DRIFT.gif
 
 image create photo SEL_VOLC  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_VOLCANO.gif
 image create photo SEL_NUCL  -file $GDefs(Dir)/share/image/Symbol/Icon/Sel_NUCLEAR.gif
