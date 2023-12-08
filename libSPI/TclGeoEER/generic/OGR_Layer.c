@@ -3058,7 +3058,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
 
       // Loop on gridpoints
-      #pragma omp parallel for collapse(2) firstprivate(cell,ring) private(nidx,f,geom,dp,r,rt,vr,co,val0,i,j,env0,area,val1,n,lp) shared(Field,FromRef,FromDef,Mode,env1,cell,error,accum,Layer,Prec,index) reduction(+:nt)
+      #pragma omp parallel for collapse(2) firstprivate(cell,ring) private(nidx,f,geom,dp,r,rt,vr,co,val0,i,j,env0,area,val1,n,lp) shared(Field,FromRef,FromDef,Mode,env1,error,accum,Layer,Prec,index) reduction(+:nt)
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
 
