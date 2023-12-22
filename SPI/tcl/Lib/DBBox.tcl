@@ -42,9 +42,9 @@ namespace eval DBBox {
 namespace eval DataTable {
    variable Param
 
-   # To avoid tables larger than the screen, use the following parameter to allocate width to table columns
-   # In other words, no table will be larger than the following parameter's value (chracters wide).
-   set Param(MaxWidthInCharacters) 250
+   # Use the following parameter to set the available width of the table (characters wide).
+   # No table will be larger than the following parameter's value (characters wide).
+   set Param(MaxWidthInCharacters) 0
 }
 
 #----------------------------------------------------------------------------
@@ -238,6 +238,7 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
    set Data(Variable) $Variable
    upvar $Data(Variable) Var
 
+   set parent [string range $W 0 [expr [string last "." $W]-1]]
    if { [llength $ComboBoxFilterSortOrders] == 1} {
       for {set i 1} {$i<[llength [lindex $Var 0]]} {incr i} {
          lset ComboBoxFilterSortOrders $i [lindex $ComboBoxFilterSortOrders 0]
@@ -249,18 +250,28 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
    frame [set f $W]
 
    #----- Table
-   scrollbar $f.sy -relief sunken -bd 1 -width 10 -command "$f.tbl yview"
-   table [set tbl $f.tbl] -relief flat -bd 1 -bg $GDefs(ColorLight) -anchor w -yscrollcommand "$f.sy set" \
-      -selectmode browse -selecttype row -sparsearray 1 -drawmode fast -state normal -cursor left_ptr \
-      -bd 0 -bordercursor sb_h_double_arrow -resizeborders col -colstretchmode unset -colwidth 0 \
+   table [set tbl $f.tbl] -rows 2 -cols [llength [lindex $Var 0]] -titlerows 2 -titlecols 0 \
       -width [llength [lindex $Var 0]] -height 32 -maxwidth 1800 -maxheight 1000 \
-      -multiline 0 -rows 2 -cols [llength [lindex $Var 0]] -titlecols 0 -titlerows 2 \
-      -highlightbackground $GDefs(ColorHighLight) -invertselected 0 \
-      -insertbackground $GDefs(ColorLight) -variable [namespace current]::Tbl -autoclear 1 -padx 2 -ellipsis "…"
-   pack $f.sy -side right -fill y
-   pack $f.tbl -side left -fill both -expand 1
+      -colwidth 0 -resizeborders col -colstretchmode unset \
+      -selectmode browse -selecttype row -invertselected 0 \
+      -variable [namespace current]::Tbl -sparsearray 1 \
+      -multiline 0 -ellipsis "…" -autoclear 1 \
+      -state normal -drawmode fast -relief flat -bd 0 -padx 2 -anchor w \
+      -bg $GDefs(ColorLight) -highlightbackground $GDefs(ColorHighLight) -insertbackground $GDefs(ColorLight) \
+      -cursor left_ptr -bordercursor sb_h_double_arrow \
+      -yscrollcommand "$f.sy set" -xscrollcommand "$f.sx set"
+   scrollbar $f.sy -orient vertical   -relief sunken -bd 1 -width 10 -command "$f.tbl yview"
+   scrollbar $f.sx -orient horizontal -relief sunken -bd 1 -width 10 -command "$f.tbl xview"
 
-   pack $f -side top -expand 1 -fill both
+   grid configure $f.tbl -row 0 -column 0 -sticky news
+   grid configure $f.sy -row 0 -column 1 -sticky nes
+   grid configure $f.sx -row 1 -column 0 -columnspan 2 -sticky ews
+   grid columnconfigure $f 0 -weight 1
+   grid rowconfigure $f 0 -weight 1
+
+   grid configure $f -row 0 -column 0 -sticky news
+   grid columnconfigure $parent 0 -weight 1
+   grid rowconfigure $parent 0 -weight 1
 
    #----- Table header
    $tbl set row 0,0 [lindex $Var 0]
@@ -507,9 +518,18 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
 
    upvar $Data(Variable) Var
 
+   #----- Set maxWidthInCharacters
+   set maxWidthInCharacters $Param(MaxWidthInCharacters)
+   if { $maxWidthInCharacters <= 0 } {
+      #----- Screen width does not update if the screen was resized
+      set screenWidth [expr [winfo screenwidth $Table]*0.9]
+      set fontWidth [font measure [$Table cget -font] "m"]
+      set maxWidthInCharacters [expr int($screenWidth / $fontWidth)]
+   }
+
    #----- Table column widths adapted to their content
    #  The minimal column width is controlled by tktable's -colwidth
-   #  There is no maximum column width, rather we allocate width from Param(MaxWidthInCharacters)'s value
+   #  There is no maximum column width, rather we allocate width from maxWidthInCharacters' value
    #  To avoid users having to resize an excessive amount of columns, columns needing less width are prioritized
    #
    #  Ex:
@@ -531,6 +551,7 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
    #  but we couldn't divide it evenly amoungst the 3 largest columns.
    #  We instead removed 1 character width per column, starting from the largest initial one until we were done
 
+   #----- Extract table content by columns
    set tableContentByColumn [lmap l [lindex $Var 0] {split $l \n}]
    foreach row [lrange $Var 1 end] {
       for {set i 0} {$i < [llength $row]} {incr i} {
@@ -538,26 +559,34 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
       }
    }
 
+   #----- Create list of required widths per column
    set widthInCharacters 0
    set columnWidths {}
    for {set i 0} {$i < [llength $tableContentByColumn]} {incr i} {
       set minColWidth [expr [::tcl::mathfunc::max {*}[lmap x [lindex $tableContentByColumn $i] {string length $x}]]+1]
 
+      #----- Add space for combobox button
       if { $Param(UseComboBoxFilters) } {
          incr minColWidth 2
       }
 
+      #----- Respect table's -colwidth
       if { $minColWidth < [$Table width $i]} {
          set minColWidth [$Table width $i]
       }
+
+      #----- columnWidths contains lists of 2 elements to track the column and it's corresponding width
+      #      It needs 2 elements because we sort columnWidths by largest width
       lappend columnWidths [list $i $minColWidth]
       incr widthInCharacters $minColWidth
    }
 
    #-----   Adjust column widths if too wide
    set columnWidths [lsort -index 1 -decreasing -integer $columnWidths]
-   while { $widthInCharacters > $Param(MaxWidthInCharacters) } {
-      set maxWidth [lindex [lindex $columnWidths 0] 1]
+   while { $widthInCharacters > $maxWidthInCharacters && $widthInCharacters > [llength $columnWidths] } {
+
+      #----- Find largest columns
+      set maxWidth [lindex $columnWidths {0 1}]
       set diffMaxToRunnerUpWidth 0
       set maxWidthCols {}
       foreach columnWidth $columnWidths {
@@ -569,10 +598,16 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
          lappend maxWidthCols $columnWidth
       }
 
+      #----- Make sure we try and remove width
+      if { $diffMaxToRunnerUpWidth == 0 } {
+         set diffMaxToRunnerUpWidth 1
+      }
+
       set nbMaxWidthCols [llength $maxWidthCols]
       set removableWidth [expr $nbMaxWidthCols*$diffMaxToRunnerUpWidth]
-      set widthToRemove [expr $widthInCharacters-$Param(MaxWidthInCharacters)]
+      set widthToRemove [expr $widthInCharacters-$maxWidthInCharacters]
       if { $removableWidth >= $widthToRemove } {
+         #----- Remove remaining width in order of columns
          set widthToRemovePerCol [expr $widthToRemove/$nbMaxWidthCols]
          set remainingWidthToRemove [expr $widthToRemove%$nbMaxWidthCols]
          set newColWidth [expr $maxWidth-$widthToRemovePerCol]
@@ -585,6 +620,7 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
          #----- Update widthInCharacters to exit while loop
          set widthInCharacters [expr $widthInCharacters-$widthToRemove]
       } else {
+         #----- Remove width from all columns
          set newColWidth [expr $maxWidth-$diffMaxToRunnerUpWidth]
          for {set i 0} {$i < $nbMaxWidthCols} {incr i} {
             set maxWidthCol [lindex $maxWidthCols $i]
