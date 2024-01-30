@@ -285,7 +285,6 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
       fclose(file->Handle);
       free(file->Path);
       free(file->Id);
-      free(file);
 
       if (file->Table) {
          for(t=0;t<GRIB_TABLESIZE;t++) {
@@ -297,6 +296,7 @@ int GRIB_FileClose(Tcl_Interp *Interp,char *Id){
          }
          free(file->Table);
       }
+      free(file);
    }
    return(TCL_OK);
 }

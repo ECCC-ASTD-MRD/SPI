@@ -1217,7 +1217,7 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
 */
 int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
 
-   TGRIBHeader  head,*table;
+   TGRIBHeader  head,*table=NULL;
    Tcl_Obj     *list,*obj;
    int          err=0,lvtyp=0,nb;
    size_t       len;
@@ -1365,10 +1365,11 @@ int GRIB_FieldList(Tcl_Interp *Interp,TGRIBFile *File,int Mode,char *Var){
 
       if (!table) {
          if (nb>=GRIB_TABLESIZE-1) {
-            App_Log(APP_WARNING,"%s: Number of records higher than table size\n",__func__);
+            App_Log(APP_ERROR,"%s: Number of records higher than table size\n",__func__);
+         } else {
+            memcpy(&File->Table[nb],&head,sizeof(TGRIBHeader));
+            File->Table[nb+1].KEY=-1;
          }
-         memcpy(&File->Table[nb],&head,sizeof(TGRIBHeader));
-         File->Table[nb+1].KEY=-1;
       }
       nb++;
    }
