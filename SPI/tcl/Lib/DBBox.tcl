@@ -668,13 +668,17 @@ proc DataTable::Sort { Table Col } {
       }
    }
 
-   if { $Param(Sort)!=$Col || $Param(Sort)==$Col && $Param(SortOrder)=="decreasing" } {
-      set Param(SortOrder) "increasing"
+   if { $Param(Sort)==$Col && $Param(SortOrder)=="decreasing" } {
+      #----- Reset column's sort
+      set Param(Sort) -1
    } else {
-      set Param(SortOrder) "decreasing"
+      if { $Param(Sort)!=$Col } {
+         set Param(SortOrder) "increasing"
+      } else {
+         set Param(SortOrder) "decreasing"
+      }
+      set Param(Sort) $Col
    }
-
-   set Param(Sort) $Col
 
    Update $Table
 }
