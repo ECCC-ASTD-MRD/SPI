@@ -553,6 +553,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      Spec->Min=nan("NaN");
                      cminmax=1;
                   }
+               } else if (strcmp("NaN",Tcl_GetString(Objv[i]))==0) {
+                  Spec->Min=nan("NaN");
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&min);
                   Spec->MinMax|=DATASPEC_MINSET;
@@ -580,6 +582,8 @@ int DataSpec_Config(Tcl_Interp *Interp,TDataSpec *Spec,int Objc,Tcl_Obj *CONST O
                      Spec->Max=nan("NaN");
                      cminmax=1;
                   }
+               } else if (strcmp("NaN",Tcl_GetString(Objv[i]))==0) {
+                  Spec->Max=nan("NaN");
                } else {
                   Tcl_GetDoubleFromObj(Interp,Objv[i],&max);
                   Spec->MinMax|=DATASPEC_MAXSET;

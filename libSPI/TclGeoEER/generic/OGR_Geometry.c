@@ -522,11 +522,11 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
    Vect3d        pt,ptp,vr;
 
    static CONST char *sopt[] = { "-sub","-transform","-distance","-area","-anglemin","-pointdist","-segmentdist","-pointonsurface","-centroid","-extent","-length","-boundary","-buffer",
-                                 "-convexhull","-dissolve","-splittile","-intersection","-union","-difference","-symmetricdifference","-segintersectionpts",
+                                 "-convexhull","-dissolve","-splittile","-intersection","-union","-difference","-symmetricdifference","-segintersectionpts","-cliplonwrap",
                                  "-intersect","-equal","-disjoint","-touch","-cross","-within","-contain","-overlap",
                                  "-simplify","-segmentize","-delaunay","-close","-flatten","-topoint","-toline","-tomultiline","-topolygon","-tomultipolygon","-clean","-isempty","-isvalid","-issimple","-isring",NULL };
    enum                opt { SUB,TRANSFORM,DISTANCE,AREA,ANGLEMIN,POINTDIST,SEGMENTDIST,POINTONSURFACE,CENTROID,EXTENT,LENGTH,BOUNDARY,BUFFER,CONVEXHULL,DISSOLVE,SPLITTILE,INTERSECTION,
-                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,SEGINTERSECTIONPTS,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
+                             UNION,DIFFERENCE,SYMMETRICDIFFERENCE,SEGINTERSECTIONPTS,CLIPLONWRAP,INTERSECT,EQUAL,DISJOINT,TOUCH,CROSS,WITHIN,CONTAIN,
                              OVERLAP,SIMPLIFY,SEGMENTIZE,DELAUNAY,CLOSE,FLATTEN,TOPOINT,TOLINE,TOMULTILINE,TOPOLYGON,TOMULTIPOLYGON,CLEAN,ISEMPTY,ISVALID,ISSIMPLE,ISRING };
 
    g0=OGR_GeometryGet(Name);
@@ -858,6 +858,10 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          }
 
          Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_SegIntersectionPts(g0,line[0],line[1],line[2],line[3])));
+         break;
+
+      case CLIPLONWRAP:
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_ClipLonWrap(g0)));
          break;
 
       case INTERSECT:

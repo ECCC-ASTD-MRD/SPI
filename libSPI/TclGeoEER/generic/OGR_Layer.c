@@ -545,8 +545,8 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
    char          buf[32],*str;
 
    static CONST char *sopt[] = { "-sort","-table","-tag","-centroid","-invalid","-transform","-project","-unproject","-min","-max","-extent","-llextent","-lupdate","-lintersection","-lunion","-lsymdifference","-lidentity","-lclip","-lerase","-buffer","-difference","-intersection",
-                                 "-clip","-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull","-splittile",NULL };
-   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,LUPDATE,LINTERSECTION,LUNION,LSYMDIFFERENCE,LIDENTITY,LCLIP,LERASE,BUFFER,DIFFERENCE,INTERSECTION,CLIP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL,SPLITTILE };
+                                 "-clip","-simplify","-segmentize","-close","-flatten","-dissolve","-boundary","-convexhull","-splittile","-cliplonwrap",NULL };
+   enum        opt {  SORT,TABLE,TAG,CENTROID,INVALID,TRANSFORM,PROJECT,UNPROJECT,MIN,MAX,EXTENT,LLEXTENT,LUPDATE,LINTERSECTION,LUNION,LSYMDIFFERENCE,LIDENTITY,LCLIP,LERASE,BUFFER,DIFFERENCE,INTERSECTION,CLIP,SIMPLIFY,SEGMENTIZE,CLOSE,FLATTEN,DISSOLVE,BOUNDARY,CONVEXHULL,SPLITTILE,CLIPLONWRAP };
 
    layer=OGR_LayerGet(Name);
    if (!layer) {
@@ -1140,7 +1140,37 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
             }
          }
          break;
-         
+
+      case CLIPLONWRAP:
+         if (Objc > 2) {
+            Tcl_WrongNumArgs(Interp,0,Objv,"[result]");
+            return(TCL_ERROR);
+         }
+
+         if (Objc==2) {
+            if (!(layerres=OGR_LayerResult(Interp,layer,Tcl_GetString(Objv[1]),layer->NFeature))) {
+               return(TCL_ERROR);
+            }
+         }
+
+         for(f=0;f<layer->NFeature;f++) {
+            if (layer->Select[f] && layer->Feature[f]) {
+               if ((geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
+                  new=OGM_ClipLonWrap(geom);
+                  if (new) {
+                     if (layerres && !OGR_G_IsEmpty(new)) {
+                        layerres->Feature[layerres->NFeature]=OGR_F_Clone(layer->Feature[f]);
+                        OGR_F_SetGeometryDirectly(layerres->Feature[layerres->NFeature++],new);
+                     } else {
+                        OGR_F_SetGeometryDirectly(layer->Feature[f],new);
+                        layer->Changed=1;
+                     }
+                  }
+               }
+            }
+         }
+         break;
+
       case SIMPLIFY:
          if (Objc!=2 && Objc!=3) {
             Tcl_WrongNumArgs(Interp,0,Objv,"tolerance [result]");
@@ -3058,7 +3088,7 @@ int OGR_LayerInterp(Tcl_Interp *Interp,OGR_Layer *Layer,int Field,TGeoRef *FromR
       }
 
       // Loop on gridpoints
-      #pragma omp parallel for collapse(2) firstprivate(cell,ring) private(nidx,f,geom,dp,r,rt,vr,co,val0,i,j,env0,area,val1,n,lp) shared(Field,FromRef,FromDef,Mode,env1,cell,error,accum,Layer,Prec,index) reduction(+:nt)
+      #pragma omp parallel for collapse(2) firstprivate(cell,ring) private(nidx,f,geom,dp,r,rt,vr,co,val0,i,j,env0,area,val1,n,lp) shared(Field,FromRef,FromDef,Mode,env1,error,accum,Layer,Prec,index) reduction(+:nt)
       for(j=0;j<FromDef->NJ;j++) {
          for(i=0;i<FromDef->NI;i++) {
 

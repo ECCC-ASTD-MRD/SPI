@@ -735,9 +735,9 @@ proc Animator::GetPlayListField { } {
             set box  [lindex $tags 2]
 
             #----- Set related field criterias
-            lappend filter $idxs(NOMVAR)  [fstdfield define $fld -NOMVAR]
-            lappend filter $idxs(IP1)     [fstdfield define $fld -IP1]
-            lappend filter $idxs(DATEV)   [clock format [fstdfield define $fld -DATEV] -format "%Y%m%d%H%M" -timezone :UTC]
+            lappend filter $idxs(NOMVAR)  [gribfield define $fld -NOMVAR]
+            lappend filter $idxs(IP1)     [gribfield define $fld -IP1]
+            lappend filter $idxs(DATEV)   [clock format [gribfield define $fld -DATEV] -format "%Y%m%d%H%M" -timezone :UTC]
          } else {
             continue
          }
@@ -772,18 +772,18 @@ proc Animator::GetPlayListField { } {
             set Play(Label) "[lindex $Lbl(Read) $GDefs(Lang)] $var $fid $idx"
             update idletask
 
-            eval $type read ANI.$f.$no $fid $idx
-            eval $type stats ANI.$f.$no -tag \$tags
+            $type read ANI.$f.$no $fid $idx
+            $type stats ANI.$f.$no -tag $tags
 
             #----- copy configuration object
-            fstdfield configure ANI.$f.$no -dataspec [fstdfield configure $fld -dataspec]
+            $type configure ANI.$f.$no -dataspec [$type configure $fld -dataspec]
 
             switch $Play(Type) {
                "IP1"     { set info [lrange $field 2 3] }
                "IP2"     { set info [lrange $field 4 5] }
                "IP3"     { set info [lrange $field 6 7] }
                "ETIKET"  { set info [lindex $field 8] }
-               "DATE"    { set info [fstdstamp toseconds [fstdfield define ANI.$f.$no -DATEV]] }
+               "DATE"    { set info [$type define ANI.$f.$no -DATEV]; if {$type=="fstdfield"} {set info [fstdstamp toseconds $info]} }
             }
             #----- Ajouter a la liste du frame temporel correspondant
 
