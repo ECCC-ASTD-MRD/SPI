@@ -411,28 +411,28 @@ namespace eval CVClock {
 
    set Param(Zones) {
       { { UTC UTC }    { "Temps universel coordonné" "Coordinated Universal Time" }                    0 }
-      { { -  - }       -                                                                               - }  
+      { { -  - }       -                                                                               - }
       { { HAHA HADT }  { "Heure Avancée d'Hawaï-Aléoutiennes"     "Hawaii-Aleutian Daylight Time" }   -9 }
-      { { HAA AKDT }   { "Heure Avancée de l'Alaska"              "Alaska Daylight Time" }            -8 }
+      { { HAAK AKDT }  { "Heure Avancée de l'Alaska"              "Alaska Daylight Time" }            -8 }
       { { HAP PDT }    { "Heure Avancée du Pacifique"             "Pacific Daylight Time" }           -7 }
       { { HAR MDT }    { "Heure Avancée des Rocheuses"            "Mountain Daylight Time" }          -6 }
       { { HAC CDT }    { "Heure Avancée du Centre"                "Central Daylight Time" }           -5 }
       { { HAE EDT }    { "Heure Avancée de l'Est"                 "Eastern Daylight Time" }           -4 }
       { { HAA ADT }    { "Heure Avancée de l'Atlantique"          "Atlantic Daylight Time"  }         -3 }
       { { HAT NDT }    { "Heure Avancée de Terre-Neuve"           "Newfoundland Daylight Time" }      -2.5 }
-      { { HAEG WGST }  { "Heure Avancée de l'Ouest du Groenland"  "Western Greenland Summer Time" }   -2 }
-      { { HAOG EGST }  { "Heure Avancée de l'Est du Groenland"    "Eastern Greenland Summer Time" }   -1 } 
-      { { - - }        -                                                                               - }  
-      { { HNHA HAST }  { "Heure Normale d'Hawaï-Aléoutiennes"    "Hawaii-Aleutian Standard Time" }   -10 } 
-      { { HNA AKST }   { "Heure Normale de l'Alaska"             "Alaska Standard Time" }             -9 } 
-      { { HNP PST }    { "Heure Normale du Pacifique"            "Pacific Standard Time"  }           -8 } 
-      { { HNR MST }    { "Heure Normale des Rocheuses"           "Mountain Standard Time"  }          -7 } 
-      { { HNC CST }    { "Heure Normale du Centre"               "Central Standard Time" }            -6 } 
-      { { HNE EST }    { "Heure Normale de l'Est"                "Eastern Standard Time" }            -5 } 
-      { { HNA AST }    { "Heure Normale de l'Atlantique"         "Atlantic Standard Time"  }          -4 } 
-      { { HNT NST }    { "Heure Normale de Terre-Neuve"          "Newfoundland Standard Time " }      -3.5 } 
-      { { HNEG WGT }   { "Heure Normale de l'Ouest du Groenland" "West Greenland Time" }              -3 } 
-      { { HNOG EGT }   { "Heure Normale de l'Est du Groenland"   "East Greenland Time" }              -1 } }
+      { { HAOG WGST }  { "Heure Avancée de l'Ouest du Groenland"  "Western Greenland Summer Time" }   -2 }
+      { { HAEG EGST }  { "Heure Avancée de l'Est du Groenland"    "Eastern Greenland Summer Time" }   -1 }
+      { { - - }        -                                                                               - }
+      { { HNHA HAST }  { "Heure Normale d'Hawaï-Aléoutiennes"    "Hawaii-Aleutian Standard Time" }   -10 }
+      { { HNAK AKST }  { "Heure Normale de l'Alaska"             "Alaska Standard Time" }             -9 }
+      { { HNP PST }    { "Heure Normale du Pacifique"            "Pacific Standard Time"  }           -8 }
+      { { HNR MST }    { "Heure Normale des Rocheuses"           "Mountain Standard Time"  }          -7 }
+      { { HNC CST }    { "Heure Normale du Centre"               "Central Standard Time" }            -6 }
+      { { HNE EST }    { "Heure Normale de l'Est"                "Eastern Standard Time" }            -5 }
+      { { HNA AST }    { "Heure Normale de l'Atlantique"         "Atlantic Standard Time"  }          -4 }
+      { { HNT NST }    { "Heure Normale de Terre-Neuve"          "Newfoundland Standard Time" }       -3.5 }
+      { { HNOG WGT }   { "Heure Normale de l'Ouest du Groenland" "West Greenland Time" }              -3 }
+      { { HNEG EGT }   { "Heure Normale de l'Est du Groenland"   "East Greenland Time" }              -1 } }
 
    set Lbl(Zone)  { "Fuseau horaire" "Time zone" }
    set Lbl(Time)  { "Afficher l'heure" "Display time" }
