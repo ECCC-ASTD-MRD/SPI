@@ -310,7 +310,7 @@ proc QuickLayout::LayoutGrid { { Clear True } } {
     if { ![winfo exists $Data(Frame)] } {
        return
     }
-    
+
     #----- Clear the current layout
     if { $Clear } {
        Viewport::Destroy $Data(Frame)
@@ -338,12 +338,24 @@ proc QuickLayout::LayoutGrid { { Clear True } } {
         OptimizePerimeter {
             set nr [expr {sqrt($N*$ratio)}]
 
-            if { (ceil($N/floor($nr))*$ratio+floor($nr)) > (ceil($N/ceil($nr))*$ratio+ceil($nr)) } {
-                set nbr [expr {int(ceil($nr))}]
-                set nbc [expr {int(ceil($N/ceil($nr)))}]
+            set c1 [expr {min(max(int(floor($nr)),1),$N)}]
+            set r1 [expr {int(ceil($N/floor($nr)))}]
+            set c2 [expr {min(max(int(ceil($nr)),1),$N)}]
+            set r2 [expr {int(ceil($N/ceil($nr)))}]
+
+            #----- Start by minimizing N, then minimize the perimeter
+            if { $c1*$r1 < $c2*$r2 } {
+               set nbr $r1
+               set nbc $c1
+            } elseif { $c1*$r1 > $c2*$r2 } {
+               set nbr $r2
+               set nbc $c2
+            } elseif { (1.0/$r1-1.0/$r2) <= $ratio*(1.0/$c2-1.0/$c1) } {
+               set nbr $r1
+               set nbc $c1
             } else {
-                set nbr [expr {int(floor($nr))}]
-                set nbc [expr {int(ceil($N/floor($nr)))}]
+               set nbr $r2
+               set nbc $c2
             }
         }
         Manual {
@@ -370,7 +382,7 @@ proc QuickLayout::LayoutGrid { { Clear True } } {
             Page::Size $Data(Frame) 0 0
             set Param(Width)  [Page::CanvasWidth $Data(Frame)]
             set Param(Height) [Page::CanvasHeight $Data(Frame)]
-            
+
             set w [expr {($Param(Width)-2*$Param(BdX)-($nbc-1)*$Param(Gap))/$nbc}]
             set h [expr {($Param(Height)-2*$Param(BdY)-($nbr-1)*$Param(Gap))/$nbr}]
         }
@@ -430,10 +442,10 @@ proc QuickLayout::LayoutGrid { { Clear True } } {
                set x1 [expr $x+$w]
                set y1 [expr $y+$h]
                $Data(Frame).page.canvas itemconfigure $Data(VP$n) -x $x -y $y -width $w -height $h
-               $Data(Frame).page.canvas coords BSPAGE$Data(VP$n) "$x1 $y1"    
-               $Data(Frame).page.canvas coords BMPAGE$Data(VP$n) "[expr $x1-11] $y1" 
+               $Data(Frame).page.canvas coords BSPAGE$Data(VP$n) "$x1 $y1"
+               $Data(Frame).page.canvas coords BMPAGE$Data(VP$n) "[expr $x1-11] $y1"
                $Data(Frame).page.canvas coords BFPAGE$Data(VP$n) "[expr $x1-22] $y1"
-               $Data(Frame).page.canvas coords BDPAGE$Data(VP$n) "$x1 $y"           
+               $Data(Frame).page.canvas coords BDPAGE$Data(VP$n) "$x1 $y"
                $Data(Frame).page.canvas coords SCPAGE$Data(VP$n) "[expr $x1-150-35] $y1"
             }
             #set ColorBar::Data($Data(VP$n)0) [list [expr {$x+$w-$Param(CB_Width)}] $y $Param(CB_Width) $Param(VP_Height) [set Data(CB$n) [ColorBar::Tag $Data(VP$n) CB]:$Data(VP$n)0] {*}$cbparams]
