@@ -70,7 +70,7 @@ namespace eval Trajectory {
    #----- Constantes relatives a l'affichage des trajectoires
 
    set Param(Icons)     { TRIANGLE SQUARE CIRCLE LOZENGE HBAR VBAR PENTAGON HEXAGON LIGHTNING X + }
-   set Param(Colors)    { #ff0000 #0000ff #006400 #4C7A5C #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
+   set Param(Colors)    { #ff0000 #0000ff #006400 #FF972F #FFCC00 #FF00CC #00FFFF #785D0C #ACF003 } ;#Liste des couleurs des niveaux
    set Param(SizeVars)  { "" ZPRES ZMODEL ZMSL DIST SPEED }
    set Param(Icon)      TRIANGLE
    set Param(Color)     #ff0000                                                     ;#Couleur courante
