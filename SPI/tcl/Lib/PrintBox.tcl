@@ -30,6 +30,9 @@
 
 package provide PrintBox 3.2
 
+package require Disseminate
+
+
 catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }
 
 #----- We don't load the whole img package because their png are washedout
@@ -749,9 +752,7 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
 
          if { $Print(WEBSite)=="WEB_VAAC" } {
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -timezone :UTC]
-            set ErrCatch [catch  { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $Param(FullName).$Print(Device) eer/data/vaac/current/${prefix}_[file tail $Param(FullName)].$Print(Device) $GDefs(TransmitHost) } MsgCatch ]
-
-            if { $ErrCatch != 0 } {
+            if { [Disseminate::Dissem2WeatherOffice $Param(FullName).$Print(Device) ${prefix}_[file tail $Param(FullName)].$Print(Device) TRAJ] } {
                Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitHost).\n\n$MsgCatch"
             }
 

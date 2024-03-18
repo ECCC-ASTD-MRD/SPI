@@ -35,6 +35,8 @@
 #  Aucune
 #============================================================================
 
+package require Disseminate
+
 #----- Lire les sources d'execution
 
 source $GDefs(Dir)/tcl/Tools/HFManager/HFManager.ctes
@@ -362,9 +364,7 @@ proc HFManager::WeatherFileRM { Id files } {
    }
    close $f
 
-   set err [catch { exec $env(EER_DIRSCRIPT)/CMOI_webprods.ksh $cleanupFileLink eer/data/vaac/realtime_eer_cleanup.txt $GDefs(TransmitHost) 2>$transferLog } msg]
-
-   if { $err } {
+   if { [Disseminate::Dissem2WeatherOffice $cleanupFileLink realtime_eer_cleanup.txt CLEANUP] } {
       Log::Print ERROR "Problemes avec la copie vers le PDS !!!"
    } else {
       Log::Print INFO "Les fichiers ( $filepaths ) seront effaces sous $Host(Name$Id) !"
