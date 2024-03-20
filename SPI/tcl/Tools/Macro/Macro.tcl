@@ -707,14 +707,27 @@ proc Macro::Select { Macro } {
 
       $Data(Tab).desc.text.list delete 0.0 end
       $Data(Tab).desc.text.list insert end $Data(Code$Data(Edit))
+      $Data(Tab).desc.text.list edit reset
+      $Data(Tab).desc.text.list edit modified False
 
+      #----- We need to call update here because we need the previously generated <<Modified>> events by delete/insert to be processed before we add a new binding to it,
+      #----- otherwise the binding will be called the next time we enter the event loop and everything will be flagged as modified
+      update
+      bind $Data(Tab).desc.text.list <<Modified>> [list apply [list Macro {
+         variable Data
+         set Data(Save$Macro) True
+         if { $Data(Savable$Macro) } {
+            $Data(Tab).head.save configure -state normal
+         }
+      } [namespace current]] $Macro]
+
+      #----- Reenable the save button
       if { $Data(Savable$Macro) && $Data(Save$Macro) } {
          $Data(Tab).head.save configure -state normal
       }
-      $Data(Tab).desc.text.list edit modified False
-      bind $Data(Tab).desc.text.list <<Modified>> "set Macro::Data(Save$Macro) True ;$Macro::Data(Tab).head.save configure -state normal"
    } else {
       $Data(Tab).desc.text.list delete 0.0 end
+      $Data(Tab).desc.text.list edit reset
    }
 }
 
