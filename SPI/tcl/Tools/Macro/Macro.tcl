@@ -72,7 +72,7 @@ proc Macro::Close { } {
 
    #----- Save the modified macros ?
    foreach macro $Data(List) {
-      if { $Data(Save$macro) } {
+      if { $Data(Savable$macro) && $Data(Save$macro) } {
          if { ![Dialog::Default . 300 WARNING $Msg(Save) "\n\n\tMacro::$macro" 0 $Lbl(Yes) $Lbl(No)] } {
             Macro::Save $macro
          }
@@ -211,6 +211,7 @@ proc Macro::Load { Paths } {
       set Data(Path$macro) [file normalize $path]
       set Data(Code$macro) ""
       set Data(Save$macro) False
+      set Data(Savable$macro) [file writable $path]
 
       #----- Keep the source code
       set f [open $Data(Path$macro) r]
@@ -595,7 +596,7 @@ proc Macro::Save { Macro } {
    variable Msg
    variable Data
 
-   if { $Macro!="" } {
+   if { $Macro!="" && $Data(Savable$Macro) } {
 
       #----- Check that it is still valid
       if { $Data(Time$Macro)<[file mtime $Data(Path$Macro)] } {
@@ -707,7 +708,7 @@ proc Macro::Select { Macro } {
       $Data(Tab).desc.text.list delete 0.0 end
       $Data(Tab).desc.text.list insert end $Data(Code$Data(Edit))
 
-      if { $Data(Save$Macro) } {
+      if { $Data(Savable$Macro) && $Data(Save$Macro) } {
          $Data(Tab).head.save configure -state normal
       }
       $Data(Tab).desc.text.list edit modified False
