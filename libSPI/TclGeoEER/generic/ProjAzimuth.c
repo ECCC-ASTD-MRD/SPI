@@ -221,39 +221,6 @@ int Azimuth_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
       loc.C.Lat=Lat;
       loc.C.Lon=Lon;
       loc.C.Elev=0.0;
-      AzimuthDist_Project(Proj,&loc,NULL,1);
-      glTranslated(loc.V[0],loc.V[1],0.0);
-   } else {
-   }
-   return 0;
-}
-
-/*----------------------------------------------------------------------------
- * Nom      : <AzimuthArea_Locate>
- * Creation : Aout 2000 - J.P. Gauthier - CMC/CMOE
- *
- * But      : Centrer la projection sur une coordonnee particuliere.
- *
- * Parametres :
- *  <Proj>    : Parametres de la projection
- *  <Lat>     : Latitude
- *  <Lon>     : Longitude
- *  <Undo>    : Localisation inverse
- *
- * Retour     :
- *
- * Remarques :
- *
- *----------------------------------------------------------------------------
-*/
-int AzimuthArea_Locate(Projection *Proj,double Lat,double Lon,int Undo) {
-
-   GeoVect loc;
-
-   if (Undo) {
-      loc.C.Lat=Lat;
-      loc.C.Lon=Lon;
-      loc.C.Elev=0.0;
       Proj->Type->Project(Proj,&loc,NULL,1);
       glTranslated(loc.V[0],loc.V[1],0.0);
    } else {

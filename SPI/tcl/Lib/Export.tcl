@@ -38,7 +38,6 @@ namespace eval Export {
    set Data(Type)   Vector
    set Data(Types)  { Vector Raster }
    set Data(Format) {ESRI Shape "ESRI Shapefile" {*.shp *.shx *.dbf}}
-   set Data(RPN)     1
 
    set Lbl(Export)   { "Exporter" "Export" }
    set Lbl(File)     { "Fichier" "File" }
@@ -57,6 +56,7 @@ namespace eval Export {
    set Lbl(Where)    { "Où" "Where" }
    set Lbl(Info)     { "Information" "Information" }
    set Lbl(RPN)      { "Champs FSTD RPN" "RPN FSTD fields" }
+   set Lbl(TRAJ)     { "Champs Trajectoires" "Trajectory fields" }
 
    set Bubble(Type)   { "Type d'exportation des données" "Export Type of data" }
    set Bubble(Format) { "Formats des données exportées" "Format of exported data" }
@@ -68,8 +68,8 @@ namespace eval Export {
 
    set Error(Legend)  { "Problème lors de la création de la légende (convert)" "Problem creating legend (convert)" }
    set Error(Path)    { "Le fichier d'exportation n'est pas spécifié" "Output file not specified" }
-   set Error(Data)    { "Il n'y a aucune donnée RPN a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
-                        "No RPN data to export. You have to display the fields on the active viewport to be able to export them." }
+   set Error(Data)    { "Il n'y a aucune donnée a exporter. Vous devez afficher les champs à exporter dans la vue active afin de pouvoir les exporter"
+                        "No data to export. You have to display the fields on the active viewport to be able to export them." }
 
    georef create EXPORT_PROJ { GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS84",6378137,298.257223563]],PRIMEM["Greenwich",0],UNIT["Degree",0.017453292519943295]] }
 }
@@ -583,6 +583,131 @@ proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } 
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Export::Vector::TRAJ>
+# Creation : Mars 2024 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Exporter les donnees TRAJ en format vector
+#
+# Parametres :
+#  <Path>    : Repertoire de sauvegarde du fichier
+#  <Format>  : Format du fichier
+#  <Trajs>   : Trajectoires a exporter
+#
+# Retour:
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc Export::Vector::TRAJ { Path Format Trajs } {
+
+   #-----
+   # The following code creates 2 batches of files : 1 batch per type of geometry (Lines and Dots)
+   # Reasoning : ESRI Shapefile format does not support multiple types of geometry within a single batch
+   #-----
+
+   set LVL_U meters
+   set ELEV_U meters
+   set LINE_TOKENS "NAME MODE LEVEL LEVEL_U"
+   set DOT_TOKENS "NAME MODE LEVEL LEVEL_U DATE LATITUDE LONGITUDE HEIGHT HEIGHT_U"
+
+   set rootname [file rootname $Path]
+   set ext ".shp"
+   set fname [file tail $rootname]
+   set nbTraj [llength $Trajs]
+
+   #----- Setup for filenames
+   set nbLineFiles [llength [glob -nocomplain ${rootname}_line*${ext}]]
+   set nbDotFiles [llength [glob -nocomplain ${rootname}_dot*${ext}]]
+   set nb [expr {$nbLineFiles > $nbDotFiles ? $nbLineFiles : $nbDotFiles}]
+   if { $nb == 0 } {
+      set nb ""
+   } else {
+      set nb ".$nb"
+   }
+
+   #----- Setup files
+   ogrfile open FILEL write ${rootname}_line${nb}${ext} $Format
+   ogrlayer create FILEL AREAL [string toupper $fname]
+   ogrfile open FILED write ${rootname}_dot${nb}${ext} $Format
+   ogrlayer create FILED AREAD [string toupper $fname]
+
+   foreach token $LINE_TOKENS {
+      ogrlayer define AREAL -field $token String
+   }
+   foreach token $DOT_TOKENS {
+      ogrlayer define AREAD -field $token String
+   }
+
+   ogrgeometry create LINE "Line String"
+   ogrgeometry create POINT "Point"
+
+   #----- Parse trajs
+   ogrlayer define AREAL -nb $nbTraj
+   for { set trajIdx 0 } { $trajIdx < $nbTraj } { incr trajIdx } {
+      set TRAJ [lindex $Trajs $trajIdx]
+      set name [trajectory define $TRAJ -ID]
+      set mode [expr {[trajectory define $TRAJ -BACKWARD] ? "backward" : "forward"}]
+      set parcels [trajectory define $TRAJ -PARCELS]
+      set nbParcel [llength $parcels]
+      set lvl [lindex [lindex $parcels 0] 5]
+
+      #----- LINE
+      ogrgeometry define LINE -points {}
+
+      ogrlayer define AREAL -feature $trajIdx NAME $name
+      ogrlayer define AREAL -feature $trajIdx MODE $mode
+      ogrlayer define AREAL -feature $trajIdx LEVEL [format "%.3f" $lvl]
+      ogrlayer define AREAL -feature $trajIdx LEVEL_U $LVL_U
+
+      #----- Parse parcels
+      ogrlayer define AREAD -nb $nbParcel
+      for { set parcelIdx 0 } { $parcelIdx < $nbParcel } { incr parcelIdx } {
+         set parcel [lindex $parcels $parcelIdx]
+         set date [lindex $parcel 0]
+         set lat  [lindex $parcel 1]
+         set lon  [lindex $parcel 2]
+         while { $lon > 180.0 } {
+            set lon  [expr $lon - 360.0 ]
+         }
+         while { $lon < -180.0 } {
+            set lon  [expr $lon + 360.0 ]
+         }
+         set elev [lindex $parcel 5]
+
+         #----- DOT
+         ogrgeometry define POINT -points {}
+
+         ogrlayer define AREAD -feature $parcelIdx NAME $name
+         ogrlayer define AREAD -feature $parcelIdx MODE $mode
+         ogrlayer define AREAD -feature $parcelIdx LEVEL [format "%.3f" $lvl]
+         ogrlayer define AREAD -feature $parcelIdx LEVEL_U $LVL_U
+         ogrlayer define AREAD -feature $parcelIdx DATE [clock format $date -gmt True -format "%Y%m%dT%H%M"]
+         ogrlayer define AREAD -feature $parcelIdx LATITUDE [format "%.3f" $lat]
+         ogrlayer define AREAD -feature $parcelIdx LONGITUDE [format "%.3f" $lon]
+         ogrlayer define AREAD -feature $parcelIdx HEIGHT [format "%.3f" $elev]
+         ogrlayer define AREAD -feature $parcelIdx HEIGHT_U $ELEV_U
+
+         ogrgeometry define POINT -addpoint $lon $lat $elev
+
+         ogrlayer define AREAD -geometry $parcelIdx False POINT
+
+         #----- LINE
+         ogrgeometry define LINE -addpoint $lon $lat $elev
+      }
+
+      ogrlayer define AREAL -geometry $trajIdx False LINE
+   }
+
+   ogrfile close FILED
+   ogrfile close FILEL
+   ogrlayer free AREAD
+   ogrlayer free AREAL
+   ogrgeometry free POINT
+   ogrgeometry free LINE
+
+   return True
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Export::Vector::Option>
 # Creation : Novembre 2004 - J.P. Gauthier - CMC/CMOE
 #
@@ -713,7 +838,11 @@ proc Export::Window { } {
    variable Bubble
    variable Data
 
-   if { ![llength $FSTD::Data(List)] } {
+   if { [llength $FSTD::Data(List)] } {
+      set Data(Input)  "RPN"
+   } elseif { [llength $Trajectory::Data(List)] } {
+      set Data(Input)  "TRAJ"
+   } else {
       Dialog::Error . $Error(Data)
       return
    }
@@ -726,8 +855,10 @@ proc Export::Window { } {
    wm transient .export .
 
    labelframe .export.what -text [lindex $Lbl(What) $GDefs(Lang)]
-      checkbutton .export.what.rpn -text [lindex $Export::Lbl(RPN) $GDefs(Lang)] -variable Export::Data(RPN) -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False
+      radiobutton .export.what.rpn -text [lindex $Export::Lbl(RPN) $GDefs(Lang)] -variable Export::Data(Input) -value RPN -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command { Export::SetInput $Export::Data(Input) }
+      radiobutton .export.what.traj -text [lindex $Export::Lbl(TRAJ) $GDefs(Lang)] -variable Export::Data(Input) -value TRAJ -relief sunken -bd 1 -overrelief raised -offrelief flat -indicatoron False -command { Export::SetInput $Export::Data(Input) }
       pack .export.what.rpn -side top -fill x -expand True
+      pack .export.what.traj -side top -fill x -expand True
 
    labelframe .export.how -text [lindex $Lbl(How) $GDefs(Lang)]
       frame .export.how.type
@@ -807,9 +938,9 @@ proc Export::Window { } {
    Bubble:::Create .export.where.file $Bubble(File)
    Bubble:::Create .export.where.db   $Bubble(DBase)
 
-   set format $Data(Format)
+   Export::SetInput $Data(Input)
    Export::SetType $Data(Type)
-   Export::SetFormat $format
+   Export::SetFormat $Data(Format)
    Export::Raster::Init $Export::Raster::Param(Res)
 }
 
@@ -914,6 +1045,33 @@ proc Export::SetFormat { Format } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Export::SetInput>
+# Creation : Mars 2024 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But      : Appliquer les parametres relatifs a la selection des données d'entrées
+#
+# Parametres :
+#  <Input>   : Type des données d'entrées
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc Export::SetInput { Input } {
+   variable Data
+
+   .export.how.type.raster configure -state normal
+
+   if { $Input == "TRAJ" } {
+      .export.how.type.raster configure -state disabled
+      set Data(Type) "Vector"
+   }
+
+   SetType $Data(Type)
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Export::SetType>
 # Creation : Decembre 2008 - J.P. Gauthier - CMC/CMOE
 #
@@ -931,8 +1089,13 @@ proc Export::SetFormat { Format } {
 proc Export::SetType { Type } {
    variable Data
 
+   set formats [set Export::${Type}::Param(Formats)]
+   if { $Data(Input) == "TRAJ" } {
+      set formats [list [lindex $formats 0]]
+   }
    ComboBox::DelAll .export.how.sel.sel
-   eval ComboBox::AddList .export.how.sel.sel \${Export::${Type}::Param(Formats)}
+   ComboBox::AddList .export.how.sel.sel $formats
+   ComboBox::Set .export.how.sel.sel 0
 
    destroy .export.option
    labelframe .export.option -text Options
@@ -960,6 +1123,7 @@ proc Export::Do { } {
    variable Data
    variable Error
 
+   #----- Verify
    set format [lindex $Data(Format) end-1]
    set ok 1
 
@@ -972,12 +1136,35 @@ proc Export::Do { } {
       }
    }
 
+   switch $Data(Input) {
+      "RPN" {
+         if { ![llength $FSTD::Data(List)] } {
+            Dialog::Error .export $Error(Data)
+            return
+         }
+      }
+      "TRAJ" {
+         if { ![llength $Trajectory::Data(List)] } {
+            Dialog::Error .export $Error(Data)
+            return
+         }
+      }
+   }
+
+   #----- Export
    .export configure -cursor watch
    update idletasks
 
-   switch $Data(Type) {
-      "Raster" { set ok [Export::Raster::Export $Data(Path) $format $Export::Raster::Param(Mode) $FSTD::Data(List)] }
-      "Vector" { set ok [Export::Vector::Export $Data(Path) $format $FSTD::Data(List)] }
+   switch $Data(Input) {
+      "RPN" {
+         switch $Data(Type) {
+            "Raster" { set ok [Export::Raster::Export $Data(Path) $format $Export::Raster::Param(Mode) $FSTD::Data(List)] }
+            "Vector" { set ok [Export::Vector::Export $Data(Path) $format $FSTD::Data(List)] }
+         }
+      }
+      "TRAJ" {
+         set ok [Export::Vector::TRAJ $Data(Path) $format $Trajectory::Data(List)]
+      }
    }
 
    .export configure -cursor left_ptr
