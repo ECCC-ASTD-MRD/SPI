@@ -296,6 +296,7 @@ proc Viewport::Activate { Frame { VP "" } } {
    set Data(Data)               $Data(Data$Frame)
 
    #----- Activer le viewport courant
+   Page::Activate $Frame
    Page::ActiveWrap $Frame $Data(VP)
 
    if { $Data(VP)!="" && [llength [$Frame.page.canvas find withtag $Data(VP)]] } {

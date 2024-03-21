@@ -228,15 +228,17 @@ proc DBBox::Search { DB Column Pattern } {
 #----------------------------------------------------------------------------
 proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} } {
    global   GDefs
-   variable Lbl
    variable Data
    variable Param
 
-   set Param(Sort) -1
-   set Param(SortOrder) "increasing"
-   set Param(UseComboBoxFilters) $UseComboBoxFilters
-   set Data(Variable) $Variable
-   upvar $Data(Variable) Var
+   set f $W
+   set tbl $f.tbl
+
+   set Param(Sort$tbl) -1
+   set Param(SortOrder$tbl) "increasing"
+   set Param(UseComboBoxFilters$tbl) $UseComboBoxFilters
+   set Data(Variable$tbl) $Variable
+   upvar $Data(Variable$tbl) Var
 
    set parent [string range $W 0 [expr [string last "." $W]-1]]
    if { [llength $ComboBoxFilterSortOrders] == 1} {
@@ -244,17 +246,17 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
          lset ComboBoxFilterSortOrders $i [lindex $ComboBoxFilterSortOrders 0]
       }
    }
-   set Param(ComboBoxFilterSortOrders) $ComboBoxFilterSortOrders
+   set Param(ComboBoxFilterSortOrders$tbl) $ComboBoxFilterSortOrders
 
    #----- Main frame
-   frame [set f $W]
+   frame $f
 
    #----- Table
-   table [set tbl $f.tbl] -rows 2 -cols [llength [lindex $Var 0]] -titlerows 2 -titlecols 0 \
+   table $tbl -rows 2 -cols [llength [lindex $Var 0]] -titlerows 2 -titlecols 0 \
       -width [llength [lindex $Var 0]] -height 32 -maxwidth 1800 -maxheight 1000 \
       -colwidth 0 -resizeborders col -colstretchmode unset \
       -selectmode browse -selecttype row -invertselected 0 \
-      -variable [namespace current]::Tbl -sparsearray 1 \
+      -variable [namespace current]::Tbl${tbl} -sparsearray 1 \
       -multiline 0 -ellipsis "…" -autoclear 1 \
       -state normal -drawmode fast -relief flat -bd 0 -padx 2 -anchor w \
       -bg $GDefs(ColorLight) -highlightbackground $GDefs(ColorHighLight) -insertbackground $GDefs(ColorLight) \
@@ -305,9 +307,9 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
    $tbl tag raise sort
 
    #----- ComboBox filters
-   if { $Param(UseComboBoxFilters) } {
+   if { $Param(UseComboBoxFilters$tbl) } {
       for {set i 0} {$i<[llength [lindex $Var 0]]} {incr i} {
-         ComboBox::Create $tbl.searchCol$i [namespace current]::Tbl(1,$i) edit unsorted nodouble -1 {} 1 15 \
+         ComboBox::Create $tbl.searchCol$i [$tbl cget -variable](1,$i) edit unsorted nodouble -1 {} 1 15 \
             [list apply [list {Table Col} {
                $Table activate 1,$Col
                DataTable::Update $Table
@@ -330,7 +332,7 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
          $W tag cell click $idx
       }
    } [namespace current]] %W %x %y]
-   bind $tbl <ButtonRelease-1> [list apply [list {W X Y} {
+   bind $tbl <ButtonRelease-1> [list apply [list {Table W X Y} {
       variable Param
 
       lassign [split [set idx [$W index @$X,$Y]] ,] row col
@@ -340,10 +342,10 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
       }
 
       $W clear tags 0,0 0,[$W cget -cols]
-      if { $Param(Sort) >= 0 } {
-         $W tag cell sort 0,$Param(Sort)
+      if { $Param(Sort$Table) >= 0 } {
+         $W tag cell sort 0,$Param(Sort$Table)
       }
-   } [namespace current]] %W %x %y]
+   } [namespace current]] $tbl %W %x %y]
 
    #----- Bindings for the search boxes
    bind $tbl <KeyRelease>     [list after idle [list [namespace current]::Update $tbl]]
@@ -360,13 +362,13 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
    } [namespace current]] %W %x %y]
 
    #----- Binding for the selection
-   bind $tbl <Double-1> [list apply [list {W X Y} {
+   bind $tbl <Double-1> [list apply [list {Table W X Y} {
       lassign [split [set idx [$W index @$X,$Y]] ,] row col
       if { $row >= 2 } {
-         upvar $DataTable::Data(Variable) Var
-         set DataTable::Data(Result) [lindex $Var $row-1]
+         upvar $DataTable::Data(Variable$Table) Var
+         set DataTable::Data(Result$Table) [lindex $Var $row-1]
       }
-   }] %W %x %y]
+   }] $tbl %W %x %y]
    if { $OnSelectCmd != "" } {
       bind $tbl <ButtonRelease-1> +[list apply [list {W X Y OnSelectCmd} {
          lassign [split [set idx [$W index @$X,$Y]] ,] row col
@@ -409,11 +411,9 @@ proc DataTable::Create { W Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOr
 #----------------------------------------------------------------------------
 proc DataTable::CreateWindow { Parent Title Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} {OnDestroyCmd ""} } {
    global   GDefs
-   variable Lbl
    variable Data
-   variable Param
 
-   set w .datatable
+   set w .datatable[string map {"." ""} $Parent]
    if { [winfo exists $w] } {
       raise $w
       return
@@ -465,22 +465,27 @@ proc DataTable::CreateWindow { Parent Title Variable {UseComboBoxFilters 0} {Com
 #  Aucune
 #----------------------------------------------------------------------------
 proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilters 0} {ComboBoxFilterSortOrders "inscreasing"} {OnSelectCmd ""} } {
+   variable Data
 
    $Parent config -cursor X_cursor
    update idletasks
 
    set w [CreateWindow $Parent $Title $Variable $UseComboBoxFilters $ComboBoxFilterSortOrders $OnSelectCmd]
+   set table $w.table.tbl
+
    wm transient $w $Parent
    #----- Override on destroy
    #      Window is destroyed below
-   wm protocol $w WM_DELETE_WINDOW {set DataTable::Data(Result) ""}
+   wm protocol $w WM_DELETE_WINDOW [list apply [list {Table} {
+      set DataTable::Data(Result$Table) ""
+   } [namespace current]] $table]
 
    #----- Wait for selection
 
    set prevgrab [grab current]
    grab $w
-   set Data(Result) ""
-   tkwait variable [namespace current]::Data(Result)
+   set Data(Result$table) ""
+   tkwait variable [namespace current]::Data(Result$table)
 
    catch {
       destroy $w
@@ -491,7 +496,7 @@ proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilter
       grab $prevgrab
    }
 
-   return $Data(Result)
+   return $Data(Result$table)
 }
 
 #----------------------------------------------------------------------------
@@ -511,12 +516,10 @@ proc DataTable::CreateTransientWindow { Parent Title Variable {UseComboBoxFilter
 #  Aucune
 #----------------------------------------------------------------------------
 proc DataTable::AdaptColumnWidthsToContent { Table } {
-   global GDefs
-   variable Lbl
    variable Data
    variable Param
 
-   upvar $Data(Variable) Var
+   upvar $Data(Variable$Table) Var
 
    #----- Set maxWidthInCharacters
    set maxWidthInCharacters $Param(MaxWidthInCharacters)
@@ -566,7 +569,7 @@ proc DataTable::AdaptColumnWidthsToContent { Table } {
       set minColWidth [expr [::tcl::mathfunc::max {*}[lmap x [lindex $tableContentByColumn $i] {string length $x}]]+1]
 
       #----- Add space for combobox button
-      if { $Param(UseComboBoxFilters) } {
+      if { $Param(UseComboBoxFilters$Table) } {
          incr minColWidth 2
       }
 
@@ -658,7 +661,7 @@ proc DataTable::Sort { Table Col } {
    variable Data
    variable Param
 
-   upvar $Data(Variable) Var
+   upvar $Data(Variable$Table) Var
 
    if { ![string is integer -strict $Col] } {
       if { [set idx [lsearch -exact [lindex $Var 0] $Col]]!=-1 } {
@@ -668,16 +671,16 @@ proc DataTable::Sort { Table Col } {
       }
    }
 
-   if { $Param(Sort)==$Col && $Param(SortOrder)=="decreasing" } {
+   if { $Param(Sort$Table)==$Col && $Param(SortOrder$Table)=="decreasing" } {
       #----- Reset column's sort
-      set Param(Sort) -1
+      set Param(Sort$Table) -1
    } else {
-      if { $Param(Sort)!=$Col } {
-         set Param(SortOrder) "increasing"
+      if { $Param(Sort$Table)!=$Col } {
+         set Param(SortOrder$Table) "increasing"
       } else {
-         set Param(SortOrder) "decreasing"
+         set Param(SortOrder$Table) "decreasing"
       }
-      set Param(Sort) $Col
+      set Param(Sort$Table) $Col
    }
 
    Update $Table
@@ -699,11 +702,11 @@ proc DataTable::Sort { Table Col } {
 # Remarques :
 #----------------------------------------------------------------------------
 proc DataTable::Update { Table } {
-   variable Tbl
    variable Data
    variable Param
 
-   upvar $Data(Variable) Var
+   upvar [$Table cget -variable] Tbl
+   upvar $Data(Variable$Table) Var
 
    set ntr [$Table cget -titlerows]
    set ntc [$Table cget -titlecols]
@@ -730,10 +733,10 @@ proc DataTable::Update { Table } {
    }
 
    #----- Update ComboBox Filter items
-   if { $Param(UseComboBoxFilters) } {
+   if { $Param(UseComboBoxFilters$Table) } {
       for {set i 0} {$i<[llength [lindex $Var 0]]} {incr i} {
          set items [lmap row [lrange $Var 1 end] {lindex $row $i}]
-         set sortOrder [lindex $Param(ComboBoxFilterSortOrders) $i]
+         set sortOrder [lindex $Param(ComboBoxFilterSortOrders$Table) $i]
 
          set items [lsort -ascii -$sortOrder -unique $items]
          set items [linsert $items 0 ""]
@@ -762,12 +765,12 @@ proc DataTable::Update { Table } {
    }
 
    #----- Sort based on the selected column (if necessary)
-   if { $Param(Sort) >= 0 } {
+   if { $Param(Sort$Table) >= 0 } {
       #----- Seperate the list in two, depending on the sorted column's type (string or number)
       set elementsWhereColumnValueIsString {}
       set elementsWhereColumnValueIsNumber {}
       foreach ele $lst {
-         set columnValue [lindex $ele $Param(Sort)]
+         set columnValue [lindex $ele $Param(Sort$Table)]
          if { [string is double -strict $columnValue] } {
             lappend elementsWhereColumnValueIsNumber $ele
          } else {
@@ -776,8 +779,8 @@ proc DataTable::Update { Table } {
       }
 
       #----- Sort each list according to the sorted column's type
-      set elementsWhereColumnValueIsNumber [lsort -index $Param(Sort) -real -$Param(SortOrder) $elementsWhereColumnValueIsNumber[set elementsWhereColumnValueIsNumber ""]]
-      set elementsWhereColumnValueIsString [lsort -index $Param(Sort) -nocase -$Param(SortOrder) $elementsWhereColumnValueIsString[set elementsWhereColumnValueIsString ""]]
+      set elementsWhereColumnValueIsNumber [lsort -index $Param(Sort$Table) -real -$Param(SortOrder$Table) $elementsWhereColumnValueIsNumber[set elementsWhereColumnValueIsNumber ""]]
+      set elementsWhereColumnValueIsString [lsort -index $Param(Sort$Table) -nocase -$Param(SortOrder$Table) $elementsWhereColumnValueIsString[set elementsWhereColumnValueIsString ""]]
 
       #----- Resulting list
       #      Append elements where column value is number first, then those where column value is string.

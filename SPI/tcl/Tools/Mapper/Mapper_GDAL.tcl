@@ -1093,7 +1093,7 @@ proc Mapper::GDAL::Curve { Canvas Object Bands } {
 #
 #-------------------------------------------------------------------------------
 
-proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
+proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } { VPs "" } } {
    global GDefs errorInfo
    variable Data
    
@@ -1203,8 +1203,18 @@ proc Mapper::GDAL::Read { File { Bands "" } { Nb 3 } { Full False } } {
   
   set Mapper::Data(Job) ""
 
-   if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $obj]==-1 } {
-      lappend Viewport::Data(Data$Page::Data(Frame)) $obj
+   if { [llength $VPs] == 0 } {
+      #----- Add to all viewports on the page
+      if { [lsearch -exact $Viewport::Data(Data$Page::Data(Frame)) $obj]==-1 } {
+         lappend Viewport::Data(Data$Page::Data(Frame)) $obj
+      }
+   } else {
+      #------ Add to specified viewports
+      foreach vp $VPs {
+         if { [lsearch -exact $Viewport::Data(Data$vp) $obj]==-1 } {
+            lappend Viewport::Data(Data$vp) $obj
+         }
+      }
    }
   
    return $obj
