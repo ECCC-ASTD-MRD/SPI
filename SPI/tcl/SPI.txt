@@ -87,6 +87,7 @@ namespace eval SPI {
    set Lbl(FileRPN)        { "Standard (RPN)" "Standard (RPN)" }
    set Lbl(FileGRIB)       { "GRIB (Edition 1-2)" "GRIB (Edition 1-2)" }
    set Lbl(Test)           { "Chaine \"Test\"" "String \"Test\"" }
+   set Lbl(Exercise)       { "Chaine \"Exercice\"" "String \"Exercise\"" }
    set Lbl(Tools)          { "Outils" "Tools" }
    set Lbl(Traj)           { "Trajectoire" "Trajectory" }
    set Lbl(Trajectory)     { "Trajectoire" "Trajectory" }

@@ -68,7 +68,7 @@ namespace eval SPI {
    
    #----- Definitions des variables internes
 
-   set Data(Items)          { ColorBar DataBar Mini LOGO TEST Clock Compass Flyer Scale GeoLegend DataLegend TrajGraph TrajHeight TrajLegend  }
+   set Data(Items)          { ColorBar DataBar Mini LOGO TEST EXERCISE Clock Compass Flyer Scale GeoLegend DataLegend TrajGraph TrajHeight TrajLegend  }
    set Data(Page)           1
    set Data(LayoutCam)      0             ;#Sauvegarde de la camera associe au layout
    set Data(LayoutNew)      ""            ;#Nom du nouveau layout
@@ -97,6 +97,7 @@ namespace eval SPI {
 
    image create photo LOGO -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_SMC.gif
    image create photo TEST -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_TEST.gif
+   image create photo EXERCISE -file $GDefs(Dir)/share/image/Symbol/Logo/Logo_EXERCISE.gif
 
    set Resources(IcoLOGO) "@$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm"
    set Resources(IcoTHER) "@$GDefs(Dir)/share/bitmap/there.ico"

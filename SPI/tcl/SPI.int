@@ -683,6 +683,9 @@ proc SPI::WindowMenu { } {
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Test) $GDefs(Lang)] -variable SPI::Data(ShowTEST) \
          -command "SPI::DrawImage \$Page::Data(Frame) TEST \[winfo width \$Page::Data(Canvas)\] 5 ne 8 -128 128 50" \
          -onvalue 1 -offvalue 0
+      .menu.disp.menu add checkbutton -label [lindex $Lbl(Exercise) $GDefs(Lang)] -variable SPI::Data(ShowEXERCISE) \
+         -command "SPI::DrawImage \$Page::Data(Frame) EXERCISE \[winfo width \$Page::Data(Canvas)\] 5 ne 3 -390 390 50; SPI::DrawImage \$Page::Data(Frame) EXERCISE \[expr \[winfo width \$Page::Data(Canvas)\]-700\] 5 ne 3 -390 390 50" \
+         -onvalue 1 -offvalue 0
       .menu.disp.menu add checkbutton -label [lindex $Lbl(GeoLegend) $GDefs(Lang)] -variable SPI::Data(ShowGeoLegend) \
          -command "SPI::DrawGeoLegend \$Page::Data(Frame)"
       .menu.disp.menu add separator
