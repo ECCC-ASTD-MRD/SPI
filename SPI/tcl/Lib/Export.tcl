@@ -655,7 +655,7 @@ proc Export::Vector::TRAJ { Path Format Trajs } {
 
       ogrlayer define AREAL -feature $trajIdx NAME $name
       ogrlayer define AREAL -feature $trajIdx MODE $mode
-      ogrlayer define AREAL -feature $trajIdx LEVEL $lvl
+      ogrlayer define AREAL -feature $trajIdx LEVEL [format "%.3f" $lvl]
       ogrlayer define AREAL -feature $trajIdx LEVEL_U $LVL_U
 
       #----- Parse parcels
@@ -678,12 +678,12 @@ proc Export::Vector::TRAJ { Path Format Trajs } {
 
          ogrlayer define AREAD -feature $parcelIdx NAME $name
          ogrlayer define AREAD -feature $parcelIdx MODE $mode
-         ogrlayer define AREAD -feature $parcelIdx LEVEL $lvl
+         ogrlayer define AREAD -feature $parcelIdx LEVEL [format "%.3f" $lvl]
          ogrlayer define AREAD -feature $parcelIdx LEVEL_U $LVL_U
-         ogrlayer define AREAD -feature $parcelIdx DATE $date
-         ogrlayer define AREAD -feature $parcelIdx LATITUDE $lat
-         ogrlayer define AREAD -feature $parcelIdx LONGITUDE $lon
-         ogrlayer define AREAD -feature $parcelIdx HEIGHT $elev
+         ogrlayer define AREAD -feature $parcelIdx DATE [clock format $date -gmt True -format "%Y%m%dT%H%M"]
+         ogrlayer define AREAD -feature $parcelIdx LATITUDE [format "%.3f" $lat]
+         ogrlayer define AREAD -feature $parcelIdx LONGITUDE [format "%.3f" $lon]
+         ogrlayer define AREAD -feature $parcelIdx HEIGHT [format "%.3f" $elev]
          ogrlayer define AREAD -feature $parcelIdx HEIGHT_U $ELEV_U
 
          ogrgeometry define POINT -addpoint $lon $lat $elev
