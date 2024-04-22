@@ -1792,11 +1792,19 @@ void Projection_Setup(ViewportItem *VP,Projection *Proj,int GL){
          pt[2]=0;
          Proj->Type->UnProject(VP,Proj,&co[1],pt);
 
-         co[0].Lat=DEG2RAD(co[0].Lat);
-         co[0].Lon=DEG2RAD(co[0].Lon);
-         co[1].Lat=DEG2RAD(co[1].Lat);
-         co[1].Lon=DEG2RAD(co[1].Lon);
-         d=DIST(0.0,co[0].Lat,co[0].Lon,co[1].Lat,co[1].Lon);
+         if( Proj->Ref && Proj->Ref->Spatial ) {
+            // When we have a specific projections, it can be better to calculate the distance according to that projection as it can be quite different from the great circle one
+            double x0,y0,x1,y1;
+            Proj->Ref->UnProject(Proj->Ref,&x0,&y0,co[0].Lat,co[0].Lon,0,1);
+            Proj->Ref->UnProject(Proj->Ref,&x1,&y1,co[1].Lat,co[1].Lon,0,1);
+            d=Proj->Ref->Distance(Proj->Ref,x0,y0,x1,y1);
+         } else {
+            co[0].Lat=DEG2RAD(co[0].Lat);
+            co[0].Lon=DEG2RAD(co[0].Lon);
+            co[1].Lat=DEG2RAD(co[1].Lat);
+            co[1].Lon=DEG2RAD(co[1].Lon);
+            d=DIST(0.0,co[0].Lat,co[0].Lon,co[1].Lat,co[1].Lon);
+         }
       } else {
          d=VP->Cam->Aspect;
       }
