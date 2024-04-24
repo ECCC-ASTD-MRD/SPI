@@ -36,7 +36,9 @@ while [[ $# -gt 0 ]]; do
       -valgrind)
          ldd ${SPI_LIB}/TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so
          export  LIBGL_DEBUG=verbose
-         SPI_DEBUG=(valgrind --track-origins=yes --leak-check=full)
+         SPI_DEBUG=(valgrind --track-origins=yes --leak-check=full --max-stackframe=4294967296)
+         shift
+         continue
          ;;
       -gdb)
          ldd ${SPI_LIB}/TCL/lib/TkglCanvas8.6.0/libTkglCanvas.so
