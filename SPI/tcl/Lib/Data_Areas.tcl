@@ -80,7 +80,7 @@ proc Areas::CreateWidget { Parent } {
 
          if { [set nb [ogrlayer define $l -nb]]<50 } {
             for { set i 0 } { $i<[ogrlayer define $l -nb] } { incr i } {
-               if { $i && ![expr $i%20] } {
+               if { $i && ![expr $i%25] } {
                   $Parent.areas.t$no add checkbutton -variable Areas::Data(Toggle$l$i) -label [ogrlayer define $l -feature $i $Data(Field$l)] \
                      -command "Areas::DisplayToggle $l $i" -columnbreak 1
                } else {

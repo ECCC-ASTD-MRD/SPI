@@ -38,10 +38,11 @@ set subs(met)   {      { "" }        { "" }      { "" }           { "" }        
 set models(met) [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd ]
 
 #------ Liste des modèles Aquatiques
-set names(wet)  {     "RIOPS"     "CIOPS_WEST"     "CIOPS_EAST"    "SHOP"    "SHOPSMALL"   "WCPS"    "SALISH"   "WEBTIDE" }
-set vars(wet)   {      GL          GL               GL              ""        ""            ""        ""         M2       }
-set subs(wet)   {      { "" }      { "" }           { "" }          { "" }    { ""}         { "" }    { "" }     { arctic9 ne_pac4 nwatl stle400 sshelf h3o } }
-set models(wet) [list  riops.fstd  ciops_west.fstd  ciops_east.fstd shop.txt  shopsmall.txt wcps.txt  salish.txt $env(WEBTIDE_DATA)]
+set names(wet)  {      "RIOPS"    "CIOPS_WEST"    "KITIMAT_500" "KITIMAT_100" "SALISH_500" "SALISH_150" "SOUTH_FRASER_RIVER_30" "VANCOUVER_HARBOR_20" "CIOPS_EAST"    "WCPS"   "SHOP"   "SHOPSMALL"   "SAINT_LAWRENCE_RIVER_500" "SAINT_LAWRENCE_RIVER_200" "FUNDY_500 " "SAINT_JOHN_100" "STRAIT_OF_CANSO_500" "STRAIT_OF_CANSO_100" "WEBTIDE" }
+set vars(wet)   {      GL         GL              "GRID"        "GRID"        ""           "GRID"       "GRID"                  "GRID"                GL              ""       ""       ""            "GRID"                     "GRID"                     GRID         GRID             GRID                  GRID                  M2        }
+set subs(wet)   {      { "" }     { "" }          { "" }        { "" }        { "" }       { "" }       { "" }                  { "" }                { "" }          { "" }   { "" }   { ""}         { "" }                     { "" }                     { "" }       { "" }           { "" }                { "" }                { arctic9 ne_pac4 nwatl stle400 sshelf h3o } }
+
+set models(wet) [list  riops.fstd ciops_west.fstd kit500.fst    kit100.fst    salish.txt   sss150.fst   sf30.fst                vh20.fst              ciops_east.fstd wcps.txt shop.txt shopsmall.txt stle500.fst                stle200.fst                fundy500.fst sj100.fst        canso500.fst          canso100.fst          $env(WEBTIDE_DATA)]
 
 #------ Liste des modèles de vagues
 set names(waves)  {     "RDWPS (NEP)"  "RDWPS (SUP)"   "RDWPS (HUM)"    "RDWPS (ERI)"    "RDWPS (ONT)"   "RDWPS (NWA)"   }
@@ -77,7 +78,7 @@ foreach md $ModelDomain t $type {
 
    foreach model $models($t) sub $subs($t) var $vars($t) name $names($t) {
 
-      if {$name == "GLSOCE" || $name == "SHOP" || $name == "SHOPSMALL" || $name == "WCPS" || $name == "SALISH" || $name == "RDWPS (NEP)" || $name == "RDWPS (NWA)" } {
+      if {$name == "GLSOCE" || $name == "SHOP" || $name == "SHOPSMALL" || $name == "WCPS" || $name == "SALISH_500" || $name == "RDWPS (NEP)" || $name == "RDWPS (NWA)" } {
          Log::Print INFO "Processing $model $name"
 
          #------ Read lat/lon for glsoce model (Great Lakes)
