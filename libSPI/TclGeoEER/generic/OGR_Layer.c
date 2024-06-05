@@ -2406,7 +2406,9 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
  *   <Interp>   : L'interpreteur Tcl
  *   <Name>     : Le nom de la bande a creer
  *   <FileId>   : Identificateur du fichier
- *   <Idx>      : Index de la couche
+ *   <Statement>: Code SQL à exécuter
+ *   <Geom>     : Géometrie à utiliser comme filtrage (bbox) ou NULL si aucune
+ *   <Dialect>  : Dialecte SQL à utiliser (SQLITE, INDIRECT_SQLITE ou OGRSQL). NULL pour utiliser celui par défaut.
  *
  * Retour       : Code d'erreur standard TCL
  *
@@ -2414,7 +2416,7 @@ int OGR_LayerWrite(Tcl_Interp *Interp,char *Name,char *FileId) {
  *
  *---------------------------------------------------------------------------------------------------------------
 */
-int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom) {
+int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statement,char *Geom,const char* Dialect) {
 
 #ifdef HAVE_GDAL
    OGR_File     *file=NULL;
@@ -2446,7 +2448,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
       }
    }
 
-   srcl=GDALDatasetExecuteSQL(file->Data,Statement,geom,NULL);
+   srcl=GDALDatasetExecuteSQL(file->Data,Statement,geom,Dialect);
    
    // Copy layer in memory using Memory driver to be able to do whatever we want with it
    layer->Data=GDALCreate(OGRGetDriverByName("Memory"),Name,0,0,0,GDT_Unknown,NULL);

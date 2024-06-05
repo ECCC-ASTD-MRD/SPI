@@ -746,16 +746,33 @@ static int OGR_LayerCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
          break;
 
       case SQLSELECT:
-         if (Objc!=5 && Objc!=6) {
-            Tcl_WrongNumArgs(Interp,2,Objv,"layer file sql_statement [geometry filter]");
+         if (Objc<5 || Objc>7) {
+            Tcl_WrongNumArgs(Interp,2,Objv,"layer file ?-sqlite|-isqlite|-ogrsql? sql_statement [geometry filter]");
             return(TCL_ERROR);
          }
 
-         if (Objc==6) {
-            return(OGR_LayerSQLSelect(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),Tcl_GetString(Objv[4]),Tcl_GetString(Objv[5])));
-         } else {
-            return(OGR_LayerSQLSelect(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),Tcl_GetString(Objv[4]),NULL));
+         c=NULL;
+         n=4;
+         if (Objc>5) {
+            c=Tcl_GetString(Objv[n]);
+            if (!strcmp(c,"-sqlite")) {
+               c="SQLITE";
+               ++n;
+            } else if (!strcmp(c,"-isqlite")) {
+               c="INDIRECT_SQLITE";
+               ++n;
+            } else if (!strcmp(c,"-ogrsql")) {
+               c="OGRSQL";
+               ++n;
+            } else if (Objc==7) {
+               Tcl_WrongNumArgs(Interp,2,Objv,"layer file ?-sqlite|-ogrsql? sql_statement [geometry filter]");
+               return(TCL_ERROR);
+            } else {
+               c=NULL;
+            }
          }
+
+         return(OGR_LayerSQLSelect(Interp,Tcl_GetString(Objv[2]),Tcl_GetString(Objv[3]),Tcl_GetString(Objv[n]),Objc>n+1?Tcl_GetString(Objv[n+1]):NULL,c));
          break;
 
       case IS:
