@@ -630,6 +630,11 @@ double filter(TDef *Res,TDef *Fld,TDef *Msk) {
       }
    }
 
+   if( !nkeep ) {
+      Calc_RaiseError("filter: Mask has no value set, resulting field would be empty\n");
+      return(0.0);
+   }
+
    // Check if we repeat in some dimensions and multiply by the amount of time we will repeat if so
    if( Msk->NI==1 && Fld->NI!=1 ) {repI=1; nkeep*=Fld->NI;}
    if( Msk->NJ==1 && Fld->NJ!=1 ) {repJ=1; nkeep*=Fld->NJ;}
