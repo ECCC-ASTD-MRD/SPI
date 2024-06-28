@@ -19,11 +19,6 @@ include(ec_shared_lib)
 include(ec_doxygen)           # Doxygen target
 
 #----- Look for libeerUtils
-ec_install_prefix(eerUtils ${EER_REQ_VERSION} eer_prefix)
-set(eerUtils_ROOT ${CMAKE_INSTALL_PREFIX}/${eer_prefix})
-
-ec_install_prefix()  # Define install prefix 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/${PACKAGE_PREFIX})
 set(GDB_ROOT ${CMAKE_INSTALL_PREFIX}) 
 set(TCL_ROOT ${CMAKE_INSTALL_PREFIX}/TCL) 
 
@@ -154,7 +149,6 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/include DESTINATION . USE_SOURCE_PERMI
 install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib     DESTINATION . USE_SOURCE_PERMISSIONS) 
 
 # Packaging
-ec_install_prefix(${NAME} ${PROJECT_VERSION} PACKAGE_PREFIX)  # Define package prefix  
 #ec_build_config()                                            # Create build configuration script
 ec_prepare_ssm()                                              # Prepare ssm packaging files
 
@@ -167,6 +161,6 @@ if(NOT DEFINED CPACK_OUTPUT_FILE_PREFIX)
    set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/package")
 endif()
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_PREFIX}")
+set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 include(CPack)
