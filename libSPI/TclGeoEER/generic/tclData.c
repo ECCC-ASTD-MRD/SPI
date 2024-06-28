@@ -2539,7 +2539,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             }
             break;
 
-         case BOUNDARY:          
+         case BOUNDARY:
             if (Objc>2) {
                Tcl_WrongNumArgs(Interp,2,Objv,"[LIST|GML|KML|JSON|JAVASCRIPT]");
                return(TCL_ERROR);
@@ -2547,7 +2547,7 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
             if (Tcl_GetIndexFromObj(Interp,Objv[++i],sfrmt,"type",TCL_EXACT,&mode)!=TCL_OK) {
                return(TCL_ERROR);
             }
-                                   
+
             obj=Tcl_NewListObj(0,NULL);
             switch(mode) {
                case KML:        Tcl_AppendResult(Interp,"<Polygon><outerBoundaryIs><LinearRing><coordinates>",(char*)NULL);break;
@@ -2555,11 +2555,10 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                case JSON:       Tcl_AppendResult(Interp,"{\n\t\"type\": \"Polygon\",\n\t\"coordinates\": [",(char*)NULL);break;
                case JAVASCRIPT: Tcl_AppendResult(Interp,"[",(char*)NULL);break;
             }
-            
+
             i=0;j=0;
             ci=1;cj=0;
             while(1) {
- 
                Field->GRef->Project(Field->GRef,i,j,&dlat,&dlon,1,1);
                switch(mode) {
                   case KML:
@@ -2586,6 +2585,8 @@ int Data_Stat(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Objv[]){
                case JAVASCRIPT: Tcl_AppendResult(Interp,"]",(char*)NULL);break;
                case LIST:       Tcl_SetObjResult(Interp,obj);
             }
+            // Since we played with i, this is needed otherwise it can lead to an error
+            return TCL_OK;
             break;
                
          case LIMITS:
