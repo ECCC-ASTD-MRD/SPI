@@ -861,7 +861,8 @@ int OGR_GeometryStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[
          break;
 
       case CLIPLONWRAP:
-         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,OGM_ClipLonWrap(g0)));
+         g1=OGM_ClipLonWrap(g0);
+         Tcl_SetObjResult(Interp,OGR_GeometryPut(Interp,NULL,g1!=g0?g1:OGR_G_Clone(g1)));
          break;
 
       case INTERSECT:
