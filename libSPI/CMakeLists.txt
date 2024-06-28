@@ -150,6 +150,7 @@ install(DIRECTORY ${CMAKE_INSTALL_PREFIX}/lib     DESTINATION . USE_SOURCE_PERMI
 
 # Packaging
 #ec_build_config()                                            # Create build configuration script
+ec_package_name()
 ec_prepare_ssm()                                              # Prepare ssm packaging files
 
 set(CPACK_GENERATOR "TGZ")
@@ -161,6 +162,6 @@ if(NOT DEFINED CPACK_OUTPUT_FILE_PREFIX)
    set(CPACK_OUTPUT_FILE_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/package")
 endif()
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+set(CPACK_PACKAGE_FILE_NAME "${PACKAGE_NAME}")
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
 include(CPack)
