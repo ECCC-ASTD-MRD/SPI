@@ -1699,7 +1699,9 @@ static int TclR_RExec(Tcl_Interp *Interp,TclR_Context *Context,const char* RCmd,
             char buf[8];
 
             // Get the R stack trace
-            R_PROTECT( trace=Rf_findVar(Rf_install(".Traceback"),R_BaseEnv) );
+            // Note:  as of R 4.0.0, the global variable '.Traceback' is no longer deparsed (type LANGSXP) and might keep changing
+            // so this uses the '.traceback()' function that should be future proof.
+            R_PROTECT( trace=R_ParseEvalString(".traceback()",R_GlobalEnv) );
 
             // Count the number of items in the linked-list
             // Trace is a linked list. CAR gets the element out of the current node, CDR gets the next node and the last element is NULL
@@ -1710,13 +1712,18 @@ static int TclR_RExec(Tcl_Interp *Interp,TclR_Context *Context,const char* RCmd,
             Tcl_AppendResult(Interp,"Error while executing R expression\n\n**** R Error ****\n",R_curErrorBuf(),"\n**** R stack trace ****\n",NULL);
             for(res=trace; res!=R_NilValue; res=CDR(res)) {
                 snprintf(buf,8,"%5d: ",i--);
-                len = LENGTH(CAR(res));
-                str = STRING_PTR(CAR(res));
 
-                if( len-- )
-                    Tcl_AppendResult(Interp,buf,CHAR(*str++),"\n",NULL);
-                while(len--)
-                    Tcl_AppendResult(Interp,"        ",CHAR(*str++),"\n",NULL);
+                if( TYPEOF(CAR(res)) == STRSXP ) {
+                    len = LENGTH(CAR(res));
+                    str = STRING_PTR(CAR(res));
+
+                    if( len-- )
+                        Tcl_AppendResult(Interp,buf,CHAR(*str++),"\n",NULL);
+                    while(len--)
+                        Tcl_AppendResult(Interp,"        ",CHAR(*str++),"\n",NULL);
+                } else {
+                    Tcl_AppendResult(Interp,buf,"<object of type ",TclR_RTypeName(CAR(res)),">\n",NULL);
+                }
             }
             Tcl_AppendResult(Interp,"\n**** Original R Expression ****\n",RCmd,"\n",NULL);
 
