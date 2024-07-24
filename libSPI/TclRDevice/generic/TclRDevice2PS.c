@@ -10,7 +10,7 @@
 // Driver includes
 #include "TclRDevice2PS.h"
 
-//#define PSDBGPRINTF(...) printf(__VA_ARGS__);
+//#define PSDBGPRINTF(Fmt,...) printf("(%s:%d) " Fmt,__func__,__LINE__, ##__VA_ARGS__);
 #define PSDBGPRINTF(...)
 
 typedef struct TCtx {

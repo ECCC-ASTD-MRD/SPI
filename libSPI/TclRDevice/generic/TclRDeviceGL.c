@@ -19,7 +19,7 @@
 #include "TclRDeviceGL.h"
 #include "tkCanvRDevice.h"
 
-//#define DBGPRINTF(...) printf(__VA_ARGS__);
+//#define DBGPRINTF(Fmt,...) printf("(%s:%d) " Fmt,__func__,__LINE__, ##__VA_ARGS__);
 #define DBGPRINTF(...)
 
 #define MM2INCH     0.0393701
@@ -106,6 +106,7 @@ void TclRDeviceGL_Destroy(void* GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceGL_Redraw(void *GE) {
+    DBGPRINTF("Redraw GE=%p\n",GE);
     if( GE ) {
         // Replay the display list
         GEplayDisplayList(GE);
@@ -130,6 +131,7 @@ void TclRDeviceGL_Redraw(void *GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceGL_Resize(void *GE,int W,int H) {
+    DBGPRINTF("Resize W=%d H=%d\n",W,H);
     if( GE ) {
         pDevDesc dev = ((pGEDevDesc)GE)->dev;
         TCtx *ctx = (TCtx*)dev->deviceSpecific;
@@ -273,6 +275,7 @@ void TclRDeviceGL_SetFont(void *GE,Tk_Font Font) {
 */
 void TclRDeviceGL_SetAlias(void* GE,int Alias) {
     if( GE ) {
+        DBGPRINTF("Alias=%d\n",Alias);
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
 
         if( !TclRDeviceGL_ResizeFramebuffer(ctx,ctx->W,ctx->H,Alias!=0) ) {
@@ -302,6 +305,7 @@ static double TclRDeviceGL_GetGLVersion() {
     static double v=-1.0;
 
     if( v < 0.0 ) {
+        DBGPRINTF("Getting GL version\n");
         v = atof((const char*)glGetString(GL_VERSION));
     }
 
@@ -325,6 +329,7 @@ static double TclRDeviceGL_GetGLVersion() {
 */
 static void* TclRDeviceGL_BufCheck(TCtx *restrict Ctx,size_t Size) {
     if( Ctx->BufSize < Size ) {
+        DBGPRINTF("Expanding buffer (%zd -> %zd)\n",Ctx->Buf,Size);
         free(Ctx->Buf);
         Ctx->Buf = malloc(Size);
         Ctx->BufSize = Ctx->Buf ? Size : 0;
@@ -348,6 +353,7 @@ static void* TclRDeviceGL_BufCheck(TCtx *restrict Ctx,size_t Size) {
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceGL_CtxFree(TCtx *Ctx) {
+    DBGPRINTF("Freeing context\n");
     if( Ctx ) {
         // Free OpenGL resources
         switch( Ctx->OBufType ) {
@@ -414,6 +420,7 @@ static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Ali
 
     switch( Ctx->OBufType ) {
         case OBUF_NONE:
+            DBGPRINTF("No framebuffer allocated yet\n");
             // If the type of buffer is uninitialized, set it here
             Ctx->OBufType = TclRDeviceGL_GetGLVersion()>=3.0 ? OBUF_FBO : OBUF_GLX;
 
@@ -447,9 +454,11 @@ static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Ali
     if( update || Ctx->PxW<W || Ctx->PxH<H || Ctx->Alias!=Alias ) {
         switch( Ctx->OBufType ) {
             case OBUF_NONE:
+                DBGPRINTF("Undefined framebuffer\n");
                 return 0;
                 break;
             case OBUF_FBO:
+                DBGPRINTF("(Re)allocating FBO\n");
                 // Free the old framebuffer object
                 if( Ctx->OBuf.FBO.FBuf ) {
                     glDeleteFramebuffers(1,&Ctx->OBuf.FBO.FBuf);
@@ -504,6 +513,7 @@ static int TclRDeviceGL_ResizeFramebuffer(TCtx *restrict Ctx,int W,int H,int Ali
                 // FALL THROUGH (no break)
 
             case OBUF_GLX:
+                DBGPRINTF("(Re)allocating GLX\n");
                 // Free old pbuffer resources
                 glXMakeCurrent(Ctx->Display,None,NULL);
                 if( Ctx->OBuf.GLX.PBuf != None )
@@ -607,6 +617,8 @@ static void TclRDeviceGL_TessCombine(GLdouble Coords[3],void *restrict DataIn[4]
 static void TclRDeviceGL_LineJoinCap(int N,double *X,double *Y,const pGEcontext restrict GEC,int Loop) {
     double pts[16],ax,ay,bx,by,vx,vy,sc,lwd=GEC->lwd*0.5;
     int i,j,n,loops;
+
+    DBGPRINTF("Line join cap for %d points\n",N);
 
     if( N<2 || GEC->lwd<=1 || (GEC->lty!=LTY_BLANK && GEC->lty!=LTY_SOLID) )
         return;
@@ -1744,6 +1756,8 @@ static SEXP TclRDeviceGL_Cap(pDevDesc Dev) {
     SEXP            raster=R_NilValue,rdim;
     int             size=ctx->W*ctx->H;
 
+    DBGPRINTF("Cap\n");
+
     // Allocate the memory in R for the raster
     PROTECT( raster=allocVector(INTSXP,size) );
     rdata=(unsigned int*)INTEGER(raster);
@@ -1801,6 +1815,8 @@ static SEXP TclRDeviceGL_Cap(pDevDesc Dev) {
 */
 static void TclRDeviceGL_Size(double *Left,double *Right,double *Bottom,double *Top,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
+    DBGPRINTF("Size (%s)\n",Left?"set":"get");
 
     if( Left ) {
         *Left   = 0.0;
@@ -1955,6 +1971,7 @@ static DevDesc* TclRDeviceGL_NewDev(TCtx *Ctx) {
         dev->canGenMouseMove    = FALSE;
         dev->canGenMouseUp      = FALSE;
         dev->canGenKeybd        = FALSE;
+        dev->canGenIdle         = FALSE;
         dev->haveTransparency   = 2;        /* 1 = no, 2 = yes */
         dev->haveTransparentBg  = 2;        /* 1 = no, 2 = fully, 3 = semi */
         dev->haveRaster         = 2;        /* 1 = no, 2 = yes, 3 = except for missing values */
@@ -2082,7 +2099,7 @@ void* TclRDeviceGL_Init(Tcl_Interp *Interp,void *Item,Tk_Window TkWin,Tk_Font Fo
 
     // Allocate the tesselator
     if( !(ctx->Tess=gluNewTess()) ) {
-        Tcl_AppendResult(Interp,"Unable to create TclR Device",NULL);
+        Tcl_AppendResult(Interp,"Unable to initialise tesselator",NULL);
         goto err;
     }
 

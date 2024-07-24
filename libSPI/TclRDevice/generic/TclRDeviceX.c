@@ -19,7 +19,7 @@
 #include "TclRDeviceX.h"
 #include "tkCanvRDevice.h"
 
-//#define XDBGPRINTF(...) printf(__VA_ARGS__);
+//#define XDBGPRINTF(Fmt,...) printf("(%s:%d) " Fmt,__func__,__LINE__, ##__VA_ARGS__);
 #define XDBGPRINTF(...)
 
 #define MM2INCH     0.0393701
@@ -67,6 +67,7 @@ static __thread size_t  XPOINT_N=0;
  *---------------------------------------------------------------------------------------------------------------
 */
 static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
+   XDBGPRINTF("Creating XPoint buffer of %d values:\n",N);
     // Make sure the buffer has enough space
     if( XPOINT_N < N ) {
         if( XPOINT_BUF )
@@ -110,6 +111,7 @@ static XPoint* ToXPoint(TCtx *restrict Ctx,int N,double *X,double *Y) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceX_Destroy(void* GE) {
+    XDBGPRINTF("Destroy\n");
     if( GE ) {
         killDevice(ndevNumber(((pGEDevDesc)GE)->dev));
     }
@@ -131,6 +133,7 @@ void TclRDeviceX_Destroy(void* GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceX_Redraw(void *GE) {
+    XDBGPRINTF("Redraw\n");
     if( GE ) {
         // Replay the display list
         GEplayDisplayList(GE);
@@ -155,6 +158,7 @@ void TclRDeviceX_Redraw(void *GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceX_Resize(void *GE,int W,int H) {
+    XDBGPRINTF("Resize W=%d H=%d\n",W,H);
     if( GE ) {
         pDevDesc dev = ((pGEDevDesc)GE)->dev;
         TCtx *ctx = (TCtx*)dev->deviceSpecific;
@@ -204,6 +208,7 @@ void TclRDeviceX_Resize(void *GE,int W,int H) {
  *---------------------------------------------------------------------------------------------------------------
 */
 void TclRDeviceX_SetFont(void *GE,Tk_Font Font) {
+    XDBGPRINTF("SetFont\n");
     if( GE && Font ) {
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
 
@@ -239,6 +244,7 @@ void TclRDeviceX_SetFont(void *GE,Tk_Font Font) {
  *---------------------------------------------------------------------------------------------------------------
 */
 Pixmap TclRDeviceX_GetPixmap(void* GE) {
+    XDBGPRINTF("Pixmap GE=%p\n",GE);
     if( GE ) {
         TCtx *ctx = (TCtx*)((pGEDevDesc)GE)->dev->deviceSpecific;
         return ctx->Pixmap;
@@ -265,6 +271,7 @@ Pixmap TclRDeviceX_GetPixmap(void* GE) {
  *---------------------------------------------------------------------------------------------------------------
 */
 static void TclRDeviceX_CtxFree(TCtx *Ctx) {
+    XDBGPRINTF("CtxFree (%p)\n",Ctx);
     if( Ctx ) {
         // Free the X resources
         if( Ctx->Pixmap != None )
@@ -1080,6 +1087,8 @@ static SEXP TclRDeviceX_Cap(pDevDesc Dev) {
     SEXP    raster=R_NilValue;
     XImage  *img;
 
+    XDBGPRINTF("Cap\n");
+
     if( (img=XGetImage(ctx->Display,ctx->Pixmap,0,0,ctx->W,ctx->H,AllPlanes,ZPixmap) ) ) {
         char    *data,*rdata;
         int     size=img->width*img->height;
@@ -1149,6 +1158,8 @@ static SEXP TclRDeviceX_Cap(pDevDesc Dev) {
 */
 static void TclRDeviceX_Size(double *Left,double *Right,double *Bottom,double *Top,pDevDesc Dev) {
     TCtx *ctx = (TCtx*)Dev->deviceSpecific;
+
+    XDBGPRINTF("Size (%s)\n",Left?"get":"set")
 
     if( Left ) {
         *Left   = 0.0;
