@@ -5,6 +5,7 @@
 
 // R includes
 #include <Rinternals.h>
+#include <Rversion.h>
 #include <R_ext/GraphicsEngine.h>
 
 // Driver includes
@@ -617,6 +618,192 @@ static void TclRDevice2PS_Text(double X,double Y,const char *Str,double Rot,doub
 }
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_SetPattern>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the pattern to use
+ *
+ * Parametres   :
+ *  <Pattern>   : The pattern to use
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement a new dev->setPattern function. This accepts an R object as the pattern,
+ *  but it can just return NULL. A C API is provided for extracting components of the pattern fill.
+ *
+ *  There is new R_GE_gcontent.patternFill, but a device can just ignore it (because R_GE_gcontext.fill
+ *  is always set; it will just be "transparent" when a pattern fill has been specified).
+ *
+ *  If the device implements patterns, it must return a pattern reference (as an R object) as the return
+ *  value from this function. This reference is passed back to the device via R_GE_gcontent.patternFill.
+ *  A device must also implement dev->releasePattern, but it can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDevice2PS_SetPattern(SEXP Pattern, pDevDesc Dev) {
+   PSDBGPRINTF("Pattern\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_ReleasePattern>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given pattern
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the pattern to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement a new dev->setPattern function. This accepts an R object as the pattern,
+ *  but it can just return NULL. A C API is provided for extracting components of the pattern fill.
+ *
+ *  There is new R_GE_gcontent.patternFill, but a device can just ignore it (because R_GE_gcontext.fill
+ *  is always set; it will just be "transparent" when a pattern fill has been specified).
+ *
+ *  If the device implements patterns, it must return a pattern reference (as an R object) as the return
+ *  value from this function. This reference is passed back to the device via R_GE_gcontent.patternFill.
+ *  A device must also implement dev->releasePattern, but it can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDevice2PS_ReleasePattern(SEXP Ref, pDevDesc Dev) {
+   PSDBGPRINTF("Release pattern\n");
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_SetClipPath>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the clipping path to use
+ *
+ * Parametres   :
+ *  <Path>      : The path to use for clipping
+ *  <Ref>       : Reference to the path to use (if cached)
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setClipPath. This accepts a clipping path as an R function object,
+ *  plus a reference to an existing clipping path (also an R object), but it can just return NULL if clipping paths
+ *  are not supported.
+ *
+ *  There are three levels of support: none, in which case the device ignores the clipping path request
+ *  (and returns NULL); non-caching, where the device sets clipping paths, but returns NULL, so it will always
+ *  generate a new clipping path on every request; and caching, where the device sets clipping paths, caches
+ *  clipping paths, and returns a reference to the cache, and the reference only has to make sense to the device.
+ *
+ *  A device must also implement dev->releaseClipPath, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDevice2PS_SetClipPath(SEXP Path, SEXP Ref, pDevDesc Dev) {
+   PSDBGPRINTF("Clip path\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_ReleaseClipPath>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given clipping path
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the path to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setClipPath. This accepts a clipping path as an R function object,
+ *  plus a reference to an existing clipping path (also an R object), but it can just return NULL if clipping paths
+ *  are not supported.
+ *
+ *  There are three levels of support: none, in which case the device ignores the clipping path request
+ *  (and returns NULL); non-caching, where the device sets clipping paths, but returns NULL, so it will always
+ *  generate a new clipping path on every request; and caching, where the device sets clipping paths, caches
+ *  clipping paths, and returns a reference to the cache, and the reference only has to make sense to the device.
+ *
+ *  A device must also implement dev->releaseClipPath, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDevice2PS_ReleaseClipPath(SEXP Ref, pDevDesc Dev) {
+   PSDBGPRINTF("Release clip path\n");
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_SetMask>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the path to use as mask
+ *
+ * Parametres   :
+ *  <Path>      : The path to use as mask
+ *  <Ref>       : Reference to the path to use (if cached)
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setMask. This accepts a mask as an R function object, plus
+ *  a reference to an existing mask (also an R object), but it can just return NULL. As with clipping paths,
+ *  there are three levels of support: none, non-caching, and caching.
+ *
+ *  A device must also implement dev->releaseMask, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDevice2PS_SetMask(SEXP Path, SEXP Ref, pDevDesc Dev) {
+   PSDBGPRINTF("Set mask\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDevice2PS_ReleaseMask>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given masking path
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the path to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setMask. This accepts a mask as an R function object, plus
+ *  a reference to an existing mask (also an R object), but it can just return NULL. As with clipping paths,
+ *  there are three levels of support: none, non-caching, and caching.
+ *
+ *  A device must also implement dev->releaseMask, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDevice2PS_ReleaseMask(SEXP Ref, pDevDesc Dev) {
+   PSDBGPRINTF("Release mask\n");
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDevice2PS_ToPostScript>
  * Creation     : Novembre 2017 - E. Legault-Ouellet
  *
@@ -685,26 +872,26 @@ int TclRDevice2PS_Dev2PS(Tcl_Interp *Interp,void *GE,Tcl_Obj *PS) {
 
         // Device functions override
         dev->activate       = NULL;
-        dev->circle         = (void*)TclRDevice2PS_Circle;
-        dev->clip           = (void*)TclRDevice2PS_Clip; // Apparently called even if canClip is FALSE
+        dev->circle         = TclRDevice2PS_Circle;
+        dev->clip           = TclRDevice2PS_Clip; // Apparently called even if canClip is FALSE
         // dev->close : no override as it would have to close the underlying device. It shouldn't get called anyway.
         dev->deactivate     = NULL;
         dev->locator        = NULL;
         dev->line           = (void*)TclRDevice2PS_Line;
         // dev->metricInfo : we'll keep the same measures as for the original device
-        dev->mode           = (void*)TclRDevice2PS_Mode;
-        dev->newPage        = (void*)TclRDevice2PS_NewPage;
-        dev->polygon        = (void*)TclRDevice2PS_Polygon;
-        dev->polyline       = (void*)TclRDevice2PS_Polyline;
-        dev->rect           = (void*)TclRDevice2PS_Rect;
+        dev->mode           = TclRDevice2PS_Mode;
+        dev->newPage        = TclRDevice2PS_NewPage;
+        dev->polygon        = TclRDevice2PS_Polygon;
+        dev->polyline       = TclRDevice2PS_Polyline;
+        dev->rect           = TclRDevice2PS_Rect;
         dev->path           = NULL;
-        dev->raster         = (void*)TclRDevice2PS_Raster;
+        dev->raster         = TclRDevice2PS_Raster;
         dev->cap            = NULL; // Makes no sense in this context anyway
         // dev->size : No override as it would be pointless. Besides, this is mostly called by the device itself, and we won't resize in here, promise!
         // dev->strWidth : we'll keep the same measures as for the original device
-        dev->text           = (void*)TclRDevice2PS_Text;
+        dev->text           = TclRDevice2PS_Text;
         dev->onExit         = NULL;
-        dev->textUTF8       = (void*)TclRDevice2PS_Text;
+        dev->textUTF8       = TclRDevice2PS_Text;
         // dev->strWidthUTF8 : we'll keep the same measures as for the original device
         dev->eventHelper    = NULL;
         dev->holdflush      = NULL;
@@ -737,6 +924,20 @@ int TclRDevice2PS_Dev2PS(Tcl_Interp *Interp,void *GE,Tcl_Obj *PS) {
         dev->strWidthUTF8   = devbckp->strWidthUTF8;
         dev->eventHelper    = devbckp->eventHelper;
         dev->holdflush      = devbckp->holdflush;
+
+#if R_VERSION >= R_Version(4,1,0)
+        dev->setPattern     = TclRDevice2PS_SetPattern;
+        dev->releasePattern = TclRDevice2PS_ReleasePattern;
+        dev->setClipPath    = TclRDevice2PS_SetClipPath;
+        dev->releaseClipPath= TclRDevice2PS_ReleaseClipPath;
+        dev->setMask        = TclRDevice2PS_SetMask;
+        dev->releaseMask    = TclRDevice2PS_ReleaseMask;
+
+        dev->deviceClip     = TRUE;
+
+        // This should match R_GE_version from GraphicsEngine.h
+        dev->deviceVersion  = 14;
+#endif // R_VERSION >= 4.1.0
 
         free(devbckp);
     }

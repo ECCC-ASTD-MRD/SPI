@@ -5,6 +5,7 @@
 
 // R includes
 #include <Rinternals.h>
+#include <Rversion.h>
 #include <R_ext/GraphicsEngine.h>
 #include <R_ext/Parse.h>
 #include <R_ext/Rdynload.h>
@@ -1924,6 +1925,192 @@ static void TclRDeviceGL_TextUTF8(double X,double Y,const char *Str,double Rot,d
 //static int (*holdflush)(pDevDesc Dev,int level);
 
 /*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_SetPattern>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the pattern to use
+ *
+ * Parametres   :
+ *  <Pattern>   : The pattern to use
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement a new dev->setPattern function. This accepts an R object as the pattern,
+ *  but it can just return NULL. A C API is provided for extracting components of the pattern fill.
+ *
+ *  There is new R_GE_gcontent.patternFill, but a device can just ignore it (because R_GE_gcontext.fill
+ *  is always set; it will just be "transparent" when a pattern fill has been specified).
+ *
+ *  If the device implements patterns, it must return a pattern reference (as an R object) as the return
+ *  value from this function. This reference is passed back to the device via R_GE_gcontent.patternFill.
+ *  A device must also implement dev->releasePattern, but it can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDeviceGL_SetPattern(SEXP Pattern, pDevDesc Dev) {
+   DBGPRINTF("Pattern\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_ReleasePattern>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given pattern
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the pattern to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement a new dev->setPattern function. This accepts an R object as the pattern,
+ *  but it can just return NULL. A C API is provided for extracting components of the pattern fill.
+ *
+ *  There is new R_GE_gcontent.patternFill, but a device can just ignore it (because R_GE_gcontext.fill
+ *  is always set; it will just be "transparent" when a pattern fill has been specified).
+ *
+ *  If the device implements patterns, it must return a pattern reference (as an R object) as the return
+ *  value from this function. This reference is passed back to the device via R_GE_gcontent.patternFill.
+ *  A device must also implement dev->releasePattern, but it can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceGL_ReleasePattern(SEXP Ref, pDevDesc Dev) {
+   DBGPRINTF("Release pattern\n");
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_SetClipPath>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the clipping path to use
+ *
+ * Parametres   :
+ *  <Path>      : The path to use for clipping
+ *  <Ref>       : Reference to the path to use (if cached)
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setClipPath. This accepts a clipping path as an R function object,
+ *  plus a reference to an existing clipping path (also an R object), but it can just return NULL if clipping paths
+ *  are not supported.
+ *
+ *  There are three levels of support: none, in which case the device ignores the clipping path request
+ *  (and returns NULL); non-caching, where the device sets clipping paths, but returns NULL, so it will always
+ *  generate a new clipping path on every request; and caching, where the device sets clipping paths, caches
+ *  clipping paths, and returns a reference to the cache, and the reference only has to make sense to the device.
+ *
+ *  A device must also implement dev->releaseClipPath, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDeviceGL_SetClipPath(SEXP Path, SEXP Ref, pDevDesc Dev) {
+   DBGPRINTF("Clip path\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_ReleaseClipPath>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given clipping path
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the path to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setClipPath. This accepts a clipping path as an R function object,
+ *  plus a reference to an existing clipping path (also an R object), but it can just return NULL if clipping paths
+ *  are not supported.
+ *
+ *  There are three levels of support: none, in which case the device ignores the clipping path request
+ *  (and returns NULL); non-caching, where the device sets clipping paths, but returns NULL, so it will always
+ *  generate a new clipping path on every request; and caching, where the device sets clipping paths, caches
+ *  clipping paths, and returns a reference to the cache, and the reference only has to make sense to the device.
+ *
+ *  A device must also implement dev->releaseClipPath, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceGL_ReleaseClipPath(SEXP Ref, pDevDesc Dev) {
+   DBGPRINTF("Release clip path\n");
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_SetMask>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Set the path to use as mask
+ *
+ * Parametres   :
+ *  <Path>      : The path to use as mask
+ *  <Ref>       : Reference to the path to use (if cached)
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setMask. This accepts a mask as an R function object, plus
+ *  a reference to an existing mask (also an R object), but it can just return NULL. As with clipping paths,
+ *  there are three levels of support: none, non-caching, and caching.
+ *
+ *  A device must also implement dev->releaseMask, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static SEXP TclRDeviceGL_SetMask(SEXP Path, SEXP Ref, pDevDesc Dev) {
+   DBGPRINTF("Set mask\n");
+   return R_NilValue;
+}
+
+/*--------------------------------------------------------------------------------------------------------------
+ * Nom          : <TclRDeviceGL_ReleaseMask>
+ * Creation     : Juillet 2024 - E. Legault-Ouellet
+ *
+ * But          : Release the given masking path
+ *
+ * Parametres   :
+ *  <Ref>       : Reference to the path to release
+ *  <Dev>       : The device on which to act
+ *
+ * Retour       :
+ *
+ * Remarque     : This is a handler called from the R device engine
+ *
+ * from R Doc   :
+ *
+ *  A device must implement the new function dev->setMask. This accepts a mask as an R function object, plus
+ *  a reference to an existing mask (also an R object), but it can just return NULL. As with clipping paths,
+ *  there are three levels of support: none, non-caching, and caching.
+ *
+ *  A device must also implement dev->releaseMask, but can just do nothing.
+ *---------------------------------------------------------------------------------------------------------------
+*/
+static void TclRDeviceGL_ReleaseMask(SEXP Ref, pDevDesc Dev) {
+   DBGPRINTF("Release mask\n");
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------
  * Nom          : <TclRDeviceGL_NewDev>
  * Creation     : Décembre 2018 - E. Legault-Ouellet
  *
@@ -2023,6 +2210,20 @@ static DevDesc* TclRDeviceGL_NewDev(TCtx *Ctx) {
 
         dev->eventHelper    = NULL;
         dev->holdflush      = NULL;
+
+#if R_VERSION >= R_Version(4,1,0)
+        dev->setPattern     = TclRDeviceGL_SetPattern;
+        dev->releasePattern = TclRDeviceGL_ReleasePattern;
+        dev->setClipPath    = TclRDeviceGL_SetClipPath;
+        dev->releaseClipPath= TclRDeviceGL_ReleaseClipPath;
+        dev->setMask        = TclRDeviceGL_SetMask;
+        dev->releaseMask    = TclRDeviceGL_ReleaseMask;
+
+        dev->deviceClip     = TRUE;
+
+        // This should match R_GE_version from GraphicsEngine.h
+        dev->deviceVersion  = 14;
+#endif // R_VERSION >= 4.1.0
     }
 
     return dev;
