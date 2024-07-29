@@ -459,14 +459,15 @@ proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } 
       return True
    }
 
-   set file [file rootname $Path]
-   set ext  [file extension $Path]
+   try {
+      set file [file rootname $Path]
+      set ext  [file extension $Path]
 
-   if { $Format=="KMZ" } {
-      set Combine False
-      set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
-      set f [open $kmzname.kml w]
-      puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
+      if { $Format=="KMZ" } {
+         set Combine False
+         set kmzname [file dirname $file]/[regsub -all {[_.-]?%[nlhedt123]} [file tail $file] ""]
+         set f [open $kmzname.kml w]
+         puts $f "<kml xmlns=\"http://earth.google.com/kml/2.1\">
 <Document>
    <ScreenOverlay>
       <name>Logo</name>
@@ -476,53 +477,54 @@ proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } 
       <overlayXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
       <screenXY x=\"0\" y=\"1\" xunits=\"fraction\" yunits=\"fraction\"/>
    </ScreenOverlay>"
-   }
-
-   foreach field $Fields {
-
-      set nv      [fstdfield define $field -NOMVAR]
-      set etiket  [fstdfield define $field -ETIKET]
-      set ip1     [fstdfield define $field -IP1]
-      set ip2     [fstdfield define $field -IP2]
-      set ip3     [fstdfield define $field -IP3]
-      set lvl     [format "%.3f" [fstdfield stats $field -level]]
-      set lvltype [fstdfield stats $field -leveltype]
-      set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
-      set sec1    [expr $sec0+[fstdfield define $field -DEET]]
-      set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
-      set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
-      set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
-
-      #----- Create filename
-      set name   [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
-
-      if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
-         set name $name.[incr nb]
       }
 
-      if { $Combine } {
-          Dialog::Wait .export $Export::Msg(Export) "[llength $Fields] [lindex $Export::Lbl(RPN) $GDefs(Lang)] ($Format)"
-      } else {
-          Dialog::Wait .export $Export::Msg(Export) "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype ($Format)"
-      }
+      foreach field $Fields {
 
-      switch $Format {
-         "PostgreSQL" {
-            set req "PG:"
-            if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
-            if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
-            if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
-            if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
-            if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
+         set nv      [fstdfield define $field -NOMVAR]
+         set etiket  [fstdfield define $field -ETIKET]
+         set ip1     [fstdfield define $field -IP1]
+         set ip2     [fstdfield define $field -IP2]
+         set ip3     [fstdfield define $field -IP3]
+         set lvl     [format "%.3f" [fstdfield stats $field -level]]
+         set lvltype [fstdfield stats $field -leveltype]
+         set sec0    [fstdstamp toseconds [fstdfield define $field -DATEV]]
+         set sec1    [expr $sec0+[fstdfield define $field -DEET]]
+         set date    [clock format $sec0 -format "%Y%m%d" -timezone :UTC]
+         set time    [clock format $sec0 -format "%H%M" -timezone :UTC]
+         set desc    "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype"
 
-            ogrfile open FILE write $req $Format
+         #----- Create filename
+         set name   [string map [list  %n $nv %l $lvl %h ${lvltype} %e $etiket %d $date %t $time %1 $ip1 %2 $ip2 %3 $ip3] ${file}]
+
+         if  { [set nb [llength [glob -nocomplain ${name}*${ext}]]] } {
+            set name $name.[incr nb]
          }
-         "MapInfo File" {
-            ogrfile open FILE write ${name}${ext} $Format { FORMAT=MIF }
+
+         if { $Combine } {
+             Dialog::Wait .export $Export::Msg(Export) "[llength $Fields] [lindex $Export::Lbl(RPN) $GDefs(Lang)] ($Format)"
+         } else {
+             Dialog::Wait .export $Export::Msg(Export) "$nv [clock format $sec0 -timezone :UTC] $lvl $lvltype ($Format)"
          }
-         "KMZ" {
-            Export::Legend ${name}_legend.png $field 270 120 #FFFFFF
-            puts $f "
+
+         try {
+            switch $Format {
+               "PostgreSQL" {
+                  set req "PG:"
+                  if { $Export::Data(Host)!="" }     { append req "host=$Export::Data(Host) " }
+                  if { $Export::Data(Port)!="" }     { append req "port=$Export::Data(Port) " }
+                  if { $Export::Data(User)!="" }     { append req "user=$Export::Data(User) " }
+                  if { $Export::Data(Password)!="" } { append req "password=$Export::Data(Password) " }
+                  if { $Export::Data(DBase)!="" }    { append req "dbname=$Export::Data(DBase) " }
+
+                  ogrfile open FILE write $req $Format
+               }
+               "MapInfo File" {
+                  ogrfile open FILE write ${name}${ext} $Format { FORMAT=MIF }
+               }
+               "KMZ" {
+                  Export::Legend ${name}_legend.png $field 270 120 #FFFFFF
+                  puts $f "
    <Folder>
       <name>[fstdfield configure $field -desc] at $lvl $lvltype</name>
       <description>Valid [clock format $sec0]</description>
@@ -546,38 +548,41 @@ proc Export::Vector::Export { Path Format Fields {Options ""} {Combine False} } 
          </Link>
       </NetworkLink>
    </Folder>\n"
-            lappend kmz ${name}.kml ${name}_legend.png
-            ogrfile open FILE write $name.kml KML
+                  lappend kmz ${name}.kml ${name}_legend.png
+                  ogrfile open FILE write $name.kml KML
+               }
+               default {
+                  ogrfile open FILE write $name${ext} $Format
+               }
+            }
+
+            ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ $Options
+            if { $Combine } {
+               ogrlayer import LAYER $Fields
+            } else {
+               ogrlayer import LAYER $field
+            }
+         } finally {
+            ogrfile close FILE
+            ogrlayer free LAYER
          }
-         default {
-            ogrfile open FILE write $name${ext} $Format
+
+         #----- If we combined everything into
+         if { $Combine } {
+            break
          }
       }
 
-      ogrlayer create FILE LAYER [file tail $name] EXPORT_PROJ $Options
-      if { $Combine } {
-         ogrlayer import LAYER $Fields
-      } else {
-         ogrlayer import LAYER $field
+      if { $Format=="KMZ" } {
+         puts $f "</Document>\n</kml>"
+         close $f
+         file delete -force $kmzname.kmz
+         exec zip -j $kmzname.kmz $kmzname.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png {*}$kmz
+         file delete $kmzname.kml {*}$kmz
       }
-      ogrfile close FILE
-      ogrlayer free LAYER
-
-      #----- If we combined everything into
-      if { $Combine } {
-         break
-      }
+   } finally {
+      Dialog::WaitDestroy
    }
-
-   if { $Format=="KMZ" } {
-      puts $f "</Document>\n</kml>"
-      close $f
-      file delete -force $kmzname.kmz
-      exec zip -j $kmzname.kmz $kmzname.kml $env(SPI_PATH)/share/image/Symbol/Logo/Logo_SMC.png {*}$kmz
-      file delete $kmzname.kml {*}$kmz
-   }
-
-   Dialog::WaitDestroy
 
    return True
 }
