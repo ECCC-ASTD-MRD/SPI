@@ -98,6 +98,7 @@ namespace eval Animator {
 
    set Play(Formats)      {shp gpkg kml}  ;#Supported export formats
    set Play(FmtImg)       1               ;#Wether we generate images or not when PlayFile is true
+   set Play(Fmtmp4)       0               ;#Wether we generate images or not when PlayFile is true
    set Play(Fmtshp)       0               ;#Wether we generate shapefiles or not when PlayFile is true
    set Play(Fmtgpkg)      0               ;#Wether we generate geopackages  or not when PlayFile is true
    set Play(Fmtkml)       0               ;#Wether we generate kml/kmz or not when PlayFile is true
@@ -176,6 +177,7 @@ namespace eval Animator {
    set Error(WebAnimZip)   { "Une erreur est survenue lors de la création du fichier zip, le zip ne sera pas transféré." "An error occured while generating the zipped animation. The zipped animation will not be transfered." }
    set Error(WebAnimXfer)  { "Une erreur est survenue lors du transfert de l'animation web." "An error occured during web animation transmission." }
    set Error(ExportFields) { "Une erreur est survenue lors de l'export des champs" "An error occured while exporting fields" }
+   set Error(Video)        { "Une erreur est survenue lors de la génération du vidéo" "An error occured while generating video" }
 }
 
 proc Animator::Close { } {
@@ -368,10 +370,11 @@ proc Animator::Window { { Parent .} } {
    #----- Extra file formats
    frame .anim.fmts
       checkbutton .anim.fmts.img -text Image -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
+      checkbutton .anim.fmts.mp4 -text Video -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
       checkbutton .anim.fmts.shp -text Shapefile -bd 1 -variable Animator::Play(Fmtshp) -indicatoron False
       checkbutton .anim.fmts.gpkg -text GeoPackage -bd 1 -variable Animator::Play(Fmtgpkg) -indicatoron False
       checkbutton .anim.fmts.kml -text KML -bd 1 -variable Animator::Play(Fmtkml) -indicatoron False
-      pack .anim.fmts.img .anim.fmts.shp .anim.fmts.gpkg .anim.fmts.kml -side right -fill both
+      pack .anim.fmts.img .anim.fmts.mp4 .anim.fmts.shp .anim.fmts.gpkg .anim.fmts.kml -side right -fill both
    if { $Animator::Play(FmtPick) } {
       pack .anim.fmts -side top -after .anim.comm -fill x -padx 2 -pady 2
    }
@@ -1126,7 +1129,7 @@ proc Animator::Play { } {
       set Play(Label) "$label"
 
       #----- Imprimer dans un fichier
-      if { $Play(File) && $Play(FmtImg) } {
+      if { $Play(File) && ($Play(FmtImg)||$Play(Fmtmp4)) } {
 
          if { $Play(Type)=="DATE" && $info!="" && !$Fly(Length) } {
             set id [clock format $info -format "%Y%m%d_%H%M%S" -timezone :UTC]_UTC
@@ -1213,12 +1216,13 @@ proc Animator::Play { } {
 #----------------------------------------------------------------------------
 
 proc Animator::PlayFile { { Filename "" } } {
+   variable Error
    variable Play
    variable Lbl
    global GDefs
 
    if { $Filename=="" } {
-      set fmts [expr {$Play(FmtImg) ? [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] : {}}]
+      set fmts [expr {$Play(FmtImg)||$Play(Fmtmp4) ? [linsert $PrintBox::Param(Formats) 0 $PrintBox::Param(Format)] : {}}]
       set Play(Filename) [FileBox::Create . "" Save $fmts]
    } else {
       set Play(Filename) $Filename
@@ -1235,7 +1239,7 @@ proc Animator::PlayFile { { Filename "" } } {
 
    #----- Export images
    set web $Play(Web)
-   if { $Play(FmtImg) } {
+   if { $Play(FmtImg)||$Play(Fmtmp4) } {
       set PrintBox::Print(Device) [string trimleft [file extension $Play(Filename)] "."]
       set Play(Filename)  [file rootname $Play(Filename)]
       set Play(Idx)       $Play(Idx0)
@@ -1253,6 +1257,27 @@ proc Animator::PlayFile { { Filename "" } } {
          Animator::GetPlayList
       }
       set Play(Stop)    1
+   }
+
+   #----- Handle video format
+   if { $Play(Fmtmp4) } {
+      set fmt  "mp4"
+      set pat  "$Play(Filename)_*.$PrintBox::Print(Device)"
+      set fn   [file dirname $Play(Filename)]/$fmt/[file tail $Play(Filename)].$fmt
+      set Play(Label) "[lindex $Lbl(Convert) $GDefs(Lang)] [file tail $fn]"
+      update idletasks
+
+      file mkdir [file dirname $fn]
+      if { [catch {exec -ignorestderr ffmpeg -f image2 -framerate 2 -pattern_type glob -i $pat -c:v libx264 -pix_fmt yuv420p $fn} err] } {
+         Dialog::Error . $Error(Video) " (mp4)\n\t$err"
+      }
+
+      #----- Delete the images if we didn't want them
+      if { !$Play(FmtImg) } {
+         file delete -force -- {*}[glob -path $Play(Filename) "_*.$PrintBox::Print(Device)"]
+      }
+
+      set Play(Label) ""
    }
 
    #----- Export vector formats
