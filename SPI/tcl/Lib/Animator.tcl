@@ -1491,7 +1491,18 @@ proc Animator::PlayWeb { } {
    }
 
    #----- Give the user the url path
-   set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
+   set Play(WebURLPath) ""
+   if { $Play(FmtImg) } {
+      set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
+   }
+   if { $Play(Fmtmp4) } {
+      append Play(WebURLPath) [expr {$Play(WebURLPath)=="" ? "" : "\n\n"}] $Param(WebURL)/$randstr/$filename/mp4/$filename.mp4
+   }
+   foreach fmt $Play(Formats) {
+      if { $Play(Fmt$fmt) } {
+         append Play(WebURLPath) [expr {$Play(WebURLPath)=="" ? "" : "\n\n"}] $Param(WebURL)/$randstr/$filename/$fmt
+      }
+   }
    Dialog::Give . { URL URL } $Lbl(WebURL) $Animator::Play(WebURLPath) $Animator::Play(Mail)
 
    if { !$keep } {
