@@ -710,11 +710,11 @@ proc Dialog::Give { Master Title Text Info { Mail "" } } {
          message .dlggive.msg.txt -aspect 1000
          pack .dlggive.msg.bitmap -side left -ipadx 10 -ipady 10
          pack .dlggive.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
-      pack .dlggive.msg -side top  -fill x -expand True
+      pack .dlggive.msg -side top  -fill both -expand True
 
       text .dlggive.out -relief flat -bd 1 -bg $GDefs(ColorLight) -height 3
       .dlggive.out insert 0.0 $Info
-      pack .dlggive.out -side top -fill both -ipady 2
+      pack .dlggive.out -side top -fill both -ipady 2 -expand 1
 
       frame .dlggive.cmd
          button .dlggive.ok -text [lindex $Lbl(Continue) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
@@ -727,15 +727,17 @@ proc Dialog::Give { Master Title Text Info { Mail "" } } {
          pack .dlggive.copy .dlggive.mail .dlggive.ok -side left -fill x  -expand True
       pack .dlggive.cmd -side top -fill x
    }
-   
+
    wm title .dlggive  [lindex $Title $GDefs(Lang)]
    wm deiconify .dlggive
    wm transient .dlggive $Master
    wm geom .dlggive +[expr [winfo rootx $Master]+50]+[expr [winfo rooty $Master]+50]
-   
+
    .dlggive.msg.txt configure -text [lindex $Text $GDefs(Lang)]
-   focus .dlggive.out
    update idletasks
+   .dlggive.out configure -height [expr {max(3,min(20,[.dlggive.out count -displaylines 0.0 end]))}]
+   update idletasks
+   focus .dlggive.out
 }
 
 #----------------------------------------------------------------------------
