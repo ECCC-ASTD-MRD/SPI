@@ -1365,6 +1365,13 @@ proc Animator::PlayFile { { Filename "" } } {
       set Play(Dir)  0
       set Play(Stop) 1
       update idletasks
+   } elseif { !$Play(FmtImg) && !$Play(Fmtmp4) } {
+      #----- No export format specified, cancel everything
+      set Play(Web)  0
+      set Play(File) 0
+      set Play(Dir)  0
+      set Play(Stop) 1
+      update idletasks
    }
 }
 
