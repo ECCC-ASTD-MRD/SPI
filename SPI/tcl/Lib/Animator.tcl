@@ -450,16 +450,34 @@ proc Animator::MiniWindow { Parent Frame } {
          -command { set Animator::Play(Idx) $Animator::Play(Idx1) ; set Animator::Play(Stop) 1 ; Animator::Play }
       pack $Parent.anim.rewind $Parent.anim.stepback $Parent.anim.stop $Parent.anim.stepforward $Parent.anim.playforward $Parent.anim.forwind -side left
 
-       #----- If the web animator script is available
-       if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
+      #----- If the web animator script is available
+      if { [info exists env(EER_DIRSCRIPT)] && [file exists $env(EER_DIRSCRIPT)/e.image_animator] && [file executable $env(EER_DIRSCRIPT)/e.image_animator] } {
          radiobutton $Parent.anim.playweb -image VCRWEB -relief sunken -bd 1 -overrelief raised -offrelief flat -variable Animator::Play(Web) -indicatoron False -value 1 -selectcolor "" \
             -command "Animator::MiniSelect $Parent $Frame; Animator::PlayWeb"
          pack $Parent.anim.playweb -side left -fill x
       }
+
+      #----- Add the formats
+      checkbutton $Parent.anim.fmtpick  -image TARGET -bd 1 -variable Animator::Play(FmtPick) -indicatoron False -selectcolor "" \
+         -command "if { \$::Animator::Play(FmtPick) } { pack $Parent.anim.fmts -side left -after $Parent.anim.fmtpick -fill x -padx 2 -pady 2 } else { pack forget $Parent.anim.fmts }"
+      pack $Parent.anim.fmtpick -side left -fill both -expand true
+
+      #----- Extra file formats
+      frame $Parent.anim.fmts
+         checkbutton $Parent.anim.fmts.img -text Image -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
+         checkbutton $Parent.anim.fmts.mp4 -text Video -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
+         checkbutton $Parent.anim.fmts.shp -text Shapefile -bd 1 -variable Animator::Play(Fmtshp) -indicatoron False
+         checkbutton $Parent.anim.fmts.gpkg -text GeoPackage -bd 1 -variable Animator::Play(Fmtgpkg) -indicatoron False
+         checkbutton $Parent.anim.fmts.kml -text KML -bd 1 -variable Animator::Play(Fmtkml) -indicatoron False
+         pack $Parent.anim.fmts.img $Parent.anim.fmts.mp4 $Parent.anim.fmts.shp $Parent.anim.fmts.gpkg $Parent.anim.fmts.kml -side left -fill both
+      if { $Play(FmtPick) } {
+         pack $Parent.anim.fmts -side left -after $Parent.anim.fmtpick -fill x -padx 2 -pady 2
+      }
+
       pack $Parent.anim.frame -side left -fill y -expand true
 
    set Play(Cycle) 1
-   
+
    bind $Parent.anim.frame <ButtonPress-4> "Animator::Step 1"
    bind $Parent.anim.frame <ButtonPress-5> "Animator::Step -1"
 
@@ -474,9 +492,10 @@ proc Animator::MiniWindow { Parent Frame } {
    Bubble::Create $Parent.anim.frame       $Bubble(Scroll)
    Bubble::Create $Parent.anim.forwind     $Bubble(Forwind)
    Bubble::Create $Parent.anim.rewind      $Bubble(Rewind)
+   Bubble::Create $Parent.anim.fmtpick     $Bubble(FmtPick)
 
    Animator::MiniSelect $Parent $Frame
-   
+
    return $Parent.anim
 }
 
