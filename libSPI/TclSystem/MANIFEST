@@ -1,6 +1,6 @@
 NAME       : TclSystem
 VERSION    : 1.2.0
-BUILD      : Release
+BUILD      : RelWithDebInfo
 DESCRIPTION: ECCC-SMC-CCMEP Tcl system function extensions
 SUMMARY    : System related functions extensions callable from Tcl
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 

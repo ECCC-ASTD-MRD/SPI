@@ -1,6 +1,6 @@
 NAME       : libSPI
 VERSION    : 8.4.2
-BUILD      : Release
+BUILD      : RelWithDebInfo
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API libraries
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 

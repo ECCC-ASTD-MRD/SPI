@@ -1,6 +1,6 @@
 NAME       : TclGeoEER
 VERSION    : 8.4.2
-BUILD      : Release
+BUILD      : RelWithDebInfo
 DESCRIPTION: Tcl extensions to manage geospatial data
 SUMMARY    : Tcl extensions to manage geospatial data
 MAINTAINER : Jean-Philippe Gauthier - Jean-Philippe.Gauthier@canada.ca 
