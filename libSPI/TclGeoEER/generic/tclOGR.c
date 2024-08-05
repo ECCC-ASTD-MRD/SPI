@@ -920,7 +920,8 @@ OGRLayerH OGR_LayerInstanciate(OGR_File *File,OGR_Layer *Layer,char *Name,TGeoRe
       } else {
          Layer->GRef=GeoRef_New();
       }
-      
+
+      Layer->File=File;
       Layer->Layer=GDALDatasetCreateLayer(File->Data,Name,Layer->GRef->Spatial,wkbUnknown,Options);
       Layer->Def=OGR_L_GetLayerDefn(Layer->Layer);
    }

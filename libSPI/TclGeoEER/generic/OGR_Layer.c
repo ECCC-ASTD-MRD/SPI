@@ -2517,7 +2517,7 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid,int Side) {
 
 #ifdef HAVE_GDAL
-   int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s;
+   int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s,trans=0;
    double    lat,lon,x,y,spd,dir;
    char      buf[64],*mask=NULL,style[256];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
@@ -2911,10 +2911,26 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       free(mask);
    }
 
+   // If we have a file attached to our layer, do everything as part of a single transaction
+   // Otherwise, adding features to the layer will be extremely slow for DB formats that supports transactions (SQLite, GPKG)
+   if (Layer->File && GDALDatasetTestCapability(Layer->File->Data,ODsCTransactions)) {
+      if (GDALDatasetStartTransaction(Layer->File->Data,0)==OGRERR_NONE) {
+         trans=1;
+      }
+   }
+
    // Add the features to the layer
    for(n=0; n<Layer->NFeature; ++n) {
       if (OGR_L_CreateFeature(Layer->Layer,Layer->Feature[n])!=OGRERR_NONE) {
          Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Problems creating feature",(char*)NULL);
+         return(TCL_ERROR);
+      }
+   }
+
+   // Close the transaction
+   if (trans) {
+      if (GDALDatasetCommitTransaction(Layer->File->Data)!=OGRERR_NONE) {
+         Tcl_AppendResult(Interp,"\n   OGR_LayerImport: Could not commit transaction",(char*)NULL);
          return(TCL_ERROR);
       }
    }
