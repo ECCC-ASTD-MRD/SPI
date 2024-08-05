@@ -2519,7 +2519,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 #ifdef HAVE_GDAL
    int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s,trans=0;
    double    lat,lon,x,y,spd,dir;
-   char      buf[64],*mask=NULL,style[256];
+   char      buf[128],*mask=NULL,style[256];
    OGRGeometryH poly=NULL,geom=NULL,cont=NULL;
    TList     *list;
    T3DArray  *array;
