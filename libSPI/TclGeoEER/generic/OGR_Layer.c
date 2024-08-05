@@ -2515,7 +2515,6 @@ int OGR_LayerSQLSelect(Tcl_Interp *Interp,char *Name,char *FileId,char *Statemen
  *---------------------------------------------------------------------------------------------------------------
 */
 int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid,int Side) {
-
 #ifdef HAVE_GDAL
    int       i,j,k,n,d,idx=0,cidx=-1,f,nf,yyyy,mm,dd,h,m,s,trans=0;
    double    lat,lon,x,y,spd,dir;
@@ -2530,6 +2529,16 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
    if (!Layer) {
       Tcl_AppendResult(Interp,"OGR_LayerImport: Invalid layer",(char*)NULL);
       return(TCL_ERROR);
+   }
+
+   // The shapefile format being the absolute worst format that ever existed, this will be useful down the line to work around it
+   static GDALDriverH SHP = NULL;
+   int isShp=0;
+   if( Layer->File ) {
+      if( !SHP ) {
+         SHP = GDALGetDriverByName("ESRI Shapefile");
+      }
+      isShp = Layer->File->Driver == SHP;
    }
 
    // Get the number of fields provided
@@ -2609,7 +2618,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       OGR_FieldCreate(Layer,"Interval","Real",32,32);
       OGR_FieldCreate(Layer,"Height","Real",16,16);
       OGR_FieldCreate(Layer,"HeightUnit","String",32,0);
-      OGR_FieldCreate(Layer,"DateTime","DateTime",0,0);
+      OGR_FieldCreate(Layer,"DateTime",isShp?"String":"DateTime",19,0);
 
       for(f=0,n=0;f<nf;f++) {
          System_StampDecode(((TRPNHeader*)field[f]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
@@ -2620,7 +2629,12 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
             OGR_F_SetFieldDouble(Layer->Feature[n],1,VAL2SPEC(spec,spec->Inter[idx]));
             OGR_F_SetFieldDouble(Layer->Feature[n],2,field[f]->ZRef->Levels[0]);
             OGR_F_SetFieldString(Layer->Feature[n],3,(char*)ZRef_LevelNames()[field[f]->ZRef->Type]);
-            OGR_F_SetFieldDateTime(Layer->Feature[n],4,yyyy,mm,dd,h,m,s,100);
+            if( isShp) {
+               snprintf(buf,sizeof(buf),"%04d-%02d-%02d %02d:%02d:%02d",yyyy,mm,dd,h,m,s);
+               OGR_F_SetFieldString(Layer->Feature[n],4,buf);
+            } else {
+               OGR_F_SetFieldDateTime(Layer->Feature[n],4,yyyy,mm,dd,h,m,s,100);
+            }
 
             if (spec->MapAll && spec->Map) {
                VAL2COL(cidx,spec,spec->Inter[idx]);
@@ -2705,7 +2719,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
       // Create the date field if needed
       if (ndates>1) {
-         OGR_FieldCreate(Layer,"DateTime","DateTime",0,0);
+         OGR_FieldCreate(Layer,"DateTime",isShp?"String":"DateTime",19,0);
       }
 
       // Create the desc fields
@@ -2715,7 +2729,9 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
 
          // Build the field name
          n = sizeof(buf)-1;
-         idx = snprintf(buf,n,"%s",(desc=field[f]->Spec->Desc) ? desc : ((desc=((TRPNHeader*)field[f]->Head)->NOMVAR) ? desc : " "));
+         // Shapefile being the absolute worst of format, field names are limited to 10 chars, which causes problems with GetFieldIndex below if not taken into account
+         // Note that this might create conflicts because desc names where only tested for unicity before truncation to 4/10 chars
+         idx = snprintf(buf,n,"%.*s",isShp?(i?4:10):n+1,(desc=field[f]->Spec->Desc) ? desc : ((desc=((TRPNHeader*)field[f]->Head)->NOMVAR) ? desc : " "));
          // Add the level if that desc is duplicated at any date
          if (n>idx && ndpd && ndpd[fldidx[f]*ndates]&(1<<(2+i))) {
             idx += snprintf(buf+idx,n-idx,"_%.4f%s",field[f]->ZRef->Levels[0],ZRef_LevelNames()[field[f]->ZRef->Type]);
@@ -2799,7 +2815,12 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                if( ndates>1 ) {
                   for(d=0;d<ndates;++d) {
                      System_StampDecode(dates[d],&yyyy,&mm,&dd,&h,&m,&s);
-                     OGR_F_SetFieldDateTime(Layer->Feature[n+d],0,yyyy,mm,dd,h,m,s,100);
+                     if( isShp ) {
+                        snprintf(buf,sizeof(buf),"%04d-%02d-%02d %02d:%02d:%02d",yyyy,mm,dd,h,m,s);
+                        OGR_F_SetFieldString(Layer->Feature[n+d],0,buf);
+                     } else {
+                        OGR_F_SetFieldDateTime(Layer->Feature[n+d],0,yyyy,mm,dd,h,m,s,100);
+                     }
                   }
                }
 
