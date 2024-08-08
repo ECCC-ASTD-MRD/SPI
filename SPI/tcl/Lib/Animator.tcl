@@ -96,9 +96,11 @@ namespace eval Animator {
    set Play(Web)          0               ;#Enregistrement des frames + transformation en animation web
    set Play(Mail)         ""              ;#Mail to adress for link info
 
-   set Play(Formats)      {shp gpkg kml}  ;#Supported export formats
+   set Play(VectorFmts)   {shp gpkg kml}  ;#Supported vector export formats
+   set Play(VideoFmts)    {mp4 gif}       ;#Supported video export formats
    set Play(FmtImg)       1               ;#Wether we generate images or not when PlayFile is true
-   set Play(Fmtmp4)       0               ;#Wether we generate images or not when PlayFile is true
+   set Play(Fmtmp4)       0               ;#Wether we generate an mp4 video or not when PlayFile is true
+   set Play(Fmtgif)       0               ;#Wether we generate a gif animation or not when PlayFile is true
    set Play(Fmtshp)       0               ;#Wether we generate shapefiles or not when PlayFile is true
    set Play(Fmtgpkg)      0               ;#Wether we generate geopackages  or not when PlayFile is true
    set Play(Fmtkml)       0               ;#Wether we generate kml/kmz or not when PlayFile is true
@@ -369,12 +371,13 @@ proc Animator::Window { { Parent .} } {
 
    #----- Extra file formats
    frame .anim.fmts
-      checkbutton .anim.fmts.img -text Image -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
-      checkbutton .anim.fmts.mp4 -text Video -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
+      checkbutton .anim.fmts.img -text "html/png" -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
+      checkbutton .anim.fmts.mp4 -text VideoMP4 -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
+      checkbutton .anim.fmts.gif -text VideoGIF -bd 1 -variable Animator::Play(Fmtgif) -indicatoron False
       checkbutton .anim.fmts.shp -text Shapefile -bd 1 -variable Animator::Play(Fmtshp) -indicatoron False
       checkbutton .anim.fmts.gpkg -text GeoPackage -bd 1 -variable Animator::Play(Fmtgpkg) -indicatoron False
       checkbutton .anim.fmts.kml -text KML -bd 1 -variable Animator::Play(Fmtkml) -indicatoron False
-      pack .anim.fmts.img .anim.fmts.mp4 .anim.fmts.shp .anim.fmts.gpkg .anim.fmts.kml -side right -fill both
+      pack .anim.fmts.img .anim.fmts.mp4 .anim.fmts.gif .anim.fmts.shp .anim.fmts.gpkg .anim.fmts.kml -side left -fill both
    if { $Animator::Play(FmtPick) } {
       pack .anim.fmts -side top -after .anim.comm -fill x -padx 2 -pady 2
    }
@@ -464,12 +467,13 @@ proc Animator::MiniWindow { Parent Frame } {
 
       #----- Extra file formats
       frame $Parent.anim.fmts
-         checkbutton $Parent.anim.fmts.img -text Image -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
-         checkbutton $Parent.anim.fmts.mp4 -text Video -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
+         checkbutton $Parent.anim.fmts.img -text "html/png" -bd 1 -variable Animator::Play(FmtImg) -indicatoron False
+         checkbutton $Parent.anim.fmts.mp4 -text VideoMP4 -bd 1 -variable Animator::Play(Fmtmp4) -indicatoron False
+         checkbutton $Parent.anim.fmts.gif -text VideoGIF -bd 1 -variable Animator::Play(Fmtgif) -indicatoron False
          checkbutton $Parent.anim.fmts.shp -text Shapefile -bd 1 -variable Animator::Play(Fmtshp) -indicatoron False
          checkbutton $Parent.anim.fmts.gpkg -text GeoPackage -bd 1 -variable Animator::Play(Fmtgpkg) -indicatoron False
          checkbutton $Parent.anim.fmts.kml -text KML -bd 1 -variable Animator::Play(Fmtkml) -indicatoron False
-         pack $Parent.anim.fmts.img $Parent.anim.fmts.mp4 $Parent.anim.fmts.shp $Parent.anim.fmts.gpkg $Parent.anim.fmts.kml -side left -fill both
+         pack $Parent.anim.fmts.img $Parent.anim.fmts.mp4 $Parent.anim.fmts.gif $Parent.anim.fmts.shp $Parent.anim.fmts.gpkg $Parent.anim.fmts.kml -side left -fill both
       if { $Play(FmtPick) } {
          pack $Parent.anim.fmts -side left -after $Parent.anim.fmtpick -fill x -padx 2 -pady 2
       }
@@ -1279,16 +1283,27 @@ proc Animator::PlayFile { { Filename "" } } {
    }
 
    #----- Handle video format
-   if { $Play(Fmtmp4) } {
-      set fmt  "mp4"
-      set pat  "$Play(Filename)_*.$PrintBox::Print(Device)"
-      set fn   [file dirname $Play(Filename)]/$fmt/[file tail $Play(Filename)].$fmt
-      set Play(Label) "[lindex $Lbl(Convert) $GDefs(Lang)] [file tail $fn]"
-      update idletasks
+   set fmts [lmap fmt $Play(VideoFmts) {expr {$Play(Fmt$fmt) ? $fmt : [continue]}}]
+   if { [llength $fmts] } {
+      foreach fmt $fmts {
+         if { $Play(Fmt$fmt) } {
+            set pat  "$Play(Filename)_*.$PrintBox::Print(Device)"
+            set fn   [file dirname $Play(Filename)]/$fmt/[file tail $Play(Filename)].$fmt
+            set Play(Label) "[lindex $Lbl(Convert) $GDefs(Lang)] [file tail $fn]"
+            update idletasks
 
-      file mkdir [file dirname $fn]
-      if { [catch {exec -ignorestderr ffmpeg -f image2 -framerate 2 -pattern_type glob -i $pat -c:v libx264 -pix_fmt yuv420p $fn} err] } {
-         Dialog::Error . $Error(Video) " (mp4)\n\t$err"
+            set opts {}
+            switch $fmt {
+               mp4 {lappend opts -c:v libx264 -pix_fmt yuv420p}
+               gif {lappend opts -pix_fmt bgr8}
+            }
+
+            #----- Generated the video
+            file mkdir [file dirname $fn]
+            if { [catch {exec -ignorestderr ffmpeg -f image2 -framerate 2 -pattern_type glob -i $pat {*}$opts $fn} err] } {
+               Dialog::Error . $Error(Video) " ($fmt)\n\t$err"
+            }
+         }
       }
 
       #----- Delete the images if we didn't want them
@@ -1300,7 +1315,7 @@ proc Animator::PlayFile { { Filename "" } } {
    }
 
    #----- Export vector formats
-   set fmts [lmap fmt $Play(Formats) {expr {$Play(Fmt$fmt) ? $fmt : [continue]}}]
+   set fmts [lmap fmt $Play(VectorFmts) {expr {$Play(Fmt$fmt) ? $fmt : [continue]}}]
    if { [llength $fmts] } {
       #----- Set back some flags since we are still exporting
       set Play(Web)  $web
@@ -1514,10 +1529,12 @@ proc Animator::PlayWeb { } {
    if { $Play(FmtImg) } {
       set Play(WebURLPath) $Param(WebURL)/$randstr/$filename/anim.html
    }
-   if { $Play(Fmtmp4) } {
-      append Play(WebURLPath) [expr {$Play(WebURLPath)=="" ? "" : "\n\n"}] $Param(WebURL)/$randstr/$filename/mp4/$filename.mp4
+   foreach fmt $Play(VideoFmts) {
+      if { $Play(Fmt$fmt) } {
+         append Play(WebURLPath) [expr {$Play(WebURLPath)=="" ? "" : "\n\n"}] $Param(WebURL)/$randstr/$filename/$fmt/$filename.$fmt
+      }
    }
-   foreach fmt $Play(Formats) {
+   foreach fmt $Play(VectorFmts) {
       if { $Play(Fmt$fmt) } {
          append Play(WebURLPath) [expr {$Play(WebURLPath)=="" ? "" : "\n\n"}] $Param(WebURL)/$randstr/$filename/$fmt
       }
