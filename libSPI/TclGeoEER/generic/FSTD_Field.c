@@ -2958,7 +2958,7 @@ int FSTD_FieldWriteGeo(Tcl_Interp *Interp,char *Id,TData *Field,char *Eticket) {
       return(TCL_ERROR);
 
    e=Eticket?Eticket:etiket;
-   if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z') {
+   if (Field->GRef->Grid[0]=='Z' || Field->GRef->Grid[1]=='Z' || Field->GRef->Grid[0]=='Y' ) {
       if (!Field->GRef->AX || !Field->GRef->AY) {
          Tcl_AppendResult(Interp,"FSTD_FieldWriteGeo: Grid positional descriptor not defined",(char*)NULL);
          return(TCL_ERROR);
