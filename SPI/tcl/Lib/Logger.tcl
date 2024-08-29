@@ -451,43 +451,47 @@ proc Log::End { { Status 0 } { Exit True } } {
    set runday [expr $runsec/86400]
    set runday [expr {$runday?"${runday}d ":""}]
 
-   Log::Print MUST "\n-------------------------------------------------------------------------------"
-   if { ${Status}==0 } {
-      if { $Param(Warning)>0 } {
-          Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
-       } else {
-          Log::Print MUST "Status              : Job has terminated successfully."
-       }
-   } else {
-      Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
+   catch {
+      Log::Print MUST "\n-------------------------------------------------------------------------------"
+      if { ${Status}==0 } {
+         if { $Param(Warning)>0 } {
+             Log::Print MUST "Status              : Job has terminated successfully ($Param(Warning) Warning(s))."
+          } else {
+             Log::Print MUST "Status              : Job has terminated successfully."
+          }
+      } else {
+         Log::Print MUST "Status              : Job has encountered some errors ($Param(Error) Error(s))."
+      }
+      Log::Print MUST "End time            : [clock format $Param(SecEnd) -format $Param(TimeFormat)]"
+      Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
+      Log::Print MUST "-------------------------------------------------------------------------------\n"
+
+      flush $Param(Out)
    }
-   Log::Print MUST "End time            : [clock format $Param(SecEnd) -format $Param(TimeFormat)]"
-   Log::Print MUST "Total running time  : [clock format $runsec -format "$runday%H:%M:%S" -timezone :UTC]"
-   Log::Print MUST "-------------------------------------------------------------------------------\n"
 
-   flush $Param(Out)
-
-   if { $Param(JobClass)=="REPORT" } {
-      if { $Param(Error)>0 } {
+   catch {
+      if { $Param(JobClass)=="REPORT" } {
+         if { $Param(Error)>0 } {
+            Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
+         } elseif { $Param(Warning)>0 } {
+            Log::Mail "Job finished (WARNING ($Param(Warning)))" $Param(OutFile)
+         } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
+            Log::Mail "Job finished (NORMAL)" $Param(OutFile)
+         }
+      } elseif { $Status==0 } {
+         if { $Param(JobClass)=="INTERACTIVE" } {
+            Log::Mail "Job finished (NORMAL)" $Param(OutFile)
+         }
+      } else {
          Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
-      } elseif { $Param(Warning)>0 } {
-         Log::Mail "Job finished (WARNING ($Param(Warning)))" $Param(OutFile)
-      } elseif { $Param(JobReport)==True || $Param(JobReport)=="ALL" } {
-         Log::Mail "Job finished (NORMAL)" $Param(OutFile)
       }
-   } elseif { $Status==0 } {
-      if { $Param(JobClass)=="INTERACTIVE" } {
-         Log::Mail "Job finished (NORMAL)" $Param(OutFile)
-      }
-   } else {
-      Log::Mail "Job finished (ERROR ($Param(Error)))" $Param(OutFile)
    }
 
    #----- End hook
-   Log::HookEnd $Status
+   catch {Log::HookEnd $Status}
 
    if { $Param(Out) ni {stdout stderr} } {
-      close $Param(Out)
+      catch {close $Param(Out)}
    }
 
    if { $Exit } {
