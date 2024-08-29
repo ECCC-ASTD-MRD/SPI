@@ -2665,7 +2665,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          }
       }
    } else {
-      int ndates=nf,ndescs=nf;
+      int ndates=nf,ndescs=nf,singleFldAcrossTime=0;
       int dates[nf],fldidx[nf];
       char *descs[nf],*ndpd=NULL,*desc;
 
@@ -2713,6 +2713,9 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                }
             }
          }
+
+         // Flag indicating if this is the evolution of a single field across multiple timesteps
+         singleFldAcrossTime = ndescs==1 && ndates==nf;
       }
 
       //----- Create the feature fields
@@ -2784,18 +2787,33 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
       }
       Layer->NFeature=0;
 
-      for(f=0;f<nf;f++) {
-         for(i=0;i<FSIZE2D(field[f]->Def);i++) {
-            if (!mask[i]) {
+      if( singleFldAcrossTime ) {
+         // We know that we have a single var's evolution across time, so we only need to count the number of valid cells
+         for(f=0;f<nf;f++) {
+            for(i=0;i<FSIZE2D(field[f]->Def);i++) {
                Def_GetMod(field[f]->Def,i,spd);
-               mask[i]=Data_Within(field[f],spd);
-               if (mask[i]) Layer->NFeature++;
+               if( Data_Within(field[f],spd) ) {
+                  mask[i] = 1;
+                  ++Layer->NFeature;
+               }
             }
          }
-      }
+      } else {
+         // Since we might have a combination of multiple different vars across multiple dates
+         // let's be conservative and keep any index that has a value at any point in time for any var
+         for(f=0;f<nf;f++) {
+            for(i=0;i<FSIZE2D(field[f]->Def);i++) {
+               if (!mask[i]) {
+                  Def_GetMod(field[f]->Def,i,spd);
+                  mask[i]=Data_Within(field[f],spd);
+                  if (mask[i]) Layer->NFeature++;
+               }
+            }
+         }
 
-      // Adjust the number of features based on the amount of date fields that we have
-      Layer->NFeature *= ndates;
+         // Adjust the number of features based on the amount of unique dates that we have
+         Layer->NFeature *= ndates;
+      }
 
       if (!(Layer->Feature=realloc(Layer->Feature,Layer->NFeature*sizeof(OGRFeatureH)))) {
          Tcl_AppendResult(Interp,"OGR_LayerImport: Unable to allocate feature buffer",(char*)NULL);
@@ -2808,34 +2826,66 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
          for(j=0;j<field[0]->Def->NJ;j++) {
             idx=j*field[0]->Def->NI+i;
             if (mask[idx]) {
-               for(d=0;d<ndates;++d)
-                  Layer->Feature[n+d]=OGR_F_Create(Layer->Def);
+               if( singleFldAcrossTime ) {
+                  for(f=0,k=0;f<nf;f++) {
+                     // Get the value
+                     Def_GetMod(field[f]->Def,idx,spd);
 
-               // Set the date for the features
-               if( ndates>1 ) {
-                  for(d=0;d<ndates;++d) {
-                     System_StampDecode(dates[d],&yyyy,&mm,&dd,&h,&m,&s);
-                     if( isShp ) {
-                        snprintf(buf,sizeof(buf),"%04d-%02d-%02d %02d:%02d:%02d",yyyy,mm,dd,h,m,s);
-                        OGR_F_SetFieldString(Layer->Feature[n+d],0,buf);
-                     } else {
-                        OGR_F_SetFieldDateTime(Layer->Feature[n+d],0,yyyy,mm,dd,h,m,s,100);
+                     // Check if we have a valid value
+                     if( Data_Within(field[f],spd) ) {
+                        Layer->Feature[n+k] = OGR_F_Create(Layer->Def);
+
+                        // Add the date
+                        System_StampDecode(((TRPNHeader*)field[f]->Head)->DATEV,&yyyy,&mm,&dd,&h,&m,&s);
+                        if( isShp ) {
+                           snprintf(buf,sizeof(buf),"%04d-%02d-%02d %02d:%02d:%02d",yyyy,mm,dd,h,m,s);
+                           OGR_F_SetFieldString(Layer->Feature[n+k],0,buf);
+                        } else {
+                           OGR_F_SetFieldDateTime(Layer->Feature[n+k],0,yyyy,mm,dd,h,m,s,100);
+                        }
+
+                        // Add the feature field's value
+                        if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
+                           field[f]->GRef->Value(field[f]->GRef,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
+                           OGR_F_SetFieldDouble(Layer->Feature[n+k],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                           OGR_F_SetFieldDouble(Layer->Feature[n+k],fldidx[f]+1,dir);
+                        } else {
+                           OGR_F_SetFieldDouble(Layer->Feature[n+k],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                        }
+
+                        ++k;
                      }
                   }
-               }
+               } else {
+                  for(d=0;d<ndates;++d)
+                     Layer->Feature[n+d]=OGR_F_Create(Layer->Def);
 
-               for(f=0;f<nf;f++) {
-                  // Get the date for the feature
-                  d = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
+                  // Set the date for the features
+                  if( ndates>1 ) {
+                     for(d=0;d<ndates;++d) {
+                        System_StampDecode(dates[d],&yyyy,&mm,&dd,&h,&m,&s);
+                        if( isShp ) {
+                           snprintf(buf,sizeof(buf),"%04d-%02d-%02d %02d:%02d:%02d",yyyy,mm,dd,h,m,s);
+                           OGR_F_SetFieldString(Layer->Feature[n+d],0,buf);
+                        } else {
+                           OGR_F_SetFieldDateTime(Layer->Feature[n+d],0,yyyy,mm,dd,h,m,s,100);
+                        }
+                     }
+                  }
 
-                  // Add the feature field's value
-                  if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
-                     field[f]->GRef->Value(field[f]->GRef,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
-                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
-                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f]+1,dir);
-                  } else {
-                     Def_GetMod(field[f]->Def,idx,spd);
-                     OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                  for(f=0;f<nf;f++) {
+                     // Get the date for the feature
+                     d = ndates==1 ? 0 : (int)((int*)bsearch(&((TRPNHeader*)field[f]->Head)->DATEV,dates,ndates,sizeof(*dates),QSort_Int)-(int*)dates);
+
+                     // Add the feature field's value
+                     if (field[f]->Spec->RenderVector && field[f]->Def->Data[1]) {
+                        field[f]->GRef->Value(field[f]->GRef,field[f]->Def,field[f]->Spec->InterpDegree[0],0,i,j,0,&spd,&dir);
+                        OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                        OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f]+1,dir);
+                     } else {
+                        Def_GetMod(field[f]->Def,idx,spd);
+                        OGR_F_SetFieldDouble(Layer->Feature[n+d],fldidx[f],VAL2SPEC(field[f]->Spec,spd));
+                     }
                   }
                }
 
@@ -2912,7 +2962,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                if (ndates>1) {
                   const char *sl=OGR_F_GetStyleString(Layer->Feature[n]);
 
-                  for(d=1;d<ndates;++d) {
+                  for(d=1;d<(singleFldAcrossTime?k:ndates);++d) {
                      // Copy the style
                      if (sl)
                         OGR_F_SetStyleString(Layer->Feature[n+d],sl);
@@ -2925,7 +2975,7 @@ int OGR_LayerImport(Tcl_Interp *Interp,OGR_Layer *Layer,Tcl_Obj *Fields,int Grid
                // Add the geometry (and its ownership) to the first feature
                OGR_F_SetGeometryDirectly(Layer->Feature[n],geom);
 
-               n += ndates;
+               n += (singleFldAcrossTime?k:ndates);
             }
          }
       }
