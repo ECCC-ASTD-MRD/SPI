@@ -407,7 +407,7 @@ proc Mapper::OGR::Params { Object { Tabs {} } } {
          frame $Data(Frame5).pan.meta 
                
             frame $Data(Frame5).pan.meta.sub -relief sunken -bd 1
-               scrollbar $Data(Frame5).pan.meta.sub.scrolly -relief sunken -command "Mapper::OGR::TableYScroll $Mapper::Data(Object)" -bd 1 -width 10
+               scrollbar $Data(Frame5).pan.meta.sub.scrolly -relief sunken -command [list Mapper::OGR::TableYScroll $Mapper::Data(Object)] -bd 1 -width 10
                table $Data(Frame5).pan.meta.sub.table -relief sunken -bd 1 -bg $GDefs(ColorLight) -titlecols 1 -titlerows 1 -variable Mapper::OGR::Table \
                   -resizeborders col -anchor w -highlightbackground $GDefs(ColorHighLight)  -rows 1 -cols 1 -colwidth 13 -multiline False -drawmode fast \
                   -yscrollcommand "$Data(Frame5).pan.meta.sub.scrolly set" -xscrollcommand "$Data(Frame5).pan.stat.scrollx set" -width 1 -height 1 -selectmode extended \
