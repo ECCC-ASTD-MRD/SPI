@@ -661,39 +661,53 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
          }
 
          n=0;
-         x=y=area=0.0;
+         lat=lon=x=y=area=0.0;
          lst=Tcl_NewListObj(0,NULL);
-         new=OGR_G_CreateGeometry(wkbLinearRing);
 
          // A list a feature has been passed
          if (Objc>1) {           
             Tcl_ListObjLength(Interp,Objv[1],&n);
          }
-        
+
          // A list a feature has been passed
-         if (n) {   
-            
+         if (n) {
             for(j=0;j<n;j++) {
                Tcl_ListObjIndex(Interp,Objv[1],j,&obj);
                Tcl_GetWideIntFromObj(Interp,Objv[1],&f);
                if (f>=0 && f<layer->NFeature && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  area=OGM_Centroid2D(geom,&x,&y);
-                  if (n>1) OGR_G_AddPoint_2D(new,x,y);
+                  area += val = OGM_Centroid2D(geom,&x,&y);
+                  lon += x*(val!=0.0 ? val : 1.0);
+                  lat += y*(val!=0.0 ? val : 1.0);
                }
             }
-            if (n>1) f=OGM_Centroid2D(new,&x,&y);
-            
+
+            if( area == 0.0 ) {
+               x = lon/n;
+               y = lat/n;
+            } else {
+               x = lon/area;
+               y = lat/area;
+            }
          } else {
             for(f=0;f<layer->NFeature;f++) {
                if (layer->Select[f] && layer->Feature[f] && (geom=OGR_F_GetGeometryRef(layer->Feature[f]))) {
-                  area+=OGM_Centroid2D(geom,&x,&y);
-                  OGR_G_AddPoint_2D(new,x,y);
+                  area += val = OGM_Centroid2D(geom,&x,&y);
+                  lon += x*(val!=0.0 ? val : 1.0);
+                  lat += y*(val!=0.0 ? val : 1.0);
                }
             }
-            f=OGM_Centroid2D(new,&x,&y);
+
+            if( layer->NFeature > 0 ) {
+               if( area == 0.0 ) {
+                  x = lon/layer->NFeature;
+                  y = lat/layer->NFeature;
+               } else {
+                  x = lon/area;
+                  y = lat/area;
+               }
+            }
          }
-         OGR_G_DestroyGeometry(new);
-         
+
          // Check wrap-around
 //         if (!(srs=OGR_L_GetSpatialRef(layer->Layer)) || OSRIsGeographic(srs)) {
 //            OGR_L_GetExtent(layer->Layer,&env,1);
@@ -701,11 +715,11 @@ int OGR_LayerStat(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]){
 //               x-=180.0;
 //            }
 //         }
-         
+
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(x));
          Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(y));
-         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(area<0?-area:area));
-      
+         Tcl_ListObjAppendElement(Interp,lst,Tcl_NewDoubleObj(fabs(area)));
+
          Tcl_SetObjResult(Interp,lst);
          break;
 
