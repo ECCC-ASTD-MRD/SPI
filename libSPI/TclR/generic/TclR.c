@@ -1531,9 +1531,9 @@ end:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
-    int     i,j,ni,nj,n,*iptr,status=TCL_OK;
+    int     i,j,ni,nj,n,status=TCL_OK;
     char    buf[sizeof(i)*3+4]; // Since log10(2^8)=2.41, any binary number of x bytes can be represented with 3x decimal characters. +4 is for the "[,]" and the null characters
-    SEXP    rvar,rdim,rdimnames,rrownames,rcolnames,rclass;
+    SEXP    rvar,rdimnames,rrownames,rcolnames,rclass;
 
     char    typebuf[19]; // The longest name we support is "unsigned long long"
 
@@ -1562,7 +1562,8 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
             || !strcmp(typebuf,"unsigned long long")
             || !strcmp(typebuf,"long long")
             || !strcmp(typebuf,"unsigned int") ) {
-        R_PROTECT( rvar=allocVector(REALSXP,n) );
+        // Note: allocMatrix(Type,nrow,ncol)
+        R_PROTECT( rvar=allocMatrix(REALSXP,ni,nj) );
         if( Context->EXT_DataCopy(Interp,(char*)FID,"double",REAL(rvar),n,NULL) != TCL_OK ) {
             ENDERR("\nCould not copy data");
         }
@@ -1571,7 +1572,8 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
             || !strcmp(typebuf,"int")
             || !strcmp(typebuf,"unsigned char")
             || !strcmp(typebuf,"unsigned short") ) {
-        R_PROTECT( rvar=allocVector(INTSXP,n) );
+        // Note: allocMatrix(Type,nrow,ncol)
+        R_PROTECT( rvar=allocMatrix(INTSXP,ni,nj) );
         if( Context->EXT_DataCopy(Interp,(char*)FID,"int",INTEGER(rvar),n,NULL) != TCL_OK ) {
             ENDERR("\nCould not copy data");
         }
@@ -1580,16 +1582,10 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     }
 
     // Allocate the rest of the R memory
-    R_PROTECT( rdim=allocVector(INTSXP,2) );
     R_PROTECT( rdimnames=allocVector(VECSXP,2) );
     R_PROTECT( rrownames=allocVector(STRSXP,ni) );
     R_PROTECT( rcolnames=allocVector(STRSXP,nj) );
     R_PROTECT( rclass=allocVector(STRSXP,1) );
-
-    // Dimensions (nrow,ncol)
-    iptr = INTEGER(rdim);
-    *iptr++ = ni;
-    *iptr = nj;
 
     // Row names
     for(i=0;i<ni;++i) {
@@ -1609,7 +1605,6 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     SET_STRING_ELT(rclass,0,Rf_mkChar("matrix"));
 
     // Set the attributes
-    Rf_setAttrib(rvar,R_DimSymbol,rdim);
     Rf_setAttrib(rvar,R_DimNamesSymbol,rdimnames);
     Rf_setAttrib(rvar,R_ClassSymbol,rclass);
 
