@@ -1531,7 +1531,7 @@ end:
  *---------------------------------------------------------------------------------------------------------------
 */
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
-    int     i,j,ni,nj,n,status=TCL_OK;
+    int     i,j,ni,nj,n,nm1,status=TCL_OK;
     SEXP    rvar;
 
     char    typebuf[19]; // The longest name we support is "unsigned long long"
@@ -1547,6 +1547,7 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
         ENDERR("\nCould not stat the field");
     }
     n = ni*nj;
+    nm1 = n-1;
 
     if( n == 0 ) {
         Rf_defineVar(Rf_install(RName),R_NilValue,R_GlobalEnv);
@@ -1561,21 +1562,47 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
             || !strcmp(typebuf,"unsigned long long")
             || !strcmp(typebuf,"long long")
             || !strcmp(typebuf,"unsigned int") ) {
-        // Note: allocMatrix(Type,nrow,ncol)
-        R_PROTECT( rvar=allocMatrix(REALSXP,ni,nj) );
-        if( Context->EXT_DataCopy(Interp,(char*)FID,"double",REAL(rvar),n,NULL) != TCL_OK ) {
+        double *buf,*data;
+
+        CHKMEM(buf,malloc(n*sizeof(*buf)));
+        if( Context->EXT_DataCopy(Interp,(char*)FID,"double",buf,n,NULL) != TCL_OK ) {
             ENDERR("\nCould not copy data");
         }
+
+        // Note: allocMatrix(Type,nrow,ncol)
+        R_PROTECT( rvar=allocMatrix(REALSXP,nj,ni) );
+
+        // Transpose the values since it was filled as ni,nj instead of nj,ni (R is column-major)
+        for(data=REAL(rvar),i=0,j=0; i<n; ++i,j+=ni) {
+           if( j > nm1 )
+              j -= nm1;
+           data[i] = buf[j];
+        }
+
+        free(buf);
     } else if( !strcmp(typebuf,"char")
             || !strcmp(typebuf,"short")
             || !strcmp(typebuf,"int")
             || !strcmp(typebuf,"unsigned char")
             || !strcmp(typebuf,"unsigned short") ) {
-        // Note: allocMatrix(Type,nrow,ncol)
-        R_PROTECT( rvar=allocMatrix(INTSXP,ni,nj) );
-        if( Context->EXT_DataCopy(Interp,(char*)FID,"int",INTEGER(rvar),n,NULL) != TCL_OK ) {
+        int *buf,*data;
+
+        CHKMEM(buf,malloc(n*sizeof(*buf)));
+        if( Context->EXT_DataCopy(Interp,(char*)FID,"int",buf,n,NULL) != TCL_OK ) {
             ENDERR("\nCould not copy data");
         }
+
+        // Note: allocMatrix(Type,nrow,ncol)
+        R_PROTECT( rvar=allocMatrix(INTSXP,nj,ni) );
+
+        // Transpose the values since it was filled as ni,nj instead of nj,ni (R is column-major)
+        for(data=INTEGER(rvar),i=0,j=0; i<n; ++i,j+=ni) {
+           if( j > nm1 )
+              j -= nm1;
+           data[i] = buf[j];
+        }
+
+        free(buf);
     } else {
         ENDERR("Unsupported type : [",typebuf,"]");
     }
