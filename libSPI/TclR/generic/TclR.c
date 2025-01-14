@@ -1532,8 +1532,8 @@ end:
 */
 static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,const char *RName) {
     int     i,j,ni,nj,n,nm1,status=TCL_OK;
-    SEXP    rvar;
-
+    SEXP    rvar,rdimnames,rrownames,rcolnames;
+    char    buf[sizeof(i)*3+4]; // Since log10(2^8)=2.41, any binary number of x bytes can be represented with 3x decimal characters. +4 is for the "[,]" and the null characters
     char    typebuf[19]; // The longest name we support is "unsigned long long"
 
     // Check if we have access to the library functions
@@ -1606,6 +1606,28 @@ static int TclR_FSTD2R(Tcl_Interp *Interp,TclR_Context *Context,const char *FID,
     } else {
         ENDERR("Unsupported type : [",typebuf,"]");
     }
+
+    // Allocate the rest of the R memory
+    R_PROTECT( rdimnames=allocVector(VECSXP,2) );
+    R_PROTECT( rrownames=allocVector(STRSXP,nj) );
+    R_PROTECT( rcolnames=allocVector(STRSXP,ni) );
+
+    // Row names
+    for(j=0;j<nj;++j) {
+        sprintf(buf,"[%d,]",j+1);
+        SET_STRING_ELT(rrownames,j,Rf_mkChar(buf));
+    }
+    SET_VECTOR_ELT(rdimnames,0,rrownames);
+
+    // Column names
+    for(i=0;i<ni;++i) {
+        sprintf(buf,"[,%d]",i+1);
+        SET_STRING_ELT(rcolnames,i,Rf_mkChar(buf));
+    }
+    SET_VECTOR_ELT(rdimnames,1,rcolnames);
+
+    // Set the attributes
+    Rf_setAttrib(rvar,R_DimNamesSymbol,rdimnames);
 
     // Set the variable in the R environment
     Rf_defineVar(Rf_install(RName),rvar,R_GlobalEnv);
