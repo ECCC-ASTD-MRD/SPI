@@ -533,6 +533,61 @@ proc Animator::MiniSelect { Parent Frame } {
 }
 
 #----------------------------------------------------------------------------
+# Nom      : <Animator::SetWorking>
+# Creation : Janvier 2025 - E. Legault-Ouellet - CMC/CMOE
+#
+# But      : Active/désactive les boutons de l'animateur si un travail est en cours
+#
+# Parametres :
+#   <IsWorking> : Booléen indiquant si un travail est en cours.
+#
+# Retour:
+#
+# Remarques :
+#
+#----------------------------------------------------------------------------
+proc Animator::SetWorking { IsWorking } {
+   variable Play
+
+   #----- Compile the list of widgets to update
+   set ws {}
+   if { [winfo exists .anim] } {
+      lappend ws {*}[winfo children .anim]
+   }
+   if { [winfo exists $Play(Mini)] } {
+      lappend ws {*}[winfo children $Play(Mini).anim]
+   }
+
+   set toup {}
+   for {set i 0} {$i<[llength $ws]} {incr i} {
+      set w [lindex $ws $i]
+      #----- Any widget that contains more widget shouldn't need to be enabled/disabled themselves
+      if { [llength [set children [winfo children $w]]] } {
+         lappend ws {*}$children
+      } elseif { $w!=".anim.comm.stop" && $w!="$Play(Mini).anim.stop" && [winfo class $w] ni {Frame Scrollbar} } {
+         #----- Any terminal widget other than the stop button probably needs to be disabled
+         lappend toup $w
+      }
+   }
+
+   if { $IsWorking } {
+      catch {$Play(Canvas) configure -cursor watch}
+
+      foreach w $toup {
+         catch {$w configure -state disabled}
+      }
+   } else {
+      catch {$Play(Canvas) configure -cursor left_ptr}
+
+      foreach w $toup {
+         catch {$w configure -state normal}
+      }
+   }
+
+   update idletasks
+}
+
+#----------------------------------------------------------------------------
 # Nom      : <Animator::EmptyPlayList>
 # Creation : Decembre 1999 - J.P. Gauthier - CMC/CMOE
 #
@@ -617,8 +672,7 @@ proc Animator::GetPlayList { } {
    }
 
    #----- initialiser le processus
-   $Play(Canvas) configure -cursor watch
-   update idletasks
+   SetWorking 1
 
    set Play(Frames) {}
 
@@ -686,7 +740,7 @@ proc Animator::GetPlayList { } {
 
    Animator::Limits
 
-   $Play(Canvas) configure -cursor left_ptr
+   SetWorking 0
 }
 
 #----------------------------------------------------------------------------
