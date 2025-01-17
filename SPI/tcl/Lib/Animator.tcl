@@ -1037,6 +1037,9 @@ proc Animator::Step { Incr } {
 
    set Play(Stop) 0
    if { ![llength $Play(Frames)] } {
+      set Play(Page)    $Page::Data(Frame)
+      set Play(Canvas)  $Page::Data(Canvas)
+      set Play(VPs)     [Page::Registered $Play(Page) Viewport]
       Animator::GetPlayList
    }
 
