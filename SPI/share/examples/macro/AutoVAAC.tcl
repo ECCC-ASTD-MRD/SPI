@@ -37,34 +37,33 @@ proc Macro::AutoVAAC::Execute { } {
    variable Data
    variable Error
    variable Param
-   variable Info
 
    #----- Ouvrir le fichier de resultats
    set fields [fstdfile open VAACFILE read $Param(Path)/tape40]
 
    #----- Recuperer la description de l'experience
-   Info::Decode ::Macro::AutoVAAC::Info $CANERM::Sim(Info) [Info::Read VAACFILE]
+   set dSim [SimInfo::Read VAACFILE]
 
    #----- Renommer le nom du volcan ( sans le suffixe _watch ) pour la nomenclature CLF2.
-   regsub -all _watch $Info(Name) "" Info(Name)
-   regsub -all __ $Info(Name) _ Info(Name)
-   set Info(Name) [string toupper $Info(Name)]
+   regsub -all _watch [dict get $dSim Name] "" name
+   regsub -all __ $name _ name
+   set name [string toupper $name)
 
    #----- Centrer sur la source
-   Viewport::Rotate $Page::Data(Frame) $Info(Lat) $Info(Lon) 3.0
+   Viewport::Rotate $Page::Data(Frame) [dict get $dSim Lat] [dict get $dSim Lon] 3.0
 
    #----- Creer la palette de couleur
    colormap create VAACMAP
    colormap read   VAACMAP $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
 
    #----- Creer l'icone
-   set pixel [$VAAC_Watch::Data(VP1) -project $Info(Lat) $Info(Lon) 0]
+   set pixel [$VAAC_Watch::Data(VP1) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
-   set pixel [$VAAC_Watch::Data(VP2) -project $Info(Lat) $Info(Lon) 0]
+   set pixel [$VAAC_Watch::Data(VP2) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
-   set pixel [$VAAC_Watch::Data(VP3) -project $Info(Lat) $Info(Lon) 0]
+   set pixel [$VAAC_Watch::Data(VP3) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
    #----- Champs de concentrations
@@ -91,14 +90,14 @@ proc Macro::AutoVAAC::Execute { } {
       Page::Update $Page::Data(Frame)
 
       #----- Update legend
-      set dateo [clock format [clock scan "$Info(AccYear)$Info(AccMonth)$Info(AccDay) $Info(AccHour):00" -gmt True] -format "%a %b %d %Y, %H UTC" -gmt true]
-      $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $Info(Name) ($Info(Lat) $Info(Lon)) on $dateo"
+      set dateo [clock format [clock scan "[dict get $dSim AccYear][dict get $dSim AccMonth][dict get $dSim AccDay] [dict get $dSim AccHour]:00" -gmt True] -format "%a %b %d %Y, %H UTC" -gmt true]
+      $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $name ([dict get $dSim Lat] [dict get $dSim Lon]) on $dateo"
 
       $Page::Data(Canvas) itemconf LGT -fill "#[fstdfield configure VAACFLD4 -val2map 10]"
       $Page::Data(Canvas) itemconf MDT -fill "#[fstdfield configure VAACFLD4 -val2map 100]"
       $Page::Data(Canvas) itemconf HVY -fill "#[fstdfield configure VAACFLD4 -val2map 1000]"
 
-      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/$Info(Name)_canerm-watch_$Info(AccHour)Z+[format "%02i" $ip2]
+      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/${name}_canerm-watch_[dict get $dSim AccHour]Z+[format "%02i" $ip2]
    }
 
    fstdfile close VAACFILE

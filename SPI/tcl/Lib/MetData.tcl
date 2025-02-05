@@ -144,8 +144,6 @@ proc MetData::TextDecode { Field } {
 #----------------------------------------------------------------------------
 
 proc MetData::Duration { List Idx0 Idx1 } {
-   variable Sim
-
    if { $Idx0!="" && $Idx1!="" } {
 
       set stamp0 [lindex [lindex $List $Idx0] 0]
