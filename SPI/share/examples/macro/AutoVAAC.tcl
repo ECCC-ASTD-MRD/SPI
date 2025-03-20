@@ -45,7 +45,7 @@ proc Macro::AutoVAAC::Execute { } {
    set dSim [SimInfo::Read VAACFILE]
 
    #----- Renommer le nom du volcan ( sans le suffixe _watch ) pour la nomenclature CLF2.
-   regsub -all _watch [dict get $dSim Name] "" name
+   regsub -all _watch [dict get $dSim Location] "" name
    regsub -all __ $name _ name
    set name [string toupper $name)
 
@@ -90,14 +90,14 @@ proc Macro::AutoVAAC::Execute { } {
       Page::Update $Page::Data(Frame)
 
       #----- Update legend
-      set dateo [clock format [clock scan "[dict get $dSim AccYear][dict get $dSim AccMonth][dict get $dSim AccDay] [dict get $dSim AccHour]:00" -gmt True] -format "%a %b %d %Y, %H UTC" -gmt true]
+      set dateo [clock format [dict get $dSim AccSecs] -format "%a %b %d %Y, %H UTC" -timezone :UTC]
       $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $name ([dict get $dSim Lat] [dict get $dSim Lon]) on $dateo"
 
       $Page::Data(Canvas) itemconf LGT -fill "#[fstdfield configure VAACFLD4 -val2map 10]"
       $Page::Data(Canvas) itemconf MDT -fill "#[fstdfield configure VAACFLD4 -val2map 100]"
       $Page::Data(Canvas) itemconf HVY -fill "#[fstdfield configure VAACFLD4 -val2map 1000]"
 
-      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/${name}_canerm-watch_[dict get $dSim AccHour]Z+[format "%02i" $ip2]
+      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/${name}_canerm-watch_[clock format [dict get $dSim AccSecs] -format "%H" -timezone :UTC]Z+[format "%02i" $ip2]
    }
 
    fstdfile close VAACFILE

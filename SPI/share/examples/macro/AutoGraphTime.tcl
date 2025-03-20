@@ -69,7 +69,7 @@ proc Macro::AutoGraphTime::Execute { } {
          set date [clock format [dict get $dSim AccSecs] -format "%Y%m%d %H:%M" -gmt true]
 
          #----- Loop on stations and their display parameters
-         foreach id [dict get $dSim Name] color $Param(Colors) icon $Param(Icons) {
+         foreach id [dict get $dSim Location] color $Param(Colors) icon $Param(Icons) {
 
             Macro::Doing "Processing station $id"
 
@@ -88,7 +88,7 @@ proc Macro::AutoGraphTime::Execute { } {
 
                #----- Build data vectors
                vector append DATA$id [list $sec $val]
-               if { "$id"=="[lindex [dict get $dSim Name] 0]" } {
+               if { "$id"=="[lindex [dict get $dSim Location] 0]" } {
                   lappend dates [clock format $sec -format "%d/%m %H:%M" -gmt True]
                }
             }
@@ -110,9 +110,9 @@ proc Macro::AutoGraphTime::Execute { } {
       }
 
       #----- Update des axes, limites, libelle, ...
-      set rng [expr [dict get $dSim Duration]*60/[dict get $dSim OutputTimeStepMin]-1]
+      set rng [expr [dict get $dSim Duration]/[dict get $dSim OutputTimeStep]-1]
       set t0  [lindex [vector get DATA$id.X] 0]
-      graphaxis configure AXISX -max $t0 -min [expr $t0-[dict get $dSim Duration]*3600+1200] -intervals [lreverse [lrange [vector get DATA$id.X] 0 $rng]] -labels [lreverse [lrange $dates 0 $rng]]
+      graphaxis configure AXISX -max $t0 -min [expr $t0-[dict get $dSim Duration]+1200] -intervals [lreverse [lrange [vector get DATA$id.X] 0 $rng]] -labels [lreverse [lrange $dates 0 $rng]]
       graphaxis configure AXISY -min 0 -max $max
 
       #----- Update du graph avec tles donnees et les titres
@@ -128,11 +128,11 @@ proc Macro::AutoGraphTime::Execute { } {
 
          #----- Save CSV data
          set f [open $file.csv w]
-         puts $f "Date,[join [dict get $dSim Name] ,]"
+         puts $f "Date,[join [dict get $dSim Location] ,]"
          set d 0
          foreach date $dates {
             puts -nonewline $f "$date"
-            foreach id [dict get $dSim Name] {
+            foreach id [dict get $dSim Location] {
                puts -nonewline $f ",[vector get DATA$id.Y $d]"
             }
             puts -nonewline $f "\n"
