@@ -50,20 +50,20 @@ proc Macro::AutoVAAC::Execute { } {
    set name [string toupper $name)
 
    #----- Centrer sur la source
-   Viewport::Rotate $Page::Data(Frame) [dict get $dSim Lat] [dict get $dSim Lon] 3.0
+   Viewport::Rotate $Page::Data(Frame) {*}[lrange [lindex [dict get $dSim Coords] 0] 0 1] 3.0
 
    #----- Creer la palette de couleur
    colormap create VAACMAP
    colormap read   VAACMAP $env(HOME)/.spi/Colormap/REC_Col.std1.rgba
 
    #----- Creer l'icone
-   set pixel [$VAAC_Watch::Data(VP1) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
+   set pixel [$VAAC_Watch::Data(VP1) -project {*}[lrange [lindex [dict get $dSim Coords] 0] 0 1] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
-   set pixel [$VAAC_Watch::Data(VP2) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
+   set pixel [$VAAC_Watch::Data(VP2) -project {*}[lrange [lindex [dict get $dSim Coords] 0] 0 1] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
-   set pixel [$VAAC_Watch::Data(VP3) -project [dict get $dSim Lat] [dict get $dSim Lon] 0]
+   set pixel [$VAAC_Watch::Data(VP3) -project {*}[lrange [lindex [dict get $dSim Coords] 0] 0 1] 0]
    Shape::DrawIcoVAAC $Page::Data(Canvas) $pixel FIX black 5 False
 
    #----- Champs de concentrations
@@ -91,7 +91,7 @@ proc Macro::AutoVAAC::Execute { } {
 
       #----- Update legend
       set dateo [clock format [dict get $dSim AccSecs] -format "%a %b %d %Y, %H UTC" -timezone :UTC]
-      $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $name ([dict get $dSim Lat] [dict get $dSim Lon]) on $dateo"
+      $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $name ([lrange [lindex [dict get $dSim Coords] 0] 0 1]) on $dateo"
 
       $Page::Data(Canvas) itemconf LGT -fill "#[fstdfield configure VAACFLD4 -val2map 10]"
       $Page::Data(Canvas) itemconf MDT -fill "#[fstdfield configure VAACFLD4 -val2map 100]"
