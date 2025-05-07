@@ -632,8 +632,8 @@ proc IcoMenu::Set { Frame Value } {
    eval set $Data(Var$Frame) \"$Value\"
 }
 
-#============================================================================
-# Nom      : <UnitOption::ButtonEventManager>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_ButtonEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Widget's unit button event handler
@@ -645,28 +645,17 @@ proc IcoMenu::Set { Frame Value } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::ButtonEventManager { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_ButtonEventManager { Path } {
    variable Data
    variable Textvar
 
-   #----- Shorthands
-   set units $Data(${path}Units)
-   set currentUnitIdx $Data(${path}CurrentUnitIdx)
-
-   #----- Update Textvars
-   set nextUnitIdx [expr ($currentUnitIdx+1)%[llength $units]]
-   set Textvar($path.btn) [lindex $units $nextUnitIdx]
-
-   #----- Update currentUnitIdx
-   set Data(${path}CurrentUnitIdx) $nextUnitIdx
-
-   UpdateEntry $path
-   UpdateMenuItems $path
+   set nextUnitIdx [expr ($Data(${Path}CurrentUnitIdx)+1)%[llength $Data(${Path}Units)]]
+   SwitchTo $Path $nextUnitIdx
 }
 
-#============================================================================
-# Nom      : <UnitOption::Convert>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_Convert>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Convert a value from a unit to another unit
@@ -682,8 +671,8 @@ proc UnitOption::ButtonEventManager { path } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
+#----------------------------------------------------------------------------
+proc UnitOption::_Convert { path value fromUnitIdx toUnitIdx } {
    variable Data
    variable Textvar
 
@@ -709,7 +698,7 @@ proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
    return $value
 }
 
-#============================================================================
+#----------------------------------------------------------------------------
 # Nom      : <UnitOption::Create>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -730,7 +719,7 @@ proc UnitOption::Convert { path value fromUnitIdx toUnitIdx } {
 #
 # Remarques :
 #
-#============================================================================
+#----------------------------------------------------------------------------
 proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} } {
    global GDefs
    variable Data
@@ -758,7 +747,7 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
    #----- Variable Textvar
    set Textvar($path.btn) [lindex $units $currentUnitIdx]
    #-----   [set $textvar] is a double dereference that works, such as ${$textvar}
-   set Textvar($path.ent) [UpdateEntry $path]
+   set Textvar($path.ent) [_UpdateEntry $path]
 
    #----- UI
    set frm [frame $path]
@@ -766,31 +755,64 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
       label $path.lbl -text $text
       grid $path.lbl -row 0 -column 0 -sticky nsw
 
-      button $path.btn -textvariable UnitOption::Textvar($path.btn) -command [list UnitOption::ButtonEventManager $path] -width $unitMaxLength -height 1 -bd 0
+      button $path.btn -textvariable UnitOption::Textvar($path.btn) -command [list UnitOption::_ButtonEventManager $path] -width $unitMaxLength -height 1 -bd 0
       grid $path.btn -row 0 -column 1 -sticky nse -padx { 0 1 }
 
       if { [llength $values] } {
          menubutton $path.mbtn -menu $path.mbtn.menu -relief groove -bd 2 -bitmap @$GDefs(Dir)/share/bitmap/down.xbm
             menu $path.mbtn.menu -tearoff 0
-            UpdateMenuItems $path
+            _UpdateMenuItems $path
          grid $path.mbtn -row 0 -column 2 -sticky nse
       }
 
       entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight)
-      bind $path.ent <KeyRelease> [list UnitOption::EntryKeyReleaseEventManager $path]
-      bind $path.ent <Destroy> [list UnitOption::UnsetTextvarTrace $path]
+      bind $path.ent <KeyRelease> [list UnitOption::_EntryKeyReleaseEventManager $path]
+      bind $path.ent <Destroy> [list UnitOption::_UnsetTextvarTrace $path]
       grid $path.ent -row 0 -column 3 -sticky nswe
 
       grid columnconfigure $path 3 -weight 1
 
    #----- Trace
-   SetTextvarTrace $path
+   _SetTextvarTrace $path
 
    return $frm
 }
 
-#============================================================================
-# Nom      : <UnitOption::EntryKeyReleaseEventManager>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::SwitchTo>
+# Creation : Mai 2025 - C. Mitron-Brazeau - CMC/CMOE
+#
+# But : Switch widget display to specified unit
+#
+# Parametres :
+#  <Path>    : Widget path
+#  <UnitIdx> : Unit idx to switch to
+#
+# Retour :
+# Aucun
+#
+# Remarques :
+# Aucune
+#----------------------------------------------------------------------------
+proc UnitOption::SwitchTo { Path UnitIdx } {
+   variable Data
+   variable Textvar
+
+   #----- Sanity check
+   set unitIdx [expr $UnitIdx%[llength $Data(${Path}Units)]]
+
+   #----- Update Textvars
+   set Textvar(${Path}.btn) [lindex $Data(${Path}Units) $unitIdx]
+
+   #----- Update currentUnitIdx
+   set Data(${Path}CurrentUnitIdx) $unitIdx
+
+   _UpdateEntry $Path
+   _UpdateMenuItems $Path
+}
+
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_EntryKeyReleaseEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Widget's entry key release event manager
@@ -802,16 +824,16 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::EntryKeyReleaseEventManager { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_EntryKeyReleaseEventManager { path } {
    variable Textvar
 
-   UnsetTextvarTrace $path
-   SetTextvar $path $Textvar($path.ent)
-   SetTextvarTrace $path
+   _UnsetTextvarTrace $path
+   _SetTextvar $path $Textvar($path.ent)
+   _SetTextvarTrace $path
 }
 
-#============================================================================
+#----------------------------------------------------------------------------
 # Nom      : <UnitOption::FormatNumber>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -825,7 +847,7 @@ proc UnitOption::EntryKeyReleaseEventManager { path } {
 #
 # Remarques :
 #
-#============================================================================
+#----------------------------------------------------------------------------
 proc UnitOption::FormatNumber { value } {
    #----- Remove trailing zeros
    set value [expr $value*1]
@@ -838,7 +860,7 @@ proc UnitOption::FormatNumber { value } {
    return $value
 }
 
-#============================================================================
+#----------------------------------------------------------------------------
 # Nom      : <UnitOption::FormatNumberLabel>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
@@ -852,7 +874,7 @@ proc UnitOption::FormatNumber { value } {
 #
 # Remarques :
 #
-#============================================================================
+#----------------------------------------------------------------------------
 proc UnitOption::FormatNumberLabel { value } {
    #----- Force 4 decimals
    set value [format "%.4f" $value]
@@ -860,8 +882,8 @@ proc UnitOption::FormatNumberLabel { value } {
    return [FormatNumber $value]
 }
 
-#============================================================================
-# Nom      : <UnitOption::SetTextvar>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_SetTextvar>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Set the widget's textvar value
@@ -874,8 +896,8 @@ proc UnitOption::FormatNumberLabel { value } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::SetTextvar { path value } {
+#----------------------------------------------------------------------------
+proc UnitOption::_SetTextvar { path value } {
    variable Data
 
    #----- Shorthands
@@ -883,11 +905,11 @@ proc UnitOption::SetTextvar { path value } {
    set textvarUnitIdx $Data(${path}TextvarUnitIdx)
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
-   set $textvar [Convert $path $value $currentUnitIdx $textvarUnitIdx]
+   set $textvar [_Convert $path $value $currentUnitIdx $textvarUnitIdx]
 }
 
-#============================================================================
-# Nom      : <UnitOption::SetTextvarTrace>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_SetTextvarTrace>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Set trace on widget's textvar
@@ -899,18 +921,18 @@ proc UnitOption::SetTextvar { path value } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::SetTextvarTrace { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_SetTextvarTrace { path } {
    variable Data
 
    #----- Shorthands
    set textvar $Data(${path}Textvar)
 
-   trace add variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
+   trace add variable $textvar write [list UnitOption::_TextvarTraceEventManager $path]
 }
 
-#============================================================================
-# Nom      : <UnitOption::TextvarTraceEventManager>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_TextvarTraceEventManager>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Widget's textvar trace event manager
@@ -923,13 +945,13 @@ proc UnitOption::SetTextvarTrace { path } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::TextvarTraceEventManager { path args } {
-   UpdateEntry $path
+#----------------------------------------------------------------------------
+proc UnitOption::_TextvarTraceEventManager { path args } {
+   _UpdateEntry $path
 }
 
-#============================================================================
-# Nom      : <UnitOption::UnsetTextvarTrace>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_UnsetTextvarTrace>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Unset trace on widget's textvar
@@ -941,18 +963,18 @@ proc UnitOption::TextvarTraceEventManager { path args } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::UnsetTextvarTrace { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_UnsetTextvarTrace { path } {
    variable Data
 
    #----- Shorthands
    set textvar $Data(${path}Textvar)
 
-   trace remove variable $textvar write [list UnitOption::TextvarTraceEventManager $path]
+   trace remove variable $textvar write [list UnitOption::_TextvarTraceEventManager $path]
 }
 
-#============================================================================
-# Nom      : <UnitOption::UpdateEntry>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_UpdateEntry>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Update widget's entry value
@@ -964,8 +986,8 @@ proc UnitOption::UnsetTextvarTrace { path } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::UpdateEntry { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_UpdateEntry { path } {
    variable Data
    variable Textvar
 
@@ -974,11 +996,11 @@ proc UnitOption::UpdateEntry { path } {
    set textvarUnitIdx $Data(${path}TextvarUnitIdx)
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
-   set Textvar($path.ent) [Convert $path [set $textvar] $textvarUnitIdx $currentUnitIdx]
+   set Textvar($path.ent) [_Convert $path [set $textvar] $textvarUnitIdx $currentUnitIdx]
 }
 
-#============================================================================
-# Nom      : <UnitOption::UpdateMenuItems>
+#----------------------------------------------------------------------------
+# Nom      : <UnitOption::_UpdateMenuItems>
 # Creation : Novembre 2022 - C. Mitron-Brazeau - CMC/CMOE
 #
 # But      : Update widget's (dropdown) menu items
@@ -990,8 +1012,8 @@ proc UnitOption::UpdateEntry { path } {
 #
 # Remarques :
 #
-#============================================================================
-proc UnitOption::UpdateMenuItems { path } {
+#----------------------------------------------------------------------------
+proc UnitOption::_UpdateMenuItems { path } {
    variable Data
    variable Textvar
 
@@ -1009,8 +1031,8 @@ proc UnitOption::UpdateMenuItems { path } {
    $path.mbtn.menu delete 0 end
 
    #----- Add items
-   set adjustedValues [lmap v $values {Convert $path $v $valuesUnitIdx $currentUnitIdx}]
+   set adjustedValues [lmap v $values {_Convert $path $v $valuesUnitIdx $currentUnitIdx}]
    foreach value $adjustedValues {
-      $path.mbtn.menu add command -label [FormatNumberLabel $value] -command [list UnitOption::SetTextvar $path $value]
+      $path.mbtn.menu add command -label [FormatNumberLabel $value] -command [list UnitOption::_SetTextvar $path $value]
    }
 }
