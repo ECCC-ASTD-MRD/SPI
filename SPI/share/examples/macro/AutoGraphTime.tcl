@@ -66,7 +66,7 @@ proc Macro::AutoGraphTime::Execute { } {
 
          #----- Recuperer la description de l'experience
          set dSim [SimInfo::Read FSTDFILE]
-         set date [clock format [dict get $dSim AccSecs] -format "%Y%m%d %H:%M" -gmt true]
+         set date [clock format [dict get $dSim Date Acc] -format "%Y%m%d %H:%M" -gmt true]
 
          #----- Loop on stations and their display parameters
          foreach id [dict get $dSim Location] color $Param(Colors) icon $Param(Icons) {

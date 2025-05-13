@@ -90,14 +90,14 @@ proc Macro::AutoVAAC::Execute { } {
       Page::Update $Page::Data(Frame)
 
       #----- Update legend
-      set dateo [clock format [dict get $dSim AccSecs] -format "%a %b %d %Y, %H UTC" -timezone :UTC]
+      set dateo [clock format [dict get $dSim Date Acc] -format "%a %b %d %Y, %H UTC" -timezone :UTC]
       $Page::Data(Canvas) itemconf INFO -text "Volcanic ash concentrations valid on [MetData::FormatDATEV VAACFLD2]\nfor hypothetical release of volcano\n $name ([lrange [lindex [dict get $dSim Coords] 0] 0 1]) on $dateo"
 
       $Page::Data(Canvas) itemconf LGT -fill "#[fstdfield configure VAACFLD4 -val2map 10]"
       $Page::Data(Canvas) itemconf MDT -fill "#[fstdfield configure VAACFLD4 -val2map 100]"
       $Page::Data(Canvas) itemconf HVY -fill "#[fstdfield configure VAACFLD4 -val2map 1000]"
 
-      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/${name}_canerm-watch_[clock format [dict get $dSim AccSecs] -format "%H" -timezone :UTC]Z+[format "%02i" $ip2]
+      PrintBox::Image $Page::Data(Frame) $Param(Format) $Param(Path)/${name}_canerm-watch_[clock format [dict get $dSim Date Acc] -format "%H" -timezone :UTC]Z+[format "%02i" $ip2]
    }
 
    fstdfile close VAACFILE
