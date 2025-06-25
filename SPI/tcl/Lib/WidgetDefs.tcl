@@ -720,7 +720,7 @@ proc UnitOption::_Convert { path value fromUnitIdx toUnitIdx } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} } {
+proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} Cmd } {
    global GDefs
    variable Data
    variable Textvar
@@ -743,6 +743,7 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
    set Data(${path}ValuesUnitIdx) $valuesUnitIdx
    set currentUnitIdx 0
    set Data(${path}CurrentUnitIdx) $currentUnitIdx
+   set Data(${path}Cmd) $Cmd
 
    #----- Variable Textvar
    set Textvar($path.btn) [lindex $units $currentUnitIdx]
@@ -906,6 +907,9 @@ proc UnitOption::_SetTextvar { path value } {
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
    set $textvar [_Convert $path $value $currentUnitIdx $textvarUnitIdx]
+
+   #----- Execute the Cmd
+   eval $Data(${path}Cmd)
 }
 
 #----------------------------------------------------------------------------
