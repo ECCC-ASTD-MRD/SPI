@@ -32,10 +32,10 @@ set ModelDomain  { ModelDomain ModelDomainWet ModelDomainWaves }
 set type         { met         wet            waves }
 
 #------ Liste des modèles Atmosphériques
-set names(met)  {     "RDPS"        "HRDPS"     "HRDPS_NORD"     "HRDPS_WEST"     }
-set vars(met)   {      P0            P0          P0               P0              }
-set subs(met)   {      { "" }        { "" }      { "" }           { "" }          }
-set models(met) [list  rdps.fstd     hrdps.fstd  hrdps_nord.fstd  hrdps_west.fstd ]
+set names(met)  {     "RDPS"        "HRDPS"     "CAPS"     "HRDPS_WEST"     }
+set vars(met)   {      P0            P0          P0         P0              }
+set subs(met)   {      { "" }        { "" }      { "" }     { "" }          }
+set models(met) [list  rdps.fstd     hrdps.fstd  caps.fstd  hrdps_west.fstd ]
 
 #------ Liste des modèles Aquatiques
 set names(wet)  {      "RIOPS"    "CIOPS_WEST"    "KITIMAT_500" "KITIMAT_100" "SALISH_500" "SALISH_150" "SOUTH_FRASER_RIVER_30" "VANCOUVER_HARBOR_20" "CIOPS_EAST"    "WCPS"   "SHOP"   "SHOPSMALL"   "SAINT_LAWRENCE_RIVER_500" "SAINT_LAWRENCE_RIVER_200" "FUNDY_500 " "SAINT_JOHN_100" "STRAIT_OF_CANSO_500" "STRAIT_OF_CANSO_100" "WEBTIDE" }
