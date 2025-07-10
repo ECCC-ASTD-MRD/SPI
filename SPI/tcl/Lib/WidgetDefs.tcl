@@ -720,7 +720,7 @@ proc UnitOption::_Convert { path value fromUnitIdx toUnitIdx } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} Cmd } {
+proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} {Cmd ""} } {
    global GDefs
    variable Data
    variable Textvar
