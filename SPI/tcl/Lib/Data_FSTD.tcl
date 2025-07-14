@@ -988,28 +988,21 @@ proc FSTD::ParamSet { { Spec "" } } {
 
    set inter $Param(Intervals)
    set label {}
-   
+
    set min ""
    set max ""
 
    #----- Verifier pour un range plutot que des niveaux
-
-   if { [set from [string first "\[" $Param(Intervals)]]!=-1 } {
-      set min [lindex [string range $Param(Intervals) [incr from] end] 0]
+   if { [regexp {^\s*(?:\[([^\s]+))?\s*(?:([^\s]+)\])?\s*$} $Param(Intervals) -> min max] } {
       set inter {}
-   }
-
-   if { [set to [string first "\]" $Param(Intervals)]]!=-1 } {
-      set max [lindex [string range $Param(Intervals) 0 [incr to -1]] end]
-      set inter {}
-   }
-
-   if { [string first "(" $Param(Intervals)]!=-1 } {
-      set inter {}
-      foreach { val } [split $Param(Intervals) )] {
-         if { [llength [set val [split $val (]]]>1 } {
-            lappend inter [lindex $val 0]
-            lappend label [lindex $val 1]
+   } elseif { [string first "(" $Param(Intervals)] != -1 } {
+      #----- We do not have ranges, do we have labels?
+      set re {([^\s()]+)\(((?:[^()]+|\([^)]*\))*)\)}
+      if { [regexp "^\\s*${re}(?:\\s+${re})*\\s*\$" $Param(Intervals)] } {
+         set inter {}
+         foreach {-> int lbl} [regexp -all -inline $re $Param(Intervals)] {
+            lappend inter $int
+            lappend label $lbl
          }
       }
    }
@@ -1022,13 +1015,13 @@ proc FSTD::ParamSet { { Spec "" } } {
    } else {
       glrender -delay [set OpenGL::Param(Delay) 1000]
    }
-   
+
    if { [string is int $Param(Mantisse)] } {
       set mantisse $Param(Mantisse)
    } else {
-      set mantisse -1   
+      set mantisse -1
    }
-      
+
    if { $Param(Grid)==6 } {
       set Param(Boundary) 1
       set grid 0
@@ -1036,7 +1029,7 @@ proc FSTD::ParamSet { { Spec "" } } {
       set Param(Boundary) 0
       set grid $Param(Grid)
    }
-   
+
    #----- interspecs
    set Param(InterSpecs) {}
    for { set i 0 }  { $i<$Param(InterspecsNb) } { incr i } {   
