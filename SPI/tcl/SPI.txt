@@ -27,7 +27,7 @@ namespace eval SPI {
    set Lbl(About)          { "Apropos ..." "About ..." }
    set Lbl(Apply)          { "Appliquer" "Apply" }
    set Lbl(Animator)       { "Animation ..." "Animation ..." }
-   set Lbl(Model)          { "Modélisation ..." "Modeling ..." }
+   set Lbl(Model)          { "Modélisation ..." "Modelling ..." }
    set Lbl(Area)           { "Région" "Area" }
    set Lbl(Areas)          { "Régions" "Areas" }
    set Lbl(Bubble)         { "Bulles d'aides" "Help bubbles" }
@@ -131,7 +131,7 @@ namespace eval SPI {
 
    #----- Definition des bulles d'aides
 
-   set Bubble(Model)       { "Modélisation" "Modeling" }
+   set Bubble(Model)       { "Modélisation" "Modelling" }
    set Bubble(Graph)       { "Ajout et paramètres des graphs" "Add and parameterize graphs" }
    set Bubble(Params)      { "Paramètres des données" "Data parameters" }
    set Bubble(Print)       { "Impression de la page courante" "Print current page" }
