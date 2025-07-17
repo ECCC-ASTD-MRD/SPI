@@ -1523,7 +1523,7 @@ proc Animator::PlayWeb { } {
       }
 
       #----- Make sure it does not already exists
-      if { ![file exists $base/$randstr] && ![catch {exec ssh $Param(WebHost) "mkdir '$Param(WebDest)/$randstr'"}] } {
+      if { ![file exists $base/$randstr] && ![catch {exec -ignorestderr ssh -qnx -oBatchMode=yes -oConnectTimeout=4 $Param(WebHost) "mkdir '$Param(WebDest)/$randstr'"}] } {
          break
       }
    }
@@ -1538,7 +1538,7 @@ proc Animator::PlayWeb { } {
    #----- If user cancelled or an error occured
    if { !$Play(Web) } {
       catch { file delete -force $base }
-      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+      catch { exec -ignorestderr ssh -oBatchMode=yes -oConnectTimeout=4 $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
       return
    }
    set Play(Web) 0
@@ -1551,7 +1551,7 @@ proc Animator::PlayWeb { } {
       if { $err } {
          Dialog::Error . $Error(WebAnimMake) "\n$msg"
          catch { file delete -force $base }
-         catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+         catch { exec -ignorestderr ssh -oBatchMode=yes -oConnectTimeout=4 $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
          return
       }
 
@@ -1573,11 +1573,11 @@ proc Animator::PlayWeb { } {
    #----- Transfer files
    set Play(Label) "[lindex $Lbl(Copy) $GDefs(Lang)]"
    update idletasks
-   set err [catch { exec scp -rp $base $Param(WebHost):$Param(WebDest) } msg]
+   set err [catch {exec -ignorestderr scp -oBatchMode=yes -oConnectTimeout=4 -rp $base $Param(WebHost):$Param(WebDest)} msg]
    if { $err } {
       Dialog::Error . $Error(WebAnimXfer) "\n$msg"
       catch { file delete -force $base }
-      catch { exec ssh $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
+      catch { exec -ignorestderr ssh -oBatchMode=yes -oConnectTimeout=4 $Param(WebHost) "rm -r '$Param(WebDest)/$randstr'" }
       return
    }
 
