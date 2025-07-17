@@ -722,8 +722,7 @@ proc Dialog::Give { Master Title Text Info { Mail "" } } {
          button .dlggive.mail -text [lindex $Lbl(Mail) $GDefs(Lang)]  -bd 1 -command " 
             if { \[set mail \[Dialog::Get .dlggive \[lindex \$Dialog::Lbl(Mail) \$GDefs(Lang)\] \$Dialog::Lbl(Adress) $Mail\]\]!=\"\" } {
                exec -ignorestderr echo \"$Info\" | mail -s \"From SPI\" \$mail
-            }
-            destroy .dlggive"
+            }"
          pack .dlggive.copy .dlggive.mail .dlggive.ok -side left -fill x  -expand True
       pack .dlggive.cmd -side top -fill x
    }
