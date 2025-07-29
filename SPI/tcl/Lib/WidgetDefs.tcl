@@ -766,7 +766,7 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
          grid $path.mbtn -row 0 -column 2 -sticky nse
       }
 
-      entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight)
+      entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight) -validate all -vcmd { string is double %P }
       bind $path.ent <KeyRelease> [list UnitOption::_EntryKeyReleaseEventManager $path]
       bind $path.ent <Destroy> [list UnitOption::_UnsetTextvarTrace $path]
       grid $path.ent -row 0 -column 3 -sticky nswe
