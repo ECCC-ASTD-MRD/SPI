@@ -392,3 +392,42 @@ proc DateStuff::MinsToHours { Mins } {
        return [expr int($mins)]
     }
 }
+
+#----------------------------------------------------------------------------
+# Nom : <DateStuff::ReadableDuration>
+# But : Formatter une durée en secondes pour être lisible.
+#
+# Parametres :
+#  <Secs>    : Durée en secondes
+#  <Compact> : Flag pour résultat compact ou non. Non-compact par défaut.
+#
+# Retour :
+#  <string> : Durée formattée pour être lisible
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc DateStuff::ReadableDuration { Secs {Compact 0}} {
+   set space [expr {$Compact?"":" "}]
+   set days [expr $Secs/86400]
+   set Secs [expr $Secs%86400]
+   set hours [expr $Secs/3600]
+   set Secs [expr $Secs%3600]
+   set mins [expr $Secs/60]
+   set Secs [expr $Secs%60]
+
+   set readableDuration ""
+   if { $days > 0 } {
+      append readableDuration "${days}${space}d "
+   }
+   if { $hours > 0 } {
+      append readableDuration "${hours}${space}h "
+   }
+   if { $mins > 0 } {
+      append readableDuration "${mins}${space}min "
+   }
+   if { $Secs > 0 } {
+      append readableDuration "${Secs}${space}s "
+   }
+
+   return [string trim $readableDuration]
+}
