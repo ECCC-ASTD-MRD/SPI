@@ -22,6 +22,7 @@ source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_WCS.tcl
 source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_TMS.tcl
 source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_WMTS.tcl
 source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_PGS.tcl
+source $GDefs(Dir)/tcl/Tools/Mapper/Mapper_DepotWare_TSF.tcl
 
 namespace eval Mapper::DepotWare {
    global env
@@ -49,7 +50,7 @@ namespace eval Mapper::DepotWare {
 
    set Lbl(Title)       { "Ajout d'un dépot de données" "Add data repository" }
    set Lbl(TitleParams) { "Paramêtres du dépot de données" "Data repository parameters" }
-   set Lbl(Types)       { "TMS - Tileb Mapping Service" "PGS - PostGIS database" "WMTS - Web Mapping Tile Service" "WMS - Web Mapping Service"  "WFS - Web Feature Service" "WCS - Web Coverage Service" "DIR - Data directory" }
+   set Lbl(Types)       { "TSF - Tileset File" "TMS - Tile Mapping Service" "PGS - PostGIS database" "WMTS - Web Mapping Tile Service" "WMS - Web Mapping Service"  "WFS - Web Feature Service" "WCS - Web Coverage Service" "DIR - Data directory" }
    set Lbl(Path)        { "Localisation" "Localisation" }
    set Lbl(Type)        { "Type" "Type" }
    set Lbl(Cache)       { "Cache" "Cache" }
@@ -382,7 +383,7 @@ proc Mapper::DepotWare::Add { Name Type } {
    set req [Mapper::DepotWare::${Type}::Request]
 
    set type $Type
-   if { $type!="DIR" && $type!="TMS" && $type!="WMTS" } {
+   if { $type ni {TSF DIR TMS WMTS} } {
       set type "URL$type"
    }
 
@@ -752,7 +753,7 @@ proc Mapper::DepotWare::Create { } {
       TREE set $type type ROOT
       TREE set $type path ""
 
-      if { $type=="TMS" || $type=="WMTS" } {
+      if { $type in {TSF TMS WMTS} } {
          TREE set $type open True
       } else {
          TREE set $type open False
