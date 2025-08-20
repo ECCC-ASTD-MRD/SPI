@@ -1357,7 +1357,7 @@ proc Animator::PlayFile { { Filename "" } } {
 
             #----- Generated the video
             file mkdir [file dirname $fn]
-            if { [catch {exec -ignorestderr ffmpeg -f image2 -framerate 2 -pattern_type glob -i $pat {*}$opts $fn} err] } {
+            if { [catch {exec -ignorestderr ffmpeg -y -f image2 -framerate 2 -pattern_type glob -i $pat {*}$opts $fn < /dev/null >&@ stdout } err] } {
                Dialog::Error . $Error(Video) " ($fmt)\n\t$err"
             }
          }
