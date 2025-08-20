@@ -1094,13 +1094,14 @@ proc Export::SetInput { Input } {
 proc Export::SetType { Type } {
    variable Data
 
+   set format  $Data(Format)
    set formats [set Export::${Type}::Param(Formats)]
    if { $Data(Input) == "TRAJ" } {
       set formats [list [lindex $formats 0]]
    }
    ComboBox::DelAll .export.how.sel.sel
    ComboBox::AddList .export.how.sel.sel $formats
-   ComboBox::Set .export.how.sel.sel 0
+   set Data(Format) [expr {$format in $formats ? $format : [lindex $formats 0]}]
 
    destroy .export.option
    labelframe .export.option -text Options
