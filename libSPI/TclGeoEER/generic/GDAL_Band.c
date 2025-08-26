@@ -1015,11 +1015,11 @@ int GDAL_BandWrite(Tcl_Interp *Interp,Tcl_Obj *Bands,char *FileId,char **Options
       return(TCL_ERROR);
    }
 
-   Tcl_ListObjIndex(Interp,Bands,0,&obj);
    nc=0;
    band=NULL;
 
    for(n=0;n<ns;n++) {
+      Tcl_ListObjIndex(Interp,Bands,0,&obj);
       band=GDAL_BandGet(Tcl_GetString(obj));
       if (!band) {
          Tcl_AppendResult(Interp,"GDAL_BandWrite: invalid band ",Tcl_GetString(obj),(char*)NULL);
