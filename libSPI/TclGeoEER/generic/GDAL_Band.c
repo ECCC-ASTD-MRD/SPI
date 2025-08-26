@@ -1793,8 +1793,8 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
    Tcl_Obj     *obj,*lst;
 
    static CONST char *sopt[] = { "-metadata","-date","-georef","-projection","-transform","-invtransform","-indexed","-colorinterp","-gcps","-width",
-                                 "-height","-nb","-type","-positional","-fid",NULL };
-   enum        opt {  METADATA,DATE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID };
+                                 "-height","-nb","-type","-positional","-fid","-DATA",NULL };
+   enum        opt {  METADATA,DATE,GEOREF,PROJECTION,TRANSFORM,INVTRANSFORM,INDEXED,COLORINTERP,GCPS,WIDTH,HEIGHT,NB,TYPE,POSITIONAL,FID,DATA };
 
    band=GDAL_BandGet(Name);
    if (!band) {
@@ -2179,6 +2179,28 @@ int GDAL_BandDefine(Tcl_Interp *Interp,char *Name,int Objc,Tcl_Obj *CONST Objv[]
                   }
                   GeoTex_Signal(&band->Tex,GEOTEX_CLRCOO);
                }
+            }
+            break;
+         case DATA:
+            obj=NULL;
+            nidx=-1;
+
+            // Check if we potentially have more arguments
+            if (Objc>i+1) {
+               // Do we have a component specified?
+               if (Tcl_GetIntFromObj(Interp,Objv[++i],&nidx)!=TCL_OK) {
+                  // It's not a component, so it can only be the data (as a 'get' action would by definition have nothing afterwards if not a component)
+                  obj=Objv[i];
+               } else if (Objc>i+1) {
+                  // We had a component and still have more arguments, the next argument is the data (as a 'get' action would by definition have nothing after a component)
+                  obj=Objv[++i];
+               }
+            }
+
+            if (obj) {
+               return Data_ValPutMatrix(Interp,band->Def,band->Spec,nidx,obj);
+            } else {
+               Data_ValGetMatrix(Interp,band->Def,band->Spec,nidx,0);
             }
             break;
       }
