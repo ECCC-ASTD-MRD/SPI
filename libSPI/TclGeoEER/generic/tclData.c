@@ -3309,32 +3309,32 @@ void Data_FromString(char *String,TDef *Def,int Comp,int Idx) {
  *
  *----------------------------------------------------------------------------
 */
-void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
+void Data_ValGetMatrix(Tcl_Interp *Interp,TDef *Def,TDataSpec *Spec,int Component,int Flip){
 
    int      i,j;
    double   val=0.0;
    Tcl_Obj *objj,*obji;
 
    if (Component<0) {
-      objj=Tcl_NewByteArrayObj((unsigned char*)Field->Def->Data[0],FSIZE3D(Field->Def)*TDef_Size[Field->Def->Type]);
+      objj=Tcl_NewByteArrayObj((unsigned char*)Def->Data[0],FSIZE3D(Def)*TDef_Size[Def->Type]);
    } else {
       objj=Tcl_NewListObj(0,NULL);
-      if (Component<Field->Def->NC) {
+      if (Component<Def->NC) {
          if (Flip) {
-            for(i=0;i<Field->Def->NI;i++){
+            for(i=0;i<Def->NI;i++){
                obji=Tcl_NewListObj(0,NULL);
-               for(j=0;j<Field->Def->NJ;j++){
-                  Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+               for(j=0;j<Def->NJ;j++){
+                  Def_Get(Def,Component,j*Def->NI+i,val);
+                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Spec,val)));
                }
                Tcl_ListObjAppendElement(Interp,objj,obji);
             }
          } else {
-            for(j=0;j<Field->Def->NJ;j++){
+            for(j=0;j<Def->NJ;j++){
                obji=Tcl_NewListObj(0,NULL);
-               for(i=0;i<Field->Def->NI;i++){
-                  Def_Get(Field->Def,Component,j*Field->Def->NI+i,val);
-                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Field->Spec,val)));
+               for(i=0;i<Def->NI;i++){
+                  Def_Get(Def,Component,j*Def->NI+i,val);
+                  Tcl_ListObjAppendElement(Interp,obji,Tcl_NewDoubleObj(VAL2SPEC(Spec,val)));
                }
                Tcl_ListObjAppendElement(Interp,objj,obji);
             }
@@ -3352,7 +3352,8 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
  *
  * Parametres  :
  *  <Interp>   : Interpreteur TCL
- *  <Field>    : Pointeur sur les donnees du champs
+ *  <Def>      : Pointeur sur les donnees du champs
+ *  <Spec>     : DataSpec associé aux données
  *  <Component>: Composante
  *  <Data>     : Matrice de valeurs (Liste ou binaire)
  *
@@ -3365,26 +3366,26 @@ void Data_ValGetMatrix(Tcl_Interp *Interp,TData *Field,int Component,int Flip){
  *      - un objet bytearray (2D ou 3D)
  *----------------------------------------------------------------------------
 */
-int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Data){
+int Data_ValPutMatrix(Tcl_Interp *Interp,TDef *Def,TDataSpec *Spec,int Component,Tcl_Obj *Data){
 
    Tcl_Obj *objj,*obji;
    int      i,j,nobjj,nobji;
    double   value;
    unsigned char *data;
 
-   if (Component>=Field->Def->NC) {
+   if (Component>=Def->NC) {
       Tcl_AppendResult(Interp,"Data_ValPutMatrix: Invalid component index",(char*)NULL);
       return(TCL_ERROR);
    }
    if (Component<0) Component=0;
-   
+
    if (strcmp(Data->typePtr->name,"bytearray")==0) {
       data=Tcl_GetByteArrayFromObj(Data,&nobjj);
-      if (nobjj>(FSIZE3D(Field->Def)*TDef_Size[Field->Def->Type])) {
+      if (nobjj>(FSIZE3D(Def)*TDef_Size[Def->Type])) {
          Tcl_AppendResult(Interp,"Data_ValPutMatrix: Array too big",(char*)NULL);
-         return(TCL_ERROR);             
+         return(TCL_ERROR);
       }
-      memcpy(Field->Def->Data[Component],data,nobjj);
+      memcpy(Def->Data[Component],data,nobjj);
    } else {
       // Extraire les nj lignes de donnees de la liste bidimensionnelle
       Tcl_ListObjLength(Interp,Data,&nobjj);
@@ -3396,19 +3397,19 @@ int Data_ValPutMatrix(Tcl_Interp *Interp,TData *Field,int Component,Tcl_Obj *Dat
          Tcl_ListObjLength(Interp,objj,&nobji);
 
          if (!j) {
-            if (nobji*nobjj>Field->Def->NIJ) {
+            if (nobji*nobjj>Def->NIJ) {
                Tcl_AppendResult(Interp,"Data_ValPutMatrix: Too many values",(char*)NULL);
-               return(TCL_ERROR);             
+               return(TCL_ERROR);
             }
          }
-         
+
          // Assigner les valeurs ni de la nj ieme ligne
          for (i=0;i<nobji;i++){
             Tcl_ListObjIndex(Interp,objj,i,&obji);
-            
+
             Tcl_GetDoubleFromObj(Interp,obji,&value);
-            value=SPEC2VAL(Field->Spec,value);
-            Def_Set(Field->Def,Component,j*nobji+i,value);
+            value=SPEC2VAL(Spec,value);
+            Def_Set(Def,Component,j*nobji+i,value);
          }
       }
    }

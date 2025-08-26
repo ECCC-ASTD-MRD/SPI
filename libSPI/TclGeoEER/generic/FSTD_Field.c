@@ -1758,9 +1758,9 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
             }
 
             if (obj) {
-               return Data_ValPutMatrix(Interp,Field,nidx,obj);
+               return Data_ValPutMatrix(Interp,Field->Def,Field->Spec,nidx,obj);
             } else {
-               Data_ValGetMatrix(Interp,Field,nidx,0);
+               Data_ValGetMatrix(Interp,Field->Def,Field->Spec,nidx,0);
             }
             break;
        }
