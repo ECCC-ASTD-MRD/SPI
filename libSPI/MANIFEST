@@ -1,5 +1,5 @@
 NAME       : libSPI
-VERSION    : 8.4.2
+VERSION    : 8.5.0
 BUILD      : RelWithDebInfo
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API libraries
