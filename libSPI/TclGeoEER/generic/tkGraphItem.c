@@ -45,6 +45,8 @@ extern void   Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lo
 extern int    FFStreamLine(TGeoRef *Ref,TZRef *ZRef,TDef *Def,void *VP,Vect3d *Stream,float *Map,double X,double Y,double Z,int MaxIter,double Step,double Min,double Res,int Mode,int ZDim);
 extern int    FFContour(int Mode,TGeoPos *GPos,TDef *Def,TDataStat *Stat,void *Proj,int NbInter,double *Inter,int Depth,int Limit);
 extern float *FFStreamMapSetup1D(double Delta);
+extern void FFCellQuadNearest(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,int Base);
+extern void FFCellQuadLinear(TDataSpec *Spec,Vect3d P0,Vect3d P1,Vect3d P2,Vect3d P3,int C0,int C1,int C2,int C3,double V0,double V1,double V2,double V3,int Depth,int Base);
 
 extern void GraphTehpi_DisplayWetAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);
 extern void GraphTehpi_DisplayDryAdiabats(GraphItem *Graph,TGraphAxis *AxisTH,TGraphAxis *AxisT,TGraphAxis *AxisP,int X0,int Y0,int X1,int Y1,GLuint GLMode);

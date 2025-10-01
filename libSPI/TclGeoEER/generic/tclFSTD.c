@@ -231,7 +231,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
             return(TCL_ERROR);
          }
          head=((TRPNHeader*)(field->Head));
-         f77name(cigaxg)(field->GRef->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4);
+         f77name(cigaxg)(field->GRef->Grid,&xg1,&xg2,&xg3,&xg4,&head->IG1,&head->IG2,&head->IG3,&head->IG4,1);
          f77name(mscale)((float*)field->Def->Data[0],&xg3,&xg1,&xg2,&field->Def->NI,&field->Def->NJ);
          break;
 
@@ -307,7 +307,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetDoubleFromObj(Interp,Objv[6],&dxg4);
          xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
 
-         f77name(cxgaig)(Tcl_GetString(Objv[2]),&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4);
+         f77name(cxgaig)(Tcl_GetString(Objv[2]),&ig1,&ig2,&ig3,&ig4,&xg1,&xg2,&xg3,&xg4,1);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ig1));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewIntObj(ig2));
@@ -326,7 +326,7 @@ static int FSTD_GridCmd (ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_O
          Tcl_GetIntFromObj(Interp,Objv[5],&ig3);
          Tcl_GetIntFromObj(Interp,Objv[6],&ig4);
 
-         f77name(cigaxg)(Tcl_GetString(Objv[2]),&xg1,&xg2,&xg3,&xg4,&ig1,&ig2,&ig3,&ig4);
+         f77name(cigaxg)(Tcl_GetString(Objv[2]),&xg1,&xg2,&xg3,&xg4,&ig1,&ig2,&ig3,&ig4,1);
          obj=Tcl_NewListObj(0,NULL);
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(xg1));
          Tcl_ListObjAppendElement(Interp,obj,Tcl_NewDoubleObj(xg2));
@@ -1347,7 +1347,7 @@ static int FSTD_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             Tcl_WrongNumArgs(Interp,2,Objv,"filename");
             return(TCL_ERROR);
          }
-         type=f77name(wkoffit)(Tcl_GetString(Objv[2]),strlen(Tcl_GetString(Objv[2])));
+         type=c_wkoffit(Tcl_GetString(Objv[2]),strlen(Tcl_GetString(Objv[2])));
          if (type==1 || type==2 || type==3 || type==33 || type==34) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {
@@ -1732,7 +1732,7 @@ int FSTD_FileSet(Tcl_Interp *Interp,TRPNFile *File){
             ok=c_fnom(&File->Id,File->Name,"STD+RND+R/O+REMOTE",0);
          } else {
             // Make sure the file is an RPN one, otherwise we get fnom/fstouv problems later
-            ok=f77name(wkoffit)(File->Name,strlen(File->Name));
+            ok=c_wkoffit(File->Name,strlen(File->Name));
             if (ok!=1 && ok!=2 && ok!=3 && ok!=33 && ok!=34) {
                if (Interp) Tcl_AppendResult(Interp,"FSTD_FileSet: File is not RPN, ",File->Name,(char*)NULL);
                RPN_FileUnlock();

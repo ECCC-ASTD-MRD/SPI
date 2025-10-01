@@ -35,9 +35,15 @@
 #include "App.h"
 #include "tclData.h"
 #include "tclOGR.h"
+#include "tclGRIB.h"
+#include "tcl3DModel.h"
 #include "Projection.h"
 #include "Data_Calc.h"
 #include "Data_FF.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif // _OPENMP
 
 TCL_DECLARE_MUTEX(MUTEX_DATACALC)
 
@@ -168,7 +174,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 #endif
 
-   Tcl_CreateObjCommand(Interp,"geodata",Data_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
+   //Tcl_CreateObjCommand(Interp,"geodata",Data_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"vexpr",Data_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    if (!TDataInit++) {
@@ -181,10 +187,12 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       DataVectorTableSize++;
    }
 
+#ifdef _OPENMP
    // if OMP_NUM_THREADS not defined, set it as 0 or single thread
    if (getenv("OMP_NUM_THREADS")==NULL) {
       omp_set_num_threads(0);
-   } 
+   }
+#endif // _OPENMP
 
    return(TCL_OK);
 }

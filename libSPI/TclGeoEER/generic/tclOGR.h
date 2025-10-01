@@ -41,6 +41,8 @@
 
 #include "cpl_string.h"
 
+int TclOGR_Init(Tcl_Interp *Interp);
+
 OGR_File* OGR_FileGet(Tcl_Interp *Interp,char *Id);
 int       OGR_FilePut(Tcl_Interp *Interp,OGR_File *File);
 void      OGR_Wipe();

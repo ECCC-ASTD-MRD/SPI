@@ -1601,7 +1601,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                         Tcl_GetDoubleFromObj(Interp,Objv[++i],&dxg4);
 
                         xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
-                        f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4);
+                        f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4,1);
                      } else {
                         Tcl_AppendResult(Interp,"Invalid number of arguments, must be -GRTYP type xg1 xg2 xg3 xg4",(char*)NULL);
                         return(TCL_ERROR);
@@ -1637,7 +1637,7 @@ int FSTD_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
                      }
                      xg1=dxg1;xg2=dxg2;xg3=dxg3;xg4=dxg4;
                      grtyp[0]='L';
-                     f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4);
+                     f77name(cxgaig)(grtyp,&head->IG1,&head->IG2,&head->IG3,&head->IG4,&xg1,&xg2,&xg3,&xg4,1);
                      if (ref) {
                         Field->GRef=GeoRef_Find(GeoRef_RDRSetup(dxg1,dxg2,0.0,r,dxg3,dxg4));
                      } else {
@@ -2521,7 +2521,7 @@ int FSTD_FieldRead(Tcl_Interp *Interp,char *Name,char *Id,int Key,int DateV,char
       } 
    } else if (grtyp[0]=='R') {
       grtyp[0]='L';
-      f77name(cigaxg)(grtyp,&xg1,&xg2,&xg3,&xg4,&h.IG1,&h.IG2,&h.IG3,&h.IG4);
+      f77name(cigaxg)(grtyp,&xg1,&xg2,&xg3,&xg4,&h.IG1,&h.IG2,&h.IG3,&h.IG4,1);
       grtyp[0]='R';
       field->GRef=GeoRef_Find(GeoRef_RDRSetup(xg1,xg2,0.0,nj,xg3,xg4));
    }

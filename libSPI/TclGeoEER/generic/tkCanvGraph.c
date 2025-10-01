@@ -39,6 +39,16 @@ static int tkCanvGraphInit=0;
 extern TData* Data_Get(char *Field);
 static int glCanvasWidgetCmd(ClientData clientData,Tcl_Interp *interp,int argc,Tcl_Obj *const argv[]);
 
+extern void GraphItem_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1,GLuint GLMode);
+extern void GraphItem_Dim(Tk_Canvas Canvas,TGraphItem *Item,GraphItem *Graph,int *Width,int *Height);
+extern int GraphItem_Header(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
+extern int GraphItem_HeaderPostscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1);
+extern void GraphItem_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphItem *Item,int X0,int Y0,int X1,int Y1);
+
+extern void GraphAxis_Display(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
+extern void GraphAxis_Dim(Tk_Canvas Canvas,TGraphAxis *Axis,GraphItem *Graph,int Side,int *Width,int *Height);
+extern void GraphAxis_Postscript(Tcl_Interp *Interp,GraphItem *Graph,TGraphAxis *Axis,int X0,int Y0,int X1,int Y1,int Len,int Side);
+
 void     Graph_RenderContour(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void     Graph_RenderLabel(Tcl_Interp *Interp,GraphItem *Gr,TData *Field);
 void     Graph_RenderTexture(GraphItem *Gr,TData *Field,int Tile);

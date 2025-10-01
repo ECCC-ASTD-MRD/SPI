@@ -187,6 +187,8 @@ typedef TContourSpec {
 } TContourSpec;
 */
 
+int TclDataSpec_Init(Tcl_Interp *Interp);
+
 TDataSpec* DataSpec_Create(Tcl_Interp *Interp,char *Name);
 TDataSpec* DataSpec_New();
 TDataSpec* DataSpec_Get(char *Name);

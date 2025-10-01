@@ -143,6 +143,7 @@ typedef struct TMetObs {
 } TMetObs;
 
 int      TclMetObs_Init(Tcl_Interp *Interp);
+int      TclMetModel_Init(Tcl_Interp *Interp);
 
 TMetObs *MetObs_Get(char *Name);
 char*    MetObs_GetTag(TMetObs *Obs,int No);
