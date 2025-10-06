@@ -400,11 +400,21 @@ proc ColorBar::Move { Canvas Tag } {
 proc ColorBar::Fit { Frame } {
    variable Data
 
+   if { ![info exists Data(Active$Frame)] || !$Data(Active$Frame) } {
+      return
+   }
+
    set width  [Page::CanvasWidth $Frame]
    set height [Page::CanvasHeight $Frame]
 
    foreach cb [$Frame.page.canvas find withtag CB] {
       set tag [lindex [$Frame.page.canvas itemcget $cb -tags] end]
+
+      #----- Skip if false positive
+      if { [string first : $tag]==-1 } {
+         continue
+      }
+
       set t   [lindex [split $tag :] end]
 
       if { $t!="current" } {

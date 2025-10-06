@@ -558,7 +558,6 @@ proc Grid::MoveInit { Canvas VP { Modifier "" } } {
 }
 
 proc Grid::Move { Frame VP { Modifier "" } } {
-   variable Sim
    variable Param
    variable Data
 

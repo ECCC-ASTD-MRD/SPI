@@ -175,32 +175,70 @@ proc DBBox::ReadDB { DB } {
 #                complète ou 'View' pour la BD affichée. (Ex: ViewOil)
 #  <Column>  : La colonne (nom ou index) où appliquer le pattern
 #  <Pattern> : Le pattern de recherche
+#  <args>    : Les colonnes (nom ou index) à retourner. Tout par défaut.
 #
 # Retour :
 #  <list> : Matched data
 #
 # Remarques :
 #----------------------------------------------------------------------------
-proc DBBox::Search { DB Column Pattern } {
+proc DBBox::Search { DB Column Pattern args } {
    variable Param
    variable Data
 
    set db [regsub {^(?:DB|View)} $DB ""]
 
-   CheckDB $db
-
    #----- Find the column we are searching
-   if { [string is integer $Column] } {
-      set idx $Column
-   } else {
-      if { [set idx [lsearch -exact $Param(${db}Lst) $Column]] == -1 } {
-         return {}
-      } elseif { [string match DB* $DB] } {
-          set idx [lindex $Param(${db}Idx) $idx]
-      }
+   set idx [_GetColumnIdx $DB $Column]
+   if { $idx < 0 } {
+      return {}
    }
 
-   return [lsearch -glob -nocase -index $idx -inline -all $Data($DB) $Pattern]
+   set rows [lsearch -glob -nocase -index $idx -inline -all $Data($DB) $Pattern]
+   if { [llength $args] } {
+      #----- Keep selected column indexes
+      set filteredRows [lmap row $rows {set tmp {}}]
+      foreach col $args {
+         set colIdx [_GetColumnIdx $db $col]
+         if { $colIdx < 0 } {
+            continue
+         }
+         set filteredRows [lmap frow $filteredRows row $rows {lappend frow [lindex $row $colIdx]}]
+      }
+      set rows $filteredRows
+   }
+
+   return $rows
+}
+
+#----------------------------------------------------------------------------
+# Nom : <DBBox::_GetColumnIdx>
+# But : Retourne l'index de la colonne (nom ou index) de la DB
+#
+# Parametres :
+#  <DB>      : La base de données à parcourir, préfixée de 'DB' pour la BD
+#                 complète ou 'View' pour la BD affichée. (Ex: ViewOil)
+#  <Column>  : La colonne (nom ou index)
+#
+# Retour :
+#  <int> : L'index de la colonne
+#
+# Remarques :
+#----------------------------------------------------------------------------
+proc DBBox::_GetColumnIdx {DB Column} {
+   variable Param
+
+   set db [regsub {^(?:DB|View)} $DB ""]
+   CheckDB $db
+
+   set idx -1
+   if { [string is integer $Column] } {
+      set idx $Column
+   } elseif { [set idx [lsearch -exact $Param(${db}Lst) $Column]] >= 0 && [string match DB* $DB] } {
+      set idx [lindex $Param(${db}Idx) $idx]
+   }
+
+   return $idx
 }
 
 #----------------------------------------------------------------------------

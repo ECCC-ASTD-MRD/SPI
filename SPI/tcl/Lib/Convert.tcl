@@ -465,7 +465,7 @@ proc Convert::Millibar2Meter { Value } {
    if { $Value>226.3203 } {
       set res [expr 44330.8*(1-pow($Value/1013.25,0.190263))]
    } elseif { $Value>54.749 } {
-      set res [expr 11000-6341.624*ln($Value/226.3202)]
+      set res [expr 11000-6341.624*log($Value/226.3202)]
    } elseif { $Value>8.68 } {
       set res [expr 20000+216650*(pow($Value/54.749,-0.0292173)-1)]
    } elseif { $Value>0 } {

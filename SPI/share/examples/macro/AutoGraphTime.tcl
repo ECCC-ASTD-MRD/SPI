@@ -26,7 +26,7 @@ namespace eval Macro::AutoGraphTime {
    set Param(Var)       "SEUD"
    set Param(Lat)       43.88
    set Param(Lon)       -78.70
-   
+
    set Param(Colors)  { red red orange orange orange orange orange orange orange blue blue blue blue gray gray gray gray gray green green green green green green green gold gold pink pink pink pink }
    set Param(Icons)   { CIRCLE SQUARE CIRCLE SQUARE TRIANGLE VBAR HBAR LOZENGE + CIRCLE SQUARE TRIANGLE VBAR CIRCLE SQUARE TRIANGLE VBAR LOZENGE CIRCLE SQUARE TRIANGLE VBAR HBAR LOZENGE + CIRCLE SQUARE CIRCLE SQUARE TRIANGLE VBAR }
 }
@@ -48,48 +48,47 @@ proc Macro::AutoGraphTime::Init { } {
 
 proc Macro::AutoGraphTime::Execute { } {
    variable Param
-   variable Info
-   
+
    #----- Initialize page and graph
    Macro::AutoGraphTime::Init
 
    #----- Loop on simulations
    foreach path $Param(Paths) {
-   
+
       set dates {}
       set items {}
       set max   0
-       
+
       #----- Loop on resul files
       foreach file [glob $path/results/*_???] {
-      
+
          fstdfile open FSTDFILE read $file
 
          #----- Recuperer la description de l'experience
-         Info::Decode ::Macro::AutoGraphTime::Info [Info::Read FSTDFILE]
-         set date [clock format $Info(AccSecs) -format "%Y%m%d %H:%M" -gmt true]
-        
+         set dSim [SimInfo::Read FSTDFILE]
+         set date [clock format [dict get $dSim Date Acc] -format "%Y%m%d %H:%M" -gmt true]
+
          #----- Loop on stations and their display parameters
-         foreach id $Info(Name) color $Param(Colors) icon $Param(Icons) {
+         foreach id [dict get $dSim Location] color $Param(Colors) icon $Param(Icons) {
 
             Macro::Doing "Processing station $id"
-   
+
             #----- Creer le vecteur 2D si non-existant
             if { ![vector is DATA$id] } {
                vector create DATA$id
                vector dim    DATA$id { X Y }
             }
-      
+
             #----- Extraire les donnees
             foreach fld [fstdfield find FSTDFILE -1 [string range $id 0 12] -1 -1 -1 "" $Param(Var)] {
 
                fstdfield read FLD FSTDFILE $fld
                set sec  [fstdstamp toseconds [fstdfield define FLD -DATEV]]
                set val  [fstdfield stats FLD -coordvalue $Param(Lat) $Param(Lon)]
-         
+
                #----- Build data vectors
                vector append DATA$id [list $sec $val]
-               if { "$id"=="[lindex $Info(Name) 0]" } {
+               if { "$id"=="[lindex [dict get $dSim Location] 0]" } {
                   lappend dates [clock format $sec -format "%d/%m %H:%M" -gmt True]
                }
             }
@@ -102,18 +101,18 @@ proc Macro::AutoGraphTime::Execute { } {
                   -type LINE -font XFont12 -icon $icon -iconoutline $color -iconfill $color -bitmap "" -stipple "" -image ""            
                lappend items ITEM$id
             }
-            
+
             #----- Recupere les limites pour l'axe Y
             set max [expr [vector stats DATA$id.Y -max]>$max?[vector stats DATA$id.Y -max]:$max]
          }
-         
+
          fstdfile close FSTDFILE
       }
-      
+
       #----- Update des axes, limites, libelle, ...
-      set rng [expr $Info(Duration)*60/$Info(OutputTimeStepMin)-1]
+      set rng [expr [dict get $dSim Duration]/[dict get $dSim OutputTimeStep]-1]
       set t0  [lindex [vector get DATA$id.X] 0]
-      graphaxis configure AXISX -max $t0 -min [expr $t0-$Info(Duration)*3600+1200] -intervals [lreverse [lrange [vector get DATA$id.X] 0 $rng]] -labels [lreverse [lrange $dates 0 $rng]]
+      graphaxis configure AXISX -max $t0 -min [expr $t0-[dict get $dSim Duration]+1200] -intervals [lreverse [lrange [vector get DATA$id.X] 0 $rng]] -labels [lreverse [lrange $dates 0 $rng]]
       graphaxis configure AXISY -min 0 -max $max
 
       #----- Update du graph avec tles donnees et les titres
@@ -123,17 +122,17 @@ proc Macro::AutoGraphTime::Execute { } {
       #----- En mode batch
       if { $SPI::Param(Batch) } {
          set file $path/products/[lindex [split [file tail $file] _] 0]
-         
+
          #----- Save image
          PrintBox::Image $Page::Data(Frame) png $file
-      
+
          #----- Save CSV data
          set f [open $file.csv w]
-         puts $f "Date,[join $Info(Name) ,]"
+         puts $f "Date,[join [dict get $dSim Location] ,]"
          set d 0
          foreach date $dates {
             puts -nonewline $f "$date"
-            foreach id $Info(Name) {
+            foreach id [dict get $dSim Location] {
                puts -nonewline $f ",[vector get DATA$id.Y $d]"
             }
             puts -nonewline $f "\n"
@@ -144,7 +143,7 @@ proc Macro::AutoGraphTime::Execute { } {
          close $f
       }
    }
-   
+
    if { $SPI::Param(Batch) } {
       SPI::Quit
    }
@@ -160,7 +159,7 @@ proc Macro::AutoGraphTime::Args { } {
    variable Param
 
    set Param(Paths) [lindex $argv 0]
-   
+
    #----- Parametres optionels
    if { $argc>1 } { set Param(Var)   [lindex $argv 1] }
    if { $argc>2 } { set Param(Lat)   [lindex $argv 2] }
