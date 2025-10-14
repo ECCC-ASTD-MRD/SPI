@@ -80,6 +80,12 @@ TDataVector *Data_VectorTableAdd(void) {
    return(&DataVectorTable[DataVectorTableSize++]);
 }
 
+// Wrapper because of the extra "Type" argument that doesn't fit the standard TCL function type
+int Data_FieldCmdCompat(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Obj *CONST Objv[]){
+   Data_FieldCmd(clientData,Interp,Objc,Objv,-1);
+}
+
+
 /*--------------------------------------------------------------------------------------------------------------
  * Nom          : <Tcldata_Init>
  * Creation     : Fevrier 2003 J.P. Gauthier
@@ -174,7 +180,7 @@ int Tcldata_Init(Tcl_Interp *Interp) {
       return(TCL_ERROR);
 #endif
 
-   //Tcl_CreateObjCommand(Interp,"geodata",Data_FieldCmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
+   Tcl_CreateObjCommand(Interp,"geodata",Data_FieldCmdCompat,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
    Tcl_CreateObjCommand(Interp,"vexpr",Data_Cmd,(ClientData)NULL,(Tcl_CmdDeleteProc*)NULL);
 
    if (!TDataInit++) {
