@@ -24,7 +24,8 @@ namespace eval Mapper::DepotWare::TSF {
    set Data(Path) ""
 
    set Param(Depots) {
-      {OpenStreetMap_EER_EN   TSF   /home/smco600/links/ords/geo/OSM/OpenStreetMap_EER_EN.mbtiles}
+      {OpenStreetMap_EER_EN         TSF   /home/smco600/links/ords/geo/OSM/OpenStreetMap_EER_EN.mbtiles}
+      {OpenStreetMap_EER_EN_Canada  TSF   /home/smco600/links/ords/geo/OSM/OpenStreetMap_EER_EN_Canada.mbtiles}
    }
 
    set Param(Formats) {
