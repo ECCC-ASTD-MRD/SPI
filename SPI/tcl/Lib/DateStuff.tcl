@@ -407,6 +407,8 @@ proc DateStuff::MinsToHours { Mins } {
 # Remarques :
 #----------------------------------------------------------------------------
 proc DateStuff::ReadableDuration { Secs {Compact 0}} {
+   global GDefs
+
    set space [expr {$Compact?"":" "}]
    set days [expr $Secs/86400]
    set Secs [expr $Secs%86400]
@@ -417,7 +419,11 @@ proc DateStuff::ReadableDuration { Secs {Compact 0}} {
 
    set readableDuration ""
    if { $days > 0 } {
-      append readableDuration "${days}${space}d "
+      set dayUnit "d"
+      if { [info exists GDefs(Lang)] && $GDefs(Lang)==0 } {
+         set dayUnit "j"
+      }
+      append readableDuration "${days}${space}${dayUnit} "
    }
    if { $hours > 0 } {
       append readableDuration "${hours}${space}h "
