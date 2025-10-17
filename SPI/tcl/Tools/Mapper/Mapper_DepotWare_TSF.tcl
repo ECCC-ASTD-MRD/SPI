@@ -49,8 +49,14 @@ namespace eval Mapper::DepotWare::TSF {
 proc Mapper::DepotWare::TSF::Default { } {
    variable Param
 
-   if { [llength $Param(Depots)] && [lsearch -exact -index 0 $::Mapper::DepotWare::Data(Depots) [lindex $Param(Depots) 0 0]]==-1 } {
-      lappend ::Mapper::DepotWare::Data(Depots) {*}$Param(Depots)
+   if { [llength $Param(Depots)] } {
+      set names [lmap depot $::Mapper::DepotWare::Data(Depots) {expr {[lindex $depot 1]=="TSF" ? [lindex $depot 0] : [continue]}}]
+
+      foreach depot $Param(Depots) {
+         if { [lindex $depot 0] ni $names } {
+            lappend ::Mapper::DepotWare::Data(Depots) $depot
+         }
+      }
    }
 }
 

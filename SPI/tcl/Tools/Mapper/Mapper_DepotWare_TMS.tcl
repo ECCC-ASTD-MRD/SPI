@@ -269,10 +269,14 @@ namespace eval Mapper::DepotWare::TMS {
 
 proc Mapper::DepotWare::TMS::Default { } {
    variable Param
-   
-   if { [lsearch -exact -index 0 $::Mapper::DepotWare::Data(Depots) [lindex [lindex $Param(Depots) 0] 0]]==-1 } {
-      foreach depot $Mapper::DepotWare::TMS::Param(Depots) {    
-         lappend ::Mapper::DepotWare::Data(Depots) $depot
+
+   if { [llength $Param(Depots)] } {
+      set names [lmap depot $::Mapper::DepotWare::Data(Depots) {expr {[lindex $depot 1]=="TMS" ? [lindex $depot 0] : [continue]}}]
+
+      foreach depot $Param(Depots) {
+         if { [lindex $depot 0] ni $names } {
+            lappend ::Mapper::DepotWare::Data(Depots) $depot
+         }
       }
    }
 }
@@ -403,12 +407,11 @@ proc  Mapper::DepotWare::TMS::Load { Name { Res 2 } } {
    variable Param
    variable Data
 
-   if { [set idx [lsearch -exact -index 0 $Mapper::DepotWare::Data(Depots) $Name]]!=-1 } {
-      set xml [lindex [lindex $Mapper::DepotWare::Data(Depots) $idx] 2]
-   } else {
+   set xml [lindex [lsearch -exact -index 0 -inline [lsearch -inline -exact -index 1 -all $::Mapper::DepotWare::Data(Depots) TMS] $Name] 2]
+   if { $xml == "" } {
       return
    }
-   
+
    if { ![file exists $Mapper::DepotWare::Data(CachePath)] } {
       file mkdir $Mapper::DepotWare::Data(CachePath)
    }
