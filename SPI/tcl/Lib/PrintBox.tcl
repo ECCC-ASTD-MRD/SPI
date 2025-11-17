@@ -751,11 +751,9 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
          #----- Hardcode temporaire pour envoyer sur le nouveau site
 
          if { $Print(WEBSite)=="WEB_VAAC" } {
+            Log::Print INFO "Disseminate $Param(FullName).$Print(Device) on meteo website"
             set prefix [clock format [clock seconds] -format "%Y%m%d-%H%MZ" -timezone :UTC]
-            if { [Disseminate::Dissem2WeatherOffice $Param(FullName).$Print(Device) ${prefix}_[file tail $Param(FullName)].$Print(Device) TRAJ] } {
-               Log::Print ERROR "Unable to transfert the $Param(FullName).$Print(Device) on meteo web site via $GDefs(TransmitHost).\n\n$MsgCatch"
-            }
-
+            Disseminate::Dissem2WeatherOffice $Param(FullName).$Print(Device) ${prefix}_[file tail $Param(FullName)].$Print(Device) VAAC/TRAJ
          } else {
             eval exec scp $Param(FullName).$Print(Device) ${site}/[file tail $Param(FullName)].$Print(Device) > /dev/null
          }

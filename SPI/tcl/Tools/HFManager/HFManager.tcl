@@ -364,11 +364,8 @@ proc HFManager::WeatherFileRM { Id files } {
    }
    close $f
 
-   if { [Disseminate::Dissem2WeatherOffice $cleanupFileLink realtime_eer_cleanup.txt CLEANUP] } {
-      Log::Print ERROR "Problemes avec la copie vers le PDS !!!"
-   } else {
-      Log::Print INFO "Les fichiers ( $filepaths ) seront effaces sous $Host(Name$Id) !"
-   }
+   Disseminate::Dissem2WeatherOffice $cleanupFileLink realtime_eer_cleanup.txt VAAC/CLEANUP
+   Log::Print INFO "Les fichiers ( $filepaths ) seront effaces sous $Host(Name$Id) !"
 }
 
 #----------------------------------------------------------------------------
