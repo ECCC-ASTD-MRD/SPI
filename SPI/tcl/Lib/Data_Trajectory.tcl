@@ -50,7 +50,6 @@ namespace eval Trajectory {
    variable Params
    variable Data
    variable Lbl
-   variable Resources
 
    #----- Definitions des labels
 
@@ -87,11 +86,6 @@ namespace eval Trajectory {
    set Param(Modes)     { LEVEL PARCEL ALL }                                        ;#Mode de selection des parametres
    set Param(Mode)      LEVEL                                                       ;#Mode de selection des parametres
    set Param(Spec)      ""                                                          ;#Variable a parametrer
-
-   catch {
-      set Resources(LogoCMC)   @$GDefs(Dir)/share/bitmap/SMC_hor_small.xbm
-      set Resources(LogoARL)   @$GDefs(Dir)/share/bitmap/ARL_hor_small.xbm
-   }
 
    set Data(List)           ""    ;#Liste des Id de trajectoire en memoire
    set Data(Frame)          ""    ;#Path du frame de configuration
@@ -396,7 +390,6 @@ proc Trajectory::ParamFrame { Frame Apply } {
 proc Trajectory::ParamGet { { Spec "" } } {
    variable Data
    variable Param
-   variable Resources
 
    if { $Spec=="" } {
       set Spec $Param(Spec)
@@ -1025,7 +1018,6 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
    variable Lbl
    variable Graph
    variable Data
-   variable Resources
 
    set canvas $Frame.page.canvas
 
@@ -1113,7 +1105,7 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
 
    #----- Plotter l'identification
 
-   $canvas create bitmap [expr $X0+2] [expr $Y0+2] -bitmap $Resources(LogoCMC) -tags TRAJLEGEND -anchor nw -foreground red
+   $canvas create image [expr $X0+2] [expr $Y0+2] -image LOGO -tags TRAJLEGEND -anchor nw
 
    $canvas create text [expr $X0+255] [expr $Y0+2]  -text $traj_f -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
    $canvas create text [expr $X0+255] [expr $Y0+11] -text $traj_a -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
