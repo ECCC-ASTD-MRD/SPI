@@ -1041,7 +1041,7 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
 
    $canvas delete TRAJLEGEND
    $canvas create rectangle $X0 $Y0 $X1 $Y1 -fill white -width 1 -outline black -tags "TRAJLEGEND TRAJLEGENDFRAME"
-   $canvas create rectangle $X0 $Y0 [expr $X0+241] [expr $Y0+28] -fill white -width 1 -outline black -tags "TRAJLEGEND"
+   $canvas create rectangle $X0 $Y0 [expr $X0+340] [expr $Y0+28] -fill white -width 1 -outline black -tags "TRAJLEGEND"
 
 
    #----- Pour la premiere Trajectoire selectionnee
@@ -1109,14 +1109,14 @@ proc Trajectory::Legend { Frame X0 Y0 X1 Y1 TrajId } {
 
    #----- Plotter l'identification
 
-   $canvas create image [expr $X0+2] [expr $Y0+2] -image LOGO -tags TRAJLEGEND -anchor nw
+   $canvas create image [expr $X0+2] [expr $Y0+5] -image LOGO -tags TRAJLEGEND -anchor nw
 
-   $canvas create text [expr $X0+255] [expr $Y0+2]  -text $traj_f -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
-   $canvas create text [expr $X0+255] [expr $Y0+11] -text $traj_a -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
-   $canvas create text [expr $X0+255] [expr $Y0+24] -text $name -font XFont20 -tags TRAJLEGEND -anchor nw
-   $canvas create text [expr $X0+255] [expr $Y0+47] -text "$start : $date UTC" -font XFont10 -tags TRAJLEGEND -fill black -anchor w
-   $canvas create text [expr $X0+255] [expr $Y0+56] -text "$where : $coordm" -font XFont10 -tags TRAJLEGEND -anchor w
-   $canvas create text [expr $X0+255] [expr $Y0+65] -text "                      : $coordd" -font XFont10 -tags TRAJLEGEND -anchor w
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+2]  -text $traj_f -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+11] -text $traj_a -font XFont10 -tags TRAJLEGEND -fill black -anchor nw
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+24] -text $name -font XFont20 -tags TRAJLEGEND -anchor nw
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+47] -text "$start : $date UTC" -font XFont10 -tags TRAJLEGEND -fill black -anchor w
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+56] -text "$where : $coordm" -font XFont10 -tags TRAJLEGEND -anchor w
+   $canvas create text [expr $X0+($X1-$X0)/2] [expr $Y0+65] -text "                      : $coordd" -font XFont10 -tags TRAJLEGEND -anchor w
 
 
    if { $type=="P" } {
