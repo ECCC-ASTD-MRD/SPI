@@ -111,8 +111,12 @@ namespace eval Trajectory {
 proc Trajectory::ParcelInfo { Object Tag } {
    global GDefs
 
-   set parcel [trajectory define $Object -PARCEL $Tag]
-   set info  "[trajectory define $Object -ID]\n[format %.2f [lindex $parcel 5]] m\n[format %.2f [lindex $parcel 8]] m/s"
+   set parcel  [trajectory define $Object -PARCEL $Tag]
+   set dateo   [trajectory define $Object -DATE]
+   set datev   [lindex $parcel 0]
+   set elev    [lindex $parcel 5]
+   set speed   [lindex $parcel 8]
+   set info  "[trajectory define $Object -ID]\n[clock format $datev -format "%Y-%m-%d %H:%MZ" -timezone :UTC] (T+[DateStuff::SecsToHours [expr $datev-$dateo]]h)\n[format %.2f $elev] m\n[format %.2f $speed] m/s"
 
    return $info
 }
