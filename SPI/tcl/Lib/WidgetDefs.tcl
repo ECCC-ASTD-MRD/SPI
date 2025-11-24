@@ -710,9 +710,9 @@ proc UnitOption::_Convert { path value fromUnitIdx toUnitIdx } {
 #  <units>          : Units of the widget - ex: { h min s }
 #  <correlations>   : Correlations between units - ex: { 1 60 3600 }
 #  <textvar>        : Textvar of the widget
-#  <textvarUnitIdx> : Textvar's unit index - ex: 0 = h, 1 = min, 2 = s
+#  <textvarUnit>    : Textvar's unit (index or string) - ex: 0 = h, 1 = min, 2 = s OR h, min, s
 #  <values>         : Predefined values of the dropdown list
-#  <valuesUnitIdx>  : Values' unit index - ex: 0 = h, 1 = min, 2 = s
+#  <valuesUnit>     : Values' unit (index or string) - ex: 0 = h, 1 = min, 2 = s OR h, min, s
 #
 # Retour :
 #  <frame> : Widget's main frame path - same as path
@@ -720,7 +720,7 @@ proc UnitOption::_Convert { path value fromUnitIdx toUnitIdx } {
 # Remarques :
 #
 #----------------------------------------------------------------------------
-proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {values {}} {valuesUnitIdx 0} {Cmd ""} } {
+proc UnitOption::Create { path text units correlations textvar textvarUnit {values {}} {valuesUnit 0} {Cmd ""} } {
    global GDefs
    variable Data
    variable Textvar
@@ -734,21 +734,34 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
    #----- Variable Data
    set Data(${path}text) $text
    #-----   Add (...) to units
-   set units [lmap u $units {format {(%s)} $u}]
-   set Data(${path}Units) $units
+   set Data(${path}Units) [lmap u $units {format {(%s)} $u}]
    set Data(${path}Correlations) $correlations
    set Data(${path}Textvar) $textvar
-   set Data(${path}TextvarUnitIdx) $textvarUnitIdx
    set Data(${path}Values) $values
-   set Data(${path}ValuesUnitIdx) $valuesUnitIdx
    set currentUnitIdx 0
    set Data(${path}CurrentUnitIdx) $currentUnitIdx
    set Data(${path}Cmd) $Cmd
 
+   if { [string is integer -strict $textvarUnit] && $textvarUnit >= 0 && $textvarUnit < [llength $units] } {
+      set Data(${path}TextvarUnitIdx) $textvarUnit
+   } elseif { [set idx [lsearch -exact $units $textvarUnit]] >= 0 } {
+      set Data(${path}TextvarUnitIdx) $idx
+   } else {
+      return -code error "Invalid textvarUnit: $textvarUnit"
+   }
+
+   if { [string is integer -strict $valuesUnit] && $valuesUnit >= 0 && $valuesUnit < [llength $units] } {
+      set Data(${path}ValuesUnitIdx) $valuesUnit
+   } elseif { [set idx [lsearch -exact $units $valuesUnit]] >= 0 } {
+      set Data(${path}ValuesUnitIdx) $idx
+   } else {
+      return -code error "Invalid valuesUnit: $valuesUnit"
+   }
+
    #----- Variable Textvar
-   set Textvar($path.btn) [lindex $units $currentUnitIdx]
+   set Textvar($path.btn) [lindex $Data(${path}Units) $currentUnitIdx]
    #-----   [set $textvar] is a double dereference that works, such as ${$textvar}
-   set Textvar($path.ent) [_UpdateEntry $path]
+   set Textvar($path.e) [_UpdateEntry $path]
 
    #----- UI
    set frm [frame $path]
@@ -766,10 +779,10 @@ proc UnitOption::Create { path text units correlations textvar textvarUnitIdx {v
          grid $path.mbtn -row 0 -column 2 -sticky nse
       }
 
-      entry $path.ent -textvariable UnitOption::Textvar($path.ent) -relief sunken -bd 1 -bg $GDefs(ColorLight) -validate all -vcmd { string is double %P }
-      bind $path.ent <KeyRelease> [list UnitOption::_EntryKeyReleaseEventManager $path]
-      bind $path.ent <Destroy> [list UnitOption::_UnsetTextvarTrace $path]
-      grid $path.ent -row 0 -column 3 -sticky nswe
+      entry $path.e -textvariable UnitOption::Textvar($path.e) -relief sunken -bd 1 -bg $GDefs(ColorLight) -validate all -vcmd { string is double %P }
+      bind $path.e <KeyRelease> [list UnitOption::_EntryKeyReleaseEventManager $path]
+      bind $path.e <Destroy> [list UnitOption::_UnsetTextvarTrace $path]
+      grid $path.e -row 0 -column 3 -sticky nswe
 
       grid columnconfigure $path 3 -weight 1
 
@@ -830,7 +843,7 @@ proc UnitOption::_EntryKeyReleaseEventManager { path } {
    variable Textvar
 
    _UnsetTextvarTrace $path
-   _SetTextvar $path $Textvar($path.ent)
+   _SetTextvar $path $Textvar($path.e)
    _SetTextvarTrace $path
 }
 
@@ -1000,7 +1013,7 @@ proc UnitOption::_UpdateEntry { path } {
    set textvarUnitIdx $Data(${path}TextvarUnitIdx)
    set currentUnitIdx $Data(${path}CurrentUnitIdx)
 
-   set Textvar($path.ent) [_Convert $path [set $textvar] $textvarUnitIdx $currentUnitIdx]
+   set Textvar($path.e) [_Convert $path [set $textvar] $textvarUnitIdx $currentUnitIdx]
 }
 
 #----------------------------------------------------------------------------
