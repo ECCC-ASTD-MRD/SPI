@@ -44,6 +44,7 @@ static int  STACKPN=0;
 #define STACK_ASSERT_NOTNULL(N,Err) {int i,n=(N); for(i=0; i<n; ++i) if( !STACK_PTR[i] ) STACK_ERROR(Err);}
 
 int vexpr_error(char* s);
+extern int vexpr_lex(void);
 %}
 
 %union {

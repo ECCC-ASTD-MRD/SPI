@@ -51,7 +51,7 @@
 #define PROJCHECK(P,V)            if (P->Type->Def==PROJCYLIN) { CYLCHECK((V-P->L),V); }
 #define CYLFLIP(D,V)              ((V-D)<-2.0f?4:((V-D)>2.0f?-4:0))
 
-typedef struct Projection {
+struct Projection {
    struct ProjectionType *Type;       // Type de projection
    GDB_Data              *Geo;        // Donnees geographiques
    Tcl_Obj               *Data;       // Liste des donnees associees
@@ -79,7 +79,12 @@ typedef struct Projection {
    TGeoRef              *Ref;         // GeoReference des donnees projection grille
    int                   Geographic;  // Indicateur de projection geographique
    int                   Perspective; // Affichage en perspective
-} Projection;
+};
+// Necessary to break circular dependencies
+#ifndef _Projection_typedef
+#define _Projection_typedef
+typedef struct Projection Projection;
+#endif
 
 typedef int           (Projection_CallLocate)       (Projection *Proj,double Lat,double Lon,int Undo);
 typedef void          (Projection_CallRender)       (Projection *Proj,GLuint List,Vect3d *Data,unsigned int *Idx,char *Col,float* Tex,int Mode,int Nb,int Stride,Vect3d V0,Vect3d V1);
@@ -117,6 +122,7 @@ int  Projection_Transform(Tcl_Interp *Interp,char* Name,ViewportItem *VP,int arg
 int  Projection_Map(Tcl_Interp *Interp,Coord *Pos,char Type,Tcl_Obj *List);
 Tcl_Obj* Projection_Path(Tcl_Interp *Interp,Tcl_Obj *List,double Dist);
 Tcl_Obj* Grid_Path(Tcl_Interp *Interp,Projection *Proj,Tcl_Obj *List,double Dist);
+int  Grid_Setup(Tcl_Interp *Interp,Projection *Proj);
 
 int Projection_CreateType(Tcl_Interp *Interp,
           char                        *Name

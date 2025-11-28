@@ -36,6 +36,10 @@
 #include "tclGDAL.h"
 #include "Data_FF.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 extern int GDAL_Type[];
 extern int TD2GDAL[];
 

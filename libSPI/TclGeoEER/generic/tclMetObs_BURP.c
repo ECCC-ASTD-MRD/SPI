@@ -69,11 +69,12 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    int      e,sz1=0,sz2=0,c;
 
-   int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,sup=0,nsup=0,xaux=0,nxaux=0,mkr=0;
+   int      hhmm,flag,codtyp,blat,blon,hgt,dx,dy,dlay,yymmdd,oars,runn,nblk,nsup=0,nxaux=0,mkr=0;
    int      blkno,nelem,nval,nt,bfam,bdesc,btyp,nbit,bit0,datyp,bknat,bktyp,bkstp;
    char     stnid[10],previd[10];
-   int     *elems=NULL,*tblval=NULL,*codes=NULL;
-   float   *tblvalf=NULL;
+   uint32_t *xaux=NULL,*tblval=NULL;
+   int32_t  *codes=NULL,*elems=NULL;
+   float    *tblvalf=NULL;
    char     multi=0;
 
    Tcl_MutexLock(&MUTEX_BURPFILE);
@@ -92,7 +93,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    c_mrfopr("MISSING",Obs->NoData);
 
    // Open the file
-   err=c_fnom(Obs->FId,File,"RND",0);
+   err=c_fnom(&Obs->FId,File,"RND",0);
    if (err<0) {
       Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable to link filename ",File,(char*)NULL);
       Tcl_MutexUnlock(&MUTEX_BURPFILE);
@@ -123,7 +124,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
    // Start reading reports
    handle=0;
-   while((handle=c_mrfloc(Obs->FId,handle,"*********",-1,-1,-1,-1,-1,-1,0))>0) {
+   while((handle=c_mrfloc(Obs->FId,handle,"*********",-1,-1,-1,-1,-1,NULL,0))>0) {
 
      *buf=sz;
       err=c_mrfget(handle,buf);
@@ -134,7 +135,7 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
       }
 
       strcpy(stnid,"         ");
-      err=c_mrbhdr(buf,&hhmm,&flag,stnid,&codtyp,&blat,&blon,&dx,&dy,&hgt,&dlay,&yymmdd,&oars,&runn,&nblk,sup,nsup,xaux,nxaux);
+      err=c_mrbhdr(buf,&hhmm,&flag,stnid,&codtyp,&blat,&blon,&dx,&dy,&hgt,&dlay,&yymmdd,&oars,&runn,&nblk,NULL,nsup,xaux,nxaux);
       if (err<0) {
          Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable to read message header",(char*)NULL);
          code=TCL_ERROR;
@@ -196,8 +197,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
          // Resize temporary buffers if needed
          if (nelem>sz1) {
             sz1=nelem;
-            elems=(int*)realloc(elems,sz1*sizeof(int));
-            codes=(int*)realloc(codes,sz1*sizeof(int));
+            elems=realloc(elems,sz1*sizeof(*elems));
+            codes=realloc(codes,sz1*sizeof(*codes));
             eb=(EntryTableB**)realloc(eb,sz1*sizeof(EntryTableB*));
             if (!elems || !codes || !eb) {
                Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable ro allocate temporary buffers",(char*)NULL);
@@ -208,8 +209,8 @@ int MetObs_LoadBURP(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
 
          if (nelem*nval*nt>sz2) {
             sz2=nelem*nval*nt;
-            tblval=(int*)realloc(tblval,sz2*sizeof(int));
-            tblvalf=(float*)realloc(tblvalf,sz2*sizeof(float));
+            tblval=realloc(tblval,sz2*sizeof(*tblval));
+            tblvalf=realloc(tblvalf,sz2*sizeof(*tblvalf));
             if (!tblval || !tblvalf) {
                Tcl_AppendResult(Interp,"\n   MetObs_LoadBURP :  Unable ro allocate value buffers",(char*)NULL);
                code=TCL_ERROR;

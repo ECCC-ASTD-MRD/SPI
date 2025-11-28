@@ -55,6 +55,8 @@ typedef struct CMap_Rec {
    int HasChanged;
 } CMap_Rec;
 
+int TclCMap_Init(Tcl_Interp *Interp);
+
 CMap_Rec* CMap_Get(char *Name);
 CMap_Rec* CMap_New(char* Name,int Nb);
 int       CMap_Put(Tcl_Interp *Interp,CMap_Rec *Map);

@@ -30,7 +30,7 @@
 
 package provide PrintBox 3.2
 
-package require Disseminate
+catch {package require Disseminate}
 
 
 catch { SPI::Splash "Loading Widget Package PrintBox 3.2" }

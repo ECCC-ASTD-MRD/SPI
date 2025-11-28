@@ -198,7 +198,7 @@ int GRIB_FieldDefine(Tcl_Interp *Interp,TData *Field,int Objc,Tcl_Obj *CONST Obj
    double       tra[6],inv[6],*tm,*im;
    const char **list;
  
-   unsigned long key_iterator_filter_flags=GRIB_KEYS_ITERATOR_SKIP_READ_ONLY || GRIB_KEYS_ITERATOR_SKIP_COMPUTED;
+   unsigned long key_iterator_filter_flags=GRIB_KEYS_ITERATOR_SKIP_READ_ONLY | GRIB_KEYS_ITERATOR_SKIP_COMPUTED;
 //               char* name_space="ls";
    grib_keys_iterator* kiter=NULL;
    char   *key,sval[1024];
@@ -1129,7 +1129,7 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
    switch(RPN->GRef->Grid[0]) {
       case 'N':
       case 'S':
-         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4,1);
          RPN->GRef->Project(RPN->GRef,0,0,&co.Lat,&co.Lon,0,1);
         
          xg[3]=RPN->GRef->Grid[0]=='N'?(270.0-xg[3]):xg[3]+90.0;
@@ -1149,7 +1149,7 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          break;   
          
       case 'L':
-         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+         f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4,1);
          
          len=10;
          grib_set_string(head->Handle,"gridType","regular_ll",&len);
@@ -1162,7 +1162,7 @@ int GRIB_FieldImport(Tcl_Interp *Interp,TData *Field,TData *RPN) {
          break;   
          
 //       case 'Z':
-//          f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4);
+//          f77name(cigaxg)(RPN->GRef->Grid,&xg[0],&xg[1],&xg[2],&xg[3],&rhead->IG1,&rhead->IG2,&rhead->IG3,&rhead->IG4,1);
 //          finger
 //          len=10;
 //          grib_set_string(head->Handle,"gridType","rotated_ll",&len);

@@ -80,6 +80,8 @@ typedef struct GDAL_Band {
    TDataStat    *Stat;                // Data stats 
 } GDAL_Band;
 
+int TclGDAL_Init(Tcl_Interp *Interp);
+
 GDAL_File* GDAL_FileGet(Tcl_Interp *Interp,char *Id);
 int        GDAL_FilePut(Tcl_Interp *Interp,GDAL_File *File);
 int        GDAL_FileCreateCopy(Tcl_Interp *Interp,Tcl_Obj *Bands,char *Name,char *Driver);

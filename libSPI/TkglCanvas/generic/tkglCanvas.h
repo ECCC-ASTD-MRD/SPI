@@ -304,6 +304,7 @@ MODULE_SCOPE int  TkCanvTranslatePath(TkCanvas *canvPtr,
              int numVertex, double *coordPtr, int closed,
              XPoint *outPtr);
 MODULE_SCOPE int SetglCanvas(TkCanvas *canvasPtr);
+MODULE_SCOPE void Tk_glCanvasPsPath(Tcl_Interp *Interp,Tk_Canvas canvas,double *Coords,int Nb);
 
    /*
  * Standard item types provided by Tk:

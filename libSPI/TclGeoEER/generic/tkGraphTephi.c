@@ -31,6 +31,7 @@
  */
 
 #include "tkGraphAxis.h"
+#include "tkglCanvText.h"
 
 extern void Data_RenderBarbule(int Type,int Flip,float Axis,float Lat,float Lon,float Elev,float Speed,float Dir,float Size,void *Proj);
 

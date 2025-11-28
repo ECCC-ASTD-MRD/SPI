@@ -139,7 +139,7 @@ typedef struct GDB_Tile {
 } GDB_Tile;
 
 typedef struct GDB_Data {
-   unsigned long Maps[6];
+   caddr_t     Maps[6];
    int         DegT,DegX,DegY,Res;
    GDB_Tile    Tile[GDB_DEGX][GDB_DEGY];
    GDB_Params  Params;
@@ -152,6 +152,13 @@ void GDB_GeoFree(GDB_Geo *Geo);
 void GDB_TileFree(GDB_Tile *Tile,int Force);
 void GDB_TileFreeAll(GDB_Data *Geo,int Type);
 void GDB_TileFreeType(GDB_Data *Geo,GDB_Type Type);
+
+// Necessary to break circular dependencies
+#ifndef _Projection_typedef
+#define _Projection_typedef
+typedef struct Projection Projection;
+#endif
+int   GDB_TileRender(Tcl_Interp *Interp,Projection *Proj,GDB_Data *GDB,int Mode);
 
 Vect3d*      VBuffer_Alloc(unsigned int Size);
 Vect3d*      VBuffer_Copy(Vect3d *To,unsigned int Size);

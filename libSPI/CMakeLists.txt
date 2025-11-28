@@ -126,11 +126,9 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 # when building, don't use the install RPATH already
 # (but later on when installing)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 link_libraries("-Wl,--disable-new-dtags")
+# To suppress the warning message and make sure RPATHs are properly escaped (when using ${ORIGIN}, for example)
+cmake_policy(SET CMP0095 NEW)
 
 #----- Generate the libraries
 add_subdirectory(TclSystem)

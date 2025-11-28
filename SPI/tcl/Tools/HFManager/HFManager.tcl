@@ -35,7 +35,7 @@
 #  Aucune
 #============================================================================
 
-package require Disseminate
+catch {package require Disseminate}
 
 #----- Lire les sources d'execution
 

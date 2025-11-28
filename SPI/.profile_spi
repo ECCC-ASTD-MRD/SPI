@@ -12,16 +12,13 @@ if [[ -n ${ORDENV_VERSION} ]]; then
    case `domainname -d` in
       *science.gc.ca | "")
          #----- On the SCIENCE side
-         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/home/ords/prod/cmoe_ops/smco600/geo/DBGeo/data
+         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/home/smco600/links/ords/geo/DBGeo/data
          ;;
       *ec.gc.ca)
          #----- On the EC side
-         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/home/binops/afse/eer/links/geo/DBGeo/data
+         [[ -d ${GDB_PATH} ]] || export GDB_PATH=/net/local/home/s-cmoe-ops/links/geo/DBGeo/data
          ;;
    esac
-
-   # If compiled with intel-19.0.3.199, need to load compilers
-   [[ ${SPI_LIB} =~ .*intel-19.0.3.199.* && ! ${LD_LIBRARY_PATH} =~ .*intelcomp.* ]] && . ssmuse-sh -d comm/eccc/all/opt/intelcomp/intelpsxe-cluster-19.0.3.199 -d hpco/exp/openmpi/openmpi-3.1.2--hpcx-2.4.0-mofed-4.6--intel-19.0.3.199
 fi
 
 #----- If not within EC environment

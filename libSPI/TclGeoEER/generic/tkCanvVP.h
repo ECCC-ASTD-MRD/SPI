@@ -116,6 +116,13 @@ typedef struct VPThreadEvent {
     void *ptr;          /* Data pointer */
 } VPThreadEvent;
 
+// Necessary to break circular dependencies
+#ifndef _Projection_typedef
+#define _Projection_typedef
+typedef struct Projection Projection;
+#endif
+void   ViewportSetup(Tk_Canvas Canvas,ViewportItem *VP,Projection *Proj,int Width,int Height,int Tile,int Clear,int PS);
+
 double ViewportY(ViewportItem *VP);
 double ViewportX(ViewportItem *VP);
 void   ViewportClean(ViewportItem *VP,int Data,int Buff);

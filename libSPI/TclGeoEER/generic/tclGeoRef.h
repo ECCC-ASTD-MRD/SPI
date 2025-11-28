@@ -41,6 +41,8 @@
 #include "Vector.h"
 #include "GeoRef.h"
 
+int TclGeoRef_Init(Tcl_Interp *Interp);
+
 TGeoRef* GeoRef_Get(char *Name);
 Tcl_Obj* GeoRef_Put(Tcl_Interp *Interp,char *Name,TGeoRef *Ref);
 int      GeoRef_Destroy(Tcl_Interp *Interp,char *Name);

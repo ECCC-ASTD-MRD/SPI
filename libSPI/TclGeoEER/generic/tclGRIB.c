@@ -73,7 +73,7 @@ static int GRIB_FileCmd(ClientData clientData,Tcl_Interp *Interp,int Objc,Tcl_Ob
             return(TCL_ERROR);
          }
 #ifdef HAVE_RMN
-         type=f77name(wkoffit)(Tcl_GetString(Objv[2]),strlen(Tcl_GetString(Objv[2])));
+         type=c_wkoffit(Tcl_GetString(Objv[2]),strlen(Tcl_GetString(Objv[2])));
          if (type==7) {
             Tcl_SetObjResult(Interp,Tcl_NewBooleanObj(1));
          } else {

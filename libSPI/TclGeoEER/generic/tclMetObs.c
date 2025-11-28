@@ -1967,7 +1967,7 @@ int MetObs_Load(Tcl_Interp *Interp,char *File,TMetObs *Obs) {
    int res=0,type=31;
 
 #ifdef HAVE_RMN
-   type=f77name(wkoffit)(File,strlen(File));
+   type=c_wkoffit(File,strlen(File));
 #endif
    if(strstr(File,".sqlite") != NULL){
       type = MET_SQLITE;

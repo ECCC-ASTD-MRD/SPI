@@ -349,7 +349,7 @@ int GDB_Init(GDB_Data *GDB) {
    int    lat,lon;
    double flat,flon,clat;
 
-   memset(GDB->Maps,0x0,6*sizeof(unsigned long));
+   memset(GDB->Maps,0x0,6*sizeof(*GDB->Maps));
    
 #ifdef HAVE_GDB
    gdb_init();
