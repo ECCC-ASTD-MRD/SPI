@@ -695,7 +695,8 @@ proc Trajectory::Graph { Frame X0 Y0 X1 Y1 TrajId } {
 
    $canvas create graph -x $X0 -y $Y0 -width [expr $X1-$X0] -height [expr $Y1-$Y0] -anchor nw -command "trajgraph" \
        -fg black -bg white -fill white -tags "TRAJGRAPH" -font XFont10 -title $Lbl(Height) -legend False
-   $canvas bind TRAJGRAPH <Motion>  "Trajectory::GraphFollow $Frame \[$canvas canvasx %x\] \[$canvas canvasy %y\]"
+   #----- $canvas raise TRAJGRAPH is necessary, as all widgets can be placed inside viewports giving more implementation flexibility
+   $canvas bind TRAJGRAPH <Motion>  "$canvas raise TRAJGRAPH ; Trajectory::GraphFollow $Frame \[$canvas canvasx %x\] \[$canvas canvasy %y\]"
 
    if { [llength $TrajId] } {
       if { ![graphaxis is TRAJGRAPHAXISX] } {
