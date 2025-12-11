@@ -24,6 +24,7 @@
 #      DateStuff::StringTimeFromSeconds          { Seconds { Zone Z } }
 #      DateStuff::SecsToHours                    { Secs }
 #      DateStuff::MinsToHours                    { Mins }
+#      DateStuff::ReadableDuration               { Secs {Compact 0} }
 #
 # Remarques :
 #   Aucune
@@ -410,19 +411,18 @@ proc DateStuff::ReadableDuration { Secs {Compact 0}} {
    global GDefs
 
    set space [expr {$Compact?"":" "}]
-   set days [expr $Secs/86400]
-   set Secs [expr $Secs%86400]
-   set hours [expr $Secs/3600]
-   set Secs [expr $Secs%3600]
-   set mins [expr $Secs/60]
-   set Secs [expr $Secs%60]
+   set sign [expr $Secs<0?"-":""]
+   set secs [expr abs($Secs)]
+   set days [expr $secs/86400]
+   set secs [expr $secs%86400]
+   set hours [expr $secs/3600]
+   set secs [expr $secs%3600]
+   set mins [expr $secs/60]
+   set secs [expr $secs%60]
 
    set readableDuration ""
    if { $days > 0 } {
-      set dayUnit "d"
-      if { [info exists GDefs(Lang)] && $GDefs(Lang)==0 } {
-         set dayUnit "j"
-      }
+      set dayUnit [expr {[info exists GDefs(Lang)] && $GDefs(Lang)==0?"j":"d"}]
       append readableDuration "${days}${space}${dayUnit} "
    }
    if { $hours > 0 } {
@@ -431,9 +431,9 @@ proc DateStuff::ReadableDuration { Secs {Compact 0}} {
    if { $mins > 0 } {
       append readableDuration "${mins}${space}min "
    }
-   if { $Secs > 0 } {
-      append readableDuration "${Secs}${space}s "
+   if { $secs > 0 || [expr abs($Secs)] == 0 } {
+      append readableDuration "${secs}${space}s "
    }
 
-   return [string trim $readableDuration]
+   return [string trim ${sign}${readableDuration}]
 }
