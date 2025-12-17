@@ -670,7 +670,7 @@ proc SPI::WindowMenu { } {
       if { ![llength [info command metobs]] } {
          .menu.file.menu.type entryconfigure 4 -state disabled
       }
-      
+
    menu .menu.disp.menu -tearoff 1
       .menu.disp.menu add checkbutton -label [lindex $Lbl(Logo) $GDefs(Lang)] -variable SPI::Data(ShowLOGO) \
          -command "SPI::DrawImage \$Page::Data(Frame) LOGO 5 5 nw 1 0 0" -onvalue 1 -offvalue 0
@@ -818,11 +818,11 @@ proc SPI::WindowBind { Frame } {
    bind $Frame <Alt-a>     ".menu.tools.menu invoke 0"
    bind $Frame <Alt-c>     ".menu.tools.menu invoke 1"
    bind $Frame <Alt-m>     ".menu.tools.menu invoke 2"
-   bind $Frame <Control-l> ".menu.disp.menu invoke 8"
-   bind $Frame <Control-c> ".menu.disp.menu invoke 9"
-   bind $Frame <Control-m> ".menu.disp.menu invoke 17"
-   bind $Frame <Control-p> ".menu.disp.menu invoke 16"
-   bind $Frame <Control-t> ".menu.disp.menu invoke 18"
+   bind $Frame <Control-l> ".menu.disp.menu invoke 9"
+   bind $Frame <Control-c> ".menu.disp.menu invoke 10"
+   bind $Frame <Control-m> ".menu.disp.menu invoke 18"
+   bind $Frame <Control-p> ".menu.disp.menu invoke 17"
+   bind $Frame <Control-t> ".menu.disp.menu invoke 19"
 }
 
 #-------------------------------------------------------------------------------
