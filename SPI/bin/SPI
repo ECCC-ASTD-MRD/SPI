@@ -105,7 +105,7 @@ if [[ $XVFB -ne 0 ]]; then
    else
       #----- Otherwise use the old Xvfb
       echo "(INFO) Starting Xvfb"
-      exec xvfb-run -n $XSVR -a -s '-ac -screen 0 1x1x24' "${cmd[@]}"
+      exec xvfb-run -d -s '-ac -screen 0 1x1x24' "${cmd[@]}"
    fi
 else
    exec "${cmd[@]}"
