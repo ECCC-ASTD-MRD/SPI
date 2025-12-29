@@ -1,5 +1,5 @@
 NAME       : libSPI
-VERSION    : 8.5.0
+VERSION    : 8.5.1
 BUILD      : RelWithDebInfo
 DESCRIPTION: SPI (Spherical Projection Interface)
 SUMMARY    : Scientific visualisation and data processing API libraries
@@ -18,7 +18,7 @@ VGRID  ~= 6.9.0
 DistanceMetrics ~>= 1.0.0
 
 # External dependencies
-TCL     = 8.6.6
+TCL     = 8.6.17
 TCLLIB  = 1.21.0
 TCLTLS  = 1.7.12
 TKTABLE = 2.10.0
