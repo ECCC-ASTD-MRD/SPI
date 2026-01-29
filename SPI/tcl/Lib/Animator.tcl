@@ -53,7 +53,7 @@ namespace eval Animator {
    variable Error
 
    set Param(Title)    { "Animateur" "Animator" }
-   set Param(Geom)     { 345x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
+   set Param(Geom)     { 350x275+[winfo rootx $Parent]+[winfo rooty $Parent] }
    set Param(Version)  4.0
 
    set Param(WebHost)      0               ;#Hote pour leas animations web
