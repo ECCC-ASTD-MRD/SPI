@@ -1465,6 +1465,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
    glTexImage1D(GL_TEXTURE_1D,0,GL_RGBA,Field->Spec->Map->NbPixels,0,GL_RGBA,GL_UNSIGNED_BYTE,Field->Spec->Map->Color);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
    glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_1D,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
    glEnable(GL_TEXTURE_1D);
 
@@ -1484,17 +1485,19 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          idx[0]=Field->GRef->Idx[n];
          idx[1]=Field->GRef->Idx[n+1];
          idx[2]=Field->GRef->Idx[n+2];
-         
+
          // Check for mask
          if (mask && !(Field->Def->Mask[idx[0]] && Field->Def->Mask[idx[1]] && Field->Def->Mask[idx[2]])) {
             continue;
          }
-         glTexCoord1f(Field->Map[idx[0]]);
-         glVertex3dv(pos[idx[0]]);
-         glTexCoord1f(Field->Map[idx[1]]);
-         glVertex3dv(pos[idx[1]]);
-         glTexCoord1f(Field->Map[idx[2]]);
-         glVertex3dv(pos[idx[2]]);
+         if (Field->Map[idx[0]]>=0.0f || Field->Map[idx[1]]>=0.0f || Field->Map[idx[2]]>=0.0f) {
+            glTexCoord1f(Field->Map[idx[0]]);
+            glVertex3dv(pos[idx[0]]);
+            glTexCoord1f(Field->Map[idx[1]]);
+            glVertex3dv(pos[idx[1]]);
+            glTexCoord1f(Field->Map[idx[2]]);
+            glVertex3dv(pos[idx[2]]);
+         }
       }
       glEnd();
    } else {
@@ -1513,7 +1516,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
          Vect_Init(b,0.5,0.5,0.0);
          Bary_InterpPos(b,p2,pos[idx[0]],pos[idx[1]],pos[idx[2]]);
 
-         if (!mask || Field->Def->Mask[idx[0]]) {         
+         if (Field->Map[idx[0]]>=0.0f && (!mask || Field->Def->Mask[idx[0]])) {
             glTexCoord1f(Field->Map[idx[0]]);
             glVertex3dv(pos[idx[0]]);
             glVertex3dv(p);
@@ -1523,7 +1526,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!mask || Field->Def->Mask[idx[1]]) {         
+         if (Field->Map[idx[1]]>=0.0f && (!mask || Field->Def->Mask[idx[1]])) {
             glTexCoord1f(Field->Map[idx[1]]);
             glVertex3dv(pos[idx[1]]);
             glVertex3dv(p);
@@ -1533,7 +1536,7 @@ void Data_RenderMesh(TData *Field,ViewportItem *VP,Projection *Proj) {
             glVertex3dv(p2);
          }
 
-         if (!mask || Field->Def->Mask[idx[2]]) {         
+         if (Field->Map[idx[2]]>=0.0f && (!mask || Field->Def->Mask[idx[2]])) {
             glTexCoord1f(Field->Map[idx[2]]);
             glVertex3dv(pos[idx[2]]);
             glVertex3dv(p);
