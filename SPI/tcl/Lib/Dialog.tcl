@@ -47,6 +47,7 @@ namespace eval Dialog { } {
 
    set Lbl(Ok)       { "Ok" "Ok" }
    set Lbl(Continue) { "Continuer" "Continue" }
+   set Lbl(Close)    { "Fermer" "Close" }
    set Lbl(Cancel)   { "Annuler" "Cancel" }
    set Lbl(Clip)     { "Copier vers le presse-papier" "Copy to clipboard" }
    set Lbl(Mail)     { "Envoyer par courriel" "Mail to" }
@@ -712,12 +713,12 @@ proc Dialog::Give { Master Title Text Info { Mail "" } } {
          pack .dlggive.msg.txt -side left -fill x -expand True -ipadx 10 -ipady 10
       pack .dlggive.msg -side top  -fill both -expand True
 
-      text .dlggive.out -relief flat -bd 1 -bg $GDefs(ColorLight) -height 3
+      text .dlggive.out -relief flat -bd 1 -bg $GDefs(ColorLight) -height 3 -width 120
       .dlggive.out insert 0.0 $Info
       pack .dlggive.out -side top -fill both -ipady 2 -expand 1
 
       frame .dlggive.cmd
-         button .dlggive.ok -text [lindex $Lbl(Continue) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
+         button .dlggive.ok -text [lindex $Lbl(Close) $GDefs(Lang)] -command { destroy .dlggive } -bd 1 -foreground green
          button .dlggive.copy -text [lindex $Lbl(Clip) $GDefs(Lang)] -command { clipboard clear; clipboard append [string range [.dlggive.out get 0.0 end] 0 end-1] } -bd 1
          button .dlggive.mail -text [lindex $Lbl(Mail) $GDefs(Lang)]  -bd 1 -command " 
             if { \[set mail \[Dialog::Get .dlggive \[lindex \$Dialog::Lbl(Mail) \$GDefs(Lang)\] \$Dialog::Lbl(Adress) $Mail\]\]!=\"\" } {
