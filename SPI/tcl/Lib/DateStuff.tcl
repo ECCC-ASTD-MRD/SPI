@@ -407,7 +407,7 @@ proc DateStuff::MinsToHours { Mins } {
 #
 # Remarques :
 #----------------------------------------------------------------------------
-proc DateStuff::ReadableDuration { Secs {Compact 0}} {
+proc DateStuff::ReadableDuration { Secs {Compact 0} } {
    global GDefs
 
    set space [expr {$Compact?"":" "}]
@@ -436,4 +436,19 @@ proc DateStuff::ReadableDuration { Secs {Compact 0}} {
    }
 
    return [string trim ${sign}${readableDuration}]
+}
+
+proc DateStuff::SimpleDuration { Secs {Compact 0} } {
+   set space [expr {$Compact?"":" "}]
+   set sign [expr $Secs<0?"-":""]
+   set secs [expr abs($Secs)]
+
+   set simpleDuration "[format %g ${secs}]${space}s"
+   if { $secs >= 3600 } {
+      set simpleDuration "[format %g [expr $secs/3600]]${space}h"
+   } elseif { $secs >= 60 } {
+      set simpleDuration "[format %g [expr $secs/60]]${space}min"
+   }
+
+   return "${sign}${simpleDuration}"
 }
