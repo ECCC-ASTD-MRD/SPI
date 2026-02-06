@@ -413,12 +413,12 @@ proc DateStuff::ReadableDuration { Secs {Compact 0}} {
    set space [expr {$Compact?"":" "}]
    set sign [expr $Secs<0?"-":""]
    set secs [expr abs($Secs)]
-   set days [expr $secs/86400]
-   set secs [expr $secs%86400]
-   set hours [expr $secs/3600]
-   set secs [expr $secs%3600]
-   set mins [expr $secs/60]
-   set secs [expr $secs%60]
+   set days [expr int($secs/86400)]
+   set secs [expr fmod($secs,86400)]
+   set hours [expr int($secs/3600)]
+   set secs [expr fmod($secs,3600)]
+   set mins [expr int($secs/60)]
+   set secs [format %g [expr fmod($secs,60)]]
 
    set readableDuration ""
    if { $days > 0 } {
