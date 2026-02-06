@@ -438,6 +438,19 @@ proc DateStuff::ReadableDuration { Secs {Compact 0} } {
    return [string trim ${sign}${readableDuration}]
 }
 
+#----------------------------------------------------------------------------
+# Nom : <DateStuff::SimpleDuration>
+# But : Formatter une durée en h (>3600s), min (>60s) ou s
+#
+# Parametres :
+#  <Secs>    : Durée en secondes
+#  <Compact> : Flag pour résultat compact ou non. Non-compact par défaut.
+#
+# Retour :
+#  <string> : Durée formattée pour être simple
+#
+# Remarques :
+#----------------------------------------------------------------------------
 proc DateStuff::SimpleDuration { Secs {Compact 0} } {
    set space [expr {$Compact?"":" "}]
    set sign [expr $Secs<0?"-":""]
