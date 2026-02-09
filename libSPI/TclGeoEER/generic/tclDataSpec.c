@@ -2092,7 +2092,8 @@ void DataSpec_Define(TDataSpec *Spec){
    }
    Spec->MapFactor=0.0;
 
-   if (!Spec->InterNb && (isnan(Spec->Min) || isnan(Spec->Max))) {
+   if ((!Spec->InterNb || Spec->InterMode) && (isnan(Spec->Min) || isnan(Spec->Max))) {
+      Spec->InterNb=0;
       return;
    }
 
@@ -2212,6 +2213,9 @@ void DataSpec_IntervalsLog(TDataSpec *Spec,double Min,double Max) {
 void DataSpec_IntervalsRSMC(TDataSpec *Spec,double Min,double Max) {
 
    int exp,dexp,base;
+
+   if( Min==0.0 || Max==0.0 )
+      return;
 
    base=floor(log10(Max));
 
