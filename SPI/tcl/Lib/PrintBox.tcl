@@ -757,8 +757,6 @@ proc PrintBox::Print { Frame X Y Width Height { Format "" } } {
          } else {
             eval exec scp $Param(FullName).$Print(Device) ${site}/[file tail $Param(FullName)].$Print(Device) > /dev/null
          }
-
-         file delete -force $Param(FullName).$Print(Device)
       }
    }
 
